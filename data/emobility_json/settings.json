@@ -1,0 +1,16 @@
+{
+    "display_name": "Emobility",
+    "default_show": false,
+    "files": {
+        "app_stromnetz_emobility_EPSG_4326.json": {
+            "color": "yellow",
+            "type": "marker",
+            "popup_properties": ["adresse", "anzahl_ladepunkte", "koordinaten"]
+        },
+        "app_stromnetz_emobility_EPSG_25832.json": {
+            "color": "yellow",
+            "type": "marker",
+            "popup_properties": ["adresse", "anzahl_ladepunkte", "koordinaten"]
+        }
+    }
+}

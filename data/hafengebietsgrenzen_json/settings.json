@@ -1,0 +1,16 @@
+{
+    "display_name": "Hafengebietsgrenzen",
+    "default_show": false,
+    "files": {
+        "app_hafengebietsgrenzen_EPSG_4326.json": {
+            "color": "blue",
+            "type": "geojson",
+            "popup_properties": ["typ", "name"]
+        },
+        "app_hafengebietsgrenzen_EPSG_25832.json": {
+            "color": "blue",
+            "type": "geojson",
+            "popup_properties": ["typ", "name"]
+        }
+    }
+}
