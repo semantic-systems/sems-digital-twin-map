@@ -3,8 +3,11 @@
     "default_show": false,
     "files": {
         "de_hh_up_berufsfeuerwehr_EPSG_4326.json": {
-            "color": "lightred",
+            "name": "Berufsfeuerwehr",
+            "color": "red",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "fire",
             "popup_properties": {
                 "Name": "bezeichnung",
                 "Ortsteil": "ab_ortsteil",
@@ -13,8 +16,11 @@
             }
         },
         "de_hh_up_berufsfeuerwehr_EPSG_25832.json": {
-            "color": "lightred",
+            "name": "Berufsfeuerwehr",
+            "color": "red",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "fire",
             "popup_properties": {
                 "Name": "bezeichnung",
                 "Ortsteil": "ab_ortsteil",
@@ -23,8 +29,11 @@
             }
         },
         "de_hh_up_freiwillige_feuerwehr_EPSG_4326.json": {
+            "name": "Freiwillige Feuerwehr",
             "color": "lightred",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "fire",
             "popup_properties": {
                 "Name": "bezeichnung",
                 "Ortsteil": "ab_ortsteil",
@@ -33,8 +42,11 @@
             }
         },
         "de_hh_up_freiwillige_feuerwehr_EPSG_25832.json": {
+            "name": "Freiwillige Feuerwehr",
             "color": "lightred",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "fire",
             "popup_properties": {
                 "Name": "bezeichnung",
                 "Ortsteil": "ab_ortsteil",

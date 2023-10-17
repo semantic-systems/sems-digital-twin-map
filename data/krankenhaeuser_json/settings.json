@@ -3,8 +3,11 @@
     "default_show": false,
     "files": {
         "de_hh_up_gesundheit_krankenhaeuser_EPSG_4326.json": {
+            "name": "Krankenhaus",
             "color": "red",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "house-medical",
             "popup_properties": {
                 "Name": "name",
                 "Verzeichnis": "krankenhausverzeichnis",
@@ -12,8 +15,11 @@
             }
         },
         "de_hh_up_gesundheit_krankenhaeuser_EPSG_25832.json": {
+            "name": "Krankenhaus",
             "color": "red",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "house-medical",
             "popup_properties": {
                 "Name": "name",
                 "Verzeichnis": "krankenhausverzeichnis",

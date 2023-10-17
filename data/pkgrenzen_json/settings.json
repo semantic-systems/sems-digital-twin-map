@@ -3,6 +3,7 @@
     "default_show": false,
     "files": {
         "de_hh_up_pk_grenzen_EPSG_4326.json": {
+            "name": "Kommissariatsgebiet",
             "color": "darkblue",
             "type": "geojson",
             "popup_properties": {
@@ -11,6 +12,7 @@
             }
         },
         "de_hh_up_pk_grenzen_EPSG_25832.json": {
+            "name": "Kommissariatsgebiet",
             "color": "darkblue",
             "type": "geojson",
             "popup_properties": {
@@ -19,8 +21,11 @@
             }
         },
         "de_hh_up_pk_standorte_EPSG_4326.json": {
+            "name": "Polizei",
             "color": "darkblue",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "handcuffs",
             "popup_properties": {
                 "Name": "name",
                 "Kommissariat": "pk",
@@ -29,8 +34,11 @@
             }
         },
         "de_hh_up_pk_standorte_EPSG_25832.json": {
+            "name": "Polizei",
             "color": "darkblue",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "handcuffs",
             "popup_properties": {
                 "Name": "name",
                 "Kommissariat": "pk",

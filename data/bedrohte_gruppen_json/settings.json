@@ -3,8 +3,11 @@
     "default_show": false,
     "files": {
         "app_KitaEinrichtungen_EPSG_4326.json": {
+            "name": "Kita",
             "color": "pink",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "child-reaching",
             "popup_properties": {
                 "Name": "Name", 
                 "Strasse": "Strasse", 
@@ -14,8 +17,11 @@
             }
         },
         "app_KitaEinrichtungen_EPSG_25832.json": {
+            "name": "Kita",
             "color": "pink",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "child-reaching",
             "popup_properties": {
                 "Name": "Name", 
                 "Strasse": "Strasse", 
@@ -25,8 +31,11 @@
             }
         },
         "app_perspektive_wohnen_bestehend_EPSG_4326.json": {
+            "name": "Flüchtlingsunterkunft",
             "color": "lightgreen",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "person-shelter",
             "popup_properties": {
                 "Strasse": "bezeichnung", 
                 "Bezirk": "bezirk", 
@@ -34,8 +43,11 @@
             }
         },
         "app_perspektive_wohnen_bestehend_EPSG_25832.json": {
+            "name": "Flüchtlingsunterkunft",
             "color": "lightgreen",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "person-shelter",
             "popup_properties": {
                 "Strasse": "bezeichnung", 
                 "Bezirk": "bezirk", 
@@ -43,8 +55,11 @@
             }
         },
         "de_hh_up_nicht_staatliche_schulen_EPSG_4326.json": {
+            "name": "Nicht-staatliche Schule",
             "color": "purple",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "school",
             "popup_properties": {
                 "Name": "schulname", 
                 "Typ": "kapitelbezeichnung", 
@@ -55,8 +70,11 @@
             }
         },
         "de_hh_up_nicht_staatliche_schulen_EPSG_25832.json": {
+            "name": "Nicht-staatliche Schule",
             "color": "purple",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "school",
             "popup_properties": {
                 "Name": "schulname", 
                 "Typ": "kapitelbezeichnung", 
@@ -67,8 +85,11 @@
             }
         },
         "de_hh_up_staatliche_schulen_EPSG_4326.json": {
+            "name": "Staatliche Schule",
             "color": "darkpurple",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "school-flag",
             "popup_properties": {
                 "Name": "schulname", 
                 "Typ": "kapitelbezeichnung", 
@@ -79,8 +100,11 @@
             }
         },
         "de_hh_up_staatliche_schulen_EPSG_25832.json": {
+            "name": "Staatliche Schule",
             "color": "darkpurple",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "school-flag",
             "popup_properties": {
                 "Name": "schulname", 
                 "Typ": "kapitelbezeichnung", 
@@ -91,8 +115,11 @@
             }
         },
         "de_hh_up_vollstationaere_pflegeeinrichtungen_EPSG_4326.json": {
+            "name": "Pflegeeinrichtung",
             "color": "gray",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "person-cane",
             "popup_properties": {
                 "Name": "pflegeeinrichtung", 
                 "Adresse": "adresse",
@@ -103,8 +130,11 @@
             }
         },
         "de_hh_up_vollstationaere_pflegeeinrichtungen_EPSG_25832.json": {
+            "name": "Pflegeeinrichtung",
             "color": "gray",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "person-cane",
             "popup_properties": {
                 "Name": "pflegeeinrichtung", 
                 "Adresse": "adresse",

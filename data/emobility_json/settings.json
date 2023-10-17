@@ -3,8 +3,11 @@
     "default_show": false,
     "files": {
         "app_stromnetz_emobility_EPSG_4326.json": {
+            "name": "Ladestation",
             "color": "orange",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "charging-station",
             "popup_properties": {
                 "Adresse": "adresse", 
                 "Anzahl": "anzahl_ladepunkte", 
@@ -13,8 +16,11 @@
 
         },
         "app_stromnetz_emobility_EPSG_25832.json": {
+            "name": "Ladestation",
             "color": "orange",
             "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "charging-station",
             "popup_properties": {
                 "Adresse": "adresse", 
                 "Anzahl": "anzahl_ladepunkte", 

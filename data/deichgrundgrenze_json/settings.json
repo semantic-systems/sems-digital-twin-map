@@ -1,8 +1,9 @@
 {
-    "display_name": "Deichgrundgrenze",
+    "display_name": "Deichgrundgrenzen",
     "default_show": false,
     "files": {
         "de_hh_up_deichgrundgrenze_EPSG_4326.json": {
+            "name": "Deichgrundgrenze",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -10,6 +11,7 @@
             }
         },
         "de_hh_up_deichgrundgrenze_EPSG_25832.json": {
+            "name": "Deichgrundgrenze",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {

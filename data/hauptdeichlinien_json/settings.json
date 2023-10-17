@@ -3,6 +3,7 @@
     "default_show": false,
     "files": {
         "de_hh_up_hauptdeichlinie_EPSG_4326.json": {
+            "name": "Hauptdeichlinie",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -13,6 +14,7 @@
             }
         },
         "de_hh_up_hauptdeichlinie_EPSG_25832.json": {
+            "name": "Hauptdeichlinie",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {

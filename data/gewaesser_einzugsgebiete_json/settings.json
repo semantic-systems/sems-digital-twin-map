@@ -3,6 +3,7 @@
     "default_show": false,
     "files": {
         "de_hh_up_einzugsgebiete_4_ordnung_EPSG_4326.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -12,6 +13,7 @@
             }
         },
         "de_hh_up_einzugsgebiete_4_ordnung_EPSG_25832.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -21,6 +23,7 @@
             }
         },
         "de_hh_up_einzugsgebiete_5_ordnung_EPSG_4326.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -30,6 +33,7 @@
             }
         },
         "de_hh_up_einzugsgebiete_5_ordnung_EPSG_25832.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -39,6 +43,7 @@
             }
         },
         "de_hh_up_einzugsgebiete_6_ordnung_EPSG_4326.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties":{
@@ -48,6 +53,7 @@
             }
         },
         "de_hh_up_einzugsgebiete_6_ordnung_EPSG_25832.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -57,6 +63,7 @@
             }
         },
         "de_hh_up_einzugsgebiete_7_ordnung_EPSG_4326.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
@@ -66,6 +73,7 @@
             }
         },
         "de_hh_up_einzugsgebiete_7_ordnung_EPSG_25832.json": {
+            "name": "Gewässer Einzugsgebiet",
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
