@@ -1,0 +1,118 @@
+{
+    "display_name": "Bedrohte Gruppen",
+    "default_show": false,
+    "files": {
+        "app_KitaEinrichtungen_EPSG_4326.json": {
+            "color": "pink",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "Name", 
+                "Strasse": "Strasse", 
+                "Hausnr.": "Hausnr",
+                "Tel.Nr.": "Telefon",
+                "Email": "E-Mail"
+            }
+        },
+        "app_KitaEinrichtungen_EPSG_25832.json": {
+            "color": "pink",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "Name", 
+                "Strasse": "Strasse", 
+                "Hausnr.": "Hausnr",
+                "Tel.Nr.": "Telefon",
+                "Email": "E-Mail"
+            }
+        },
+        "app_perspektive_wohnen_bestehend_EPSG_4326.json": {
+            "color": "lightgreen",
+            "type": "marker",
+            "popup_properties": {
+                "Strasse": "bezeichnung", 
+                "Bezirk": "bezirk", 
+                "Plätze": "platzzahl"
+            }
+        },
+        "app_perspektive_wohnen_bestehend_EPSG_25832.json": {
+            "color": "lightgreen",
+            "type": "marker",
+            "popup_properties": {
+                "Strasse": "bezeichnung", 
+                "Bezirk": "bezirk", 
+                "Plätze": "platzzahl"
+            }
+        },
+        "de_hh_up_nicht_staatliche_schulen_EPSG_4326.json": {
+            "color": "purple",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "schulname", 
+                "Typ": "kapitelbezeichnung", 
+                "Adresse": "adresse_strasse_hausnr",
+                "Schüler": "anzahl_schueler",
+                "Tel.Nr.": "schul_telefonnr",
+                "Homepage": "schul_homepage"
+            }
+        },
+        "de_hh_up_nicht_staatliche_schulen_EPSG_25832.json": {
+            "color": "purple",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "schulname", 
+                "Typ": "kapitelbezeichnung", 
+                "Adresse": "adresse_strasse_hausnr",
+                "Schüler": "anzahl_schueler",
+                "Tel.Nr.": "schul_telefonnr",
+                "Homepage": "schul_homepage"
+            }
+        },
+        "de_hh_up_staatliche_schulen_EPSG_4326.json": {
+            "color": "darkpurple",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "schulname", 
+                "Typ": "kapitelbezeichnung", 
+                "Adresse": "adresse_strasse_hausnr",
+                "Schüler": "anzahl_schueler",
+                "Tel.Nr.": "schul_telefonnr",
+                "Homepage": "schul_homepage"
+            }
+        },
+        "de_hh_up_staatliche_schulen_EPSG_25832.json": {
+            "color": "darkpurple",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "schulname", 
+                "Typ": "kapitelbezeichnung", 
+                "Adresse": "adresse_strasse_hausnr",
+                "Schüler": "anzahl_schueler",
+                "Tel.Nr.": "schul_telefonnr",
+                "Homepage": "schul_homepage"
+            }
+        },
+        "de_hh_up_vollstationaere_pflegeeinrichtungen_EPSG_4326.json": {
+            "color": "gray",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "pflegeeinrichtung", 
+                "Adresse": "adresse",
+                "Plätze": "plaetze",
+                "Tel.Nr.": "telefonnummer",
+                "Homepage": "homepage",
+                "Email": "email"
+            }
+        },
+        "de_hh_up_vollstationaere_pflegeeinrichtungen_EPSG_25832.json": {
+            "color": "gray",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "pflegeeinrichtung", 
+                "Adresse": "adresse",
+                "Plätze": "plaetze",
+                "Tel.Nr.": "telefonnummer",
+                "Homepage": "homepage",
+                "Email": "email"
+            }
+        }
+    }
+}

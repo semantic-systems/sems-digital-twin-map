@@ -6,14 +6,20 @@
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
-                "Name": "name"
+                "Name": "anlagenname",
+                "Typ": "anlagentyp",
+                "Höhe (m)": "schutzhoehe_m",
+                "Zuständigkeit": "zustaendigkeit_aufsicht"
             }
         },
         "de_hh_up_hauptdeichlinie_EPSG_25832.json": {
             "color": "blue",
             "type": "geojson",
             "popup_properties": {
-                "Name": "name"
+                "Name": "anlagenname",
+                "Typ": "anlagentyp",
+                "Höhe (m)": "schutzhoehe_m",
+                "Zuständigkeit": "zustaendigkeit_aufsicht"
             }
         }
     }

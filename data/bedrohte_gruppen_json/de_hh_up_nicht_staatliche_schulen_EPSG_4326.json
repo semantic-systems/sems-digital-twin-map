@@ -1,0 +1,3820 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613401",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.030807332497409,
+          53.57265661627614
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Hamburger Straße 31",
+        "anzahl_schueler_gesamt": "0 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "ohne Angabe",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "unbekannt",
+        "schul_id": "0-0",
+        "schulaufsicht": "o.A.",
+        "schulname": "ohne Angabe",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "1"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613402",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.054936644948043,
+          53.55672445853838
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20535 Hamburg",
+        "adresse_strasse_hausnr": "Bei der Hammer Kirche 10",
+        "anzahl_schueler": 242,
+        "anzahl_schueler_gesamt": "242 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 87 88 902-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  2%|Klassenstufe 2  4%|Klassenstufe 3  13%|Klassenstufe 4  19%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-hammer-kirche.kseh.de",
+        "schul_homepage": "http://www.schule-hammer-kirche.de",
+        "schul_id": "3201-0",
+        "schul_telefonnr": "+49 40 87 88 902-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule Hammer Kirche",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 3",
+        "stadtteil": "Hamm",
+        "standort_id": "439",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613403",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.107744975461566,
+          53.54057003195498
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22111 Hamburg",
+        "adresse_strasse_hausnr": "Öjendorfer Weg 14",
+        "anzahl_schueler": 656,
+        "anzahl_schueler_gesamt": "656 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 87 88 904-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  18%|Klassenstufe 2  6%|Klassenstufe 3  8%|Klassenstufe 4  3%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-billstedt.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-st-paulus.kseh.de",
+        "schul_homepage": "http://www.kath-schule-st-paulus.de",
+        "schul_id": "3203-0",
+        "schul_telefonnr": "+49 40 350 30 30-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Katholische Schule St. Paulus",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 2",
+        "stadtteil": "Billstedt",
+        "standort_id": "441",
+        "zustaendiges_rebbz": "ReBBZ Billstedt"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613404",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.822507075106467,
+          53.56182960047767
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22587 Hamburg",
+        "adresse_strasse_hausnr": "Mörikestraße 16",
+        "anzahl_schueler": 234,
+        "anzahl_schueler_gesamt": "234 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 70 70 781-29",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona-west.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-blankenese.kseh.de",
+        "schul_homepage": "http://kath-schule-blankenese.kshh.de",
+        "schul_id": "3206-0",
+        "schul_telefonnr": "+49 40 70 70 781-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule Blankenese",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Blankenese",
+        "standort_id": "444",
+        "zustaendiges_rebbz": "ReBBZ Altona-West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613405",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.958110273543637,
+          53.57752170906871
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20255 Hamburg",
+        "adresse_strasse_hausnr": "Am Weiher 29",
+        "anzahl_schueler": 190,
+        "anzahl_schueler_gesamt": "190 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 70 70 784-29",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  19%|Klassenstufe 2  2%|Klassenstufe 3  8%|Klassenstufe 4  3%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-am-weiher.kseh.de",
+        "schul_homepage": "https://www.katholische-schule-am-weiher.de/",
+        "schul_id": "3207-0",
+        "schul_telefonnr": "+49 40 70 70 784-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule Am Weiher - St. Bonifatius",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Eimsbüttel",
+        "standort_id": "445",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613406",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.98579178544414,
+          53.57346751663164
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20149 Hamburg",
+        "adresse_strasse_hausnr": "Hochallee 9",
+        "anzahl_schueler": 263,
+        "anzahl_schueler_gesamt": "263 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 87 87 915-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  2%|Klassenstufe 2  2%|Klassenstufe 4  2%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-hochallee.kseh.de",
+        "schul_homepage": "http://www.ksh9.de",
+        "schul_id": "3208-0",
+        "schul_telefonnr": "+49 40 87 87 915-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule Hochallee",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 6",
+        "stadtteil": "Harvestehude",
+        "standort_id": "447",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613407",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.054816655685652,
+          53.5852746195603
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22305 Hamburg",
+        "adresse_strasse_hausnr": "Lämmersieth 38",
+        "anzahl_schueler": 253,
+        "anzahl_schueler_gesamt": "253 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 87 87 918-29",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  21%|Klassenstufe 2  15%|Klassenstufe 3  14%|Klassenstufe 4  7%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-winterhude.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-sophienschule.kseh.de",
+        "schul_homepage": "http://www.katholische-sophienschule.de",
+        "schul_id": "3209-0",
+        "schul_telefonnr": "+49 40 87 87 918-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Sophienschule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Barmbek-Nord",
+        "standort_id": "455",
+        "zustaendiges_rebbz": "ReBBZ Winterhude"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613408",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.99656464236846,
+          53.59871808380483
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22299 Hamburg",
+        "adresse_strasse_hausnr": "Alsterdorfer Straße 71",
+        "anzahl_schueler": 230,
+        "anzahl_schueler_gesamt": "230 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 87 87 916-29",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-winterhude.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-st-antonius.kseh.de",
+        "schul_homepage": "https://grundschule-sankt-antonius.de/",
+        "schul_id": "3211-0",
+        "schul_telefonnr": "+49 40 87 87 916-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule St. Antonius",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 6",
+        "stadtteil": "Winterhude",
+        "standort_id": "449",
+        "zustaendiges_rebbz": "ReBBZ Winterhude"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613409",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.014886014012765,
+          53.65192220016955
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22415 Hamburg",
+        "adresse_strasse_hausnr": "Eberhofweg 75",
+        "anzahl_schueler": 365,
+        "anzahl_schueler_gesamt": "365 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 87 87 917-29",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  17%|Klassenstufe 2  6%|Klassenstufe 3  11%|Klassenstufe 4  4%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@katharina-von-siena-schule.kseh.de",
+        "schul_homepage": "http://www.katharina-von-siena-schule.de",
+        "schul_id": "3212-0",
+        "schul_telefonnr": "+49 40 87 87 917-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katharina-von-Siena-Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Langenhorn",
+        "standort_id": "450",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613410",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.121823791404937,
+          53.6067151741056
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22159 Hamburg",
+        "adresse_strasse_hausnr": "Rahlstedter Weg 15",
+        "anzahl_schueler": 420,
+        "anzahl_schueler_gesamt": "420 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 53 30 43-29",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-sued.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-farmsen.kseh.de",
+        "schul_homepage": "http://www.ksfhh.de",
+        "schul_id": "3213-0",
+        "schul_telefonnr": "+49 40 53 30 43-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule Farmsen",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Farmsen-Berne",
+        "standort_id": "451",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613411",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.076493823009605,
+          53.57394414170449
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22041 Hamburg",
+        "adresse_strasse_hausnr": "Böhmestraße 3",
+        "anzahl_schueler": 218,
+        "anzahl_schueler_gesamt": "218 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 87 88 903-29",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  4%|Klassenstufe 2  15%|Klassenstufe 3  2%|Klassenstufe 4  7%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-sued.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-st-joseph.kseh.de",
+        "schul_homepage": "http://www.kath-schule-wandsbek.de",
+        "schul_id": "3214-0",
+        "schul_telefonnr": "+49 40 87 88 903-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule St. Joseph - Wandsbek",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Wandsbek",
+        "standort_id": "452",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613412",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.21562165123062,
+          53.491816130474675
+        ]
+      },
+      "properties": {
+        "adresse_ort": "21029 Hamburg",
+        "adresse_strasse_hausnr": "Chrysanderstraße 40",
+        "anzahl_schueler": 488,
+        "anzahl_schueler_gesamt": "488 an 1 Standort",
+        "bezirk": "Bergedorf",
+        "fax": "+49 40 88 14 107-29",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  4%|Klassenstufe 2  2%|Klassenstufe 3  4%|Klassenstufe 4  1%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-bergedorf.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-bergedorf.kseh.de",
+        "schul_homepage": "http://www.katholische-schule-bergedorf.de",
+        "schul_id": "3215-0",
+        "schul_telefonnr": "+49 40 88 14 107-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Katholische Schule Bergedorf",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Bergedorf",
+        "standort_id": "453",
+        "zustaendiges_rebbz": "ReBBZ Bergedorf"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613413",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.969753953724704,
+          53.45791885284246
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21073 Hamburg",
+        "adresse_strasse_hausnr": "Julius-Ludowieg-Straße 89",
+        "anzahl_schueler": 296,
+        "anzahl_schueler_gesamt": "296 an 2 Standorten",
+        "bezirk": "Harburg",
+        "fax": "+49 40 881 41 08-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  8%|Klassenstufe 2  8%|Klassenstufe 4  5%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-harburg.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@kath-schule-harburg.kseh.de",
+        "schul_homepage": "https://katholischeschuleharburg.de/",
+        "schul_id": "3216-0",
+        "schul_telefonnr": "+49 40 881 41 08-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Katholische Schule Harburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 3",
+        "stadtteil": "Harburg",
+        "standort_id": "454",
+        "zustaendiges_rebbz": "ReBBZ Harburg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613414",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.988362166151127,
+          53.4498109869633
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21079 Hamburg",
+        "adresse_strasse_hausnr": "Reeseberg 8",
+        "anzahl_schueler_gesamt": "296 an 2 Standorten",
+        "bezirk": "Harburg",
+        "fax": "+49 40 881 41 08-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  8%|Klassenstufe 2  8%|Klassenstufe 4  5%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-harburg.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schul_email": "sekretariat@kath-schule-harburg.kseh.de",
+        "schul_homepage": "https://katholischeschuleharburg.de/",
+        "schul_id": "3216-1",
+        "schul_telefonnr": "+49 40 881 41 08-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Katholische Schule Harburg",
+        "schultyp": "Zweigstelle",
+        "sozialindex": "Stufe 3",
+        "stadtteil": "Wilstorf",
+        "standort_id": "658",
+        "zustaendiges_rebbz": "ReBBZ Harburg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613415",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.986623943581321,
+          53.50473972855545
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21107 Hamburg",
+        "adresse_strasse_hausnr": "Bonifatiusstraße 2",
+        "anzahl_schueler": 639,
+        "anzahl_schueler_gesamt": "639 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 730 87 77-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  7%|Klassenstufe 2  5%|Klassenstufe 3  7%|Klassenstufe 4  3%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wilhelmsburg.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schule@bonifatiusschule.de",
+        "schul_homepage": "http://www.bonifatiusschule.de/",
+        "schul_id": "3217-0",
+        "schul_telefonnr": "+49 40 730 87 77-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Katholische Bonifatiusschule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 2",
+        "stadtteil": "Wilhelmsburg",
+        "standort_id": "438",
+        "zustaendiges_rebbz": "ReBBZ Wilhelmsburg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613416",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.028680320995047,
+          53.616912679815115
+        ]
+      },
+      "properties": {
+        "abschluss": "erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss",
+        "adresse_ort": "22337 Hamburg",
+        "adresse_strasse_hausnr": "Alsterdorfer Straße 506",
+        "anzahl_schueler": 143,
+        "anzahl_schueler_gesamt": "143 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 5 07 73-198",
+        "foerderart": "Autismus|emotionale und soziale Entwicklung|geistige Entwicklung|Hören (gehörlos)|Hören (schwerhörig)|körperliche und motorische Entwicklung|Lernen|Mehrfachbehinderung/intensiver Assistenzbedarf|Sehen (blind)|Sehen (sehbehindert)|Sprache",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Sonderschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero@bugi.de",
+        "schul_homepage": "http://www.bugi.de",
+        "schul_id": "3218-0",
+        "schul_telefonnr": "+49 40 5 07 73-328",
+        "schulaufsicht": "Wolfgang Fien",
+        "schulform": "Sonderschule",
+        "schulname": "Bugenhagen-Schule Alsterdorf, Schule für Kinder mit besonderem Förderbedarf",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Alsterdorf",
+        "standort_id": "446",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613417",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.031224690451575,
+          53.55783993176527
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20535 Hamburg",
+        "adresse_strasse_hausnr": "Bürgerweide 33",
+        "anzahl_schueler": 715,
+        "anzahl_schueler_gesamt": "715 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 2 51 734-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@sas.kseh.de",
+        "schul_homepage": "http://www.sankt-ansgar-schule.de",
+        "schul_id": "3219-0",
+        "schul_telefonnr": "+49 40 2 51 734-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Gymnasium",
+        "schulname": "Sankt-Ansgar-Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 3",
+        "stadtteil": "Borgfelde",
+        "standort_id": "437",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613418",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.994733198957995,
+          53.56215758758367
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20354 Hamburg",
+        "adresse_strasse_hausnr": "Neue Rabenstraße 1",
+        "anzahl_schueler": 835,
+        "anzahl_schueler_gesamt": "835 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 450 229-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@sbshh.de",
+        "schul_homepage": "http://www.sophie-barat-schule.de/",
+        "schul_id": "3220-0",
+        "schul_telefonnr": "+49 40 450 229-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Gymnasium",
+        "schulname": "Sophie-Barat-Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Rotherbaum",
+        "standort_id": "426",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613419",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.028904457433669,
+          53.616832672496706
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22337 Hamburg",
+        "adresse_strasse_hausnr": "Alsterdorfer Straße 506",
+        "anzahl_schueler": 562,
+        "anzahl_schueler_gesamt": "562 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 5 07 73-198",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero@bugi.de",
+        "schul_homepage": "http://www.bugi.de",
+        "schul_id": "3223-0",
+        "schul_telefonnr": "+49 40 5 07 73-328",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "Bugenhagen-Schule Alsterdorf (Stadtteilschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Alsterdorf",
+        "standort_id": "420",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613420",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.974107378360804,
+          53.45663395144403
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21073 Hamburg",
+        "adresse_strasse_hausnr": "Hastedtstraße 30",
+        "anzahl_schueler": 145,
+        "anzahl_schueler_gesamt": "145 an 1 Standort",
+        "bezirk": "Harburg",
+        "fax": "+49 40 87 88 907-29",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-harburg.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "Leitung@Niels-Stensen-Gymnasium.kshh.de",
+        "schul_homepage": "http://www.niels-stensen-gymnasium.de",
+        "schul_id": "3224-0",
+        "schul_telefonnr": "+49 40 87 88 907-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Gymnasium",
+        "schulname": "Niels-Stensen-Gymnasium",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Harburg",
+        "standort_id": "421",
+        "zustaendiges_rebbz": "ReBBZ Harburg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613421",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.807628555687925,
+          53.562070314980694
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22587 Hamburg",
+        "adresse_strasse_hausnr": "Oesterleystraße 22",
+        "anzahl_schueler": 76,
+        "anzahl_schueler_gesamt": "76 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 866 235-54",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona-west.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero-blankenese@bugenhagenschulen.de",
+        "schul_homepage": "https://blankenese.bugenhagen-schulen.de/",
+        "schul_id": "3225-0",
+        "schul_telefonnr": "+49 40 866 235-34",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Bugenhagen-Schule im Hessepark (Grundschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Blankenese",
+        "standort_id": "422",
+        "zustaendiges_rebbz": "ReBBZ Altona-West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613422",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.03152651088011,
+          53.557835917165086
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20535 Hamburg",
+        "adresse_strasse_hausnr": "Bürgerweide 33",
+        "anzahl_schueler": 60,
+        "anzahl_schueler_gesamt": "60 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 25 17 34-29",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@sas.kseh.de",
+        "schul_homepage": "http://www.sankt-ansgar-schule.de",
+        "schul_id": "3226-0",
+        "schul_telefonnr": "+49 40 25 17 34-10",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Stadtteilschule",
+        "schulname": "Katholische Stadtteilschuloberstufe Nord-Ost an der Sankt-Ansgar-Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Borgfelde",
+        "standort_id": "423",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613423",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.995035054736045,
+          53.56215366491771
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20354 Hamburg",
+        "adresse_strasse_hausnr": "Neue Rabenstraße 1",
+        "anzahl_schueler": 60,
+        "anzahl_schueler_gesamt": "60 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@sbshh.de",
+        "schul_homepage": "https://www.sophie-barat-schule.de/",
+        "schul_id": "3227-0",
+        "schul_telefonnr": "+49 40 4 50 22-910",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Stadtteilschule",
+        "schulname": "Katholische Stadtteilschuloberstufe Nord-West an der Sophie-Barat-Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Rotherbaum",
+        "standort_id": "424",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613424",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.971425035828382,
+          53.457887299314166
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21073 Hamburg",
+        "adresse_strasse_hausnr": "Barlachstraße 16",
+        "anzahl_schueler": 98,
+        "anzahl_schueler_gesamt": "98 an 1 Standort",
+        "bezirk": "Harburg",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-suederelbe.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "Sekretariat@Niels-Stensen-Gymnasium.kshh.de",
+        "schul_homepage": "http://www.niels-stensen-gymnasium.de",
+        "schul_id": "3228-0",
+        "schul_telefonnr": "+49 40 300 94-982",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Stadtteilschule",
+        "schulname": "Katholische Stadtteilschuloberstufe Süd am Niels-Stensen-Gymnasium",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Harburg",
+        "standort_id": "425",
+        "zustaendiges_rebbz": "ReBBZ Süderelbe"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613425",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.028674489454176,
+          53.6167572778785
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22337 Hamburg",
+        "adresse_strasse_hausnr": "Alsterdorfer Straße 506",
+        "anzahl_schueler": 248,
+        "anzahl_schueler_gesamt": "248 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 5 07 73-198",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero@bugi.de",
+        "schul_homepage": "https://alsterdorf.bugenhagen-schulen.de/",
+        "schul_id": "3229-0",
+        "schul_telefonnr": "+49 40 5 07 73-328",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Bugenhagen-Schule Alsterdorf (Grundschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Alsterdorf",
+        "standort_id": "427",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613426",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.86907219648153,
+          53.57301508492192
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22607 Hamburg",
+        "adresse_strasse_hausnr": "Bei der Flottbeker Mühle 28",
+        "anzahl_schueler": 111,
+        "anzahl_schueler_gesamt": "111 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 81 99 44-85",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero@bugi.de",
+        "schul_homepage": "https://grossflottbek.bugenhagen-schulen.de/",
+        "schul_id": "3231-0",
+        "schul_telefonnr": "+49 40 81 99 42-89",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Bugenhagen-Schule Groß Flottbek",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Bahrenfeld",
+        "standort_id": "428",
+        "zustaendiges_rebbz": "ReBBZ Altona"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613427",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.059508809022603,
+          53.561475197827214
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20535 Hamburg",
+        "adresse_strasse_hausnr": "Quellenweg 10",
+        "anzahl_schueler": 95,
+        "anzahl_schueler_gesamt": "95 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 21 11 14-03",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero@bugi.de",
+        "schul_homepage": "https://bugenhagen.schule/hamm/",
+        "schul_id": "3232-0",
+        "schul_telefonnr": "+49 40 21 11 10-92",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Bugenhagen-Schule Hamm, Evangelische Grundschule Paulus",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Hamm",
+        "standort_id": "429",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613428",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8073266787198,
+          53.56207376475177
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22587 Hamburg",
+        "adresse_strasse_hausnr": "Oesterleystraße 22",
+        "anzahl_schueler": 418,
+        "anzahl_schueler_gesamt": "418 an 1 Standort",
+        "bezirk": "Altona",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona-west.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero-blankenese@bugenhagenschulen.de",
+        "schul_homepage": "https://blankenese.bugenhagen-schulen.de/",
+        "schul_id": "3233-0",
+        "schul_telefonnr": "+49 40 86 62 35-34",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "Bugenhagen-Schule im Hessepark (Stadtteilschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Blankenese",
+        "standort_id": "430",
+        "zustaendiges_rebbz": "ReBBZ Altona-West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613885",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.018694576993312,
+          53.551384377071486
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Norderstraße 163",
+        "anzahl_schueler": 606,
+        "anzahl_schueler_gesamt": "606 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 21 11 12-0",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@brecht-schulen.de",
+        "schul_homepage": "http://www.brecht-schulen.de",
+        "schul_id": "7703-0",
+        "schul_telefonnr": "+49 40 21 11 12-0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Gymnasium",
+        "schulname": "Privates Gymnasium Brecht",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "St. Georg",
+        "standort_id": "308",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613886",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.018794565155101,
+          53.551298481636216
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Norderstraße 163",
+        "anzahl_schueler": 88,
+        "anzahl_schueler_gesamt": "88 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@brecht-schulen.de",
+        "schul_homepage": "http://www.brecht-schulen.de",
+        "schul_id": "7704-0",
+        "schul_telefonnr": "+49 40 21 11 12-0",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Private Höhere Handelsschule Brecht",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "St. Georg",
+        "standort_id": "309",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613887",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.135569529236438,
+          53.675665846177345
+        ]
+      },
+      "properties": {
+        "abschluss": "erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss",
+        "adresse_ort": "22395 Hamburg",
+        "adresse_strasse_hausnr": "Bergstedter Chaussee 205",
+        "anzahl_schueler": 161,
+        "anzahl_schueler_gesamt": "161 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 60 4428-25",
+        "foerderart": "Autismus|emotionale und soziale Entwicklung|geistige Entwicklung|Hören (schwerhörig)|körperliche und motorische Entwicklung|Lernen|Mehrfachbehinderung/intensiver Assistenzbedarf|Sehen (sehbehindert)|Sprache",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Sonderschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-nord.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schule@christophorus-hamburg.de",
+        "schul_homepage": "http://www.christophorus-hamburg.de",
+        "schul_id": "7706-0",
+        "schul_telefonnr": "+49 40 60 4428-0",
+        "schulaufsicht": "Wolfgang Fien",
+        "schulform": "Sonderschule",
+        "schulname": "Christophorus-Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Bergstedt",
+        "standort_id": "311",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613888",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.86120726202829,
+          53.55236159530688
+        ]
+      },
+      "properties": {
+        "abschluss": "erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss",
+        "adresse_ort": "22609 Hamburg",
+        "adresse_strasse_hausnr": "Quellental 25",
+        "anzahl_schueler": 115,
+        "anzahl_schueler_gesamt": "115 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 8 19 92-643",
+        "foerderart": "Autismus|emotionale und soziale Entwicklung|geistige Entwicklung|Hören (schwerhörig)|körperliche und motorische Entwicklung|Lernen|Mehrfachbehinderung/intensiver Assistenzbedarf|Sehen (blind)|Sehen (sehbehindert)|Sprache",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Sonderschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona-west.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "sekretariat@raphael-schule-hamburg.de",
+        "schul_homepage": "http://www.raphael-schule-hamburg.de",
+        "schul_id": "7707-0",
+        "schul_telefonnr": "+49 40 8 19 92-640",
+        "schulaufsicht": "Wolfgang Fien",
+        "schulform": "Sonderschule",
+        "schulname": "Raphael-Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Nienstedten",
+        "standort_id": "312",
+        "zustaendiges_rebbz": "ReBBZ Altona-West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613889",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.24139665404713,
+          53.48094380016975
+        ]
+      },
+      "properties": {
+        "adresse_ort": "21029 Hamburg",
+        "adresse_strasse_hausnr": "August-Bebel-Straße 196",
+        "anzahl_schueler": 94,
+        "anzahl_schueler_gesamt": "94 an 1 Standort",
+        "bezirk": "Bergedorf",
+        "fax": "+49 40 7210 6427",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  88%|Klassenstufe 2  68%|Klassenstufe 3  63%|Klassenstufe 4  57%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-bergedorf.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@montessorischule-hamburg.de",
+        "schul_homepage": "https://montessorischule-hamburg.de/",
+        "schul_id": "7708-0",
+        "schul_telefonnr": "72 10 64 22",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Montessorischule Hamburg-Bergedorf",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Bergedorf",
+        "standort_id": "313",
+        "zustaendiges_rebbz": "ReBBZ Bergedorf"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613890",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.018520290568652,
+          53.551247981684426
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Norderstraße 163",
+        "anzahl_schueler": 220,
+        "anzahl_schueler_gesamt": "220 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 21 11 12-20",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@brecht-schulen.de",
+        "schul_homepage": "http://www.brecht-schulen.de",
+        "schul_id": "7714-0",
+        "schul_telefonnr": "+49 40 21 11 12-0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "Private Stadtteilschule Brecht",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "St. Georg",
+        "standort_id": "199",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613891",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.01852426332187,
+          53.55135475576916
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Norderstraße 163",
+        "anzahl_schueler": 287,
+        "anzahl_schueler_gesamt": "287 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 21 11 12-20",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@brecht-schulen.de",
+        "schul_homepage": "http://www.brecht-schulen.de",
+        "schul_id": "7715-0",
+        "schul_telefonnr": "+49 40 21 11 12-0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Private Grundschule Brecht",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "St. Georg",
+        "standort_id": "200",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613892",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.93001877070772,
+          53.59822906473961
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22527 Hamburg",
+        "adresse_strasse_hausnr": "Wördemanns Weg 21",
+        "anzahl_schueler": 328,
+        "anzahl_schueler_gesamt": "328 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 54 87 - 1609",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "fsp@diakonie-alten-eichen.de",
+        "schul_homepage": "http://www.fachschule-alten-eichen.de",
+        "schul_id": "7720-0",
+        "schul_telefonnr": "+49 40 54 87 - 1601",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule|Fachschule",
+        "schulname": "Evangelische Fachschule für Sozialpädagogik Alten Eichen",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Stellingen",
+        "standort_id": "201"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613893",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.020608959945957,
+          53.612436528290075
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit Fachhochschulreife",
+        "adresse_ort": "22297 Hamburg",
+        "adresse_strasse_hausnr": "Sengelmannstraße 49",
+        "anzahl_schueler": 201,
+        "anzahl_schueler_gesamt": "201 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 50 77-38 07",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "fachschule@alsterdorf.de",
+        "schul_homepage": "http://www.fsherz.de",
+        "schul_id": "7721-0",
+        "schul_telefonnr": "+49 40 50 77-32 67",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Fachschule",
+        "schulname": "Fachschule für soziale Arbeit Alsterdorf (HEP)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Alsterdorf",
+        "standort_id": "202"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613894",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.023387870739338,
+          53.58159752823676
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Weidestraße 126",
+        "anzahl_schueler": 231,
+        "anzahl_schueler_gesamt": "231 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 6503969-50",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "berufsschule-pflege@rauheshaus.de",
+        "schul_homepage": "http://www.ev-berufsschule-hh.de",
+        "schul_id": "7724-0",
+        "schul_telefonnr": "+49 40 6503969-0",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsschule",
+        "schulname": "Evangelische Berufsschule für Altenpflege des Rauhen Hauses",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "205"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613895",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0230858800455,
+          53.58160152307701
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Weidestraße 126",
+        "anzahl_schueler": 58,
+        "anzahl_schueler_gesamt": "58 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 6503969-50",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "berufsschule-pflege@rauheshaus.de",
+        "schul_homepage": "http://www.ev-berufsschule-hh.de",
+        "schul_id": "7726-0",
+        "schul_telefonnr": "+49 40 6503969-0",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsschule",
+        "schulname": "Ev. Berufsschule für Pflege des Rauhen Hauses",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "1043"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613896",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.02389628681135,
+          53.602891914176936
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22297 Hamburg",
+        "adresse_strasse_hausnr": "Überseering 9",
+        "anzahl_schueler": 112,
+        "anzahl_schueler_gesamt": "112 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 63 90 29-29",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@heinze-akademie.de",
+        "schul_homepage": "http://www.heinze-akademie.de",
+        "schul_id": "7737-0",
+        "schul_telefonnr": "+49 40 63 90 29-18",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule|Fachschule",
+        "schulname": "Heinze Akademie - Fachschule für Technik",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Winterhude",
+        "standort_id": "210"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613897",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.035298667395898,
+          53.56362882971346
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22087 Hamburg",
+        "adresse_strasse_hausnr": "Landwehr 11",
+        "anzahl_schueler": 23,
+        "anzahl_schueler_gesamt": "23 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 4 10 33 41",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@lolaroggeschule.de",
+        "schul_homepage": "http://www.lolaroggeschule.de",
+        "schul_id": "7738-0",
+        "schul_telefonnr": "+49 40 44 45 68",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Lola Rogge Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Eilbek",
+        "standort_id": "211"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613898",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.919832650911168,
+          53.56199267858999
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22761 Hamburg",
+        "adresse_strasse_hausnr": "Daimlerstraße 71",
+        "anzahl_schueler": 51,
+        "anzahl_schueler_gesamt": "51 an 1 Standort",
+        "bezirk": "Altona",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@kluetzschule.de",
+        "schul_homepage": "https://www.kluetzschule.de/",
+        "schul_id": "7739-0",
+        "schul_telefonnr": "+49 40 47 00 62",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Erika Klütz Schule für Theatertanz und Tanzpädagogik",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Bahrenfeld",
+        "standort_id": "212"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613899",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.904964070271978,
+          53.58759858248121
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22525 Hamburg",
+        "adresse_strasse_hausnr": "Schnackenburgallee 114",
+        "anzahl_schueler": 152,
+        "anzahl_schueler_gesamt": "152 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 370270-399",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "baechner@uke.de",
+        "schul_homepage": "http://www.schooloflifescience.de/",
+        "schul_id": "7744-0",
+        "schul_telefonnr": "+49 40 370270-100",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "School of Life Science (Berufsfachschule für biologisch technische Assistenz)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Eidelstedt",
+        "standort_id": "197"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613900",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.02549669895564,
+          53.5463733261407
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Wendenstraße 4",
+        "anzahl_schueler": 33,
+        "anzahl_schueler_gesamt": "33 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 309 786-11",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "hamburg@euroakademie.de",
+        "schul_homepage": "http://www.euroakademie.de/hamburg",
+        "schul_id": "7746-0",
+        "schul_telefonnr": "+49 40 309 786-22",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Hamburger private Fremdsprachen-und Wirtschaftsschule-Berufsfachschule für kaufmännische Assistenz",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Hammerbrook",
+        "standort_id": "179"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613901",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.017148491624669,
+          53.55760470236163
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20099 Hamburg",
+        "adresse_strasse_hausnr": "Rostocker Straße 62",
+        "anzahl_schueler": 154,
+        "anzahl_schueler_gesamt": "154 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 24 68 69",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@st-georg-schulen.de",
+        "schul_homepage": "http://www.st-georg-schulen.de",
+        "schul_id": "7801-0",
+        "schul_telefonnr": "+49 40 24 70 87",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "Stadtteilschule St. Georg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "St. Georg",
+        "standort_id": "180",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613902",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.017450312174905,
+          53.55760072328431
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "20099 Hamburg",
+        "adresse_strasse_hausnr": "Rostocker Straße 62",
+        "anzahl_schueler": 58,
+        "anzahl_schueler_gesamt": "58 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "24 68 69",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@st-georg-schulen.de",
+        "schul_homepage": "http://www.st-georg-schulen.de",
+        "schul_id": "7802-0",
+        "schul_telefonnr": "24 70 87",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Höhere Handelsschule St. Georg (Privatschulpädagogische GmbH)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "St. Georg",
+        "standort_id": "181",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613903",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.073032288440798,
+          53.57472030080078
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22041 Hamburg",
+        "adresse_strasse_hausnr": "Kattunbleiche 41",
+        "anzahl_schueler": 271,
+        "anzahl_schueler_gesamt": "271 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "kai.schmidt@apm-hh.de",
+        "schul_homepage": "https://www.apm-deutschland.de/",
+        "schul_id": "7904-0",
+        "schul_telefonnr": "+49 40 6521010",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsschule",
+        "schulname": "apm Pflegeschule Hamburg Eppendorf",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Wandsbek",
+        "standort_id": "187"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613904",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.077151158326563,
+          53.65086583824552
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22391 Hamburg",
+        "adresse_strasse_hausnr": "Hinsbleek 11",
+        "anzahl_schueler": 215,
+        "anzahl_schueler_gesamt": "215 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 60601-139",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "Schule@hzhg.de",
+        "schul_homepage": "http://www.pflegeschule-alstertal.de",
+        "schul_id": "7905-0",
+        "schul_telefonnr": "+49 40 60601-131",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsschule",
+        "schulname": "Altenpflegeschule Hamburg-Alstertal",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Poppenbüttel",
+        "standort_id": "195"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613905",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.936769770819375,
+          53.57220726647311
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22769 Hamburg",
+        "adresse_strasse_hausnr": "Haferweg 38",
+        "anzahl_schueler": 84,
+        "anzahl_schueler_gesamt": "84 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 468 99 89-49",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@akademie-fuer-pflege.de",
+        "schul_homepage": "http://www.akademie-fuer-pflege.de",
+        "schul_id": "7907-0",
+        "schul_telefonnr": "+49 40 468 99 89-0",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsschule",
+        "schulname": "AfP-Akademie für Pflege gGmbH",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Stellingen",
+        "standort_id": "189"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613906",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.957594617624562,
+          53.566064949137356
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22769 Hamburg",
+        "adresse_strasse_hausnr": "Heinrichstraße 14",
+        "anzahl_schueler": 330,
+        "anzahl_schueler_gesamt": "330 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "mail@innerestadt.de",
+        "schul_homepage": "http://www.christianmorgensternschule.de",
+        "schul_id": "7909-0",
+        "schul_telefonnr": "+49 40 41 35 94 44",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Christian Morgenstern Schule und Kindergarten e.V.",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Eimsbüttel",
+        "standort_id": "191",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613907",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.181020744903599,
+          53.59186191898347
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22149 Hamburg",
+        "adresse_strasse_hausnr": "Schimmelreiterweg 11",
+        "anzahl_schueler": 65,
+        "anzahl_schueler_gesamt": "65 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-nord.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "office@neue-schule-hamburg.org",
+        "schul_homepage": "https://www.neue-schule-hamburg.org/",
+        "schul_id": "7910-0",
+        "schul_telefonnr": "+49 40 6690 99-45",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Neue Schule Hamburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Rahlstedt",
+        "standort_id": "192",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613908",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.932318269732592,
+          53.555100377892565
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22765 Hamburg",
+        "adresse_strasse_hausnr": "Bei der Osterkirche 17",
+        "anzahl_schueler": 69,
+        "anzahl_schueler_gesamt": "69 an 1 Standort",
+        "bezirk": "Altona",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "schulbuero@bugi.de",
+        "schul_homepage": "https://ottensen.bugenhagen-schulen.de/",
+        "schul_id": "7911-0",
+        "schul_telefonnr": "2 88 02 - 933",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Bugenhagen-Schule Ottensen, Evangelische Grundschule an der Osterkirche",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Ottensen",
+        "standort_id": "193",
+        "zustaendiges_rebbz": "ReBBZ Altona"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613909",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.020911170917293,
+          53.61243253869879
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22297 Hamburg",
+        "adresse_strasse_hausnr": "Sengelmannstraße 49",
+        "anzahl_schueler": 38,
+        "anzahl_schueler_gesamt": "38 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 50 77 3807",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "fachschule@alsterdorf.de",
+        "schul_homepage": "http://www.fsherz.de",
+        "schul_id": "7913-0",
+        "schul_telefonnr": "+49 40 50 77 3267",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Fachschule für soziale Arbeit Alsterdorf (SPA)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Alsterdorf",
+        "standort_id": "196"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613910",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.072730353193672,
+          53.574724420698814
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22041 Hamburg",
+        "adresse_strasse_hausnr": "Kattunbleiche 41",
+        "anzahl_schueler": 167,
+        "anzahl_schueler_gesamt": "167 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "kai.schmidt@apm-hh.de",
+        "schul_homepage": "https://apm-deutschland.de/",
+        "schul_id": "7914-0",
+        "schul_telefonnr": "+49 40 652 1010",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsschule",
+        "schulname": "apm-Pflegeschule Hamburg Wandsbek",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Wandsbek",
+        "standort_id": "217"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613911",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.048370614632303,
+          53.597052904526024
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22307 Hamburg",
+        "adresse_strasse_hausnr": "Wittenkamp 15",
+        "anzahl_schueler": 145,
+        "anzahl_schueler_gesamt": "145 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 226 223 531",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-winterhude.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@alsterring-gymnasium.de",
+        "schul_homepage": "http://www.alsterring-gymnasium.de",
+        "schul_id": "7915-0",
+        "schul_telefonnr": "+49 40 226 223 530",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Gymnasium",
+        "schulname": "Alsterring Gymnasium",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Nord",
+        "standort_id": "236",
+        "zustaendiges_rebbz": "ReBBZ Winterhude"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613912",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.967791645055984,
+          53.56825708546378
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20357 Hamburg",
+        "adresse_strasse_hausnr": "Schäferkampsallee 27",
+        "anzahl_schueler": 86,
+        "anzahl_schueler_gesamt": "86 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@monaddrei.de",
+        "schul_homepage": "https://www.monaddrei.de/",
+        "schul_id": "7916-0",
+        "schul_telefonnr": "+49 40 533 08 37-0",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Monaddrei-Schule Hamburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Eimsbüttel",
+        "standort_id": "218",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613913",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0274803914843,
+          53.618440357240964
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22337 Hamburg",
+        "adresse_strasse_hausnr": "Alsterdorfer Straße 523",
+        "anzahl_schueler": 97,
+        "anzahl_schueler_gesamt": "97 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 529 85 167",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "primar.alsterpalais@flachsland-hamburg.de",
+        "schul_homepage": "http://www.flachsland-hamburg.de",
+        "schul_id": "7917-0",
+        "schul_telefonnr": "+49 40 529 85 157",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Zukunftsschule Alsterpalais (Grundschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Alsterdorf",
+        "standort_id": "239",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613914",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0265988434808,
+          53.54774259299012
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Wendenstraße 35",
+        "anzahl_schueler": 305,
+        "anzahl_schueler_gesamt": "305 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+40 40 325 370-55",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "hamburg@phorms.de",
+        "schul_homepage": "http://www.hamburg.phorms.de",
+        "schul_id": "7918-0",
+        "schul_telefonnr": "32537050",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Bilinguale Grundschule PHORMS Hamburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Hammerbrook",
+        "standort_id": "240",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613915",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9788436969021,
+          53.60594632767468
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22453 Hamburg",
+        "adresse_strasse_hausnr": "Brödermannsweg 17",
+        "anzahl_schueler": 142,
+        "anzahl_schueler_gesamt": "142 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@moderne-schule-hamburg.de",
+        "schul_homepage": "https://www.moderne-schule-hamburg.de/",
+        "schul_id": "7920-0",
+        "schul_telefonnr": "67381670",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Moderne Schule Hamburg (Grundschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Groß Borstel",
+        "standort_id": "242",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613916",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.978541526956668,
+          53.605950210849876
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22453 Hamburg",
+        "adresse_strasse_hausnr": "Brödermannsweg 17",
+        "anzahl_schueler": 125,
+        "anzahl_schueler_gesamt": "125 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@moderne-schule-hamburg.de",
+        "schul_homepage": "https://www.moderne-schule-hamburg.de/",
+        "schul_id": "7921-0",
+        "schul_telefonnr": "67381670",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Gymnasium",
+        "schulname": "Moderne Schule Hamburg (Gymnasium)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Groß Borstel",
+        "standort_id": "243",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613917",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.025267120749097,
+          53.54629792228095
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit Fachhochschulreife",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Wendenstraße 4",
+        "anzahl_schueler": 113,
+        "anzahl_schueler_gesamt": "113 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 309 786-11",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "hamburg@euroakademie.de",
+        "schul_homepage": "http://www.euroakademie.de/hamburg",
+        "schul_id": "7923-0",
+        "schul_telefonnr": "+49 40 309 786-22",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Fachschule",
+        "schulname": "Hamburger private Fachschule für Sozialpädagogik",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Hammerbrook",
+        "standort_id": "245"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613918",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.033724073378607,
+          53.58759810045264
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22303 Hamburg",
+        "adresse_strasse_hausnr": "Saarlandstraße 30",
+        "anzahl_schueler": 103,
+        "anzahl_schueler_gesamt": "103 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-winterhude.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@talent-schule.com",
+        "schul_homepage": "http://www.talent-schule.com",
+        "schul_id": "7924-0",
+        "schul_telefonnr": "+49 40 9490000",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Gymnasium",
+        "schulname": "OKO Private School Talent-Schule Hamburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Nord",
+        "standort_id": "247",
+        "zustaendiges_rebbz": "ReBBZ Winterhude"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613919",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.93707170524471,
+          53.57220348976517
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22769 Hamburg",
+        "adresse_strasse_hausnr": "Haferweg 38",
+        "anzahl_schueler": 31,
+        "anzahl_schueler_gesamt": "31 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 468 99 89-49",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@akademie-fuer-pflege.de",
+        "schul_homepage": "http://www.akademie-fuer-pflege.de",
+        "schul_id": "7925-0",
+        "schul_telefonnr": "+49 40 468 99 89-0",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsschule",
+        "schulname": "AfP-Akademie für Pflege gGmbH",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Stellingen",
+        "standort_id": "255"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613920",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.025272926699401,
+          53.546453326299186
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Wendenstraße 4",
+        "anzahl_schueler": 45,
+        "anzahl_schueler_gesamt": "45 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 309 786-11",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "hamburg@euroakademie.de",
+        "schul_homepage": "http://www.euroakademie.de/hamburg",
+        "schul_id": "7927-0",
+        "schul_telefonnr": "+49 40 309 786-22",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Hamburger private Berufsfachschule für sozialpädagogische Assistenz",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Hammerbrook",
+        "standort_id": "249"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613921",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.02736393859097,
+          53.58261906102577
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Weidestraße 122a",
+        "anzahl_schueler": 99,
+        "anzahl_schueler_gesamt": "99 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "hamburg@blindow.de",
+        "schul_homepage": "http://blindow.de/hamburg-bbs",
+        "schul_id": "7928-0",
+        "schul_telefonnr": "+49 40 69 45 36 50",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "Bernd-Blindow-Schule Hamburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "1056"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613922",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.042740549560145,
+          53.583807408611705
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Hufnerstraße 20",
+        "anzahl_schueler": 47,
+        "anzahl_schueler_gesamt": "47 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@waldorferzieher.de",
+        "schul_homepage": "https://www.waldorferzieher.de/",
+        "schul_id": "7930-0",
+        "schul_telefonnr": "+49 40 535 489 06",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule|Fachschule",
+        "schulname": "Waldorf Berufsfachschule für sozialpädagogische Assistenz",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "1073"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613923",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.954232727805518,
+          53.576066694001035
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit Fachhochschulreife",
+        "adresse_ort": "20259 Hamburg",
+        "adresse_strasse_hausnr": "Osterstraße 86",
+        "anzahl_schueler": 38,
+        "anzahl_schueler_gesamt": "38 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@sternipark.de",
+        "schul_homepage": "http://www.sternipark.de/",
+        "schul_id": "7931-0",
+        "schul_telefonnr": "+49 40 431 874-0",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Fachschule",
+        "schulname": "SterniPark Fachschule Sozialpädagogik für Erzieherinnen/Erzieher",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Eimsbüttel",
+        "standort_id": "1081"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613924",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.953930767924376,
+          53.576070514134294
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit dem schulischen Teil der FHR|Abschlusszeugnis mit erweitertem erstem allgemeinbildenden Schulabschluss|Abschlusszeugnis mit Fachhochschulreife|Abschlusszeugnis mit mittleren Schulabschluss",
+        "adresse_ort": "20259 Hamburg",
+        "adresse_strasse_hausnr": "Osterstraße 86",
+        "anzahl_schueler": 65,
+        "anzahl_schueler_gesamt": "65 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@sternipark.de",
+        "schul_homepage": "http://www.sternipark.de",
+        "schul_id": "7932-0",
+        "schul_telefonnr": "+49 40 431 874-0",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Berufsfachschule",
+        "schulname": "SterniPark Berufsfachschule für sozialpädagogische Assistenz",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Eimsbüttel",
+        "standort_id": "1082"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613925",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.04354852830214,
+          53.58410598913907
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|Abschlusszeugnis mit Fachhochschulreife",
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Flachsland 29",
+        "anzahl_schueler": 34,
+        "anzahl_schueler_gesamt": "34 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 20 00 03-33",
+        "is_rebbz": "false",
+        "kapitelbezeichnung": "Berufliche Schulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "campus29@flachsland-hamburg.de",
+        "schul_homepage": "https://flachsland-zukunftsschulen.de/campus29/",
+        "schul_id": "7934-0",
+        "schul_telefonnr": "+49 40 20 00 03-85",
+        "schulaufsicht": "Andreas Beyerle",
+        "schulform": "Fachschule",
+        "schulname": "Campus29, Fachschule für Sozialpädagogik, Flachsland Zukunftsschulen gGmbH",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "1087"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613926",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.860975056175716,
+          53.565460066085265
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22609 Hamburg",
+        "adresse_strasse_hausnr": "Hemmingstedter Weg 130",
+        "anzahl_schueler_gesamt": "0 an 1 Standort",
+        "bezirk": "Altona",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona-west.hamburg.de/",
+        "rechtsform": "anerkannte Ergänzungsschule",
+        "schul_email": "info@ishamburg.org",
+        "schul_homepage": "http://www.ishamburg.org",
+        "schul_id": "8001-0",
+        "schul_telefonnr": "+49 40 800 05-00",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Internationale Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Osdorf",
+        "standort_id": "250",
+        "zustaendiges_rebbz": "ReBBZ Altona-West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613927",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.983727818153161,
+          53.56847343126222
+        ]
+      },
+      "properties": {
+        "adresse_ort": "20146 Hamburg",
+        "adresse_strasse_hausnr": "Grindelhof 30",
+        "anzahl_schueler": 62,
+        "anzahl_schueler_gesamt": "62 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 44 09 44 12",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@jcsh.de",
+        "schul_homepage": "http://www.jcsh.de",
+        "schul_id": "8004-0",
+        "schul_telefonnr": "+49 40 44 09 44 11",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Joseph-Carlebach-Schule (Grundschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Rotherbaum",
+        "standort_id": "253",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613928",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.984029720268909,
+          53.568469536167605
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20146 Hamburg",
+        "adresse_strasse_hausnr": "Grindelhof 30",
+        "anzahl_schueler": 141,
+        "anzahl_schueler_gesamt": "141 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "fax": "+49 40 44 09 44 12",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@jcsh.de",
+        "schul_homepage": "http://www.jcsh.de",
+        "schul_id": "8007-0",
+        "schul_telefonnr": "+49 40 44 09 44 11",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "Joseph-Carlebach-Schule (Stadtteilschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Rotherbaum",
+        "standort_id": "246",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613929",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.114135237579665,
+          53.61493104399469
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22159 Hamburg",
+        "adresse_strasse_hausnr": "August-Krogmann-Straße 115",
+        "anzahl_schueler": 235,
+        "anzahl_schueler_gesamt": "235 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 80 80 30 - 100",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  93%|Klassenstufe 2  96%|Klassenstufe 3  93%|Klassenstufe 4  87%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-sued.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@ahfs.de",
+        "schul_homepage": "http://www.ahfs-hamburg.de",
+        "schul_id": "8008-0",
+        "schul_telefonnr": "+49 40 80 80 30 - 0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "August-Hermann-Francke-Schule Farmsen",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Farmsen-Berne",
+        "standort_id": "1036",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613930",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.985101213888596,
+          53.51384920111963
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss",
+        "adresse_ort": "21107 Hamburg",
+        "adresse_strasse_hausnr": "Am Veringhof 9",
+        "anzahl_schueler_gesamt": "0 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wilhelmsburg.hamburg.de/",
+        "rechtsform": "eingetragene Ergänzungsschule",
+        "schul_email": "Freie-Schule-Hamburg@gmx.de",
+        "schul_homepage": "http://www.freie-schule-hamburg.de",
+        "schul_id": "8010-0",
+        "schul_telefonnr": "+49 40 3 19 76 - 983",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Berufsvorbereitungsschule (allg. bild.)",
+        "schulname": "Freie Schule Hamburg e.V.",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Wilhelmsburg",
+        "standort_id": "237",
+        "zustaendiges_rebbz": "ReBBZ Wilhelmsburg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613931",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.946304481269987,
+          53.5831708239918
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22527 Hamburg",
+        "adresse_strasse_hausnr": "Steenwisch 101",
+        "anzahl_schueler_gesamt": "0 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "sonstige Ergänzungsschule",
+        "schul_email": "momeni_m20@yahoo.com",
+        "schul_homepage": "http://irisbs.ir",
+        "schul_id": "8011-0",
+        "schul_telefonnr": "040/98266982",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule",
+        "schulname": "Schule der Islamischen Republik Iran",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Stellingen",
+        "standort_id": "226",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613932",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.028727947663372,
+          53.5730999957895
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Bostelreihe 5",
+        "anzahl_schueler": 334,
+        "anzahl_schueler_gesamt": "334 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 80 80 30 - 100",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-winterhude.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@ahfs.de",
+        "schul_homepage": "http://www.ahfs.de",
+        "schul_id": "8012-0",
+        "schul_telefonnr": "+49 40 80 80 30 - 0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "August-Hermann-Francke-Schule Uhlenhorst",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "219",
+        "zustaendiges_rebbz": "ReBBZ Winterhude"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613933",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.958222523356035,
+          53.60481714793614
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22529 Hamburg",
+        "adresse_strasse_hausnr": "Hartsprung 23",
+        "anzahl_schueler": 274,
+        "anzahl_schueler_gesamt": "274 an 1 Standort",
+        "bezirk": "Eimsbüttel",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  94%|Klassenstufe 2  88%|Klassenstufe 3  93%|Klassenstufe 4  92%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-eimsbuettel.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@efhh.de",
+        "schul_homepage": "http://www.efhh.de/",
+        "schul_id": "8013-0",
+        "schul_telefonnr": "+49 40 79 01 47-0",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "École Française de Hambourg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Lokstedt",
+        "standort_id": "220",
+        "zustaendiges_rebbz": "ReBBZ Eimsbüttel"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613934",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.907678502993024,
+          53.56198664971994
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22761 Hamburg",
+        "adresse_strasse_hausnr": "Händelstraße 11",
+        "anzahl_schueler": 95,
+        "anzahl_schueler_gesamt": "95 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 80 80 30 - 100",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  91%|Klassenstufe 2  88%|Klassenstufe 3  79%|Klassenstufe 4  87%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@ahfs.de",
+        "schul_homepage": "https://ahfs.de/",
+        "schul_id": "8014-0",
+        "schul_telefonnr": "+49 40 80 80 30 - 0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "August-Hermann-Francke-Schule Bahrenfeld",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Bahrenfeld",
+        "standort_id": "221",
+        "zustaendiges_rebbz": "ReBBZ Altona"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613935",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.133314403152891,
+          53.62886369904151
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22159 Hamburg",
+        "adresse_strasse_hausnr": "Berner Allee 20a",
+        "anzahl_schueler": 118,
+        "anzahl_schueler_gesamt": "118 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 80 80 30 - 100",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  96%|Klassenstufe 2  88%|Klassenstufe 3  96%|Klassenstufe 4  87%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-sued.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@ahfs.de",
+        "schul_homepage": "https://ahfs.de/",
+        "schul_id": "8015-0",
+        "schul_telefonnr": "+49 40 80 80 30 - 0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "August-Hermann-Francke-Schule Berne",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Farmsen-Berne",
+        "standort_id": "222",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613936",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.201491319511138,
+          53.4830596462689
+        ]
+      },
+      "properties": {
+        "adresse_ort": "21035 Hamburg",
+        "adresse_strasse_hausnr": "Glasbläserhöfe 4",
+        "anzahl_schueler": 166,
+        "anzahl_schueler_gesamt": "166 an 1 Standort",
+        "bezirk": "Bergedorf",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  74%|Klassenstufe 2  83%|Klassenstufe 3  93%|Klassenstufe 4  68%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-bergedorf.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@ahfs.de",
+        "schul_homepage": "http://www.ahfs.de",
+        "schul_id": "8016-0",
+        "schul_telefonnr": "+49 40 64664802",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "August-Hermann-Francke-Schule Bergedorf",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Bergedorf",
+        "standort_id": "1038",
+        "zustaendiges_rebbz": "ReBBZ Bergedorf"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613937",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.028426018197116,
+          53.57310400382887
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22083 Hamburg",
+        "adresse_strasse_hausnr": "Bostelreihe 5",
+        "anzahl_schueler": 79,
+        "anzahl_schueler_gesamt": "79 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 80 80 30 - 100",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-winterhude.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@ahfs.de",
+        "schul_homepage": "https://ahfs.de/uhlenhorst-gym/",
+        "schul_id": "8020-0",
+        "schul_telefonnr": "+49 40 80 80 30 - 0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Gymnasium",
+        "schulname": "ahfs Christliches Gymnasium Uhlenhorst",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Barmbek-Süd",
+        "standort_id": "1069",
+        "zustaendiges_rebbz": "ReBBZ Winterhude"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613938",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.20080090206752,
+          53.48262611143294
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21035 Hamburg",
+        "adresse_strasse_hausnr": "Glasbläserhöfe 6",
+        "anzahl_schueler": 202,
+        "anzahl_schueler_gesamt": "202 an 1 Standort",
+        "bezirk": "Bergedorf",
+        "fax": "+49 40 80 80 30 - 100",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-bergedorf.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@ahfs.de",
+        "schul_homepage": "https://ahfs.de/bergedorf-sts/",
+        "schul_id": "8022-0",
+        "schul_telefonnr": "+49 40 80 80 30 - 0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "ahfs Christliche Stadtteilschule Bergedorf",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 4",
+        "stadtteil": "Bergedorf",
+        "standort_id": "1070",
+        "zustaendiges_rebbz": "ReBBZ Bergedorf"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613939",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.98497197086207,
+          53.51412892623027
+        ]
+      },
+      "properties": {
+        "abschluss": "Abschlusszeugnis|erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss",
+        "adresse_ort": "21107 Hamburg",
+        "adresse_strasse_hausnr": "Am Veringhof 19",
+        "anzahl_schueler_gesamt": "0 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 350 490-10",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wilhelmsburg.hamburg.de/",
+        "rechtsform": "eingetragene Ergänzungsschule",
+        "schul_email": "h.liebig@gangway.hamburg",
+        "schul_id": "8025-0",
+        "schul_telefonnr": "+49 40 350 490-17",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Berufsvorbereitungsschule (allg. bild.)",
+        "schulname": "Gangway - Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Wilhelmsburg",
+        "standort_id": "1107",
+        "zustaendiges_rebbz": "ReBBZ Wilhelmsburg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613940",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.12717677618931,
+          53.60283554657563
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22159 Hamburg",
+        "adresse_strasse_hausnr": "Rahlstedter Weg 60",
+        "anzahl_schueler": 802,
+        "anzahl_schueler_gesamt": "802 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 64 58 95-20",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-sued.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "behoerdenkontakt@waldorfschule-wandsbek.de",
+        "schul_homepage": "http://www.waldorfschule-wandsbek.de/",
+        "schul_id": "8101-0",
+        "schul_telefonnr": "+49 40 64 58 95-0",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Rudolf-Steiner-Schule Wandsbek",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Farmsen-Berne",
+        "standort_id": "223",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613941",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.855736336485892,
+          53.54903901993695
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22609 Hamburg",
+        "adresse_strasse_hausnr": "Elbchaussee 366",
+        "anzahl_schueler": 482,
+        "anzahl_schueler_gesamt": "482 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 8 22 40-024",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona-west.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "mail@waldorfschule-nienstedten.de",
+        "schul_homepage": "http://www.waldorfschule-nienstedten.de",
+        "schul_id": "8102-0",
+        "schul_telefonnr": "+49 40 8 22 40-00",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Rudolf-Steiner-Schule Nienstedten",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 6",
+        "stadtteil": "Nienstedten",
+        "standort_id": "224",
+        "zustaendiges_rebbz": "ReBBZ Altona-West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613942",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.063458821225613,
+          53.56967409196761
+        ]
+      },
+      "properties": {
+        "abschluss": "erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss",
+        "adresse_ort": "22041 Hamburg",
+        "adresse_strasse_hausnr": "Bärenallee 15",
+        "anzahl_schueler": 89,
+        "anzahl_schueler_gesamt": "89 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 6 52 87 62",
+        "foerderart": "Autismus|emotionale und soziale Entwicklung|geistige Entwicklung|Hören (gehörlos)|Hören (schwerhörig)|körperliche und motorische Entwicklung|Lernen|Mehrfachbehinderung/intensiver Assistenzbedarf|Sehen (blind)|Sehen (sehbehindert)",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Sonderschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-sued.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "mail@robbe-institut.de",
+        "schul_homepage": "http://www.friedrich-robbe-institut.de",
+        "schul_id": "8106-0",
+        "schul_telefonnr": "+49 40 68 44 55",
+        "schulaufsicht": "Wolfgang Fien",
+        "schulform": "Sonderschule",
+        "schulname": "Friedrich-Robbe-Institut",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Marienthal",
+        "standort_id": "225",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613943",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.13584447752023,
+          53.67631943067742
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22395 Hamburg",
+        "adresse_strasse_hausnr": "Bergstedter Chaussee 207",
+        "anzahl_schueler": 456,
+        "anzahl_schueler_gesamt": "456 an 1 Standort",
+        "bezirk": "Wandsbek",
+        "fax": "+49 40 607 757-316",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wandsbek-nord.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@steinerschule-bergstedt.de",
+        "schul_homepage": "http://www.steinerschule-bergstedt.de",
+        "schul_id": "8112-0",
+        "schul_telefonnr": "+49 40 607 757-30",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Rudolf-Steiner-Schule Bergstedt",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Bergstedt",
+        "standort_id": "231",
+        "zustaendiges_rebbz": "ReBBZ Wandsbek-Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613944",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.922059928300106,
+          53.55055060203384
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22763 Hamburg",
+        "adresse_strasse_hausnr": "Bleickenallee 1",
+        "anzahl_schueler": 391,
+        "anzahl_schueler_gesamt": "391 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 4 10 09-950",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "mail@waldorfschule-altona.de",
+        "schul_homepage": "http://www.waldorfschule-altona.de/",
+        "schul_id": "8113-0",
+        "schul_telefonnr": "+49 40 4 10 09-93",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Rudolf-Steiner-Schule Altona",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Ottensen",
+        "standort_id": "232",
+        "zustaendiges_rebbz": "ReBBZ Altona"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613945",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.891790756501068,
+          53.46121393625509
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21149 Hamburg",
+        "adresse_strasse_hausnr": "Ehestorfer Heuweg 82",
+        "anzahl_schueler": 427,
+        "anzahl_schueler_gesamt": "427 an 1 Standort",
+        "bezirk": "Harburg",
+        "fax": "+49 40 797 18 20",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-suederelbe.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "mail@rss-harburg.de",
+        "schul_homepage": "http://rss-harburg.de/",
+        "schul_id": "8114-0",
+        "schul_telefonnr": "+49 40 797 18 10",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Rudolf-Steiner-Schule Harburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Hausbruch",
+        "standort_id": "233",
+        "zustaendiges_rebbz": "ReBBZ Süderelbe"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613946",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.216801554186794,
+          53.48511609935525
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "21029 Hamburg",
+        "adresse_strasse_hausnr": "Am Brink 7",
+        "anzahl_schueler": 410,
+        "anzahl_schueler_gesamt": "410 an 1 Standort",
+        "bezirk": "Bergedorf",
+        "fax": "+49 40 721 22-41",
+        "ganztagsform": "GTS teilweise gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Langformschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-bergedorf.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "email@waldorfschule-bergedorf.de",
+        "schul_homepage": "http://waldorfschule-bergedorf.de",
+        "schul_id": "8115-0",
+        "schul_telefonnr": "7 21 22 22",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Stadtteilschule|Vorschulklasse",
+        "schulname": "Rudolf-Steiner-Schule Bergedorf",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 5",
+        "stadtteil": "Bergedorf",
+        "standort_id": "234",
+        "zustaendiges_rebbz": "ReBBZ Bergedorf"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613947",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.959603616596166,
+          53.4653089433398
+        ]
+      },
+      "properties": {
+        "abschluss": "erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss",
+        "adresse_ort": "21075 Hamburg",
+        "adresse_strasse_hausnr": "Woellmerstraße 1",
+        "anzahl_schueler": 70,
+        "anzahl_schueler_gesamt": "70 an 1 Standort",
+        "bezirk": "Harburg",
+        "fax": "+49 40 70973778-19",
+        "foerderart": "Autismus|emotionale und soziale Entwicklung|geistige Entwicklung|Hören (schwerhörig)|körperliche und motorische Entwicklung|Lernen|Mehrfachbehinderung/intensiver Assistenzbedarf|Sehen (sehbehindert)|Sprache",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Sonderschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-suederelbe.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "mail@michaelschule.net",
+        "schul_homepage": "https://www.michaelschule.net/",
+        "schul_id": "8117-0",
+        "schul_telefonnr": "+49 40 70973778-0",
+        "schulaufsicht": "Wolfgang Fien",
+        "schulform": "Sonderschule",
+        "schulname": "Michael Schule",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Heimfeld",
+        "standort_id": "657",
+        "zustaendiges_rebbz": "ReBBZ Süderelbe"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613948",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.98431248092676,
+          53.51430514971495
+        ]
+      },
+      "properties": {
+        "adresse_ort": "21107 Hamburg",
+        "adresse_strasse_hausnr": "Am Veringhof 15",
+        "anzahl_schueler": 34,
+        "anzahl_schueler_gesamt": "34 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-wilhelmsburg.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@demokratische-schule-fleks.de",
+        "schul_homepage": "http://demokratische-schule-fleks.de/",
+        "schul_id": "8120-0",
+        "schul_telefonnr": "+49 40 521 560 41",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Demokratische Schule FLeKS",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "Stufe 2",
+        "stadtteil": "Wilhelmsburg",
+        "standort_id": "1065",
+        "zustaendiges_rebbz": "ReBBZ Wilhelmsburg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613949",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.070986383511709,
+          53.55450856728492
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22111 Hamburg",
+        "adresse_strasse_hausnr": "Horner Weg 164",
+        "anzahl_schueler": 525,
+        "anzahl_schueler_gesamt": "525 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 6 55 91-256",
+        "ganztagsform": "GTS teilweise gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-billstedt.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "wichern-schule@rauheshaus.de",
+        "schul_homepage": "http://www.wichern-schule.de",
+        "schul_id": "8201-0",
+        "schul_telefonnr": "+49 40 6 55 91-191",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Stadtteilschule",
+        "schulname": "Wichern-Schule (Stadtteilschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Horn",
+        "standort_id": "30",
+        "zustaendiges_rebbz": "ReBBZ Billstedt"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613950",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.070980408584607,
+          53.55435316653309
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22111 Hamburg",
+        "adresse_strasse_hausnr": "Horner Weg 164",
+        "anzahl_schueler": 625,
+        "anzahl_schueler_gesamt": "625 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 6 55 91-256",
+        "ganztagsform": "offen",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-billstedt.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "wichern-schule@rauheshaus.de",
+        "schul_homepage": "http://www.wichern-schule.de",
+        "schul_id": "8202-0",
+        "schul_telefonnr": "+49 40 6 55 91-190",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Gymnasium",
+        "schulname": "Wichern-Schule (Gymnasium)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Horn",
+        "standort_id": "28",
+        "zustaendiges_rebbz": "ReBBZ Billstedt"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613951",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.071210110632201,
+          53.55442848191666
+        ]
+      },
+      "properties": {
+        "adresse_ort": "22111 Hamburg",
+        "adresse_strasse_hausnr": "Horner Weg 164",
+        "anzahl_schueler": 313,
+        "anzahl_schueler_gesamt": "313 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 655 91-256",
+        "ganztagsform": "keine Angabe",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Grundschulen",
+        "kernzeitbetreuung": "Klassenstufe 1  99%|Klassenstufe 2  100%|Klassenstufe 3  96%|Klassenstufe 4  99%",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-billstedt.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "wichern-schule@rauheshaus.de",
+        "schul_homepage": "https://www.wichern-schule.de/grundschule.html",
+        "schul_id": "8204-0",
+        "schul_telefonnr": "+49 40 655 91-191",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Grundschule|Vorschulklasse",
+        "schulname": "Wichern-Schule (Grundschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Horn",
+        "standort_id": "24",
+        "zustaendiges_rebbz": "ReBBZ Billstedt"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613952",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.854589201923588,
+          53.562521554659746
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22609 Hamburg",
+        "adresse_strasse_hausnr": "Jenischstraße 48",
+        "anzahl_schueler": 364,
+        "anzahl_schueler_gesamt": "364 an 1 Standort",
+        "bezirk": "Altona",
+        "fax": "+49 40 8 23 33-7",
+        "ganztagsform": "GTS voll gebunden",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-altona-west.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@jenisch-gymnasium.de",
+        "schul_homepage": "http://www.jenisch-gymnasium.de/",
+        "schul_id": "8301-0",
+        "schul_telefonnr": "+49 40 8 26 00-2",
+        "schulaufsicht": "Heiko Hambrinker",
+        "schulform": "Gymnasium",
+        "schulname": "Jenisch-Gymnasium",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Osdorf",
+        "standort_id": "22",
+        "zustaendiges_rebbz": "ReBBZ Altona-West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613953",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.026900592663878,
+          53.54773859039178
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Wendenstraße 35",
+        "anzahl_schueler": 164,
+        "anzahl_schueler_gesamt": "164 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 325 370-55",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "hamburg@phorms.de",
+        "schul_homepage": "http://www.hamburg.phorms.de",
+        "schul_id": "8302-0",
+        "schul_telefonnr": "+49 40 32537050",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Gymnasium",
+        "schulname": "Bilinguales Gymnasium Phorms Hamburg",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Hammerbrook",
+        "standort_id": "20",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613954",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.018688233239043,
+          53.55121389681635
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|kein höherwertiger Abschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "20097 Hamburg",
+        "adresse_strasse_hausnr": "Norderstraße 163",
+        "anzahl_schueler": 84,
+        "anzahl_schueler_gesamt": "84 an 1 Standort",
+        "bezirk": "Hamburg-Mitte",
+        "fax": "+49 40 21 11 12-20",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Gymnasien",
+        "lgv_standortk_erwachsenenbildung": "Yes",
+        "rebbz_homepage": "http://rebbz-mitte.hamburg.de/",
+        "rechtsform": "staatlich anerkannte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "info@brecht-schulen.de",
+        "schul_homepage": "http://www.brecht-schulen.de",
+        "schul_id": "8405-0",
+        "schul_telefonnr": "+ 49 40 21 11 12-0",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Abendgymnasium",
+        "schulname": "Privates Abendgymnasium Brecht",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "St. Georg",
+        "standort_id": "32",
+        "zustaendiges_rebbz": "ReBBZ Mitte"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_NICHT_STAATLICHE_SCHULEN_613955",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.02778264445363,
+          53.61843635010412
+        ]
+      },
+      "properties": {
+        "abschluss": "Allgemeine Hochschulreife|erster allgemeinbildender Schulabschluss|Erweiterter erster allgemeinbildender Schulabschluss|mittlerer Schulabschluss|schulischer Teil der Fachhochschulreife",
+        "adresse_ort": "22337 Hamburg",
+        "adresse_strasse_hausnr": "Alsterdorfer Straße 523",
+        "anzahl_schueler": 94,
+        "anzahl_schueler_gesamt": "94 an 1 Standort",
+        "bezirk": "Hamburg-Nord",
+        "fax": "+49 40 529 85-184",
+        "is_rebbz": "true",
+        "kapitelbezeichnung": "Stadtteilschulen",
+        "lgv_standortk_erwachsenenbildung": "No",
+        "rebbz_homepage": "http://rebbz-nord.hamburg.de/",
+        "rechtsform": "staatlich genehmigte Ersatzschule",
+        "schueleranzahl_schuljahr": "2022",
+        "schul_email": "primar.alsterpalais@flachsland-hamburg.de",
+        "schul_homepage": "http://www.flachsland-hamburg.de",
+        "schul_id": "8502-0",
+        "schul_telefonnr": "+40 40 529 85-157",
+        "schulaufsicht": "Berend Loges",
+        "schulform": "Stadtteilschule",
+        "schulname": "Zukunftsschule Alsterpalais (Stadtteilschule)",
+        "schultyp": "Hauptstandort",
+        "sozialindex": "n.v.",
+        "stadtteil": "Alsterdorf",
+        "standort_id": "14",
+        "zustaendiges_rebbz": "ReBBZ Nord"
+      },
+      "srsName": "EPSG:4326"
+    }
+  ]
+}

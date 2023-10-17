@@ -1,0 +1,335 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11167",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.772798635523584,
+          53.58288908022424
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Suurheid",
+        "bezirk": "Altona",
+        "stadtteil": "Rissen",
+        "platzzahl": 300,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2018"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11177",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.901888774772027,
+          53.61939026511944
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Oliver-Lißy-Strasse",
+        "bezirk": "Eimsbüttel",
+        "stadtteil": "Eidelstedt",
+        "platzzahl": 300,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2018"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11197",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.019244460345677,
+          53.63977590562131
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Flughafenstraße",
+        "bezirk": "Nord",
+        "stadtteil": "Fuhlsbüttel",
+        "platzzahl": 570,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2018"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11219",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.134438570466015,
+          53.56416059837287
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Kalmusweg",
+        "bezirk": "Mitte",
+        "stadtteil": "Billstedt",
+        "platzzahl": 66,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2019"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11222",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1346228548327,
+          53.494888695472774
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Am Gleisdreieck",
+        "bezirk": "Bergedorf",
+        "stadtteil": "Billwerder",
+        "platzzahl": 1031,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2016"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11238",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.083861451725044,
+          53.66875882386723
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Ohlendiekshöhe",
+        "bezirk": "Wandsbek",
+        "stadtteil": "Poppenbüttel",
+        "platzzahl": 300,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2017"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11240",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.913015762645248,
+          53.612277982226026
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Duvenacker",
+        "bezirk": "Eimsbüttel",
+        "stadtteil": "Eidelstedt",
+        "platzzahl": 265,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2017"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11241",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.901210507190491,
+          53.55890624898161
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Baurstraße",
+        "bezirk": "Altona",
+        "stadtteil": "Othmarschen",
+        "platzzahl": 178,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2021"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11266",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.054843761118773,
+          53.65134356194512
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Butterbauernstieg",
+        "bezirk": "Wandsbek",
+        "stadtteil": "Hummelsbüttel",
+        "platzzahl": 300,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2018"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11267",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.118636630003548,
+          53.56750234720347
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Raja-Ilinauk-Straße",
+        "bezirk": "Wandsbek",
+        "stadtteil": "Jenfeld",
+        "platzzahl": 800,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2016"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11273",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.843804128169538,
+          53.4777099401208
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Plaggenmoor",
+        "bezirk": "Harburg",
+        "stadtteil": "Neugraben-Fischbek",
+        "platzzahl": 198,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2018"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11274",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.036306063329704,
+          53.552077220817864
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Eiffestraße",
+        "bezirk": "Mitte",
+        "stadtteil": "Borgfelde",
+        "platzzahl": 733,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2019"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11279",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.134593132376828,
+          53.56429396871673
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Am Öjendorfer See",
+        "bezirk": "Mitte",
+        "stadtteil": "Billstedt",
+        "platzzahl": 176,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2019"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11280",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.134593132376828,
+          53.56429396871673
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Zur Kräuterwiese",
+        "bezirk": "Mitte",
+        "stadtteil": "Billstedt",
+        "platzzahl": 552,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2019"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "APP_PERSPEKTIVE_WOHNEN_BESTEHEND_11281",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.134593132376828,
+          53.56429396871673
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Am Öjendorfer See ",
+        "bezirk": "Mitte",
+        "stadtteil": "Billstedt",
+        "platzzahl": 168,
+        "platzzahl_hinweis": "Bei den Platzzahlen handelt es sich um die Normalkapazität. Der tatsächliche Belegungsstand kann abweichen, z.B. aufgrund noch durchzuführender baulicher Maßnahmen.",
+        "bemerkung": ". Für Standorte der Perspektive Wohnen finden Sie hier weitere Informationen:",
+        "bemerkung_link": "http://www.hamburg.de/pressearchiv-fhh/4612224/2015-10-06-bsw-fluechtlingsunterkuenfte-perspektive-wohnen/",
+        "inbetriebnahme": "2020"
+      },
+      "srsName": "EPSG:4326"
+    }
+  ]
+}
