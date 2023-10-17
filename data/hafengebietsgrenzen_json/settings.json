@@ -5,12 +5,18 @@
         "app_hafengebietsgrenzen_EPSG_4326.json": {
             "color": "blue",
             "type": "geojson",
-            "popup_properties": ["typ", "name"]
+            "popup_properties": {
+                "Typ": "typ",
+                "Name": "name"
+            }
         },
         "app_hafengebietsgrenzen_EPSG_25832.json": {
             "color": "blue",
             "type": "geojson",
-            "popup_properties": ["typ", "name"]
+            "popup_properties": {
+                "Typ": "typ",
+                "Name": "name"
+            }
         }
     }
 }

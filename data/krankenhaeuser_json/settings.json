@@ -1,0 +1,24 @@
+{
+    "display_name": "Krankenhäuser",
+    "default_show": false,
+    "files": {
+        "de_hh_up_gesundheit_krankenhaeuser_EPSG_4326.json": {
+            "color": "red",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "name",
+                "Verzeichnis": "krankenhausverzeichnis",
+                "Versorgung": "not_und_unfallversorgung"
+            }
+        },
+        "de_hh_up_gesundheit_krankenhaeuser_EPSG_25832.json": {
+            "color": "red",
+            "type": "marker",
+            "popup_properties": {
+                "Name": "name",
+                "Verzeichnis": "krankenhausverzeichnis",
+                "Versorgung": "not_und_unfallversorgung"
+            }
+        }
+    }
+}

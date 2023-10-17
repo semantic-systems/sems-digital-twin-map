@@ -1,0 +1,1231 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.020502725147118,
+          53.58373848193304
+        ]
+      },
+      "properties": {
+        "id": "{7409D82D-3E48-444D-9D31-FD3AB062E646}",
+        "interne_nr": "91",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "ausschließlich teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 30 tagesklinische Plätze",
+        "traegerschaft": "privat",
+        "name": "Psychosomatische Tagesklinik Verhaltenstherapie Falkenried",
+        "adresse": "Jarrestraße 6",
+        "ort": "22303 Hamburg",
+        "homepage": "https://vt-falkenried.de/tageskliniken/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/4439082/vtf-falkenried.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 30,
+        "rechtswert": 567558,
+        "hochwert": 5937694
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.14779391970791,
+          53.52877610648299
+        ]
+      },
+      "properties": {
+        "id": "{D2E3EBF2-7968-4D4C-A257-F428D444A7E9}",
+        "interne_nr": "97",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 50 Betten",
+        "traegerschaft": "privat",
+        "name": "Stadtteilklinik Hamburg",
+        "adresse": "Oskar-Schlemmer-Straße 9-17",
+        "ort": "22115 Hamburg",
+        "homepage": "http://www.stadtteilklinik.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1277282/stadtteilklinik.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 15,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 576083,
+        "hochwert": 5931708
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_3",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9551259907514,
+          53.55099223951412
+        ]
+      },
+      "properties": {
+        "id": "{20432A17-1CCA-4FA5-9F6F-E79832BF3D83}",
+        "interne_nr": "34",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "101 - 200 Betten",
+        "traegerschaft": "privat",
+        "name": "Helios ENDO-Klinik Hamburg",
+        "adresse": "Holstenstraße 2",
+        "ort": "22767 Hamburg",
+        "homepage": "http://www.helios-kliniken.de/klinik/hamburg-endo-klinik.html",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1244888/endoklinik.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 169,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 563279,
+        "hochwert": 5933991
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_4",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.035785372390936,
+          53.606403151299524
+        ]
+      },
+      "properties": {
+        "id": "{A01C2832-5BE1-4858-ADDB-E8FBD5719F4B}",
+        "interne_nr": "03",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "501 - 750 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinik Barmbek",
+        "adresse": "Rübenkamp 220",
+        "ort": "22307 Hamburg",
+        "homepage": "http://www.asklepios.com/barmbek",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1143354/barmbek.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinatalzentrum Level 1",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 662,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 16,
+        "rechtswert": 568533,
+        "hochwert": 5940230
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.972507618607002,
+          53.58820123867776
+        ]
+      },
+      "properties": {
+        "id": "{55CC4EF2-756E-4790-A668-EF0F33FFF599}",
+        "interne_nr": "31",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 50 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Facharztklinik Hamburg",
+        "adresse": "Martinistraße 78",
+        "ort": "20251 Hamburg",
+        "homepage": "http://www.facharztklinik-hamburg.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1243384/facharztklinik.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 50,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 564374,
+        "hochwert": 5938146
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_6",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.90138589759118,
+          53.5543307394086
+        ]
+      },
+      "properties": {
+        "id": "{4BE910D9-DE1E-4828-A447-DBAC536C108E}",
+        "interne_nr": "05",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "501 - 750 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinik Altona",
+        "adresse": "Paul-Ehrlich-Straße 1",
+        "ort": "22763 Hamburg",
+        "homepage": "http://www.asklepios.com/altona",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/981932/altona.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinatalzentrum Level 1",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 629,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 559714,
+        "hochwert": 5934316
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_7",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.023517759321965,
+          53.61411333846587
+        ]
+      },
+      "properties": {
+        "id": "{C8A1234C-8B5A-4BAD-8F58-DC4134C02C12}",
+        "interne_nr": "20",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Evangelisches Krankenhaus Alsterdorf",
+        "adresse": "Bodelschwinghstraße 24",
+        "ort": "22337 Hamburg",
+        "homepage": "http://www.evangelisches-krankenhaus-alsterdorf.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1180268/alsterdorf.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 314,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 91,
+        "rechtswert": 567709,
+        "hochwert": 5941076
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_8",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.086609837772063,
+          53.56912444562967
+        ]
+      },
+      "properties": {
+        "id": "{CE842DBC-05AA-4928-96F0-C5B9546959CB}",
+        "interne_nr": "07c",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "über 1.000 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinik Nord - Standort Wandsbek",
+        "zusatz_einrichtungsname": "Psychiatrie",
+        "adresse": "Jüthornstraße 71",
+        "ort": "22043 Hamburg",
+        "homepage": "http://www.asklepios.com/hamburg/nord/psychiatrie-wandsbek/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1143358/nord.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 175,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 55,
+        "rechtswert": 571959,
+        "hochwert": 5936133
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_9",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.004904889074263,
+          53.673759373782445
+        ]
+      },
+      "properties": {
+        "id": "{3C0EE2BA-57E0-4B76-8AC7-C185C520A08C}",
+        "interne_nr": "07b",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "über 1.000 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinik Nord - Standort Ochsenzoll",
+        "zusatz_einrichtungsname": "Psychiatrie",
+        "adresse": "Langenhorner Chaussee 560",
+        "ort": "22419 Hamburg",
+        "homepage": "http://www.asklepios.com/hamburg/nord/psychiatrie-ochsenzoll/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1143358/nord.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 567,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 243,
+        "rechtswert": 566384,
+        "hochwert": 5947694
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_10",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.912507118388364,
+          53.552035131461125
+        ]
+      },
+      "properties": {
+        "id": "{BD41E19E-3428-44D0-BA18-C4811B23770D}",
+        "interne_nr": "16",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Altonaer Kinderkrankenhaus",
+        "adresse": "Bleickenallee 38",
+        "ort": "22763 Hamburg",
+        "homepage": "http://www.kinderkrankenhaus.net",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1180108/akk.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 221,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 31,
+        "rechtswert": 560454,
+        "hochwert": 5934070
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_11",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.966008162313287,
+          53.57149853162121
+        ]
+      },
+      "properties": {
+        "id": "{98E8F3F8-E587-4AAD-8323-C59175377388}",
+        "interne_nr": "26",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Agaplesion Diakonieklinikum Hamburg",
+        "adresse": "Hohe Weide 17",
+        "ort": "20259 Hamburg",
+        "homepage": "http://www.d-k-h.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1180368/diakonieklinikum.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Geburtsklinik",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 385,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 20,
+        "rechtswert": 563969,
+        "hochwert": 5936282
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_12",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.05382848255493,
+          53.57834382326731
+        ]
+      },
+      "properties": {
+        "id": "{67701333-5CD0-4374-A184-AE5B3216BABD}",
+        "interne_nr": "04",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "501 - 750 Betten",
+        "traegerschaft": "privat",
+        "name": "Schön Klinik Hamburg Eilbek",
+        "adresse": "Dehnhaide 120",
+        "ort": "22081 Hamburg",
+        "homepage": "https://www.schoen-klinik.de/hamburg-eilbek",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1144408/eilbek.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 719,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 83,
+        "rechtswert": 569773,
+        "hochwert": 5937126
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_13",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.791261885268343,
+          53.56466510882953
+        ]
+      },
+      "properties": {
+        "id": "{69A69CE6-F8C1-40FE-B80F-B3EF5107CD50}",
+        "interne_nr": "29",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "51 - 100 Betten",
+        "traegerschaft": "privat",
+        "name": "Krankenhaus Tabea",
+        "adresse": "Kösterbergstraße 32",
+        "ort": "22587 Hamburg",
+        "homepage": "http://www.tabea-fachklinik.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1244008/tabea.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 92,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 16,
+        "rechtswert": 552406,
+        "hochwert": 5935379
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_14",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.01754600762112,
+          53.56000579228322
+        ]
+      },
+      "properties": {
+        "id": "{3CB4A3DF-3A1B-49DA-B13E-9B16887CF5E5}",
+        "interne_nr": "02",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "501 - 750 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinik St. Georg",
+        "adresse": "Lohmühlenstraße 5",
+        "ort": "20099 Hamburg",
+        "homepage": "http://www.asklepios.com/sanktgeorg",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/2709558/stgeorg.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 651,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 67,
+        "rechtswert": 567400,
+        "hochwert": 5935051
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_15",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.088982350889887,
+          53.569777048400375
+        ]
+      },
+      "properties": {
+        "id": "{BFB2A7D8-65B5-4308-9740-920483D4602A}",
+        "interne_nr": "08",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "501 - 750 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinik Wandsbek",
+        "adresse": "Alphonsstraße 14",
+        "ort": "22043 Hamburg",
+        "homepage": "http://www.asklepios.com/wandsbek",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1143466/wandsbek.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinataler Schwerpunkt",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 515,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 20,
+        "rechtswert": 572115,
+        "hochwert": 5936208
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_16",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.986058090272078,
+          53.50374661265956
+        ]
+      },
+      "properties": {
+        "id": "{0A299E15-5F80-4676-9380-86F9BD38D395}",
+        "interne_nr": "32",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Wilhelmsburger Krankenhaus Groß-Sand",
+        "adresse": "Groß-Sand 3",
+        "ort": "21107 Hamburg",
+        "homepage": "http://www.gross-sand.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1244000/gross-sand.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 209,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 20,
+        "rechtswert": 565401,
+        "hochwert": 5928763
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_17",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.028706004705764,
+          53.674537070993956
+        ]
+      },
+      "properties": {
+        "id": "{737A1A67-BB57-4098-9E22-87276E58F37A}",
+        "interne_nr": "07a",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "über 1.000 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinik Nord - Standort Heidberg",
+        "zusatz_einrichtungsname": "Somatik",
+        "adresse": "Tangstedter Landstraße 400",
+        "ort": "22417 Hamburg",
+        "homepage": "http://www.asklepios.com/hamburg/nord/heidberg/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1143358/nord.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinatalzentrum Level 1",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 678,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 61,
+        "rechtswert": 567955,
+        "hochwert": 5947803
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_18",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.99138293216955,
+          53.605880346884945
+        ]
+      },
+      "properties": {
+        "id": "{A23ABEC6-24C2-402C-80E8-8557AF822961}",
+        "interne_nr": "23",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "101 - 200 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Israelitisches Krankenhaus",
+        "adresse": "Orchideenstieg 14",
+        "ort": "22297 Hamburg",
+        "homepage": "http://www.ik-h.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1243244/israelitisches.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 152,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 9,
+        "rechtswert": 565596,
+        "hochwert": 5940130
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_19",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.949809157641623,
+          53.45910382952112
+        ]
+      },
+      "properties": {
+        "id": "{28B248C5-EB3D-4E45-B782-862F6FEBA82D}",
+        "interne_nr": "06",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "750 - 1.000 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Klinikum Harburg",
+        "adresse": "Eißendorfer Pferdeweg 52",
+        "ort": "21075 Hamburg",
+        "homepage": "http://www.asklepios.com/harburg",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1143268/harburg.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 852,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 162,
+        "rechtswert": 563063,
+        "hochwert": 5923764
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_20",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.076574472924431,
+          53.59495073520435
+        ]
+      },
+      "properties": {
+        "id": "{DBAF694A-644E-4A0C-8528-582811BAEC64}",
+        "interne_nr": "13",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "101 - 200 Betten",
+        "traegerschaft": "öffentlich",
+        "name": "Bundeswehrkrankenhaus Hamburg",
+        "adresse": "Lesserstraße 180",
+        "ort": "22049 Hamburg",
+        "anmerkung_ort": "Das Krankenhaus verfügt über insgesamt 305 Betten. In den Krankenhausplan aufgenommen, sind nur die Betten, die Zivilpatientinnen und -patienten zuzuordnen sind.",
+        "homepage": "https://bwkrankenhaus.de/startseite.html",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1144576/bundeswehrkrankenhaus.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 150,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 571251,
+        "hochwert": 5938996
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_21",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.206431080327624,
+          53.494093648704215
+        ]
+      },
+      "properties": {
+        "id": "{29668737-B7EF-478A-95DB-58734A0C8A48}",
+        "interne_nr": "53",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 50 Betten",
+        "traegerschaft": "privat",
+        "name": "Praxis-Klinik Bergedorf",
+        "adresse": "Alte Holstenstraße 2 -16",
+        "ort": "21031 Hamburg",
+        "homepage": "http://www.praxis-klinik-bergedorf.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1544380/praxisklinik-bergedorf.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 16,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 580035,
+        "hochwert": 5927914
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_22",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2359594626533,
+          53.48623193550239
+        ]
+      },
+      "properties": {
+        "id": "{D52D8640-943F-4CC8-89CF-59D53B7ABD09}",
+        "interne_nr": "22",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Agaplesion Bethesda Krankenhaus Bergedorf",
+        "adresse": "Glindersweg 80",
+        "ort": "21029 Hamburg",
+        "homepage": "http://www.klinik-bergedorf.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1243654/bergedorf.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Geburtsklinik",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 344,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 70,
+        "rechtswert": 582009,
+        "hochwert": 5927073
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_23",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.150924740761852,
+          53.64137914678302
+        ]
+      },
+      "properties": {
+        "id": "{700A6705-CDF2-4260-A8FC-515112F90A2B}",
+        "interne_nr": "17",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Evangelisches Amalie Sieveking Krankenhaus",
+        "adresse": "Haselkamp 33",
+        "ort": "22359 Hamburg",
+        "homepage": "http://www.amalie.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1180512/amalie-sieveking.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Geburtsklinik",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 341,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 20,
+        "rechtswert": 576088,
+        "hochwert": 5944238
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_24",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.985126145567488,
+          53.54872636707821
+        ]
+      },
+      "properties": {
+        "id": "{8FF17449-1559-4D1D-A623-5385F4D73CD2}",
+        "interne_nr": "52",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 50 Betten",
+        "traegerschaft": "privat",
+        "name": "ATOS Klinik Fleetinsel Hamburg",
+        "adresse": "Admiralitätsstraße 4",
+        "ort": "20459 Hamburg",
+        "homepage": "http://www.klinik-fleetinsel.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/4384370/fleetinsel.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 32,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 565270,
+        "hochwert": 5933766
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_25",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.775568905591074,
+          53.58253874892227
+        ]
+      },
+      "properties": {
+        "id": "{ED22A79D-7CC5-4BEB-B402-43B3B5414229}",
+        "interne_nr": "19",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "501 - 750 Betten",
+        "traegerschaft": "privat",
+        "name": "Asklepios Westklinikum Hamburg",
+        "adresse": "Suurheid 20",
+        "ort": "22559 Hamburg",
+        "homepage": "https://www.asklepios.com/hamburg/westklinikum/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1244080/westklinikum.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 553,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 160,
+        "rechtswert": 551345,
+        "hochwert": 5937356
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_26",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.967290298720002,
+          53.569447681221035
+        ]
+      },
+      "properties": {
+        "id": "{74D8A328-9EEA-4A67-8991-4D366D4D9F43}",
+        "interne_nr": "27",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 50 Betten",
+        "traegerschaft": "privat",
+        "name": "Krankenhaus Jerusalem",
+        "adresse": "Moorkamp 2-6",
+        "ort": "20357 Hamburg",
+        "homepage": "http://www.krankenhaus-jerusalem.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/2784448/jerusalem.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 20,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 564057,
+        "hochwert": 5936055
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_27",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.179014000193446,
+          53.50670946388127
+        ]
+      },
+      "properties": {
+        "id": "{B2E70E6D-5AD8-46B3-8C6F-386C39846EF7}",
+        "interne_nr": "18",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "BG Klinikum Hamburg",
+        "adresse": "Bergedorfer Straße 10",
+        "ort": "21033 Hamburg",
+        "anmerkung_ort": "Das Krankenhaus verfügt insgesamt über rund 589 Betten. In den Krankenhausplan aufgenommen sind nur die Betten, die für GKV-Versicherte zur Verfügung stehen.",
+        "homepage": "https://www.bg-kliniken.de/klinikum-hamburg/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1170712/boberg.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "eingeschränkte Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 293,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 578193,
+        "hochwert": 5929287
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_28",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.905160078124638,
+          53.63139970418757
+        ]
+      },
+      "properties": {
+        "id": "{48093350-91E1-45CC-A832-38DE161CA6C4}",
+        "interne_nr": "14a",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "750 - 1.000 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Albertinen Krankenhaus",
+        "adresse": "Süntelstraße 11a",
+        "ort": "22457 Hamburg",
+        "homepage": "http://www.albertinen.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1170932/albertinen.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinatalzentrum Level 2",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 643,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 40,
+        "rechtswert": 559855,
+        "hochwert": 5942893
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_29",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.853629098101045,
+          53.55682946395614
+        ]
+      },
+      "properties": {
+        "id": "{6594690B-82F7-4003-936F-323FBBE360F7}",
+        "interne_nr": "37",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "51 - 100 Betten",
+        "traegerschaft": "privat",
+        "name": "Klinik Dr. Guth",
+        "adresse": "Jürgensallee 46-48",
+        "ort": "22609 Hamburg",
+        "homepage": "https://www.klinikdrguth.de/Startseite",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1277972/drguth.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 52,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 556547,
+        "hochwert": 5934555
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_30",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.147821396188139,
+          53.52923428964797
+        ]
+      },
+      "properties": {
+        "id": "{6CBC1B02-85D5-46FD-B9F7-332F6D15CC3D}",
+        "interne_nr": "42",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "ausschließlich teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 30 tagesklinische Plätze",
+        "traegerschaft": "privat",
+        "name": "Psychiatrische Tagesklinik in der Praxisklinik Mümmelmannsberg",
+        "adresse": "Oskar-Schlemmer-Straße 9-17",
+        "ort": "22115 Hamburg",
+        "homepage": "https://www.tk-pia-praxisklinik.de/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1277282/praxisklinik-muemmelmannsberg.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 30,
+        "rechtswert": 576084,
+        "hochwert": 5931759
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_31",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.927675033921663,
+          53.62781158164766
+        ]
+      },
+      "properties": {
+        "id": "{40AF88D4-4028-4553-BE0D-2394036EA675}",
+        "interne_nr": "14b",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "750 - 1.000 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Albertinen Haus - Medizinisch-Geriatrische Klinik",
+        "adresse": "Sellhopsweg 18-20",
+        "ort": "22459 Hamburg",
+        "homepage": "http://www.albertinen.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1170932/albertinen.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 127,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 35,
+        "rechtswert": 561349,
+        "hochwert": 5942513
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_32",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.964488019864486,
+          53.554467747509094
+        ]
+      },
+      "properties": {
+        "id": "{384F8C2A-F970-4640-8DE4-2B02E0852547}",
+        "interne_nr": "56",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "ausschließlich teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "bis 30 tagesklinische Plätze",
+        "traegerschaft": "privat",
+        "name": "Psychiatrische Tagesklinik Hamburg-Mitte",
+        "adresse": "Budapester Straße 38",
+        "ort": "20359 Hamburg",
+        "homepage": "http://www.tagesklinik-hh-mitte.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1277750/janssen-haus.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "keine Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 26,
+        "rechtswert": 563894,
+        "hochwert": 5934386
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_33",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.93784921257707,
+          53.47067735573686
+        ]
+      },
+      "properties": {
+        "id": "{C69C9B93-5BBA-4FFB-9EBC-289636F83C2A}",
+        "interne_nr": "28",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "vollstationäre Versorgung",
+        "groessenklasse_krankenhaus": "101 - 200 Betten",
+        "traegerschaft": "privat",
+        "name": "Helios Mariahilf Klinik Hamburg",
+        "adresse": "Stader Straße 203c",
+        "ort": "21075 Hamburg",
+        "homepage": "https://www.helios-gesundheit.de/kliniken/mariahilf/",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1243914/mariahilf.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "eingeschränkte Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinataler Schwerpunkt",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 176,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "rechtswert": 562252,
+        "hochwert": 5925041
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_34",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.031704171025812,
+          53.55924628551871
+        ]
+      },
+      "properties": {
+        "id": "{8E14E2A5-2B18-42A6-8C13-29C7C05F0728}",
+        "interne_nr": "30",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "501 - 750 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Katholisches Marienkrankenhaus",
+        "adresse": "Alfredstraße 9",
+        "ort": "22087 Hamburg",
+        "homepage": "http://www.marienkrankenhaus.org",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1171048/marienkrankenhaus.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinatalzentrum Level 1",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 578,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 30,
+        "rechtswert": 568339,
+        "hochwert": 5934980
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_35",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.164088046948558,
+          53.58653553435988
+        ]
+      },
+      "properties": {
+        "id": "{5857ED14-2F70-42FC-A853-042496D7626B}",
+        "interne_nr": "24",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "201 - 500 Betten",
+        "traegerschaft": "freigemeinnützig",
+        "name": "Katholisches Kinderkrankenhaus Wilhelmstift",
+        "adresse": "Liliencronstraße 130",
+        "ort": "22149 Hamburg",
+        "homepage": "http://www.kkh-wilhelmstift.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1180208/wilhelmstift.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "keine Teilnahme an der geburtshilflichen Versorgung",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 216,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 45,
+        "rechtswert": 577058,
+        "hochwert": 5938151
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_GESUNDHEIT_KRANKENHAEUSER_36",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.975341731369406,
+          53.589904041482306
+        ]
+      },
+      "properties": {
+        "id": "{899E1489-FA3E-4E4B-B65B-160ACD487ADD}",
+        "interne_nr": "01",
+        "einrichtung": "Krankenhäuser",
+        "art_der_stationaeren_versorgung": "voll- und teilstationäre Versorgung",
+        "groessenklasse_krankenhaus": "über 1.000 Betten",
+        "traegerschaft": "öffentlich",
+        "name": "Universitätsklinikum Hamburg-Eppendorf",
+        "adresse": "Martinistraße 52",
+        "ort": "20251 Hamburg",
+        "homepage": "http://www.uke.de",
+        "krankenhausverzeichnis": "http://www.hamburg.de/krankenhausverzeichnis/1143816/uke.html",
+        "stand": "01.07.2023",
+        "not_und_unfallversorgung": "Teilnahme an der Not- und Unfallversorgung",
+        "geburtshilfe": "Teilnahme an der geburtshilflichen Versorgung",
+        "geburtshilfe_versorgungsstufe": "Perinatalzentrum Level 1",
+        "kapazitaet_kennzahl": "Planbetten",
+        "planbetten": 1798,
+        "nutzungskennzahl_1": "Teilstationäre Behandlungsplätze",
+        "teilstationaere_behandlungsplaetze": 184,
+        "rechtswert": 564559,
+        "hochwert": 5938338
+      },
+      "srsName": "EPSG:4326"
+    }
+  ]
+}

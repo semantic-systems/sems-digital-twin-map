@@ -3,14 +3,23 @@
     "default_show": false,
     "files": {
         "app_stromnetz_emobility_EPSG_4326.json": {
-            "color": "yellow",
+            "color": "orange",
             "type": "marker",
-            "popup_properties": ["adresse", "anzahl_ladepunkte", "koordinaten"]
+            "popup_properties": {
+                "Adresse": "adresse", 
+                "Anzahl": "anzahl_ladepunkte", 
+                "Koordinaten": "koordinaten"
+            }
+
         },
         "app_stromnetz_emobility_EPSG_25832.json": {
-            "color": "yellow",
+            "color": "orange",
             "type": "marker",
-            "popup_properties": ["adresse", "anzahl_ladepunkte", "koordinaten"]
+            "popup_properties": {
+                "Adresse": "adresse", 
+                "Anzahl": "anzahl_ladepunkte", 
+                "Koordinaten": "koordinaten"
+            }
         }
     }
 }

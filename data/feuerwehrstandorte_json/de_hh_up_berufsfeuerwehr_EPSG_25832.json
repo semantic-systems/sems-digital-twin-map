@@ -1,0 +1,422 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          480670.77699999977,
+          5969017.03909978
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Havariekommando Cuxhaven",
+        "strasse": "Am Alten Hafen ",
+        "hausnummer": "2",
+        "postleitzahl": 27472,
+        "ab_ort": "Cuxhaven",
+        "ab_x": 480670.777017119,
+        "ab_y": 5969017.03913122
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          565110.2009000028,
+          5933468.809199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Innenstadt (F11)",
+        "strasse": "Admiralitätsstraße",
+        "hausnummer": "54",
+        "postleitzahl": 20459,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neustadt",
+        "ab_x": 565110.20094242,
+        "ab_y": 5933468.80917398
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_3",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          562576.1009000028,
+          5933825.764199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Altona (F12)",
+        "strasse": "Mörkenstraße",
+        "hausnummer": "36",
+        "postleitzahl": 22767,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Altona-Altstadt",
+        "ab_x": 562576.100944658,
+        "ab_y": 5933825.76417353
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_4",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          564603.9669000036,
+          5935976.536199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Rotherbaum (F13)",
+        "strasse": "Sedanstraße",
+        "hausnummer": "30",
+        "postleitzahl": 20146,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rotherbaum",
+        "ab_x": 564603.96694286,
+        "ab_y": 5935976.53617102
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          556557.4709000017,
+          5936355.435199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Osdorf (F14)",
+        "strasse": "Harderweg",
+        "hausnummer": "10",
+        "postleitzahl": 22549,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Osdorf",
+        "ab_x": 556557.470949975,
+        "ab_y": 5936355.4351705
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_6",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          561840.5239000029,
+          5938509.835199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Stellingen (F15)",
+        "strasse": "Basselweg",
+        "hausnummer": "71",
+        "postleitzahl": 22527,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Stellingen",
+        "ab_x": 561840.523945297,
+        "ab_y": 5938509.83516801
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_7",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          566240.3769000032,
+          5941026.398199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Alsterdorf (F16)",
+        "strasse": "Alsterkrugchaussee",
+        "hausnummer": "288",
+        "postleitzahl": 22297,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Alsterdorf",
+        "ab_x": 566240.3769414,
+        "ab_y": 5941026.39816507
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_8",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          574003.9509000059,
+          5937880.464199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Wandsbek (F21)",
+        "strasse": "Stein-Hardenberg-Straße ",
+        "hausnummer": "2",
+        "postleitzahl": 22045,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Tonndorf",
+        "ab_x": 574003.950934546,
+        "ab_y": 5937880.46416887
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_9",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          567884.2109000045,
+          5934439.421199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Berliner Tor (F22)",
+        "strasse": "Westphalensweg",
+        "hausnummer": "1",
+        "postleitzahl": 20099,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "St, Georg",
+        "ab_x": 567884.210939963,
+        "ab_y": 5934439.42117287
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_10",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          569118.6369000048,
+          5937642.813199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Barmbek (F23)",
+        "strasse": "Maurienstraße",
+        "hausnummer": "7-9",
+        "postleitzahl": 22305,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Barmbek-Süd",
+        "ab_x": 569118.636938862,
+        "ab_y": 5937642.8131691
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_11",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          573911.0829000061,
+          5945151.192199765
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Sasel (F24)",
+        "strasse": "Saseler Kamp ",
+        "hausnummer": "2",
+        "postleitzahl": 22393,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Sasel",
+        "ab_x": 573911.082934606,
+        "ab_y": 5945151.19216026
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_12",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          571661.9189000053,
+          5932126.648199758
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Billstedt (F25)",
+        "strasse": "Wöhlerstraße ",
+        "hausnummer": "28",
+        "postleitzahl": 22113,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Billbrook",
+        "ab_x": 571661.918936631,
+        "ab_y": 5932126.64817562
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_13",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          579854.4699000092,
+          5927591.524199753
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Bergedorf (F26)",
+        "strasse": "Sander Damm",
+        "hausnummer": "2",
+        "postleitzahl": 21031,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Lohbrügge",
+        "ab_x": 579854.469929407,
+        "ab_y": 5927591.52418103
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_14",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          567064.3309000042,
+          5923915.689199755
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Harburg (F31)",
+        "strasse": "Großmoorbogen",
+        "hausnummer": "8",
+        "postleitzahl": 21079,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Gut Moor",
+        "ab_x": 567064.330940718,
+        "ab_y": 5923915.68918519
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_15",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          564134.0929000026,
+          5929670.979199756
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Technik- und Umweltschutzwache (F32)",
+        "strasse": "Neuhöfer Brückenstrasse ",
+        "hausnummer": "2",
+        "postleitzahl": 21107,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wilhelmsburg",
+        "ab_x": 564134.09294329,
+        "ab_y": 5929670.97917843
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_16",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          567589.4869000039,
+          5930940.166199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Veddel (F33)",
+        "strasse": "Am Zollhafen ",
+        "hausnummer": "11-13",
+        "postleitzahl": 20539,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Veddel",
+        "ab_x": 567589.486940234,
+        "ab_y": 5930940.16617698
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_17",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          565558.1909000033,
+          5928997.339199757
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Wilhelmsburg (F34)",
+        "strasse": "Rotenhäuserstraße",
+        "hausnummer": "73",
+        "postleitzahl": 21107,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wilhelmsburg",
+        "ab_x": 565558.190942034,
+        "ab_y": 5928997.33917923
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_18",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          558284.9009000018,
+          5932115.834199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Finkenwerder (F35)",
+        "strasse": "Benittstraße",
+        "hausnummer": "15",
+        "postleitzahl": 21129,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Finkenwerder",
+        "ab_x": 558284.900948457,
+        "ab_y": 5932115.83417551
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_BERUFSFEUERWEHR_19",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          559641.1369000025,
+          5925645.445199754
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Feuer- und Rettungswache Süderelbe (F36)",
+        "strasse": "Waltershofer Straße",
+        "hausnummer": "1",
+        "postleitzahl": 21147,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Hausbruch",
+        "ab_x": 559641.136947272,
+        "ab_y": 5925645.4451831
+      },
+      "srsName": "EPSG:25832"
+    }
+  ]
+}

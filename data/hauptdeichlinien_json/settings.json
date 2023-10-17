@@ -1,0 +1,20 @@
+{
+    "display_name": "Hauptdeichlinien",
+    "default_show": false,
+    "files": {
+        "de_hh_up_hauptdeichlinie_EPSG_4326.json": {
+            "color": "blue",
+            "type": "geojson",
+            "popup_properties": {
+                "Name": "name"
+            }
+        },
+        "de_hh_up_hauptdeichlinie_EPSG_25832.json": {
+            "color": "blue",
+            "type": "geojson",
+            "popup_properties": {
+                "Name": "name"
+            }
+        }
+    }
+}

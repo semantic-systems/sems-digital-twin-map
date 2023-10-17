@@ -1,0 +1,1899 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          550673.2820000006,
+          5937082.913199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Rissen",
+        "strasse": "Rissener Landstraße ",
+        "hausnummer": "254",
+        "postleitzahl": 22559,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rissen",
+        "ab_x": 550673.281955178,
+        "ab_y": 5937082.91316959
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          553368.0370000008,
+          5935323.981199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Blankenese",
+        "strasse": "Blankeneser Landstraße",
+        "hausnummer": "41",
+        "postleitzahl": 22587,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Blankenese",
+        "ab_x": 553368.036952797,
+        "ab_y": 5935323.98117169
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_3",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          556238.4210000017,
+          5934142.70119976
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Nienstedten",
+        "strasse": "Georg-Bonne-Straße ",
+        "hausnummer": "92",
+        "postleitzahl": 22609,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Nienstedten",
+        "ab_x": 556238.420950261,
+        "ab_y": 5934142.7011731
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_4",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          556215.2450000017,
+          5936704.467199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Osdorf",
+        "strasse": "Blomkamp",
+        "hausnummer": "11",
+        "postleitzahl": 22549,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Osdorf",
+        "ab_x": 556215.244950277,
+        "ab_y": 5936704.46717009
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          558001.4569000015,
+          5935526.690199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Groß Flottbek",
+        "strasse": "Baron-Voght-Straße ",
+        "hausnummer": "183",
+        "postleitzahl": 22607,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Nienstedten",
+        "ab_x": 558001.456948697,
+        "ab_y": 5935526.69017149
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_6",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          557491.6389000015,
+          5938869.761199763
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Lurup",
+        "strasse": "Stückweg ",
+        "hausnummer": "4",
+        "postleitzahl": 22547,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Lurup",
+        "ab_x": 557491.638949141,
+        "ab_y": 5938869.76116754
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_7",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          552587.267000001,
+          5937425.183199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Sülldorf-Iserbrook",
+        "strasse": "Sülldorfer Kirchenweg ",
+        "hausnummer": "235",
+        "postleitzahl": 22589,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Sülldorf",
+        "ab_x": 552587.266953484,
+        "ab_y": 5937425.1831692
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_8",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          563525.7369000028,
+          5935246.110199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Altona",
+        "strasse": "Eifflerstraße ",
+        "hausnummer": "29",
+        "postleitzahl": 22769,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Sternschanze",
+        "ab_x": 563525.736943815,
+        "ab_y": 5935246.11017187
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_9",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          560340.0669000022,
+          5934742.4101997595
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Ottensen-Bahrenfeld",
+        "strasse": "Friesenweg ",
+        "hausnummer": "5d",
+        "postleitzahl": 22763,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Ottensen",
+        "ab_x": 560340.066946634,
+        "ab_y": 5934742.41017244
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_10",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          561378.8639000028,
+          5938469.157199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Stellingen",
+        "strasse": "Melanchthonstraße ",
+        "hausnummer": "10",
+        "postleitzahl": 22525,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Stellingen",
+        "ab_x": 561378.863945705,
+        "ab_y": 5938469.15716805
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_11",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          559465.451900002,
+          5939994.884199763
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Eidelstedt",
+        "strasse": "Furtweg ",
+        "hausnummer": "57a",
+        "postleitzahl": 22523,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Eidelstedt",
+        "ab_x": 559465.451947393,
+        "ab_y": 5939994.88416623
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_12",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          560431.5619000024,
+          5943188.318199764
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Schnelsen",
+        "strasse": "Oldesloer Straße ",
+        "hausnummer": "34",
+        "postleitzahl": 22457,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Schnelsen",
+        "ab_x": 560431.561946531,
+        "ab_y": 5943188.31816246
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_13",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          563294.6499000025,
+          5942105.785199764
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Niendorf",
+        "strasse": "Fuhlsbütteler Weg ",
+        "hausnummer": "5",
+        "postleitzahl": 22453,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Niendorf",
+        "ab_x": 563294.649944001,
+        "ab_y": 5942105.78516376
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_14",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          563626.8169000031,
+          5939378.987199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Lokstedt",
+        "strasse": "Vogt-Wells-Straße ",
+        "hausnummer": "13",
+        "postleitzahl": 22529,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Lokstedt",
+        "ab_x": 563626.816943717,
+        "ab_y": 5939378.987167
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_15",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          562123.2519000022,
+          5936884.4851997625
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Eimsbüttel",
+        "strasse": "Kieler Straße ",
+        "hausnummer": "204",
+        "postleitzahl": 22525,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Eimsbüttel",
+        "ab_x": 562123.251945051,
+        "ab_y": 5936884.48516993
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_16",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          564533.849900003,
+          5935523.06719976
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Pöseldorf",
+        "strasse": "Schröderstiftstraße ",
+        "hausnummer": "13",
+        "postleitzahl": 20146,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rotherbaum",
+        "ab_x": 564533.849942924,
+        "ab_y": 5935523.06717156
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_17",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          566971.5799000041,
+          5941364.591199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Eppendorf",
+        "strasse": "Maienweg ",
+        "hausnummer": "119",
+        "postleitzahl": 22297,
+        "bemerkung": "Unterkunft mit FF Alsterdorf",
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Alsterdorf",
+        "ab_x": 566971.579940751,
+        "ab_y": 5941364.59116468
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_18",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          567593.4749000039,
+          5942404.843199764
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Fuhlsbüttel",
+        "strasse": "Fuhlsbütteler Damm ",
+        "hausnummer": "115",
+        "postleitzahl": 22335,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Fuhlsbüttel",
+        "ab_x": 567593.474940201,
+        "ab_y": 5942404.84316345
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_19",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          567347.884900004,
+          5947173.762199766
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Langenhorn-Nord",
+        "strasse": "Neuberger Weg",
+        "hausnummer": "158",
+        "postleitzahl": 22419,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Langenhorn",
+        "ab_x": 567347.884940406,
+        "ab_y": 5947173.76215779
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_20",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          566519.8509000037,
+          5941862.268199765
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Groß Borstel",
+        "strasse": "Geschwister-Beschütz-Bogen ",
+        "hausnummer": "20",
+        "postleitzahl": 22335,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Groß Borstel",
+        "ab_x": 566519.85094115,
+        "ab_y": 5941862.26816408
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_21",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          566971.5799000041,
+          5941364.591199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Alsterdorf",
+        "strasse": "Maienweg",
+        "hausnummer": "119",
+        "postleitzahl": 22297,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Alsterdorf",
+        "ab_x": 566971.579940751,
+        "ab_y": 5941364.59116468
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_22",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          567328.8639000042,
+          5945520.437199767
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Langenhorn",
+        "strasse": "Tangstedter Landstraße",
+        "hausnummer": "139",
+        "postleitzahl": 22417,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Langenhorn",
+        "ab_x": 567328.863940399,
+        "ab_y": 5945520.43715956
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_23",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          575169.0349000072,
+          5943069.158199764
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Berne",
+        "strasse": "Kuhkoppel ",
+        "hausnummer": "24",
+        "postleitzahl": 22159,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Farmsen-Berne",
+        "ab_x": 575169.0349335,
+        "ab_y": 5943069.15816274
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_24",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          574071.2899000066,
+          5939967.825199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Farmsen",
+        "strasse": "Berner Heerweg ",
+        "hausnummer": "151",
+        "postleitzahl": 22159,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Farmsen-Berne",
+        "ab_x": 574071.289934478,
+        "ab_y": 5939967.82516641
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_25",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          575214.6079000072,
+          5940858.071199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Oldenfelde-Siedlung",
+        "strasse": "Bekassinenau",
+        "hausnummer": " 30c",
+        "postleitzahl": 22147,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rahlstedt",
+        "ab_x": 575214.607933465,
+        "ab_y": 5940858.07116536
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_26",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          576286.2819000073,
+          5940925.056199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Oldenfelde",
+        "strasse": "Bargteheider Straße ",
+        "hausnummer": "165",
+        "postleitzahl": 22143,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rahlstedt",
+        "ab_x": 576286.281932519,
+        "ab_y": 5940925.05616529
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_27",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          576855.4249000077,
+          5942257.409199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Meiendorf",
+        "strasse": "Lofotenstraße ",
+        "hausnummer": "10",
+        "postleitzahl": 22145,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rahlstedt",
+        "ab_x": 576855.424932012,
+        "ab_y": 5942257.40916372
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_28",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          576507.4289000073,
+          5939246.697199762
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Rahlstedt",
+        "strasse": "Brockdorffstraße ",
+        "hausnummer": "22",
+        "postleitzahl": 22149,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rahlstedt",
+        "ab_x": 576507.428932329,
+        "ab_y": 5939246.69716728
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_29",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          574533.1129000068,
+          5937713.270199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Tonndorf",
+        "strasse": "Jenfelder Allee ",
+        "hausnummer": "75",
+        "postleitzahl": 22045,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Tonndorf",
+        "ab_x": 574533.112934079,
+        "ab_y": 5937713.27016907
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_30",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          572138.1189000058,
+          5936797.048199761
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Wandsbek-Marienthal",
+        "strasse": "Am Neumarkt ",
+        "hausnummer": "30",
+        "postleitzahl": 22041,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wandsbek",
+        "ab_x": 572138.118936196,
+        "ab_y": 5936797.04817013
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_31",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          571431.2669000055,
+          5940856.814199763
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Bramfeld",
+        "strasse": "Ellernreihe ",
+        "hausnummer": "139",
+        "postleitzahl": 22179,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Bramfeld",
+        "ab_x": 571431.266936811,
+        "ab_y": 5940856.81416532
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_32",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          571391.4879000054,
+          5943925.220199765
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Wellingsbüttel",
+        "strasse": "Schulteßdamm ",
+        "hausnummer": "18",
+        "postleitzahl": 22391,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wellingsbüttel",
+        "ab_x": 571391.487936839,
+        "ab_y": 5943925.22016169
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_33",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          571357.8289000054,
+          5946257.191199766
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Poppenbüttel",
+        "strasse": "Rehmbrook ",
+        "hausnummer": "4",
+        "postleitzahl": 22399,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Poppenbüttel",
+        "ab_x": 571357.828936861,
+        "ab_y": 5946257.19115892
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_34",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          568693.3449000042,
+          5944302.774199765
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Hummelsbüttel",
+        "strasse": "Stiegstück",
+        "hausnummer": "2",
+        "postleitzahl": 22339,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Hummelsbüttel",
+        "ab_x": 568693.344939221,
+        "ab_y": 5944302.77416121
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_35",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          573389.4029000062,
+          5945690.5991997635
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Sasel",
+        "strasse": "Saseler Parkweg  ",
+        "hausnummer": "1",
+        "postleitzahl": 22393,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Sasel",
+        "ab_x": 573389.402935067,
+        "ab_y": 5945690.59915961
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_36",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          569744.1449000044,
+          5940299.824199763
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Barmbek",
+        "strasse": "Schwarzer Weg ",
+        "hausnummer": "3",
+        "postleitzahl": 22309,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Steilshoop",
+        "ab_x": 569744.144938303,
+        "ab_y": 5940299.82416597
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_37",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          568300.0769000041,
+          5938207.778199764
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Winterhude",
+        "strasse": "Wiesendamm ",
+        "hausnummer": "36",
+        "postleitzahl": 22303,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Winterhude",
+        "ab_x": 568300.076939585,
+        "ab_y": 5938207.77816842
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_38",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          577028.8029000073,
+          5945517.718199764
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Volksdorf",
+        "strasse": "Vörn Barkholt",
+        "hausnummer": "9",
+        "postleitzahl": 22359,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Volksdorf",
+        "ab_x": 577028.802931848,
+        "ab_y": 5945517.71815985
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_39",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          574054.541900006,
+          5947955.898199766
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Bergstedt",
+        "strasse": "Rodenbeker Straße ",
+        "hausnummer": "30",
+        "postleitzahl": 22395,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Bergstedt",
+        "ab_x": 574054.541934471,
+        "ab_y": 5947955.89815692
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_40",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          572095.7369000055,
+          5949310.645199766
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Lemsahl-Mellingstedt",
+        "strasse": "Bilenbarg ",
+        "hausnummer": "3",
+        "postleitzahl": 22397,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Lemsahl-Mellingstedt",
+        "ab_x": 572095.7369362,
+        "ab_y": 5949310.64515529
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_41",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          572893.7509000063,
+          5951502.504199768
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Duvenstedt",
+        "strasse": "Poppenbütteler Chaussee",
+        "hausnummer": "17",
+        "postleitzahl": 22397,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Duvenstedt",
+        "ab_x": 572893.750935487,
+        "ab_y": 5951502.50415269
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_42",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          575293.2339000073,
+          5952052.981199769
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Wohldorf",
+        "strasse": "Herrenhausallee",
+        "hausnummer": "42",
+        "postleitzahl": 22397,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wohldorf-Ohlstedt",
+        "ab_x": 575293.233933366,
+        "ab_y": 5952052.98115205
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_43",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          575150.4859000066,
+          5950133.536199766
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Ohlstedt",
+        "strasse": "Brunskrogweg ",
+        "hausnummer": "4",
+        "postleitzahl": 22397,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wohldorf-Ohlstedt",
+        "ab_x": 575150.485933498,
+        "ab_y": 5950133.53615434
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_44",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          580683.9439000101,
+          5927144.1741997525
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Bergedorf",
+        "strasse": "Chrysander Straße ",
+        "hausnummer": "2d",
+        "postleitzahl": 21029,
+        "bemerkung": "Unterkunft mit FF Bille",
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Bergedorf",
+        "ab_x": 580683.943928675,
+        "ab_y": 5927144.17418156
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_45",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          578906.5179000092,
+          5926040.012199752
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Nettelnburg",
+        "strasse": "Nettelnburger Straße ",
+        "hausnummer": "48",
+        "postleitzahl": 21035,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Bergedorf",
+        "ab_x": 578906.517930249,
+        "ab_y": 5926040.01218283
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_46",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          580032.3799000095,
+          5928042.219199753
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Lohbrügge",
+        "strasse": "Lohbrügger Markt ",
+        "hausnummer": "3",
+        "postleitzahl": 21031,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Lohbrügge",
+        "ab_x": 580032.379929248,
+        "ab_y": 5928042.2191805
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_47",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          576920.6239000077,
+          5930167.468199754
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Boberg",
+        "strasse": "Am Langberg ",
+        "hausnummer": "76",
+        "postleitzahl": 21033,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Lohbrügge",
+        "ab_x": 576920.623931992,
+        "ab_y": 5930167.46817798
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_48",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          574648.6449000065,
+          5932222.524199758
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Kirchsteinbek",
+        "strasse": "Brockhausweg",
+        "hausnummer": "15",
+        "postleitzahl": 22117,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Billstedt",
+        "ab_x": 574648.644933991,
+        "ab_y": 5932222.52417554
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_49",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          575043.3279000068,
+          5933689.247199757
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Öjendorf",
+        "strasse": "Reinskamp",
+        "hausnummer": "40",
+        "postleitzahl": 22117,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Billstedt",
+        "ab_x": 575043.32793364,
+        "ab_y": 5933689.24717382
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_50",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          580683.9439000101,
+          5927144.1741997525
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Bille",
+        "strasse": "Chrysander Straße ",
+        "hausnummer": "2d",
+        "postleitzahl": 21029,
+        "bemerkung": "Unterkunft mit FF Bergedorf",
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Bergedorf",
+        "ab_x": 580683.943928675,
+        "ab_y": 5927144.17418156
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_51",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          572989.2589000057,
+          5934759.233199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Billstedt-Horn",
+        "strasse": "Bergmannring",
+        "hausnummer": "4",
+        "postleitzahl": 22119,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Horn",
+        "ab_x": 572989.25893545,
+        "ab_y": 5934759.23317254
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_52",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          581130.2629000106,
+          5923014.891199751
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Curslack",
+        "strasse": "Curslacker Deich ",
+        "hausnummer": "177a",
+        "postleitzahl": 21039,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Curslack",
+        "ab_x": 581130.262928297,
+        "ab_y": 5923014.89118639
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_53",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          584682.1099000121,
+          5921078.641199748
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Altengamme",
+        "strasse": "Gammer Weg ",
+        "hausnummer": "49",
+        "postleitzahl": 21039,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Altengamme",
+        "ab_x": 584682.109925168,
+        "ab_y": 5921078.64118868
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_54",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          581612.8749000105,
+          5922483.36719975
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Neuengamme",
+        "strasse": "Neuengammer Hausdeich",
+        "hausnummer": "217",
+        "postleitzahl": 21039,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neuengamme",
+        "ab_x": 581612.874927873,
+        "ab_y": 5922483.36718701
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_55",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          581173.1939000104,
+          5917685.847199748
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Krauel",
+        "strasse": "Kirchwerder Marschbahndamm",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Kirchwerder",
+        "ab_x": 581173.193928276,
+        "ab_y": 5917685.84719258
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_56",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          576945.4249000078,
+          5918416.467199749
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Kirchwerder-Süd",
+        "strasse": "In de Wisch",
+        "hausnummer": "29",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Kirchwerder",
+        "ab_x": 576945.424932008,
+        "ab_y": 5918416.46719169
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_57",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          578939.5969000091,
+          5921552.56919975
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Kirchwerder-Nord",
+        "strasse": "Norderquerweg ",
+        "hausnummer": "1",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Kirchwerder",
+        "ab_x": 578939.596930235,
+        "ab_y": 5921552.56918806
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_58",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          574867.9499000071,
+          5922278.820199752
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Warwisch",
+        "strasse": "Durchdeich ",
+        "hausnummer": "62",
+        "postleitzahl": 21037,
+        "bemerkung": "Unterkunft mit FF Fünfhausen",
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Kirchwerder",
+        "ab_x": 574867.949933829,
+        "ab_y": 5922278.82018718
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_59",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          575065.4959000072,
+          5926487.936199754
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Allermöhe-Billwerder",
+        "strasse": "Allermöher Deich ",
+        "hausnummer": "113",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Allermöhe",
+        "ab_x": 575065.495933641,
+        "ab_y": 5926487.93618227
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_60",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          576374.3799000075,
+          5925018.480199752
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Reitbrook",
+        "strasse": "Vorderdeich ",
+        "hausnummer": "128",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Reitbrook",
+        "ab_x": 576374.379932489,
+        "ab_y": 5925018.480184
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_61",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          573932.9609000066,
+          5921915.071199751
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Hohendeich",
+        "strasse": "Ochsenwerder Elbdeich ",
+        "hausnummer": "325",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Ochsenwerder",
+        "ab_x": 573932.960934656,
+        "ab_y": 5921915.07118759
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_62",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          571209.1939000057,
+          5925317.861199753
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Neudorf",
+        "strasse": "Elversweg ",
+        "hausnummer": "46b",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Ochsenwerder",
+        "ab_x": 571209.19393705,
+        "ab_y": 5925317.86118359
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_63",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          569963.3009000049,
+          5926893.846199755
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Spadenland",
+        "strasse": "Ruschorter Hauptdeich",
+        "hausnummer": "1",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Spadenland",
+        "ab_x": 569963.300938138,
+        "ab_y": 5926893.84618157
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_64",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          572092.3089000052,
+          5929787.498199756
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Moorfleet",
+        "strasse": "Sandwisch",
+        "hausnummer": "83",
+        "postleitzahl": 22113,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Moorfleet",
+        "ab_x": 572092.308936258,
+        "ab_y": 5929787.49817837
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_65",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          578426.1989000087,
+          5918013.418199747
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Fünfhausen",
+        "strasse": "Sülzbrackring ",
+        "hausnummer": "52",
+        "postleitzahl": 21037,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Kirchwerder",
+        "ab_x": 578426.198930703,
+        "ab_y": 5918013.41819218
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_66",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          572992.8419000063,
+          5934794.528199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Berliner Tor",
+        "strasse": "Bergmannring ",
+        "hausnummer": "6",
+        "postleitzahl": 22119,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Horn",
+        "ab_x": 572992.841935448,
+        "ab_y": 5934794.5281725
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_67",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          567816.4669000044,
+          5928277.112199755
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Kirchdorf",
+        "strasse": "Bei der Windmühle ",
+        "hausnummer": "61",
+        "postleitzahl": 21109,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wilhelmsburg",
+        "ab_x": 567816.466940041,
+        "ab_y": 5928277.1121801
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_68",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          569932.8549000045,
+          5926070.838199753
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Moorwerder",
+        "strasse": "Bauernstegel ",
+        "hausnummer": "1",
+        "postleitzahl": 21109,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wilhelmsburg",
+        "ab_x": 569932.854938178,
+        "ab_y": 5926070.8381827
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_69",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          568846.7549000045,
+          5924823.677199755
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Neuland",
+        "strasse": "Neuländer Elbdeich ",
+        "hausnummer": "245",
+        "postleitzahl": 21079,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neuland",
+        "ab_x": 568846.754939139,
+        "ab_y": 5924823.67718415
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_70",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          566766.6019000039,
+          5921479.815199751
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Rönneburg",
+        "strasse": "Küsterstieg",
+        "hausnummer": "1",
+        "postleitzahl": 21079,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rönneburg",
+        "ab_x": 566766.60194099,
+        "ab_y": 5921479.81518803
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_71",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          564695.1659000035,
+          5919838.440199752
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Sinstorf",
+        "strasse": "Beckedorfer Straße",
+        "hausnummer": "1",
+        "postleitzahl": 21077,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Sinstorf",
+        "ab_x": 564695.165942824,
+        "ab_y": 5919838.44018992
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_72",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          564369.8039000029,
+          5921452.989199753
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Marmstorf",
+        "strasse": "Elfenwiese ",
+        "hausnummer": "6",
+        "postleitzahl": 21077,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Marmstorf",
+        "ab_x": 564369.803943107,
+        "ab_y": 5921452.98918804
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_73",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          568752.325900004,
+          5932605.244199758
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Rothenburgsort-Veddel",
+        "strasse": "Billhorner Kanalstraße ",
+        "hausnummer": "45",
+        "postleitzahl": 20539,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Rothenburgsort",
+        "ab_x": 568752.325939203,
+        "ab_y": 5932605.24417503
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_74",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          565558.1909000033,
+          5928997.339199757
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Wilhelmsburg",
+        "strasse": "Rotenhäuser Straße",
+        "hausnummer": "73",
+        "postleitzahl": 21107,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Wilhelmsburg",
+        "ab_x": 565558.190942034,
+        "ab_y": 5928997.33917923
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_75",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          558106.2309000017,
+          5925162.023199756
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Hausbruch",
+        "strasse": "Rehrstieg ",
+        "hausnummer": "1",
+        "postleitzahl": 21149,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neugraben-Fischbek",
+        "ab_x": 558106.23094863,
+        "ab_y": 5925162.02318365
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_76",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          565171.4579000032,
+          5924858.170199754
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Harburg",
+        "strasse": "Lotsekai ",
+        "hausnummer": "1",
+        "postleitzahl": 21079,
+        "bemerkung": "temporär",
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Heimfeld",
+        "ab_x": 565171.457942388,
+        "ab_y": 5924858.17018407
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_77",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          561839.5709000023,
+          5927473.643199758
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Moorburg",
+        "strasse": "Moorburger Elbdeich ",
+        "hausnummer": "221",
+        "postleitzahl": 21079,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Moorburg",
+        "ab_x": 561839.570945324,
+        "ab_y": 5927473.64318098
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_78",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          557241.562900002,
+          5925362.047199754
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Neugraben",
+        "strasse": "In de Krümm ",
+        "hausnummer": "50",
+        "postleitzahl": 21147,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neugraben-Fischbek",
+        "ab_x": 557241.562949396,
+        "ab_y": 5925362.04718341
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_79",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          554921.6260000016,
+          5925244.711199756
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Fischbek",
+        "strasse": "Fischbeker Weg ",
+        "hausnummer": "28",
+        "postleitzahl": 21149,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neugraben-Fischbek",
+        "ab_x": 554921.625951444,
+        "ab_y": 5925244.71118353
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_80",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          563540.5369000027,
+          5924987.631199756
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Eißendorf",
+        "strasse": "Stader Straße ",
+        "hausnummer": "27",
+        "postleitzahl": 21075,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Heimfeld",
+        "ab_x": 563540.536943829,
+        "ab_y": 5924987.63118391
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_81",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          557883.1539000021,
+          5932152.181199758
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Finkenwerder",
+        "strasse": "Doggerbankweg",
+        "hausnummer": "1",
+        "postleitzahl": 21129,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Finkenwerder",
+        "ab_x": 557883.153948811,
+        "ab_y": 5932152.18117546
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_82",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          558111.3159000017,
+          5928876.803199759
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Francop",
+        "strasse": "Hohenwischer Straße",
+        "hausnummer": "89",
+        "postleitzahl": 21129,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Francop",
+        "ab_x": 558111.315948617,
+        "ab_y": 5928876.80317931
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_83",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          553788.2980000017,
+          5930201.708199758
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Neuenfelde-Nord",
+        "strasse": "Arp-Schnittger-Stieg",
+        "hausnummer": "39",
+        "postleitzahl": 21129,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neuenfelde",
+        "ab_x": 553788.297952437,
+        "ab_y": 5930201.70817771
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_84",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          551726.3780000007,
+          5932333.084199758
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Cranz",
+        "strasse": "Estedeich ",
+        "hausnummer": "111",
+        "postleitzahl": 21129,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Cranz",
+        "ab_x": 551726.377954253,
+        "ab_y": 5932333.0841752
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_85",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          552627.8570000011,
+          5929852.826199757
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Neuenfelde-Süd",
+        "strasse": "Nincoper Straße ",
+        "hausnummer": "147c",
+        "postleitzahl": 21129,
+        "ab_ort": "Hamburg",
+        "ab_ortsteil": "Neuenfelde",
+        "ab_x": 552627.856953464,
+        "ab_y": 5929852.82617811
+      },
+      "srsName": "EPSG:25832"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_FREIWILLIGE_FEUERWEHR_86",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          467183.42800000025,
+          5974995.912099782
+        ]
+      },
+      "properties": {
+        "bezeichnung": "Freiwillige Feuerwehr Neuwerk",
+        "strasse": "Insel Neuwerk",
+        "postleitzahl": 27499,
+        "ab_ort": "Hamburg-Insel Neuwerk",
+        "ab_x": 467183.428029337,
+        "ab_y": 5974995.91212421
+      },
+      "srsName": "EPSG:25832"
+    }
+  ]
+}
