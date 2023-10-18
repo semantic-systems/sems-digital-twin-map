@@ -1,0 +1,34 @@
+{
+    "display_name": "Kitas",
+    "default_show": false,
+    "files": {
+        "app_KitaEinrichtungen_EPSG_4326.json": {
+            "name": "Kita",
+            "color": "pink",
+            "type": "marker-cluster",
+            "icon-prefix": "fa",
+            "icon": "child-reaching",
+            "popup_properties": {
+                "Name": "Name", 
+                "Strasse": "Strasse", 
+                "Hausnr.": "Hausnr",
+                "Tel.Nr.": "Telefon",
+                "Email": "E-Mail"
+            }
+        },
+        "app_KitaEinrichtungen_EPSG_25832.json": {
+            "name": "Kita",
+            "color": "pink",
+            "type": "marker-cluster",
+            "icon-prefix": "fa",
+            "icon": "child-reaching",
+            "popup_properties": {
+                "Name": "Name", 
+                "Strasse": "Strasse", 
+                "Hausnr.": "Hausnr",
+                "Tel.Nr.": "Telefon",
+                "Email": "E-Mail"
+            }
+        }
+    }
+}

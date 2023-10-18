@@ -2,34 +2,6 @@
     "display_name": "Bedrohte Gruppen",
     "default_show": false,
     "files": {
-        "app_KitaEinrichtungen_EPSG_4326.json": {
-            "name": "Kita",
-            "color": "pink",
-            "type": "marker",
-            "icon-prefix": "fa",
-            "icon": "child-reaching",
-            "popup_properties": {
-                "Name": "Name", 
-                "Strasse": "Strasse", 
-                "Hausnr.": "Hausnr",
-                "Tel.Nr.": "Telefon",
-                "Email": "E-Mail"
-            }
-        },
-        "app_KitaEinrichtungen_EPSG_25832.json": {
-            "name": "Kita",
-            "color": "pink",
-            "type": "marker",
-            "icon-prefix": "fa",
-            "icon": "child-reaching",
-            "popup_properties": {
-                "Name": "Name", 
-                "Strasse": "Strasse", 
-                "Hausnr.": "Hausnr",
-                "Tel.Nr.": "Telefon",
-                "Email": "E-Mail"
-            }
-        },
         "app_perspektive_wohnen_bestehend_EPSG_4326.json": {
             "name": "Flüchtlingsunterkunft",
             "color": "lightgreen",

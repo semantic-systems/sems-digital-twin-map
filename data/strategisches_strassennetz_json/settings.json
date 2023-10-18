@@ -1,0 +1,28 @@
+{
+    "display_name": "Polizeikommissariate",
+    "default_show": false,
+    "files": {
+        "app_strategisches_strassennetz_EPSG_4326.json": {
+            "name": "Straße",
+            "color": "red",
+            "type": "geojson",
+            "popup_properties": {
+                "Name": "strassenname",
+                "Fahrbahnen": "bahnigkeit",
+                "Länge": "abschnittslaenge",
+                "Art": "wegeart"
+            }
+        },
+        "app_strategisches_strassennetz_EPSG_25832.json": {
+            "name": "Straße",
+            "color": "red",
+            "type": "geojson",
+            "popup_properties": {
+                "Name": "strassenname",
+                "Fahrbahnen": "bahnigkeit",
+                "Länge": "abschnittslaenge",
+                "Art": "wegeart"
+            }
+        }
+    }
+}
