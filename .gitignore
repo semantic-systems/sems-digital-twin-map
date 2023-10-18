@@ -1,0 +1,5 @@
+# Ignore map.html in the base folder, because it is usually larger than 100MB
+/map.html
+
+# Ignore VSCode files
+.vscode/

@@ -6,6 +6,7 @@
             "name": "Hauptdeichlinie",
             "color": "blue",
             "type": "geojson",
+            "line_weight": 20,
             "popup_properties": {
                 "Name": "anlagenname",
                 "Typ": "anlagentyp",
@@ -23,6 +24,7 @@
             "name": "Hauptdeichlinie",
             "color": "blue",
             "type": "geojson",
+            "line_weight": 20,
             "popup_properties": {
                 "Name": "anlagenname",
                 "Typ": "anlagentyp",
