@@ -5,7 +5,7 @@
         "app_stromnetz_emobility_EPSG_4326.json": {
             "name": "Ladestation",
             "color": "orange",
-            "type": "marker",
+            "type": "marker-cluster",
             "icon-prefix": "fa",
             "icon": "charging-station",
             "popup_properties": {
@@ -18,7 +18,7 @@
         "app_stromnetz_emobility_EPSG_25832.json": {
             "name": "Ladestation",
             "color": "orange",
-            "type": "marker",
+            "type": "marker-cluster",
             "icon-prefix": "fa",
             "icon": "charging-station",
             "popup_properties": {
