@@ -6,6 +6,7 @@
             "name": "Kommissariatsgebiet",
             "color": "darkblue",
             "type": "geojson",
+            "line_weight": 3,
             "popup_properties": {
                 "Kommissariat": "pk",
                 "Gebiet (qkm)": "berechnu_1"
@@ -15,6 +16,7 @@
             "name": "Kommissariatsgebiet",
             "color": "darkblue",
             "type": "geojson",
+            "line_weight": 3,
             "popup_properties": {
                 "Kommissariat": "pk",
                 "Gebiet (qkm)": "berechnu_1"
