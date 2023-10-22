@@ -10,5 +10,16 @@ services:
     volumes:
       - postgis_data:/var/lib/postgresql/data
 
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: rescue@mate.com
+      PGADMIN_DEFAULT_PASSWORD: rescuemate
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
 volumes:
   postgis_data:
+  pgadmin_data:

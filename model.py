@@ -43,6 +43,7 @@ class Point(Feature):
     id = Column(Integer, ForeignKey('features.id'), primary_key=True)
     icon_prefix = Column(String)
     icon_name = Column(String)
+    geometry_type = Column(String)  # Always 'POINT'
     geometry = Column(Geometry(geometry_type='POINT'))
     __mapper_args__ = {
         'polymorphic_identity': 'point'
