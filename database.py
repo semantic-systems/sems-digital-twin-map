@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, JSON, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
 from geoalchemy2 import Geometry
+
 
 Base = declarative_base()
 
@@ -45,3 +46,12 @@ class Style(Base):
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
     colormap = relationship('Colormap', back_populates='styles')
     feature_sets = relationship('FeatureSet', back_populates='style')
+
+# create a connection
+def connect_db(host="localhost", port=5432, user="postgres", password="rescuemate", echo=False):
+    # build the connection string
+    db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
+    engine = create_engine(db_string, echo=echo)
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+    return (engine, session)
