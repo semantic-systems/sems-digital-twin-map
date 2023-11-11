@@ -17,7 +17,7 @@ def main():
         build(verbose=True)
 
     # build the map
-    m = build_map(session)
+    m = build_map(session, verbose=True)
 
     # save the map
     m.save('map.html')
