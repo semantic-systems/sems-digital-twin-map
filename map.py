@@ -1,7 +1,8 @@
-import folium
-from folium.plugins import MarkerCluster
 from tqdm import tqdm
 import branca.colormap as cm
+
+from dash import Dash, html
+import dash_leaflet as dl
 
 # database imports
 from sqlalchemy import func
@@ -11,50 +12,177 @@ from shapely.wkb import loads
 # data models
 from database import Base, Feature, FeatureSet, Style, Colormap, connect_db
 
-# GeoJson objecs will be styled like this
-def create_style_function(style):
-    def style_function(feature):
+def style_to_dict(style):
+    """
+    Convert a Style from the database to a dictionary that can be used by dash-leaflet
+    """
+    style_dict = {
+        'color': style.color,
+        'fillColor': style.fill_color,
+        'weight': style.line_weight
+    }
 
-        # Default color from style settings
-        fillColor = style.fill_color
+    return style_dict
+
+# get a features lat and long
+def get_lat_long(feature, session):
+    """
+    Get the latitude and longitude of a feature, if its geometry type is 'Point'
+    returns a tuple of (lat, long)
+    """
+
+    assert feature.geometry_type == 'Point', 'Features geometry_type be "Point"'
+
+    geometry = feature.geometry
+
+    x, y = session.query(func.ST_X(Feature.geometry), func.ST_Y(Feature.geometry)).filter(Feature.id == feature.id).first()
+    position = (y, x)
+
+    return position
+
+def create_marker(feature, style=None, popup=None) -> dl.Marker:
+    """
+    Create a dash-leaflet Marker from a feature.
+    Don't use this, use create_awesome_marker() instead (much cooler)
+    """
+
+    position = get_lat_long(feature)
+
+    children = []
+
+    if style is not None:
+        icon = style.icon_name
+        icon_prefix = style.icon_prefix
         color = style.color
-        line_weight = style.line_weight
 
-        # if there is a colormap, use it
-        if style.colormap:
+    if popup is not None:
+        children.append(dl.Popup(content=popup))
 
-            # get the colormap information
-            colormap = style.colormap
-            min_color, max_color = colormap.min_color, colormap.max_color
-            min_value, max_value = colormap.min_value, colormap.max_value
-            colormap_property = colormap.property
+    marker = dl.Marker(
+        position=position,
+        children=children
+        )
 
-            # get the value from the features property
-            # if it doesnt exist, use the minimum value color
-            feature_properties = feature.get('properties', {})
-            property_value = feature_properties.get(colormap_property, colormap.min_value)
+    return marker
 
-            # build the colormap
-            # this uses a branca.colormap.LinearColormap
-            linear_colormap = cm.LinearColormap(
-                colors=[min_color, max_color],
-                vmin=min_value,
-                vmax=max_value,
-            )
+def create_geojson(feature, style=None, popup=None) -> dl.GeoJSON:
+    """
+    Create a dash-leaflet GeoJSON object from a feature.
+    """
 
-            # set the color
-            fillColor = linear_colormap(property_value)[:7]
-            color = fillColor
-        
-        # add more values here if needed
-        # see https://leafletjs.com/reference.html#path-option
-        return {
-            'fillColor': fillColor,
-            'color': color,
-            'weight': line_weight
-        }
+    children = []
+
+    if popup is not None:
+        children.append(dl.Popup(content=popup))
     
-    return style_function
+    if style is not None:
+        style_dict = style_to_dict(style)
+
+    return dl.GeoJSON(
+        data=feature,
+        style=style_dict,
+        children=children
+        )
+
+def feature_to_geojson(feature):
+    """
+    Convert a Feature from the database to a GeoJSON Feature object
+    """
+
+    properties = feature.properties
+    geometry_type = feature.geometry_type
+    feature_set = feature.feature_set
+
+    raw_geometry = feature.geometry.data
+    shape_geometry = loads(bytes(raw_geometry))
+    geojson_geometry = mapping(shape_geometry)
+
+    geojson =  {
+        "type": "Feature",
+        "geometry": geojson_geometry,
+        "properties": properties
+    }
+
+    return geojson
+
+# david is a god for making this work
+def create_awesome_marker(position=(0.0,0.0), style=None, popup=None, icon='circle', color='red') -> dl.DivMarker:
+    """
+    Create an awesome marker with a Font Awesome icon
+    - feature: Feature from the database
+    - style: Style from the database
+    - popup: Popup html content as string
+    - icon: Font Awesome icon name from fontawesome
+    - color: marker color as string. see lma.css for possible values (default: red)
+    """
+
+    children = []
+
+    if style is not None:
+        icon = style.icon_name
+        icon_prefix = style.icon_prefix # currently unused
+        color = style.color
+
+    if popup is not None:
+        children.append(dl.Popup(content=popup))
+
+    awesome_marker = dl.DivMarker(
+        position=position,
+        children=children,
+        iconOptions=dict(
+            html=f'<i class="awesome-marker awesome-marker-icon-{color} leaflet-zoom-animated leaflet-interactive"></i>'
+            f'<i class="fa fa-{icon} icon-white" aria-hidden="true" style="left: 1px !important;position: fixed;top: 2px; scale:120%;"></i>',
+            className='custom-div-icon',
+            iconSize=[20, 20],
+            iconAnchor=[10, 30],
+            tooltipAnchor=[10, -20],
+            popupAnchor=[-3, -31]
+        )
+    )
+
+    return awesome_marker
+
+
+def create_dash():
+    """
+    Creates a dash app. Also adds external stylesheets and scripts.
+    """
+    app = Dash(
+        __name__,
+        external_stylesheets=[
+            'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+            'http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css',
+            'https://raw.githubusercontent.com/lennardv2/Leaflet.awesome-markers/2.0/develop/dist/leaflet.awesome-markers.css',
+            'https://getbootstrap.com/1.0.0/assets/css/bootstrap-1.0.0.min.css',
+        ],
+        external_scripts=[
+            'http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js',
+            'https://kit.fontawesome.com/5ae05e6c33.js'
+        ]
+    )
+
+    app.layout = html.Div([
+    dl.Map(
+        [
+            dl.LayersControl(
+                [
+                    dl.BaseLayer(
+                        dl.TileLayer(
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        ),
+                        name='OpenStreetMap',
+                        checked=True,
+                        )
+                ],
+                id='layer_control'
+            )
+        ],
+        zoom=12,
+        center=(53.55, 9.99),
+        style={'width': '1000px', 'height': '500px'})
+])
+
+    return app
 
 # build the map
 def build_map(session, verbose=False):
@@ -63,90 +191,77 @@ def build_map(session, verbose=False):
     if verbose: print("Building the map")
     if verbose: print("================")
 
-    if verbose: print("Creating a folium.Map object... ", end='')
-    m = folium.Map(location=(53.55, 9.99), zoom_start=12)
+    if verbose: print("Creating the dash app...  ", end='')
+    app = create_dash()
     if verbose: print("Done!")
 
     # get all feature_sets
     # feature_sets = session.query(FeatureSet).all()
-    if verbose: print("Querying the database... ", end='')
+    if verbose: print("Getting all FeatureSets... ", end='')
     feature_sets = session.query(FeatureSet).filter(FeatureSet.name != "Straße").all()  # exclude Straße, very big dataset
     if verbose: print("Done!")
 
-    # iterate over all feature_sets
-    for feature_set in tqdm(feature_sets, disable=not verbose):
-        
-        # Create a FeatureGroup for this set of features
-        feature_group = folium.FeatureGroup(name=feature_set.name, show=False)
+    # get the layers control
+    layers_control = app.layout.children[0].children[0]
 
-        # get the style of this feature
+    if verbose: print("Building the map...        ", end='')
+
+    for feature_set in tqdm(feature_sets):
+
+        # get the features and style for this feature set
+        features = feature_set.features
         style = feature_set.style
 
-        # only display if there is a style for this feature
-        if style == None:
+        if style is None:
+            if verbose: print("No style for feature set " + feature_set.name + ". Skipping...")
             continue
+
+        # save all map objects of this feature_set in here
+        layer_group_children = []
 
         # get the popup properties of this feature
         popup_properties = style.popup_properties
-        
-        # iterate over all features in the feature_set
-        for feature in feature_set.features:
 
-            # get the style function
-            style_function = create_style_function(style)
-            
-            # build the popup window
+        for feature in features:
+
+            # get the properties for the popup
             popup_content = f"<b>{feature_set.name}</b><br>"
 
             for property in popup_properties:
                 current_property = popup_properties[property]
                 value = feature.properties.get(current_property, '')
                 popup_content += f"<b>{property}</b>: {value}<br>"
-            
+
             geometry_type = feature.geometry_type
 
-            # Create a Marker or a GeoJSON object depending on the geometry type
-            if geometry_type.upper() == 'POINT':
+            if geometry_type == "Point":
 
-                # Query the Point's geometry
-                x, y = session.query(func.ST_X(Feature.geometry), func.ST_Y(Feature.geometry)).filter(Feature.id == feature.id).first()
+                # old and boring markers
+                # marker = create_marker(feature, style, popup=popup_content)
 
-                # get the icon information
-                icon_prefix = style.icon_prefix
-                icon_name = style.icon_name
+                # new and cool markers
+                (lat, long) = get_lat_long(feature, session)
 
-                folium.Marker(
-                    location=[y, x], # Note the switch, as folium expects [lat, lon]
-                    popup=popup_content,
-                    icon=folium.Icon(icon=icon_name, prefix=icon_prefix, color=style.color),
-                    show=False
-                ).add_to(feature_group)
+                icon = style.icon_name
+                color = style.color
+
+                marker = create_awesome_marker(position=(lat, long), icon=icon, color=color, popup=popup_content)
+                layer_group_children.append(marker)
 
             else:
 
-                # Convert the geometry to a format folium can read
-                shape_geometry = loads(bytes(feature.geometry.data))
-                geojson_geometry = mapping(shape_geometry)
+                # create a geojson map object, shows a polygon
+                geojson_dict = feature_to_geojson(feature)
+                geojson = create_geojson(geojson_dict, style, popup=popup_content)
+                layer_group_children.append(geojson)
 
-                geojson_feature = {
-                    'type': 'Feature',
-                    'properties': feature.properties,
-                    'geometry': geojson_geometry
-                }
-
-                folium.GeoJson(
-                    geojson_feature, 
-                    style_function=style_function, 
-                    tooltip=popup_content,
-                    show=False
-                ).add_to(feature_group)
-                
-        feature_group.add_to(m)
-
-    folium.LayerControl().add_to(m)
+        # create a layer group for this feature set
+        layer_group = dl.LayerGroup(children=layer_group_children, id=feature_set.name)
+        overlay = dl.Overlay(layer_group, name=feature_set.name)
+        layers_control.children.append(overlay)
 
     if verbose: print("================")
-    if verbose: print("   Map built!")
+    if verbose: print("   Map built!   ")
     if verbose: print("================")
 
-    return m
+    return app

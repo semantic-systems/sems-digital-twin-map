@@ -1,6 +1,6 @@
 # internal imports
 from database import Base, Feature, FeatureSet, Style, Colormap, connect_db
-from map import build_map
+from map import build_map, create_dash
 from build import build
 
 # external imports
@@ -19,8 +19,8 @@ def main():
     # build the map
     m = build_map(session, verbose=True)
 
-    # save the map
-    m.save('map.html')
+    # run the app
+    m.run_server(debug=True)
 
 if __name__ == '__main__':
     main()

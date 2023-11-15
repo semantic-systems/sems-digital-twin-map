@@ -9,10 +9,10 @@ from geoalchemy2 import WKTElement
 from shapely.geometry import shape
 from database import Base, Feature, FeatureSet, Style, Colormap, connect_db
 
-# gather all geojson files
-# geojson files are located in their respective folders under data
-# files are then saved in a dictionary with the folder name as key
-def get_files(path='data'):
+def get_files(path='data') -> dict:
+    """
+    Returns a dictionary with the folder name as key and a list of files as value.
+    """
     files = {}
 
     for root, dirs, filenames in os.walk(path):
@@ -31,8 +31,10 @@ def get_files(path='data'):
 
     return files
 
-# takes in a path to a file and returns the json object
-def load_json(json_path, encoding='utf-8'):
+def load_json(json_path, encoding='utf-8') -> dict:
+    """
+    Loads a json file and returns the json data as a dictionary.
+    """
     json_data = {}
     with open(json_path, 'r', encoding=encoding) as settings_file:
         json_data = json.load(settings_file)
