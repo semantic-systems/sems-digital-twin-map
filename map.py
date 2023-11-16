@@ -131,7 +131,7 @@ def create_awesome_marker(position=(0.0,0.0), style=None, popup=None, icon='circ
         children=children,
         iconOptions=dict(
             html=f'<i class="awesome-marker awesome-marker-icon-{color} leaflet-zoom-animated leaflet-interactive"></i>'
-            f'<i class="fa fa-{icon} icon-white" aria-hidden="true" style="left: 1px !important;position: fixed;top: 2px; scale:120%;"></i>',
+            f'<i class="fa fa-{icon} icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
             className='custom-div-icon',
             iconSize=[20, 20],
             iconAnchor=[10, 30],
@@ -191,22 +191,22 @@ def build_map(session, verbose=False):
     if verbose: print("Building the map")
     if verbose: print("================")
 
-    if verbose: print("Creating the dash app...  ", end='')
+    if verbose: print("Creating the dash app...     ", end='')
     app = create_dash()
     if verbose: print("Done!")
 
     # get all feature_sets
     # feature_sets = session.query(FeatureSet).all()
-    if verbose: print("Getting all FeatureSets... ", end='')
+    if verbose: print("Getting all FeatureSets...   ", end='')
     feature_sets = session.query(FeatureSet).filter(FeatureSet.name != "Straße").all()  # exclude Straße, very big dataset
     if verbose: print("Done!")
 
     # get the layers control
     layers_control = app.layout.children[0].children[0]
 
-    if verbose: print("Building the map...        ", end='')
+    if verbose: print("Adding map objects...        ", end='')
 
-    for feature_set in tqdm(feature_sets):
+    for feature_set in tqdm(feature_sets, ):
 
         # get the features and style for this feature set
         features = feature_set.features

@@ -10,8 +10,8 @@ Version: 1.0
   width: 35px;
   height: 46px;
   position:absolute;
-  left:-10px;
-  top:-10px;
+  left: -10px;
+  top:-9px;
   display: block;
   text-align: center;
   z-index: -10;

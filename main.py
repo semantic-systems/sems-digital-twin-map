@@ -20,7 +20,7 @@ def main():
     m = build_map(session, verbose=True)
 
     # run the app
-    m.run_server(debug=True)
+    m.run()
 
 if __name__ == '__main__':
     main()
