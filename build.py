@@ -1,4 +1,3 @@
-from folium.plugins import MarkerCluster
 import os
 import json
 from tqdm import tqdm

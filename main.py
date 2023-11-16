@@ -1,6 +1,6 @@
 # internal imports
-from database import Base, Feature, FeatureSet, Style, Colormap, connect_db
-from map import build_map, create_dash
+from database import connect_db
+from map import build_map
 from build import build
 
 # external imports
@@ -20,7 +20,8 @@ def main():
     m = build_map(session, verbose=True)
 
     # run the app
-    m.run()
+    # currently configured for a docker container (host='0.0.0.0')
+    m.run(host='0.0.0.0')
 
 if __name__ == '__main__':
     main()
