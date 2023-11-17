@@ -112,15 +112,16 @@ def create_awesome_marker(position=(0.0,0.0), style=None, popup=None, icon='circ
     - feature: Feature from the database
     - style: Style from the database
     - popup: Popup html content as string
-    - icon: Font Awesome icon name from fontawesome
-    - color: marker color as string. see lma.css for possible values (default: red)
+    - icon: Font Awesome icon name from https://fontawesome.com/icons
+    - color: marker color as string. Possible values: ```{red, darkred, lightred, orange, beige, green, darkgreen,
+    lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black}```
     """
 
     children = []
 
     if style is not None:
         icon = style.icon_name
-        icon_prefix = style.icon_prefix # currently unused
+        icon_prefix = style.icon_prefix # currently unused, we only use fontawesome
         color = style.color
 
     if popup is not None:
@@ -179,8 +180,8 @@ def create_dash():
         ],
         zoom=12,
         center=(53.55, 9.99),
-        style={'width': '1000px', 'height': '500px'})
-])
+        style={'width': '100vw', 'height': '100vh'})
+    ])
 
     return app
 
@@ -204,9 +205,9 @@ def build_map(session, verbose=False):
     # get the layers control
     layers_control = app.layout.children[0].children[0]
 
-    if verbose: print("Adding map objects...        ", end='')
+    if verbose: print("Adding map objects...        ")
 
-    for feature_set in tqdm(feature_sets, ):
+    for feature_set in tqdm(feature_sets, disable=not verbose):
 
         # get the features and style for this feature set
         features = feature_set.features
