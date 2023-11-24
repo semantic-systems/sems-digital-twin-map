@@ -1,7 +1,8 @@
 from tqdm import tqdm
 import branca.colormap as cm
 
-from dash import Dash, html
+from dash import Dash, html, dcc, Output, Input, State, callback
+from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 
 # database imports
@@ -12,7 +13,7 @@ from shapely.wkb import loads
 # data models
 from database import Base, Feature, FeatureSet, Style, Colormap, connect_db
 
-def style_to_dict(style):
+def style_to_dict(style) -> dict:
     """
     Convert a Style from the database to a dictionary that can be used by dash-leaflet
     """
@@ -24,31 +25,33 @@ def style_to_dict(style):
 
     return style_dict
 
-# get a features lat and long
-def get_lat_long(feature, session):
+def get_lat_long(feature) -> tuple:
     """
     Get the latitude and longitude of a feature, if its geometry type is 'Point'
     returns a tuple of (lat, long)
     """
 
-    assert feature.geometry_type == 'Point', 'Features geometry_type be "Point"'
+    assert feature.geometry_type == 'Point', 'Features geometry_type must be "Point"'
 
     geometry = feature.geometry
+    shapely_geometry = loads(bytes(geometry.data), hex=True)
 
-    x, y = session.query(func.ST_X(Feature.geometry), func.ST_Y(Feature.geometry)).filter(Feature.id == feature.id).first()
-    position = (y, x)
+    longitude = shapely_geometry.x
+    latitude = shapely_geometry.y
 
-    return position
+    return (latitude, longitude)
 
-def create_marker(feature, style=None, popup=None) -> dl.Marker:
+def create_marker(feature, popup=None) -> dl.Marker:
     """
-    Create a dash-leaflet Marker from a feature.
+    Create a simple dash-leaflet Marker from a feature.
     Don't use this, use create_awesome_marker() instead (much cooler)
     """
 
     position = get_lat_long(feature)
 
     children = []
+
+    style = feature.feature_set.style
 
     if style is not None:
         icon = style.icon_name
@@ -65,11 +68,28 @@ def create_marker(feature, style=None, popup=None) -> dl.Marker:
 
     return marker
 
-def create_geojson(feature, style=None, popup=None) -> dl.GeoJSON:
+def create_geojson(feature, popup=None) -> dl.GeoJSON:
     """
-    Create a dash-leaflet GeoJSON object from a feature.
+    Create a dash-leaflet GeoJSON object from a database Feature.
     """
 
+    properties = feature.properties
+    geometry_type = feature.geometry_type
+    feature_set = feature.feature_set
+    style = feature_set.style
+
+    # create a geojson dict from the feature
+    raw_geometry = feature.geometry.data
+    shape_geometry = loads(bytes(raw_geometry))
+    geojson_geometry = mapping(shape_geometry)
+
+    geojson_dict =  {
+        "type": "Feature",
+        "geometry": geojson_geometry,
+        "properties": properties
+    }
+
+    # create the dl.GeoJSON object
     children = []
 
     if popup is not None:
@@ -77,36 +97,18 @@ def create_geojson(feature, style=None, popup=None) -> dl.GeoJSON:
     
     if style is not None:
         style_dict = style_to_dict(style)
-
-    return dl.GeoJSON(
-        data=feature,
+    
+    geojson = dl.GeoJSON(
+        data=geojson_dict,
         style=style_dict,
-        children=children
-        )
-
-def feature_to_geojson(feature):
-    """
-    Convert a Feature from the database to a GeoJSON Feature object
-    """
-
-    properties = feature.properties
-    geometry_type = feature.geometry_type
-    feature_set = feature.feature_set
-
-    raw_geometry = feature.geometry.data
-    shape_geometry = loads(bytes(raw_geometry))
-    geojson_geometry = mapping(shape_geometry)
-
-    geojson =  {
-        "type": "Feature",
-        "geometry": geojson_geometry,
-        "properties": properties
-    }
+        children=children,
+        id=f'geojson-{feature.id}'
+    )
 
     return geojson
 
 # david is a god for making this work
-def create_awesome_marker(position=(0.0,0.0), style=None, popup=None, icon='circle', color='red') -> dl.DivMarker:
+def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
     """
     Create an awesome marker with a Font Awesome icon
     - feature: Feature from the database
@@ -117,7 +119,12 @@ def create_awesome_marker(position=(0.0,0.0), style=None, popup=None, icon='circ
     lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black}```
     """
 
+    position = get_lat_long(feature)
+
+    style = feature.feature_set.style
+
     children = []
+
 
     if style is not None:
         icon = style.icon_name
@@ -138,131 +145,230 @@ def create_awesome_marker(position=(0.0,0.0), style=None, popup=None, icon='circ
             iconAnchor=[10, 30],
             tooltipAnchor=[10, -20],
             popupAnchor=[-3, -31]
-        )
+        ),
+        id=f'marker-{id}'
     )
 
     return awesome_marker
 
+def feature_to_map_object(feature, popup=None):
+    """
+    Takes in a Feature from the database and returns a dash-leaflet object.
+    Either a awesome Marker or a GeoJSON object, based on its geometry_type
+    """
 
-def create_dash():
+    geometry_type = feature.geometry_type
+
+    # if the geometry type is a point, create a marker
+    # otherwise create a geojson object
+    if geometry_type == 'Point':
+        map_object = create_awesome_marker(feature, popup=popup)
+
+    else:
+        map_object = create_geojson(feature, popup=popup)
+
+    return map_object
+
+def feature_set_to_layer_group(feature_set) -> dl.LayerGroup:
     """
-    Creates a dash app. Also adds external stylesheets and scripts.
+    Takes in a FeatureSet from the database and returns a dash-leaflet LayerGroup
+    that contains all AwesomeMarkers or GeoJSON objects of the FeatureSet
     """
-    app = Dash(
-        __name__,
-        external_stylesheets=[
-            'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
-            'http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css',
-            'https://raw.githubusercontent.com/lennardv2/Leaflet.awesome-markers/2.0/develop/dist/leaflet.awesome-markers.css',
-            'https://getbootstrap.com/1.0.0/assets/css/bootstrap-1.0.0.min.css',
-        ],
-        external_scripts=[
-            'http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js',
-            'https://kit.fontawesome.com/5ae05e6c33.js'
-        ]
+
+    map_objects = []
+
+    # get the popup properties of this feature
+    style = feature_set.style
+    popup_properties = style.popup_properties
+
+    for feature in feature_set.features:
+
+        properties = feature.properties
+            
+        # build the popup window
+        popup_content = f"<b>{feature_set.name}</b><br>"
+
+        for property in popup_properties:
+            current_property = popup_properties[property]
+            value = properties.get(current_property, '')
+            popup_content += f"<b>{property}</b>: {value}<br>"
+    
+        map_object = feature_to_map_object(feature, popup_content)
+        map_objects.append(map_object)
+    
+    layer_group = dl.LayerGroup(
+        children=map_objects,
+        id=f'layergroup-{feature_set.id}'
     )
 
-    app.layout = html.Div([
-    dl.Map(
-        [
-            dl.LayersControl(
-                [
-                    dl.BaseLayer(
-                        dl.TileLayer(
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        ),
-                        name='OpenStreetMap',
-                        checked=True,
-                        )
-                ],
-                id='layer_control'
-            )
-        ],
-        zoom=12,
-        center=(53.55, 9.99),
-        style={'width': '100vw', 'height': '100vh'})
-    ])
+    return layer_group
 
-    return app
+def overlay_id_to_layer_group(overlay_id) -> dl.LayerGroup:
+    """
+    Takes in an overlay_id and returns the corresponding layer group.
+    This is a wrapper for feature_set_to_layer_group()
+    """
 
-# build the map
-def build_map(session, verbose=False):
+    engine, session = connect_db()
 
-    if verbose: print("================")
-    if verbose: print("Building the map")
-    if verbose: print("================")
+    # get the feature set with the given id
+    feature_set = session.query(FeatureSet).get(overlay_id)
 
-    if verbose: print("Creating the dash app...     ", end='')
-    app = create_dash()
-    if verbose: print("Done!")
+    # build the layer group for this feature set
+    layer_group = feature_set_to_layer_group(feature_set)
 
-    # get all feature_sets
-    # feature_sets = session.query(FeatureSet).all()
-    if verbose: print("Getting all FeatureSets...   ", end='')
-    feature_sets = session.query(FeatureSet).filter(FeatureSet.name != "Straße").all()  # exclude Straße, very big dataset
-    if verbose: print("Done!")
+    # close database connection
+    session.close()
+    engine.dispose()
 
-    # get the layers control
-    layers_control = app.layout.children[0].children[0]
+    return layer_group
 
-    if verbose: print("Adding map objects...        ")
+app = Dash(
+    __name__,
+    external_stylesheets=[
+        'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+        'http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css',
+        'https://raw.githubusercontent.com/lennardv2/Leaflet.awesome-markers/2.0/develop/dist/leaflet.awesome-markers.css',
+        'https://getbootstrap.com/1.0.0/assets/css/bootstrap-1.0.0.min.css',
+    ],
+    external_scripts=[
+        'http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js',
+        'https://kit.fontawesome.com/5ae05e6c33.js'
+    ]
+)
 
-    for feature_set in tqdm(feature_sets, disable=not verbose):
+# get all available feature sets
+engine, session = connect_db()
+feature_sets = session.query(FeatureSet).filter(FeatureSet.name != "Straße").all()  # exclude Straße, very big dataset
 
-        # get the features and style for this feature set
-        features = feature_set.features
-        style = feature_set.style
+# close database connection
+session.close()
+engine.dispose()
 
-        if style is None:
-            if verbose: print("No style for feature set " + feature_set.name + ". Skipping...")
-            continue
+# create the map layout
+app.layout = html.Div([
+        dl.Map(
+            [
+                dl.TileLayer(
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    id='tile_layer_osm'
+                )
+            ],
+            zoom=12,
+            center=(53.55, 9.99),
+            style={
+                'width': '100vw', 
+                'height': '100vh',
+                'display': 'inline-block',
+                'position': 'relative'
+                },
+            id='map'
+            ),
+        dcc.Store(id='active_overlays', data=[]),   # we store the active overlays in here
+        html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
+            dcc.Checklist(
+                id='overlay_checklist',
+                options=[{'label': feature_set.name, 'value': feature_set.id} for feature_set in feature_sets],
+                value=[]
+            ),
+            style={
+            'position': 'absolute',
+            'float': 'right',
+            'margin': '10px',
+            'background-color': 'white',
+            'border': '1px solid #ccc',
+            'padding': '10px',
+            'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'border-radius': '5px',
+            'max-height': '400px',
+            'overflow-y': 'auto',
+            'z-index': '1000',
+            'right': '0',
+            'top': '0'
+            }
+        ),
+    ],
+    style={'display': 'flex', 'flex-wrap': 'wrap'}
+    )
 
-        # save all map objects of this feature_set in here
-        layer_group_children = []
+@app.callback(
+    [Output('map', 'children'), Output('active_overlays', 'data')],
+    [Input('overlay_checklist', 'value')],
+    [State('map', 'children'), State('active_overlays', 'data')]
+)
+def update_map(selected_overlays, map_children, active_overlays_data):
+    """
+    This callback is triggered when the overlay_checklist changes.
+    It updates the map children and the active_overlays_data.
+    """
 
-        # get the popup properties of this feature
-        popup_properties = style.popup_properties
+    # first, divide the map children into layer groups and non-layer groups
+    # we only want to manipulate the layer groups (map_children_layergroup)
+    map_children_no_layergroup = []
+    map_children_layergroup = []
 
-        for feature in features:
+    for child in map_children:
 
-            # get the properties for the popup
-            popup_content = f"<b>{feature_set.name}</b><br>"
+        # get the childs id
+        id = child['props']['id']
 
-            for property in popup_properties:
-                current_property = popup_properties[property]
-                value = feature.properties.get(current_property, '')
-                popup_content += f"<b>{property}</b>: {value}<br>"
+        # check if the child is a layer group
+        # layer groups have an id that starts with 'layergroup'
+        if id.startswith('layergroup'):
+            map_children_layergroup.append(child)
+        else:
+            map_children_no_layergroup.append(child)
+    
+    # compare selected_overlays with active_overlays_data
+    # find out if an overlay was selected or deselected
+    # if an overlay was selected, add it to the map
+    # if an overlay was deselected, remove it from the map
+    if selected_overlays != active_overlays_data:
 
-            geometry_type = feature.geometry_type
+        # get the overlay that was selected or deselected
+        changed_overlay = list(set(selected_overlays) ^ set(active_overlays_data))[0]
 
-            if geometry_type == "Point":
+        # check if the overlay was selected or deselected
+        if changed_overlay in selected_overlays:
+            # overlay was selected
+            # add it to the map
 
-                # old and boring markers
-                # marker = create_marker(feature, style, popup=popup_content)
+            # get the layer group
+            layer_group = overlay_id_to_layer_group(changed_overlay)
 
-                # new and cool markers
-                (lat, long) = get_lat_long(feature, session)
+            # add the layer group to the map
+            map_children_layergroup.append(layer_group)
 
-                icon = style.icon_name
-                color = style.color
+        else:
+            # overlay was deselected
+            # remove it from the map
 
-                marker = create_awesome_marker(position=(lat, long), icon=icon, color=color, popup=popup_content)
-                layer_group_children.append(marker)
+            # get the layer group id
+            layer_group_id = f'layergroup-{changed_overlay}'
 
-            else:
+            # search for the layer group in the map children
+            for child in map_children_layergroup:
 
-                # create a geojson map object, shows a polygon
-                geojson_dict = feature_to_geojson(feature)
-                geojson = create_geojson(geojson_dict, style, popup=popup_content)
-                layer_group_children.append(geojson)
+                # if the layer group was found, remove it from the map children
+                if child['props']['id'] == layer_group_id:
+                    map_children_layergroup.remove(child)
+    else:
+        # no overlays were selected or deselected, do nothing
+        # (this should never happen)
+        raise PreventUpdate
 
-        # create a layer group for this feature set
-        layer_group = dl.LayerGroup(children=layer_group_children, id=feature_set.name)
-        overlay = dl.Overlay(layer_group, name=feature_set.name)
-        layers_control.children.append(overlay)
+    # update the active_overlays_data
+    active_overlays_data = selected_overlays
 
-    if verbose: print("================")
-    if verbose: print("   Map built!   ")
-    if verbose: print("================")
+    # combine the map children again
+    new_map_children = map_children_no_layergroup + map_children_layergroup
 
+    # return the updated map children and active_overlays_data
+    return new_map_children, active_overlays_data
+
+# returns the app object for use in main.py
+def get_app() -> Dash:
+    """
+    Returns the dash app object
+    """
     return app

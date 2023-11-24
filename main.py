@@ -1,6 +1,6 @@
 # internal imports
 from database import connect_db
-from map import build_map
+from map import get_app
 from build import build
 
 # external imports
@@ -15,9 +15,13 @@ def main():
     # if not, rebuild the database
     if not inspect(engine).has_table('features'):
         build(verbose=True)
+    
+    # close the db connection
+    session.close()
+    engine.dispose()
 
-    # build the map
-    m = build_map(session, verbose=True)
+    # get the map app
+    m = get_app()
 
     # run the app
     # currently configured for a docker container (host='0.0.0.0')
