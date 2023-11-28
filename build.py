@@ -19,7 +19,7 @@ def get_files(path='data') -> dict:
 
             # get the folder name after data\
             # i.e. emobility_json or hafengebiets_json
-            folder = root.split('\\')[1]
+            folder = root.split(os.sep)[-1]
 
             # create a new list if the folder name is not in the dictionary
             if folder not in files:

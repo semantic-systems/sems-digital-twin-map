@@ -1,0 +1,2019 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.84308080000005,
+                    53.4626200000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8001",
+                "description": "Scheideholztwiete - rechts in Scheideholzweg - links in Kiesbarg - rechts in Schnuckendrift bis Ende - Parkplatzzufahrt links durch den Schlagbaum - unbefestigten Sandweg \"Fischbektal\" folgen - nach 470 m erste Abfahrt links - Sandweg 250 m folgen ==> RP",
+                "WGS_Breite": "53.4626200",
+                "WGS_Laenge": "9.8430810",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.84249790000007,
+                    53.4571356000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8002",
+                "description": "Scheideholztwiete - in Scheideholzweg - in Kiesbarg - rechts in Schnuckendrift bis Ende - Vor Parkplatzzufahrt links durch Schlagbaum, Sandweg \"Fischbektal\" nach ca. 1,2 km ==> RP",
+                "WGS_Breite": "53.4571360",
+                "WGS_Laenge": "9.8424980",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.83744210000003,
+                    53.4542298000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8003",
+                "description": "Scharlbarg  rechts in Scharlbargstieg - in Richtung Segelfluggelände am Parkplatz links durch den Schlagbaum - Hauptweg folgen - nach 300 m rechts halten - am Ende nach links abbiegen - unbefestigten Start-/Landebahn 900 m folgen -Aussichtsplateau ==> R",
+                "WGS_Breite": "53.4542300",
+                "WGS_Laenge": "9.8374420",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.84470690000006,
+                    53.4505727000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8004",
+                "description": "Scheideholztwiete - rechts in Scheideholzweg -links in Kiesbarg - rechts in Schnuckendrift bis Ende - Parkplatzzufahrt links durch den Schlagbaum, dem unbefestigten Sandweg \"Fischbektal\" ca. 2,0 km bis zum Rettungspunkt folgen.",
+                "WGS_Breite": "53.4505730",
+                "WGS_Laenge": "9.8447070",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.85447410000006,
+                    53.4429363
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8005",
+                "description": "Falkenbergsweg, Verlauf 2,1 km folgen - rechts in Quellgrund, links in Wettloop -Verlauf in NSG folgen -zweiten Weg links \"Bei den Heidehütten\" 500 m bis ==> RP. Bei schlechter Witterung die erste Abfahrt links vor dem Langhügelgrab, Verlauf 700 m ==>",
+                "WGS_Breite": "53.4429360",
+                "WGS_Laenge": "9.8544740",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.86984470000004,
+                    53.4633263
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8006",
+                "description": "von B73 in den Falkenbergsweg abbiegen und dem Verlauf ca. 900 m folgen - dann links durch den Schlagbaum dem Neugrabener Heideweg ca. 300 m bis zum Rettungspunkt folgen.",
+                "WGS_Breite": "53.4633260",
+                "WGS_Laenge": "9.8698450",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.87786270000003,
+                    53.4597078
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8007",
+                "description": "von B73 in den Falkenbergsweg abbiegen 1,5 km folgen, links durch den Schlagbaum dem Bredenbergsweg 800 m folgen. Zweite Anfahrt: B73 in den Ehestorfer Heuweg 1. Abfahrt rechts in den Bredenbergsweg -duch Schlagbaum in das Naturschutzgebiet 300 m ==> RP",
+                "WGS_Breite": "53.4597080",
+                "WGS_Laenge": "9.8778630",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.87725190000003,
+                    53.4534087000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8008",
+                "description": "von B73 in den Falkenbergsweg,Verlauf ca. 2,0 km folgen - hinter der Bushaltestelle links in das Bauernholztal  - Am Beginn der Kehre gerade durch den Schlagbaum in das Naturschutzgebiet und dem Weg  450 m bis zum Wendepunkt folgen.",
+                "WGS_Breite": "53.4534090",
+                "WGS_Laenge": "9.8772520",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.86971980000004,
+                    53.4453634000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8009",
+                "description": "Falkenbergsweg - Buskehre Waldfrieden - über Buskehre der Verlängerung des Falkenbergsweges  450 m Richtung Süden folgen. RP an der Wegegabelung Richtung Wildpark(nach SO), bzw. Moisburger Stein(nach SW).",
+                "WGS_Breite": "53.4453630",
+                "WGS_Laenge": "9.8697200",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.91000700000006,
+                    53.4679984
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8010",
+                "description": "Höhe Cuxhavener Straße 55C über den Parkplatz \"Kärntner Hütte\" durch den Schlagbaum sofort links abbiegen (Findling \"Skigebiet Reiherberg\") - Weg  400 m über den \"Totenkeller\" bis zum Fuß des Reiherberg folgen und wenden (Vorsicht bei nasser Witte",
+                "WGS_Breite": "53.4679980",
+                "WGS_Laenge": "9.9100070",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.90612020000003,
+                    53.4641275000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8011",
+                "description": "Höhe Cuxhavener Straße 55C über den Parkplatz \"Kärntner Hütte\" der Stadtscheide 800 m folgen - Wegekreuzung ==> RP. 2. Anfahrt: Ehestorfer Heuweg -Revierförsterei Hausbruch - dem Mardergrund 500 m folgen - rechts auf Schäferstieg 800 m folgen ==>",
+                "WGS_Breite": "53.4641270",
+                "WGS_Laenge": "9.9061200",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.90439030000004,
+                    53.4575214000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8012",
+                "description": "Höhe Cuxhavener Straße 55C - Parkplatz \"Kärntner Hütte\" - Stadtscheide  ca. 1,7 km  folgen. RP auf Höhe des links abgehenden Kaiserstuhlweges.    2. Anfahrt: Ehestorfer Weg - Parkplatz \"Elf Buchen\" durch den Schlagbaum Stadtscheide 1,6 km folgen ==>",
+                "WGS_Breite": "53.4575210",
+                "WGS_Laenge": "9.9043900",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.92067170000006,
+                    53.4610518
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8013",
+                "description": "Höhe Cuxhavener Straße 55C - Parkplatz \"Kärntner Hütte\" Stadtscheide  1,2 km folgen -links in Stadtweg abbiegen 900 m folgen. Kreuzung ==> RP.  2. Anfahrt: Kuhtrift durch Tunnel A7 links - Häuser an der Kuhtrift rechts auf Kaiserstuhlweg-Kreuzung ==",
+                "WGS_Breite": "53.4610520",
+                "WGS_Laenge": "9.9206720",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.92371630000002,
+                    53.4555289
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8014",
+                "description": "über die Fußgängerbrücke (max. 12 t) vom Parkplatz gegenüber Gaststätte \"Majestätische Aussicht\" Ehestorfer Weg",
+                "WGS_Breite": "53.4555290",
+                "WGS_Laenge": "9.9237160",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.91665820000002,
+                    53.4470052
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8015",
+                "description": "Parkplatz \"11-Buchen\" Ehestorfer Weg/Stadtscheide",
+                "WGS_Breite": "53.4470050",
+                "WGS_Laenge": "9.9166580",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.92876960000006,
+                    53.4428148000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8016",
+                "description": "Beerentalweg bis zum Ende, dann dem Waldweg folgen",
+                "WGS_Breite": "53.4428150",
+                "WGS_Laenge": "9.9287700",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.92299030000004,
+                    53.4324702000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8017",
+                "description": "Kreuzung Eißendorfer Waldweg/Vahrendorfer Stadtweg",
+                "WGS_Breite": "53.4324700",
+                "WGS_Laenge": "9.9229900",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.92234410000003,
+                    53.4256983000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8018",
+                "description": "Kreuzung Eißendorfer Waldweg/Vahrendorfer Stadtweg, dann Langkuhlenweg weiter bis Querweg",
+                "WGS_Breite": "53.4256980",
+                "WGS_Laenge": "9.9223440",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.91276730000003,
+                    53.4225157000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8019",
+                "description": "von Sottorf Straße Am Grassol Richtung O bis zum Waldrand",
+                "WGS_Breite": "53.4225160",
+                "WGS_Laenge": "9.9127670",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.93797700000005,
+                    53.4653698000001
+                ]
+            },
+            "properties": {
+                "name": "HH-H-8020",
+                "description": "von der Stader Strasse Hausnummer 203 nach S, Reitstall bleibt auf der rechten Seite",
+                "WGS_Breite": "53.4653700",
+                "WGS_Laenge": "9.9379770",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.111182,
+                    53.7418940000001
+                ]
+            },
+            "properties": {
+                "name": "HH-AE-01",
+                "description": "Aus Norderstedt: Kreuzung B432/ Tangstedt, Duvenstedt ca. 2,4 km NO der B432 folgen, in die Straße \"Rethfurt\" abbiegen, ca 750 m folgen ==> RP; Aus Richtung SE: Nach Kreuzung B432/ B75 (Kayhude)rechts in \"Rethfurt\" abbiegen, ca 750 m  folgen ==> RP",
+                "WGS_Breite": "53.7418940",
+                "WGS_Laenge": "10.1111820",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1185330000001,
+                    53.739178
+                ]
+            },
+            "properties": {
+                "name": "HH-AE-02",
+                "description": "Aus Norderstedt: Kreuzung B432/Tangstedt ca. 1,8 km NO der B432 folgen, Bushaltestelle rechts abbiegen, Waldparkplatz==> RP; Aus Richtung SE: ca 1,4 km SW der Kreuzung B432/B75 (Kayhude)- Bushaltestelle links von der B432 auf Waldparkplatz abbiegen==> R",
+                "WGS_Breite": "53.7391780",
+                "WGS_Laenge": "10.1185330",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.253841,
+                    53.4746480000001
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7001",
+                "description": "Anfahrt über B5 Rothenauschaussee, Höhe Haus Nr. 85 = Einfahrt, bis Forstschranke ca. 100m Fahren",
+                "WGS_Breite": "53.4746480",
+                "WGS_Laenge": "10.2538410",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.2287030000001,
+                    53.492492
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7002",
+                "description": "Anfahrt über Reinbeker Weg. bis Luisen-Gymnasium (Haus.-Nr. 76), weiter gerade aus in die Sackgasse Richtung Wald ca. 50m bis zur Forstschranke und Kinderspielplatz",
+                "WGS_Breite": "53.4924920",
+                "WGS_Laenge": "10.2287030",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.195345,
+                    53.4971610000001
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7003",
+                "description": "Anfahrt über Riehlstr. Bis Haus Nr. 64 = Christopherus Kirche - auf dieser Ecke = Eingang Waldweg",
+                "WGS_Breite": "53.4971610",
+                "WGS_Laenge": "10.1953450",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.11317,
+                    53.4788750000001
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7004",
+                "description": "Anfahrt über Reithbrooker Westerdeich, von dort abbiegen in den Reithdeich ca. 400m bis zur Schranke NSG",
+                "WGS_Breite": "53.4788750",
+                "WGS_Laenge": "10.1131700",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.31647,
+                    53.4447250000001
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7005",
+                "description": "Anfahrt über Escheburger Weg, Höhe Escheburger Weg Haus-Nr. 4 abbiegen in Borghorster Hauptdeich, ca. 400m bis zum Wendeplatz fahren",
+                "WGS_Breite": "53.4447250",
+                "WGS_Laenge": "10.3164700",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.395185,
+                    53.429734
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7006",
+                "description": "Anfahrt über B5 Geesthacht. Aus Geesthacht kommend Berliner Straße 133 bfindet sich die Gastronomie \"Alte Försterei\" -  ca. 1,3 Km weiter auf der rechten Seite befindet sich eine Waldeinfahrt",
+                "WGS_Breite": "53.4297340",
+                "WGS_Laenge": "10.3951850",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.383294,
+                    53.42675
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7007",
+                "description": "Anfahrt über Johannes-Ritter-Str. bis Haus-Nr. 95 - 50m weiter gerade aus = Toreinfahrt der alten Edemundsthal-Klinik",
+                "WGS_Breite": "53.4267500",
+                "WGS_Laenge": "10.3832940",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.2518180000001,
+                    53.4771860000001
+                ]
+            },
+            "properties": {
+                "name": "HH-B-7008",
+                "description": "Anfahrt über Justus-Brinkmann-Str.  (Bethesta Krankenhaus), dann in die August-Bebel-Str. bis Haus-Nr. 205 (Alstergärtner), dann gerade weiter in den erdgebundenen Weg ca. 100m",
+                "WGS_Breite": "53.4771860",
+                "WGS_Laenge": "10.2518180",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.352039,
+                    53.6317310000001
+                ]
+            },
+            "properties": {
+                "name": "HH-GR-0001",
+                "description": "Anfahrt über Pefferberg (Großensee), Abzweig Hamburger Wasserwerk",
+                "WGS_Breite": "53.6317310",
+                "WGS_Laenge": "10.3520390",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.356503,
+                    53.6328510000001
+                ]
+            },
+            "properties": {
+                "name": "HH-GR-0002",
+                "description": "Anfahrt über Pefferberg (Großensee) oder Großenseestr. (Lütjensee) bis Parkplatz Nordstrand",
+                "WGS_Breite": "53.6328510",
+                "WGS_Laenge": "10.3565030",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.136694,
+                    53.751317
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6001",
+                "description": "In der Ortschaft Kayhude von der B432 auf die B75 abbiegen, nach 400 m rechts abbiegen (Gaststätte Alsterschleuse), dem Rader Weg 150 m folgen, an der Abzw. Ehlersberger Weg ==> RP",
+                "WGS_Breite": "53.7513170",
+                "WGS_Laenge": "10.1366940",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.136134,
+                    53.7417970000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6002",
+                "description": "In der Ortschaft Kayhude von der B432 auf die B75 abbiegen, nach 400 m rechts abbiegen (Gaststätte Alsterschleuse) , dem Rader Weg 1400 m folgen, an der Bushaltestelle links abbbiegen, Weg 300 m folgen, an der Wegekreuzung im Wald==> RP",
+                "WGS_Breite": "53.7417970",
+                "WGS_Laenge": "10.1361340",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1410950000001,
+                    53.7370950000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6003",
+                "description": "Von der Kreuzung B432/ Tangstedt in den Wulksfelder Damm abbiegen, ca 1,2 km Richtung Duvenstedt, links in den Wulksfelder Weg abbiegen, ca 3 km der Straße folgen, rechte Seite Waldparkplatz (ggü. Wald-/Feldrand)==> RP",
+                "WGS_Breite": "53.7370950",
+                "WGS_Laenge": "10.1410950",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1117130000001,
+                    53.664883
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6057",
+                "description": "Iland HausNr.46 vor Wegsperre",
+                "WGS_Breite": "53.6648830",
+                "WGS_Laenge": "10.1117130",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1305830000001,
+                    53.7314920000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6004",
+                "description": "Von der Kreuzung B432/ Tangstedt in den Wulksfelder Damm abbiegen, ca 1,2 km Richtung Duvenstedt, rechts in den Wulksfelder Weg abbiegen, ca 2 km der Straße folgen, Abzw. Links Richtung Rade==> RP",
+                "WGS_Breite": "53.7314920",
+                "WGS_Laenge": "10.1305830",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1406680000001,
+                    53.7208810000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6005",
+                "description": "Vom Duvenstedter Damm (22397 HH) in den Duvenstedter Triftweg abbiegen, 1,8 km folgen, links abbiegen auf Wiemerskamper Weg, ca. 700 m folgen, links Abzw. Alter Rader Weg (Waldparkplatz)==> RP",
+                "WGS_Breite": "53.7208810",
+                "WGS_Laenge": "10.1406680",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.140747,
+                    53.714454
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6006",
+                "description": "Vom Duvenstedter Damm (22397 HH) in den Duvenstedter Triftweg abbiegen, 1,8 km folgen, Zufahrt Duvenstedter Brook (Durchfahrt verboten)=> RP",
+                "WGS_Breite": "53.7144540",
+                "WGS_Laenge": "10.1407470",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.147053,
+                    53.728564
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6007",
+                "description": "von HH: Duvenstedter Damm, Duvenstedter Triftweg 1,8 km folgen, links auf Wiemerskamper Weg, ca. 1700 m folgen, OT Bültenkrug, rechts Parkplatz==> RP; von SH: ca 600 m sw. Ortsausgang Wiemerskamp, links ggü. den Häusern vom Ortsteil  am Parkplatz==> R",
+                "WGS_Breite": "53.7285640",
+                "WGS_Laenge": "10.1470530",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1704570000001,
+                    53.7386880000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6008",
+                "description": "von SH/Bargteheide: Richtung Jersbek, dort links abbiegen Richtung Wiemerskamp, Straße \"Langereihe\" 3,4 km folgen, links abbiegen (2. Zufahrt Duvenstedter Brook) ==> RP",
+                "WGS_Breite": "53.7386880",
+                "WGS_Laenge": "10.1704570",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1783150000001,
+                    53.724367
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6009",
+                "description": "von HH: Duvenstedter Damm-Duvenstedter Triftweg geradeaus ins NSG 2,9 km , links Rfö. ==> RP; von Bargteheide: Richtung Jersbek, links Richtung Wiemerskamp, Straße \"Langereihe\" 2,9 km folgen, links abbiegen (1. Zufahrt Försterei), Waldweg folgen-==> R",
+                "WGS_Breite": "53.7243670",
+                "WGS_Laenge": "10.1783150",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1675970000001,
+                    53.72049
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6010",
+                "description": "von HH:Duv. Damm,Duv. Triftweg in NSG ca. 2 km,Betriebshof ==> RP;von Bargteheide:Richtung Wiemerskamp,Straße \"Langereihe\" 2,9 km folgen,links abbiegen (Zufahrt Försterei),Waldweg 1,4 km folgen,rechts in Duv. Triftweg 900 m folgen,Betriebshof==> RP",
+                "WGS_Breite": "53.7204900",
+                "WGS_Laenge": "10.1675970",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.172535,
+                    53.709944
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6011",
+                "description": "aus beiden Richtungen: in der Ortschaft 22949 Ammersbek von der Lübecker Straße in die \"Lehmkuhle\" abbiegen, 230 m folgen, links auf Rotwegener Weg abbiegen, nach 1,3 km \"Jersloge\", 550 m folgen, am Wege-T vor den Wochenendhäusern==> RP",
+                "WGS_Breite": "53.7099440",
+                "WGS_Laenge": "10.1725350",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.2066370000001,
+                    53.7162680000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6012",
+                "description": "In der Ortschaft 22941 Jersbek (an Ammersbek angrenzend) in die Klein-Hansdorfer Straße abbiegen, 550 m folgen, rechts abbiegen auf Dorfstraße, 500 m folgen, abbiegen auf Brookweg, 600 m folgen, am Wege-T/ Infotafel==> RP",
+                "WGS_Breite": "53.7162680",
+                "WGS_Laenge": "10.2066370",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.196198,
+                    53.7081440000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6013",
+                "description": "aus beiden Richtungen: in der Ortschaft 22949 Ammersbek von der Lübecker Straße, Übergangsstelle Alte Landstraße in den Weg zum Brook abbiegen, ca. 700 m folgen, vor der Brücke links auf den Parkplatz fahren==> RP",
+                "WGS_Breite": "53.7081440",
+                "WGS_Laenge": "10.1961980",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.76573000000007,
+                    53.62742
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3001",
+                "description": "Über den Rollbarg oder die Schenefelder Landstraße bis zur Haus-Nr. Rollbarg 40/42. Dort in die Stichstraße 440 Meter über Teerstraße, dann rechts abiegen und dem Waldweg 760 Meter folgen bis zur Försterei Klövensteen.",
+                "WGS_Breite": "53.6274200",
+                "WGS_Laenge": "9.7657300",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.76669000000004,
+                    53.61506
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3002",
+                "description": "Über den Klövensteenweg Kreuzung Babenwischenweg - Klövensteenweg passieren. Nach 660 Metern Waldkreuzung - Klövensteeneck",
+                "WGS_Breite": "53.6150600",
+                "WGS_Laenge": "9.7666900",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.75350000000003,
+                    53.61285
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3003",
+                "description": "Über den Sandmoorweg am Wildgehege Klövensteen vorbei dann noch 1950 Meter bis zur Kreuzung Babenwischenweg - Sandmoorweg",
+                "WGS_Breite": "53.6128500",
+                "WGS_Laenge": "9.7535000",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.79631000000006,
+                    53.6103
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3004",
+                "description": "Über den Strudelskamp aus Richtung Waldenau kommend bis zum Waldeingang Klövensteen - Kastanienallee",
+                "WGS_Breite": "53.6103000",
+                "WGS_Laenge": "9.7963100",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.76918000000006,
+                    53.60515
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3005",
+                "description": "Über den Klövensteenweg zur Ponywaldschenke",
+                "WGS_Breite": "53.6051500",
+                "WGS_Laenge": "9.7691800",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.76590000000004,
+                    53.5988300000001
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3006",
+                "description": "Über den Klövensteenweg bis zum Waldspielplatz Klövensteenweg - Höhe Parkplatz. Aus Rissen kommenden 600 Meter bis Höhe Waldspielplatz.",
+                "WGS_Breite": "53.5988300",
+                "WGS_Laenge": "9.7659000",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.74632000000003,
+                    53.5964200000001
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3007",
+                "description": "Über den Sandmoorweg bis zum Wildgehege Klövensteen",
+                "WGS_Breite": "53.5964200",
+                "WGS_Laenge": "9.7463200",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.73747000000003,
+                    53.6038100000001
+                ]
+            },
+            "properties": {
+                "name": "HH-A-3008",
+                "description": "Über den Wespenstieg zum Gut Haidehof. Über den Gutshof zum Forsteingang.",
+                "WGS_Breite": "53.6038100",
+                "WGS_Laenge": "9.7374700",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.173973,
+                    53.589839
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6041",
+                "description": "Kittelweg, gegenüber Hauke-Haien-Weg auf den Waldparkplatz",
+                "WGS_Breite": "53.5898390",
+                "WGS_Laenge": "10.1739730",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.168682,
+                    53.6003180000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6042",
+                "description": "Wehlbrook, Waldeinfahrt gegenüber HausNr. 36/38",
+                "WGS_Breite": "53.6003180",
+                "WGS_Laenge": "10.1686820",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.2032380000001,
+                    53.629261
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6043",
+                "description": "Hagenweg, Ecke Ahrensfelder Weg, Schlagbaum mit B-Schließung zwischen Fattsbarg und Ahrensfelder Weg",
+                "WGS_Breite": "53.6292610",
+                "WGS_Laenge": "10.2032380",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.191858,
+                    53.6439760000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6044",
+                "description": "Ende Eulenkrugstr. östl. Ende, hinter Tonradsmoor, mittlere Waldeinfahrt links",
+                "WGS_Breite": "53.6439760",
+                "WGS_Laenge": "10.1918580",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.127235,
+                    53.6300370000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6045",
+                "description": "Kleine Wiese, Wendehammer vor Wald",
+                "WGS_Breite": "53.6300370",
+                "WGS_Laenge": "10.1272350",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.147589,
+                    53.634983
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6046",
+                "description": "Farmsener Landstraße, Waldeinfahrt gegenüber HausNr.10",
+                "WGS_Breite": "53.6349830",
+                "WGS_Laenge": "10.1475890",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1576170000001,
+                    53.6411470000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6047",
+                "description": "Farmsener Landstraße 100, Försterei Volksdorf",
+                "WGS_Breite": "53.6411470",
+                "WGS_Laenge": "10.1576170",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1714630000001,
+                    53.637574
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6048",
+                "description": "Im Wald, Ausgang zur Ringstraße zwischen den HausNr´n. 199 und 201a",
+                "WGS_Breite": "53.6375740",
+                "WGS_Laenge": "10.1714630",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1754540000001,
+                    53.6393450000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6049",
+                "description": "Mellenbergweg, kleiner Waldparkplatz gegenüber  HausNr.77",
+                "WGS_Breite": "53.6393450",
+                "WGS_Laenge": "10.1754540",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1629130000001,
+                    53.64461
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6050",
+                "description": "Mellenbergweg, gegenüber HausNr.19 in Kurve/ Waldeinfahrt",
+                "WGS_Breite": "53.6446100",
+                "WGS_Laenge": "10.1629130",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1617140000001,
+                    53.6380790000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6051",
+                "description": "Meiendorfer Weg, Waldparkplatz am Kletterpark",
+                "WGS_Breite": "53.6380790",
+                "WGS_Laenge": "10.1617140",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1366180000001,
+                    53.647361
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6052",
+                "description": "Volksdorfer Weg, gegenüber Saseler Kamp Waldeinfahrt",
+                "WGS_Breite": "53.6473610",
+                "WGS_Laenge": "10.1366180",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.145738,
+                    53.6527550000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6053",
+                "description": "(Straße) Waldweg auf Waldparkplatz neben der Einfahrt zur Stadtentwässerung HausNr.225",
+                "WGS_Breite": "53.6527550",
+                "WGS_Laenge": "10.1457380",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1496,
+                    53.662326
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6055",
+                "description": "Streekweg gegenüber Einfahrt Timmermoor",
+                "WGS_Breite": "53.6623260",
+                "WGS_Laenge": "10.1496000",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1090300000001,
+                    53.662426
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6056",
+                "description": "Schönsberg, Einfahrt Schönsbergredder",
+                "WGS_Breite": "53.6624260",
+                "WGS_Laenge": "10.1090300",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.07903,
+                    53.674987
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6058",
+                "description": "Ohlendieksredder, Parkplatz Hundeauslauf/ Spielplatz Richtung Kupferteich",
+                "WGS_Breite": "53.6749870",
+                "WGS_Laenge": "10.0790300",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.0849480000001,
+                    53.645495
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6059",
+                "description": "Friedrich-Kirsten-Straße, Waldparkplatz neben HausNr. 56",
+                "WGS_Breite": "53.6454950",
+                "WGS_Laenge": "10.0849480",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1524640000001,
+                    53.662896
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6060",
+                "description": "Volksdorfer Damm, Waldparkplatz rechtsseitig nach Haus Nr.72 gen Westen",
+                "WGS_Breite": "53.6628960",
+                "WGS_Laenge": "10.1524640",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.160288,
+                    53.667447
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6061",
+                "description": "Schmalenremen westl. Übergang zum Duvenwischen, Waldeinfahrt neben dem Friedhof",
+                "WGS_Breite": "53.6674470",
+                "WGS_Laenge": "10.1602880",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1821610000001,
+                    53.6778180000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6062",
+                "description": "Am Bocksberg (Stadt Ahrensburg) Waldparkplatz gegenüber Bredenbeker Teich vor Am Lindenhof von süd/ost kommend",
+                "WGS_Breite": "53.6778180",
+                "WGS_Laenge": "10.1821610",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.182828,
+                    53.6600920000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6064",
+                "description": "Moorbekweg 100 (Sommerbad), Waldparkplatz",
+                "WGS_Breite": "53.6600920",
+                "WGS_Laenge": "10.1828280",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.176994,
+                    53.6657660000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6065",
+                "description": "Greelkamp (Stadt Ahrensburg) bis Ende/ Richtung Rittmeisterkoppel vor Waldeingang",
+                "WGS_Breite": "53.6657660",
+                "WGS_Laenge": "10.1769940",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1082940000001,
+                    53.668799
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6067",
+                "description": "Saselhörn nördl. Waldeinfahrt links vor Schönsbergredder (neben Tennisanlage Klubhaus- der Beschilderung folgen)",
+                "WGS_Breite": "53.6687990",
+                "WGS_Laenge": "10.1082940",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1546890000001,
+                    53.6699650000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6068",
+                "description": "Ohlendorffs Tannen, Parkplatz Friedhof Übergang zur Heinrich von Ohlendorff Straße",
+                "WGS_Breite": "53.6699650",
+                "WGS_Laenge": "10.1546890",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.196017,
+                    53.6570660000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6069",
+                "description": "Wulfsdorfer Weg südl.  (Stadt Ahrensburg) vor U-Bahnbrücke am WeltkriegsDenkmal (Nähe Krzg. Am Scharberg & Wulfsdorfer Weg",
+                "WGS_Breite": "53.6570660",
+                "WGS_Laenge": "10.1960170",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1246350000001,
+                    53.6272260000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6070",
+                "description": "Berner Allee neben HausNr. 67 südl. Waldeinfahrt/an Brücke über die Berner Au",
+                "WGS_Breite": "53.6272260",
+                "WGS_Laenge": "10.1246350",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.181948,
+                    53.6251150000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6071",
+                "description": "Hagenweg, Einfahrt Fattsbarg",
+                "WGS_Breite": "53.6251150",
+                "WGS_Laenge": "10.1819480",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.173056,
+                    53.650404
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6072",
+                "description": "Waldredder, Kreuzung Pastorenstieg",
+                "WGS_Breite": "53.6504040",
+                "WGS_Laenge": "10.1730560",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1360790000001,
+                    53.651173
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6073",
+                "description": "Straßen Ecke Bekwisch/ Erlengrund",
+                "WGS_Breite": "53.6511730",
+                "WGS_Laenge": "10.1360790",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1176990000001,
+                    53.6643010000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6074",
+                "description": "Iland, Ecke Heindaal, Nähe Iland HausNr.6",
+                "WGS_Breite": "53.6643010",
+                "WGS_Laenge": "10.1176990",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.083182,
+                    53.6562900000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6075",
+                "description": "Poppenbütteler Weg, gegenüber HausNr. 228",
+                "WGS_Breite": "53.6562900",
+                "WGS_Laenge": "10.0831820",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.172381,
+                    53.6652740000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6076",
+                "description": "von Süden in die Rittmeisterkoppel nach Norden bis Siedlungsbeginn, dann rechts in Richtung Greelkamp ( Stadt Ahrensburg, Wulfsdorf )",
+                "WGS_Breite": "53.6652740",
+                "WGS_Laenge": "10.1723810",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.167336,
+                    53.659068
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6077",
+                "description": "in die Gussau zwischen den HausNrn 25 A und 25 nördliche Durchfahrt zum Sorenremen zur Kirche St. Gabriel",
+                "WGS_Breite": "53.6590680",
+                "WGS_Laenge": "10.1673360",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.108711,
+                    53.671809
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6078",
+                "description": "von der Twietenkoppel nach Süden in die Straße Baben de Möhl ( bis zum Wendehammer (zwischen HausNrn 21 und 26))",
+                "WGS_Breite": "53.6718090",
+                "WGS_Laenge": "10.1087110",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1598260000001,
+                    53.636469
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6079",
+                "description": "vom Meiendorfer Weg in die Ringstr. ( Richtung Berne ) zwischen den HausNrn. 127 und 131 Parkweg nördlich bis zum Waldbeginn",
+                "WGS_Breite": "53.6364690",
+                "WGS_Laenge": "10.1598260",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.046498,
+                    53.6747720000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6021",
+                "description": "Hummelsee - Zufahrt über die Glashütter Landstraße",
+                "WGS_Breite": "53.6747720",
+                "WGS_Laenge": "10.0464980",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.0546000000001,
+                    53.6731270000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6022",
+                "description": "Kiwittredder - Hummelsee - Zufahrt über die Straße Kupferteichweg",
+                "WGS_Breite": "53.6731270",
+                "WGS_Laenge": "10.0546000",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.072979,
+                    53.692282
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6023",
+                "description": "Westl. Fiersbarg Waldeingang - Zufahrt über die Lemsahler Landstraße",
+                "WGS_Breite": "53.6922820",
+                "WGS_Laenge": "10.0729790",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.117397,
+                    53.6852390000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6024",
+                "description": "Nördl. Rodenbeker Straße - Waldeingang Quellenhof - Zufahrt über die Bergstedter Chaussee",
+                "WGS_Breite": "53.6852390",
+                "WGS_Laenge": "10.1173970",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1236060000001,
+                    53.6924760000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6025",
+                "description": "Am Ende der Straße Haselknick - Waldeingang - Zufahrt über die Bredenbekstraße",
+                "WGS_Breite": "53.6924760",
+                "WGS_Laenge": "10.1236060",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1270870000001,
+                    53.699735
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6026",
+                "description": "Bredenbekstraße südl. Beginn Mühlenredder - Zufahrt über die Bredenbekstraße",
+                "WGS_Breite": "53.6997350",
+                "WGS_Laenge": "10.1270870",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.137187,
+                    53.699213
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6027",
+                "description": "Melhopweg Ecke Kupferredder - Zufahrt über die Straße Timms Hege",
+                "WGS_Breite": "53.6992130",
+                "WGS_Laenge": "10.1371870",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1302190000001,
+                    53.706151
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6028",
+                "description": "Mühlenredder Ecke Schleusenredder - Zufahrt über die Straße Alsterblick",
+                "WGS_Breite": "53.7061510",
+                "WGS_Laenge": "10.1302190",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.144822,
+                    53.707999
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6029",
+                "description": "Nördl. Bereich Kupferredder - Waldeingang - Zufahrt über die Straße Herrenhausallee",
+                "WGS_Breite": "53.7079990",
+                "WGS_Laenge": "10.1448220",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1544920000001,
+                    53.7087920000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6030",
+                "description": "Ole Boomgaarden - Eingang zum Waldfriedhof - Zufahrt über die Straße Brügkamp",
+                "WGS_Breite": "53.7087920",
+                "WGS_Laenge": "10.1544920",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1163690000001,
+                    53.7248910000001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6031",
+                "description": "Südl. Bereich Wulksfelder Dorfstraße - Dorfausgang - Zufahrt über die Straße Wulksfelder Weg",
+                "WGS_Breite": "53.7248910",
+                "WGS_Laenge": "10.1163690",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.124778,
+                    53.726057
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6032",
+                "description": "Südl. Bereich Wulksfelder Weg - Höhe Waldparkplatz - Zufahrt über die Straße Wulksfelder Damm",
+                "WGS_Breite": "53.7260570",
+                "WGS_Laenge": "10.1247780",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1445946060001,
+                    53.640859429
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6066",
+                "description": "Tannenkamp, westl. Wendehammer Einfahrt Wald",
+                "WGS_Breite": "53.6408590",
+                "WGS_Laenge": "10.1445950",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.148575695,
+                    53.655935524
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6054",
+                "description": "Rögenweg, an Waldeinfahrt",
+                "WGS_Breite": "53.6559350",
+                "WGS_Laenge": "10.1485760",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    10.1930712130001,
+                    53.6681444710001
+                ]
+            },
+            "properties": {
+                "name": "HH-W-6063",
+                "description": "Dorfkoppel (Stadt Ahrensburg) Kurve Richtung Sahlmannsberg",
+                "WGS_Breite": "53.6681440",
+                "WGS_Laenge": "10.1930710",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.93859052800008,
+                    53.612536837
+                ]
+            },
+            "properties": {
+                "name": "HH-E-4002",
+                "description": "Von Friedrich-Ebert-Straße (B447) auf  Straße Niendorfer Gehege abbiegen, in die Straße „Bondenwald“ einbiegen und 500 m folgen, am Waldparkplatz rechts in Richtung Försterei ==> RP",
+                "WGS_Breite": "53.6125370",
+                "WGS_Laenge": "9.9385910",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    9.94143894900003,
+                    53.6166628600001
+                ]
+            },
+            "properties": {
+                "name": "HH-E-4001",
+                "description": "Friedrich-Ebert-Straße (B447) auf Straße Niendorfer Gehege abbiegen bis Straße „Bondenwald“ fahren, Waldspielplatz ==> RP",
+                "WGS_Breite": "53.6166630",
+                "WGS_Laenge": "9.9414390",
+                "Schild": "ja",
+                "Urheber": "Hansestadt Hamburg",
+                "Bundesland": "Hamburg"
+            }
+        }
+    ]
+}

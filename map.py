@@ -250,8 +250,9 @@ app.layout = html.Div([
         dl.Map(
             [
                 dl.TileLayer(
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                    id='tile_layer_osm'
+                    url='https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_farbe/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png',
+                    attribution='&copy; <a href="https://basemap.de/">basemap.de</a>',
+                    id='tile_layer'
                 )
             ],
             zoom=12,

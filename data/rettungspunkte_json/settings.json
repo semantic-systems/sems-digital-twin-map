@@ -1,0 +1,17 @@
+{
+    "display_name": "Rettungspunkte",
+    "default_show": false,
+    "files": {
+        "de_hh_rettungspunkte_EPSG_4326.json": {
+            "name": "Rettungspunkte",
+            "color": "red",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "arrows-to-dot",
+            "popup_properties": {
+                "Nr.": "name",
+                "Ort": "description"
+            }
+        }
+    }
+}
