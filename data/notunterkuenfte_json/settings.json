@@ -1,0 +1,21 @@
+{
+    "display_name": "Notunterkünfte",
+    "default_show": false,
+    "files": {
+        "de_hh_up_notunterkuenfte_EPSG_4326.json": {
+            "name": "Notunterkünfte",
+            "color": "orange",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "people-roof",
+            "popup_properties": {
+                "Name": "bezeichnung", 
+                "Adresse": "adresse", 
+                "Kapazität": "maximale_kapazitaet",
+                "Betreuungsbeauftragter Hilfsorganisation": "betreuungsbeauftragter_hilfsorganisation",
+                "Kernmannschaften Hilfsorganisation": "kernmannschaften_hilfsorganisation",
+                "Kernmannschaften Ansprechpartner": "kernmannschaften_ansprechpartner"
+            }
+        }
+    }
+}

@@ -1,0 +1,1465 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_0",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.754409999999694,
+            53.56399999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63745",
+        "strasse": "Rissener Ufer 29",
+        "beschreibung": "Anleger Wittenbergen"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.757439999999692,
+            53.563829999981934
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63725",
+        "strasse": "Rissener Ufer 29",
+        "beschreibung": "Hundestrand"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.761599999999689,
+            53.56366999998194
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63695",
+        "strasse": "Falkensteiner Ufer",
+        "beschreibung": "Salzwiesenweg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_3",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.764229999999689,
+            53.56335999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63677",
+        "strasse": "Falkensteiner Ufer / Kehre",
+        "beschreibung": "westliche Zufahrt"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_4",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.767179999999689,
+            53.56317999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63661",
+        "strasse": "Falkensteiner Ufer 101",
+        "beschreibung": "Campingplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.771499999999685,
+            53.56306999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63634",
+        "strasse": "Falkensteiner Ufer / Kehre",
+        "beschreibung": "östliche Zufahrt"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_6",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.774789999999687,
+            53.56248999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63612",
+        "strasse": "Falkensteiner Ufer ggü. 76",
+        "beschreibung": "Quermarkenfeuer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_7",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.786529999999683,
+            53.56033999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63530",
+        "strasse": "Falkensteiner Ufer ggü. 26",
+        "beschreibung": "Wrackstrand Holzschiff"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_8",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.788719999999682,
+            53.55982999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63515",
+        "strasse": "Falkensteiner Ufer ggü. 12",
+        "beschreibung": "Wrackstrand bei „Uwe“"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_9",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.79272999999968,
+            53.55899999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63486",
+        "strasse": "Strandweg ggü. 92"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_10",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.797659999999679,
+            53.55785999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63451",
+        "strasse": "Strandweg ggü. 66"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_11",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.804959999999678,
+            53.55661999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63402",
+        "strasse": "Strandweg 30",
+        "beschreibung": "Anleger Blankenese"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_12",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.820469999999673,
+            53.554049999981935
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63304",
+        "strasse": "Elbuferweg",
+        "beschreibung": "Mühlenberg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_13",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.854909999999665,
+            53.54821999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63078",
+        "strasse": "Elbuferweg",
+        "beschreibung": "Restaurant ELV"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_14",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.85941999999966,
+            53.547749999981924
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63047",
+        "strasse": "Elbchaussee ggü. 348",
+        "beschreibung": "Teufelsbrück"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_15",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.86308999999966,
+            53.54713999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 63022",
+        "strasse": "Elbchaussee 330",
+        "beschreibung": "Anleger Teufelsbrück"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_16",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.863289999999658,
+            53.54136999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 63010",
+        "strasse": "Hein-Saß-Weg",
+        "beschreibung": "Anleger Rüschpark"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_17",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.885379999999655,
+            53.539849999981946
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 62860",
+        "strasse": "Am Yachthafen",
+        "beschreibung": "Anleger Bubendey-Ufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_18",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.883269999999655,
+            53.54501999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62884",
+        "strasse": "Hans-Leip-Ufer",
+        "beschreibung": "Strand"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_19",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.896539999999652,
+            53.54456999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62797",
+        "strasse": "Hans-Leip-Ufer",
+        "beschreibung": "Alter Schwede"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_20",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.90187999999965,
+            53.54435999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62761",
+        "strasse": "Övelgönne",
+        "beschreibung": "Himmelsleiter"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_21",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.90600999999965,
+            53.54437999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62734",
+        "strasse": "Övelgönne",
+        "beschreibung": "Mann auf Boje"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_22",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.911499999999648,
+            53.54437999998191
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62697",
+        "strasse": "Övelgönne",
+        "beschreibung": "Lüfterbauwerk"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_23",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.914519999999646,
+            53.54413999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62670",
+        "strasse": "Neumühlen",
+        "beschreibung": "Anleger Neumühlen"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_24",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.936019999999642,
+            53.54325999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62522",
+        "strasse": "Van-der-Smissen-Straße",
+        "beschreibung": "Anleger Dockland"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_25",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.951819999999639,
+            53.54464999998189
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62418",
+        "strasse": "Große Elbstraße 2",
+        "beschreibung": "Anleger Altona"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_26",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.967239999999636,
+            53.54213999998191
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 62310",
+        "strasse": "Schanzenweg",
+        "beschreibung": "Bornsteinplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_27",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.974329999999636,
+            53.540319999981904
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 62259",
+        "strasse": "Ellerholzdamm",
+        "beschreibung": "Anleger Theater am Hafen"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_28",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.936679999999644,
+            53.52564999998194
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "5 62252",
+        "strasse": "Altenwerder Damm",
+        "beschreibung": "Anleger Waltershof"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_29",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.941269999999642,
+            53.52415999998195
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "4 62236",
+        "strasse": "Köhlbranddeich",
+        "beschreibung": "Anleger Neuhof"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_30",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.985969999999634,
+            53.540659999981905
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62191",
+        "strasse": "Am Kaiserkai",
+        "beschreibung": "Anleger Elbphilharmonie"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_31",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.984669999999634,
+            53.5371499999819
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 62181",
+        "strasse": "Worthdamm",
+        "beschreibung": "Anleger Arningstraße"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_32",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.001629999999636,
+            53.47403999998201
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "4 61450",
+        "strasse": "Finkenrieker Hauptdeich 5",
+        "beschreibung": "Badestelle Süderelbe"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_33",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.05819999999963,
+            53.46200999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "4 61027",
+        "strasse": "Moorwerder Hauotdeich 31",
+        "beschreibung": "Freiluftschule Moorwerder"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_34",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.779599999999686,
+            53.53468999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53534",
+        "strasse": "Estedeich 96",
+        "beschreibung": "Anleger Cranz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_35",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.790439999999682,
+            53.53590999998197
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 53535",
+        "strasse": "Cranzer Hauptdeich",
+        "beschreibung": "Anleger Neuenfelde"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_36",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.878499999999658,
+            53.53619999998195
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 53536",
+        "strasse": "Butendeichsweg/Benitstraße",
+        "beschreibung": "Anleger Finkenwerder"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_37",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.966219999999636,
+            53.539969999981906
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53539",
+        "strasse": "Hermann-Blohm-Straße",
+        "beschreibung": "Anleger Steinwerder"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_38",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.975709999999635,
+            53.52823999998192
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53527",
+        "strasse": "Argentinienbrücke",
+        "beschreibung": "Anleger Argentienienbrücke"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_39",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.982389999999636,
+            53.52381999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53523",
+        "strasse": "Klütjenfelder Straße 18",
+        "beschreibung": "Anleger Spreehafen"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_40",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.09872999999963,
+            53.446769999981974
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53446",
+        "strasse": "Oortkatenufer o.Nr.",
+        "beschreibung": "Oortkaten Hafen"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_41",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.051809999999625,
+            53.53067999998186
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53530",
+        "strasse": "Ausschläger Elbdeich",
+        "beschreibung": "Billwerder Bucht"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_42",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.036099999999626,
+            53.52620999998189
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53526",
+        "strasse": "Peuter Elbdeich o.Nr.",
+        "beschreibung": "Peutehafen Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_43",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.03469999999963,
+            53.5246499999819
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53524",
+        "strasse": "Peutestraße",
+        "beschreibung": "Peutehafen Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_44",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.044009999999629,
+            53.52461999998189
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "3 61750",
+        "strasse": "Peuter Elbdeich o.Nr.",
+        "beschreibung": "Dalbenliegeplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_45",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.036479999999626,
+            53.527399999981895
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "3 61810",
+        "strasse": "Peuter Elbdeich o.Nr.",
+        "beschreibung": "Dalbenliegeplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_46",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.030989999999626,
+            53.529139999981886
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "3 61850",
+        "strasse": "Einsiedeldeich",
+        "beschreibung": "Dalbenliegeplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_47",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.869629999999662,
+            53.538389999981945
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53538",
+        "strasse": "Focksweg",
+        "beschreibung": "Dalbenliegeplätze"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_48",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.887669999999657,
+            53.52366999998197
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53522",
+        "strasse": "Aue Hauptdeich",
+        "beschreibung": "Dalbenliegeplätze"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_49",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.006969999999635,
+            53.473669999982
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "4 61401",
+        "strasse": "Finkenrieker Hauptdeich",
+        "beschreibung": "Dalbenliegeplätze"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_50",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.013769999999633,
+            53.474469999981984
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "4 61442",
+        "strasse": "Finkenrieker Hauptdeich",
+        "beschreibung": "Holstenkatenpfähle"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_51",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.951079999999642,
+            53.49714999998197
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "4 61918",
+        "strasse": "Kattwykstraße",
+        "beschreibung": "Dalbenliegeplatz Nord"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_52",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.956859999999642,
+            53.489719999982
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "4 61823",
+        "strasse": "ohne",
+        "beschreibung": "Dalbenliegeplatz Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_53",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.979809999999638,
+            53.49246999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53492",
+        "strasse": "Eversween",
+        "beschreibung": "Dalbenliegeplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_54",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.976519999999638,
+            53.496379999981976
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53496",
+        "strasse": "Eversween",
+        "beschreibung": "Reiherstieg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_55",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.976129999999637,
+            53.497339999981975
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53497",
+        "strasse": "Eversween",
+        "beschreibung": "Reiherstieg"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_56",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.017839999999628,
+            53.5331599999819
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 61950",
+        "strasse": "Am Holthusenkai",
+        "beschreibung": "Holthusenkai-Pfähle"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_57",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.012039999999631,
+            53.53548999998189
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "0 62000",
+        "strasse": "Am Holthusenkai",
+        "beschreibung": "Seeschiff-Liegeplätze"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_58",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.009149999999629,
+            53.53476999998189
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 62000",
+        "strasse": "Am Holthusenkai",
+        "beschreibung": "Landliegeplätze"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_59",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.978009999999639,
+            53.47529999998201
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "5 61600",
+        "strasse": "Wilhelm-Weber-Straße",
+        "beschreibung": "Dalbenliegeplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_60",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.977709999999641,
+            53.47413999998202
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53474",
+        "strasse": "Wilhelm-Weber-Straße",
+        "beschreibung": "Lauenbrucher Hafen"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_61",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.986439999999638,
+            53.47376999998201
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "5 61547",
+        "strasse": "Am Überwinterungshafen",
+        "beschreibung": "Süderelbe WT 73"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_62",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.98369999999964,
+            53.47404999998201
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "5 61566",
+        "strasse": "Dampfschiffsweg",
+        "beschreibung": "Süderelbe WT 75"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_63",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.98186999999964,
+            53.474389999982016
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "5 61579",
+        "strasse": "Lauenbrucher Deich",
+        "beschreibung": "Süderelbe WT 82"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_64",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.948299999999643,
+            53.50947999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53509",
+        "strasse": "Kattwykstraße",
+        "beschreibung": "Retheufer WT 64"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_65",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.949359999999643,
+            53.50807999998196
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53508",
+        "strasse": "Kattwykstraße",
+        "beschreibung": "Retheufer Pfähle"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_66",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.949849999999643,
+            53.50626999998197
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53506",
+        "strasse": "Kattwykstraße",
+        "beschreibung": "Retheufer Pfähle"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_67",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.831619999999669,
+            53.54737999998194
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 63220",
+        "strasse": "Gelände Airbus",
+        "beschreibung": "Seeschiff-Liegeplatz West"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_68",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.840189999999668,
+            53.54586999998194
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 63163",
+        "strasse": "Gelände Airbus",
+        "beschreibung": "Seeschiff-Liegeplatz Ost"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_69",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.840779999999667,
+            53.544479999981945
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "1 63153",
+        "strasse": "Gelände Airbus",
+        "beschreibung": "Anleger Airbus"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_70",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            9.964079999999639,
+            53.52819999998193
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "7 53528",
+        "strasse": "Buchheisterstraße",
+        "beschreibung": "Kronprinzkai"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_71",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.098359999999628,
+            53.448829999981974
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53448",
+        "strasse": "Overwerder Hauptdeich",
+        "beschreibung": "Hohendeicher See / Westufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_72",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.100229999999629,
+            53.44671999998197
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53446",
+        "strasse": "Overwerder Hauptdeich",
+        "beschreibung": "Hohendeicher See / Westufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_73",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.102129999999631,
+            53.44441999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53444",
+        "strasse": "Overwerder Hauptdeich",
+        "beschreibung": "Hohendeicher See / Westufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_74",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.10173999999963,
+            53.441339999981984
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53441",
+        "strasse": "Overwerder Hauptdeich",
+        "beschreibung": "Hohendeicher See / Westufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_75",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.10520999999963,
+            53.43802999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53438",
+        "strasse": "Overwerder Hauptdeich",
+        "beschreibung": "Hohendeicher See / Westufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_76",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.11104999999963,
+            53.434509999982
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53434",
+        "strasse": "Overwerder Hauptdeich",
+        "beschreibung": "Hohendeicher See / Westufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_77",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.113849999999632,
+            53.43126999998199
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53431",
+        "strasse": "Overwerder Hauptdeich",
+        "beschreibung": "Hohendeicher See / Badestelle Süd"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_78",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.11560999999963,
+            53.43566999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53435",
+        "strasse": "Warwischer Hinterdeich",
+        "beschreibung": "Hohendeicher See / DUC"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_79",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.114719999999629,
+            53.43729999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53437",
+        "strasse": "Warwischer Hinterdeich",
+        "beschreibung": "Hohendeicher See / Campingplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_80",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.111969999999628,
+            53.43752999998198
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53436",
+        "strasse": "Warwischer Hinterdeich",
+        "beschreibung": "Hohendeicher See / Campingplatz"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_81",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.109779999999628,
+            53.4855599999819
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53485",
+        "strasse": "Moorfleeter Deich 499",
+        "beschreibung": "Eichbaumsee / Nordufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_82",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.111059999999629,
+            53.484599999981896
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53484",
+        "strasse": "Moorfleeter Deich o.Nr.",
+        "beschreibung": "Eichbaumsee / Ostufer"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_83",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.164219999999627,
+            53.48268999998185
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53483",
+        "strasse": "Felix-Jud-Ring 381",
+        "beschreibung": "Allermöher See / Ost 1"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_84",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.16544999999963,
+            53.48230999998185
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53482",
+        "strasse": "Felix-Jud-Ring 381",
+        "beschreibung": "Allermöher See / Ost 2"
+      },
+      "srsName": "EPSG:4326"
+    },
+    {
+      "type": "Feature",
+      "id": "DE.HH.UP_WASSERRETTUNGSPUNKTE_85",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+            10.154709999999628,
+            53.474169999981875
+        ]
+      },
+      "properties": {
+        "wasserrettungspunkt": "8 53474",
+        "strasse": "Allermöher Deich o.Nr.",
+        "beschreibung": "See Hinterm Horn"
+      },
+      "srsName": "EPSG:4326"
+    }
+  ]
+}

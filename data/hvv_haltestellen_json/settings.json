@@ -1,0 +1,30 @@
+{
+    "display_name": "HVV Haltestellen",
+    "default_show": false,
+    "files": {
+        "de_hh_up_haltestellenbereiche_bahn_EPSG_4326.json": {
+            "name": "HVV Haltestellen",
+            "color": "orange",
+            "type": "point",
+            "icon-prefix": "fa",
+            "icon": "train-subway",
+            "popup_properties": {
+                "Name": "name", 
+                "Linien": "linien", 
+                "Art": "art"
+            }
+        },
+        "de_hh_up_haltestellenbereiche_faehre_EPSG_4326.json": {
+            "name": "HVV Haltestellen",
+            "color": "orange",
+            "type": "point",
+            "icon-prefix": "fa",
+            "icon": "ferry",
+            "popup_properties": {
+                "Name": "name", 
+                "Linien": "linien", 
+                "Art": "art"
+            }
+        }
+    }
+}
