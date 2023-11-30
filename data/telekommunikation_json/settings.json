@@ -1,0 +1,27 @@
+{
+    "display_name": "Telekommunikation",
+    "default_show": false,
+    "files": {
+        "de_hh_datacenter_EPSG_4326.json": {
+            "name": "Datacenter",
+            "color": "pink",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "server",
+            "popup_properties": {
+                "Name": "name"
+            }
+        },
+        "de_hh_exchange_EPSG_4326.json": {
+            "name": "Exchange",
+            "color": "pink",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "network-wired",
+            "popup_properties": {
+                "Operator": "operator",
+                "Adresse": "addr:street"
+            }
+        }
+    }
+}

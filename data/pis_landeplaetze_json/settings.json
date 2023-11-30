@@ -1,0 +1,19 @@
+{
+    "display_name": "PIS Landestellen",
+    "default_show": false,
+    "files": {
+        "de_hh_pis_landestellen_EPSG_4326.json": {
+            "name": "PIS Landestellen",
+            "color": "lightred",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "helicopter-symbol",
+            "popup_properties": {
+                "Name": "name",
+                "Code": "code",
+                "Adresse": "address",
+                "Angepasst nach §18 Abs. 4 LuftVO": "adjusted"
+            }
+        }
+    }
+}

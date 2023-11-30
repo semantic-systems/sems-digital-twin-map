@@ -1,0 +1,545 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2023-11-29T19:44:08Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/21718406",
+        "addr:city": "Glinde",
+        "addr:housenumber": "1",
+        "addr:postcode": "21509",
+        "addr:street": "Markt",
+        "amenity": "townhall",
+        "name": "Rathaus Glinde",
+        "toilets:wheelchair": "yes",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2145947,
+          53.5412337
+        ]
+      },
+      "id": "node/21718406"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/105400680",
+        "addr:city": "Delingsdorf",
+        "amenity": "townhall"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2529053,
+          53.7070396
+        ]
+      },
+      "id": "node/105400680"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/292318756",
+        "amenity": "townhall",
+        "name": "Gemeindezentrum Heidgraben"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.6829948,
+          53.7053364
+        ]
+      },
+      "id": "node/292318756"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/294328974",
+        "addr:city": "Halstenbek",
+        "addr:housenumber": "6",
+        "addr:postcode": "25469",
+        "addr:street": "Gustavstraße",
+        "amenity": "townhall",
+        "name": "Rathaus Halstenbek",
+        "opening_hours": "Mo-Th 08:30-12:00; Tu 14:00-18:00; Fr 08:00-12:30 || \"Terminabsprache\"",
+        "phone": "+49 4101 491 0",
+        "website": "https://www.halstenbek.de/rathaus.html",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8408487,
+          53.6341214
+        ]
+      },
+      "id": "node/294328974"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/308017093",
+        "addr:city": "Bönningstedt",
+        "addr:housenumber": "20",
+        "addr:postcode": "25474",
+        "addr:street": "Kieler Straße",
+        "amenity": "townhall",
+        "name": "Gemeindebüro Bönningstedt",
+        "opening_hours": "Mo-Fr 08:30-13:00; Tu 08:30-13:00,14:00-18:00; We off \"Termine nur nach Vereinbarung\"",
+        "phone": "+49 40 556 203 57-0",
+        "townhall:type": "village",
+        "website": "https://www.boenningstedt.de/B%C3%BCrgerservice/Gemeindeb%C3%BCro.html",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9022481,
+          53.663828
+        ]
+      },
+      "id": "node/308017093"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/313107751",
+        "amenity": "townhall",
+        "name": "Bürgeramt",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9938459,
+          53.4090626
+        ]
+      },
+      "id": "node/313107751"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/340078063",
+        "addr:city": "Hollenstedt",
+        "addr:country": "DE",
+        "addr:housenumber": "10",
+        "addr:postcode": "21279",
+        "addr:street": "Am Markt",
+        "amenity": "townhall",
+        "image": "https://commons.wikimedia.org/wiki/File:Rathaus_und_Polizei_Hollenstedt.jpg",
+        "name": "Rathaus Hollenstedt",
+        "phone": "+49 4165 950",
+        "source": "survey",
+        "website": "https://www.hollenstedt.de/",
+        "wheelchair": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7173813,
+          53.365878
+        ]
+      },
+      "id": "node/340078063"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/340314287",
+        "addr:city": "Hollenstedt",
+        "addr:country": "DE",
+        "addr:housenumber": "15",
+        "addr:postcode": "21279",
+        "addr:street": "Hauptstraße",
+        "amenity": "townhall",
+        "name": "Rathaus Samtgemeinde Hollenstedt",
+        "opening_hours": "Mo-Fr 08:00-12:00,14:00-18:00",
+        "phone": "+49 4165 950",
+        "source": "survey",
+        "website": "https://www.hollenstedt.de/",
+        "wheelchair": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7110832,
+          53.3662831
+        ]
+      },
+      "id": "node/340314287"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/361492288",
+        "addr:city": "Reinbek",
+        "addr:housenumber": "5-7",
+        "addr:postcode": "21465",
+        "addr:street": "Hamburger Straße",
+        "amenity": "townhall",
+        "name": "Rathaus Reinbek",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2503747,
+          53.5102784
+        ]
+      },
+      "id": "node/361492288"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/539818617",
+        "amenity": "townhall",
+        "name": "Ortsverwaltung Meckelfeld",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0157956,
+          53.4226241
+        ]
+      },
+      "id": "node/539818617"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/576276226",
+        "amenity": "townhall",
+        "name": "Steller Rathaus",
+        "wheelchair": "limited"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1118947,
+          53.3800561
+        ]
+      },
+      "id": "node/576276226"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/819404070",
+        "amenity": "townhall",
+        "name": "Rathaus Gemeinde Seevetal",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9804066,
+          53.3850784
+        ]
+      },
+      "id": "node/819404070"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/834233248",
+        "addr:city": "Moisburg",
+        "addr:housenumber": "5",
+        "addr:postcode": "21647",
+        "addr:street": "Auf dem Damm",
+        "amenity": "townhall",
+        "historic": "yes",
+        "image": "https://commons.wikimedia.org/wiki/File:Amtshaus_Moisburg.jpg",
+        "name": "Amtshaus Moisburg",
+        "wheelchair": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.6958223,
+          53.4046202
+        ]
+      },
+      "id": "node/834233248"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1599630578",
+        "amenity": "townhall",
+        "name": "Rathaus Stellingen"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9343321,
+          53.5923674
+        ]
+      },
+      "id": "node/1599630578"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1622199949",
+        "addr:city": "Barsbüttel",
+        "addr:housenumber": "1",
+        "addr:postcode": "22885",
+        "addr:street": "Stiefenhoferplatz",
+        "amenity": "townhall",
+        "email": "zentrale@barsbuettel.landsh.de",
+        "fax": "+49 40 67072-101",
+        "name": "Gemeinde Barsbüttel",
+        "phone": "+49 40 67072-0",
+        "townhall:type": "city",
+        "website": "https://www.barsbuettel.de/rathaus/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1685726,
+          53.5692699
+        ]
+      },
+      "id": "node/1622199949"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1706757890",
+        "addr:city": "Seevetal",
+        "addr:housenumber": "55",
+        "addr:postcode": "21220",
+        "addr:street": "Schulstraße",
+        "amenity": "townhall",
+        "description": "Gemeindeabteilung Seevetal",
+        "name": "Ortsverwaltung Maschen",
+        "phone": "+49 4105 68270",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0417917,
+          53.3971954
+        ]
+      },
+      "id": "node/1706757890"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1763101465",
+        "addr:city": "Escheburg",
+        "addr:housenumber": "2",
+        "addr:postcode": "21039",
+        "addr:street": "Hofweg",
+        "amenity": "townhall",
+        "name": "Gemeindezentrum Escheburg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.3099844,
+          53.4671753
+        ]
+      },
+      "id": "node/1763101465"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2003302370",
+        "amenity": "townhall",
+        "name": "Rathaus",
+        "wheelchair": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1624459,
+          53.5412514
+        ]
+      },
+      "id": "node/2003302370"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2465057373",
+        "amenity": "townhall",
+        "government": "administrative",
+        "name": "Bezirksamt Wandsbek",
+        "office": "government",
+        "opening_hours": "Mo,We 07:30-13:00; Tu 09:00-16:00; Th 09:00-18:00; Fr 09:00-16:00",
+        "phone": "+49 40 428280",
+        "website": "https://www.hamburg.de/bezirke/wandsbek/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0707898,
+          53.5716732
+        ]
+      },
+      "id": "node/2465057373"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3038774824",
+        "addr:city": "Escheburg",
+        "addr:housenumber": "6",
+        "addr:postcode": "21039",
+        "addr:street": "Hofweg",
+        "amenity": "townhall",
+        "name": "Gemeindebüro Escheburg",
+        "note": "Öffnungszeiten: Mo.: 09:00 - 12:30, 15:00 - 18:00 Di.:  09:00 - 12:30 Do.: 09:00 - 12:30, 15:00 - 18:00",
+        "website": "https://www.amt-hohe-elbgeest.de/index.phtml?mNavID=1798.54"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.3107168,
+          53.4672219
+        ]
+      },
+      "id": "node/3038774824"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5501743031",
+        "addr:city": "Grande",
+        "addr:housenumber": "25",
+        "addr:postcode": "22946",
+        "addr:street": "Tannenweg",
+        "amenity": "townhall",
+        "name": "Gemeindehaus",
+        "toilets:wheelchair": "yes",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.3837739,
+          53.5838384
+        ]
+      },
+      "id": "node/5501743031"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9464273395",
+        "amenity": "townhall",
+        "townhall:type": "city"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.3401578,
+          53.6143048
+        ]
+      },
+      "id": "node/9464273395"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9692220777",
+        "addr:city": "Heist",
+        "addr:country": "DE",
+        "addr:housenumber": "21",
+        "addr:postcode": "25492",
+        "addr:street": "Wedeler Chaussee",
+        "amenity": "townhall",
+        "name": "Amt Geest und Marsch Südholstein",
+        "opening_hours": "Mo-Fr 08:00-12:00; Mo 14:00-18:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.6693599,
+          53.6549663
+        ]
+      },
+      "id": "node/9692220777"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10570499036",
+        "addr:city": "Ahrensburg",
+        "addr:housenumber": "23",
+        "addr:postcode": "22926",
+        "addr:street": "An der Strusbek",
+        "amenity": "townhall",
+        "name": "Rathaus Nord",
+        "operator": "Stadt Ahrensburg",
+        "townhall:type": "city"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2656479,
+          53.6884965
+        ]
+      },
+      "id": "node/10570499036"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10696975406",
+        "addr:city": "Schenefeld",
+        "addr:housenumber": "36",
+        "addr:postcode": "22869",
+        "addr:street": "Osterbrooksweg",
+        "amenity": "townhall",
+        "name": "Stadt Schenefeld, Sitzungsräume"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8347027,
+          53.5938856
+        ]
+      },
+      "id": "node/10696975406"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10696975408",
+        "addr:city": "Schenefeld",
+        "addr:housenumber": "3-5",
+        "addr:postcode": "22869",
+        "addr:street": "Holstenplatz",
+        "amenity": "townhall",
+        "description": "Im Sitzungssaal",
+        "name": "Ratsversammlung der Stadt Schenefeld",
+        "townhall:type": "city"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8365796,
+          53.6000965
+        ]
+      },
+      "id": "node/10696975408"
+    }
+  ]
+}

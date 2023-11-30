@@ -168,6 +168,11 @@ def build(verbose=False):
     # get all geojson files
     files = get_files()
 
+    n_categories = len(files)
+    n_files = sum([len(v) for v in files.values()])
+
+    print(f'Found {n_categories} categories with {n_files} files')
+
     # transform geojson files to database entries
     if verbose: print("Transfering geojson files into the database... ")
     transform_geojson_to_db(files, session, verbose=verbose)

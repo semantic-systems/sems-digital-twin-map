@@ -1,0 +1,17 @@
+{
+    "display_name": "Leuchttürme",
+    "default_show": false,
+    "files": {
+        "de_hh_leuchttuerme_EPSG_4326.json": {
+            "name": "Leuchttürme",
+            "color": "gray",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "tower-observation",
+            "popup_properties": {
+                "Name": "name",
+                "Größe": "seamark:type"
+            }
+        }
+    }
+}

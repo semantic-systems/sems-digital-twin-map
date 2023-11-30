@@ -1,0 +1,1813 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2023-11-29T19:51:14Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/68413607",
+        "government": "register_office",
+        "name": "Kundenzentrum Walddörfer",
+        "office": "government",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1618732,
+          53.6499918
+        ]
+      },
+      "id": "node/68413607"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/201812125",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "1",
+        "addr:postcode": "20095",
+        "addr:street": "Rathausmarkt",
+        "check_date": "2023-05-08",
+        "government": "parliament",
+        "name": "Hamburgische Bürgerschaft",
+        "office": "government",
+        "wheelchair": "limited",
+        "wikidata": "Q636377",
+        "wikipedia": "de:Hamburgische Bürgerschaft"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.992872,
+          53.5502503
+        ]
+      },
+      "id": "node/201812125"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/291151840",
+        "check_date:opening_hours": "2022-05-28",
+        "email": "FAHamburgAltona@finanzamt.hamburg.de",
+        "fax": "+49 4273 10437",
+        "government": "tax",
+        "name": "Finanzamt Hamburg-Altona",
+        "office": "government",
+        "opening_hours": "Mo 08:00-14:00; Tu 07:00-14:00; Th 08:00-17:00",
+        "phone": "+49 40 115",
+        "ref:bufa": "2241",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9476999,
+          53.561719
+        ]
+      },
+      "id": "node/291151840"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/294012235",
+        "government": "public_safety",
+        "name": "Deichwacht Hamburg-Mitte",
+        "office": "government",
+        "opening_hours": "Tu,Th 18:00-21:00",
+        "phone": "+49 40 7891495"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0426606,
+          53.5356556
+        ]
+      },
+      "id": "node/294012235"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/319503542",
+        "bundesfinanzamtnummer": "2242",
+        "government": "tax",
+        "name": "Finanzamt Hamburg Am Tierpark",
+        "office": "government",
+        "opening_hours": "Mo,Tu 08:00-14:00; Th 08:00-17:00",
+        "phone": "+49 40 4287070",
+        "website": "https://www.hamburg.de/amtierpark-start/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9449426,
+          53.5948177
+        ]
+      },
+      "id": "node/319503542"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/345583282",
+        "name": "Bezirksamt Hamburg-Mitte Bauamt Verwaltung Planten un Blomen",
+        "office": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9788955,
+          53.5614367
+        ]
+      },
+      "id": "node/345583282"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/615155955",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "12",
+        "addr:postcode": "20457",
+        "addr:street": "Steckelhörn",
+        "amenity": "library",
+        "contact:phone": "+49-40-42831-1639",
+        "contact:website": "http://www.statistik-nord.de/",
+        "government": "statistics",
+        "name": "Bibliothek, Statistisches Amt für Hamburg und Schleswig-Holstein",
+        "office": "government",
+        "opening_hours": "Mo-Th 08:30-15:30; Fr 08:30-14:00",
+        "ref:isil": "DE-H5",
+        "wikidata": "Q15130249"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9929453,
+          53.5456244
+        ]
+      },
+      "id": "node/615155955"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1017868272",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "12",
+        "addr:postcode": "20355",
+        "addr:street": "Holstenwall",
+        "building": "public",
+        "name": "Handwerkskammer Hamburg",
+        "office": "government",
+        "phone": "+49 40 35905-0",
+        "website": "https://www.hwk-hamburg.de/",
+        "wheelchair": "no",
+        "wheelchair:description": "Gebäude nicht rollstuhlgerecht. Rollstuhlfahrer können anrufen und Hilfe anfordern. (Telefonnummer aussen am Gebäude)",
+        "wikidata": "Q1575269"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9769408,
+          53.5530432
+        ]
+      },
+      "id": "node/1017868272"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1375168994",
+        "bundesfinanzamtnummer": "2228",
+        "government": "tax",
+        "name": "Finanzamt Hamburg für Prüfungsdienste und Strafsachen",
+        "office": "government",
+        "opening_hours": "Mo-Th 08:00-16:00; Fr 08:00-15:00",
+        "website": "https://www.hamburg.de/fb/pruestra-start"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9448522,
+          53.5947914
+        ]
+      },
+      "id": "node/1375168994"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1375170086",
+        "bundesfinanzamtnummer": "2245",
+        "government": "tax",
+        "name": "Finanzamt Hamburg-Eimsbüttel",
+        "office": "government",
+        "opening_hours": "Mo,Tu 08:00-14:00; Th 08:00-17:00",
+        "website": "https://www.hamburg.de/eimsbuettel-start/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9450392,
+          53.5948303
+        ]
+      },
+      "id": "node/1375170086"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1912735060",
+        "check_date:opening_hours": "2022-11-14",
+        "name": "Kulturbehörde",
+        "office": "government",
+        "opening_hours:signed": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.987538,
+          53.5539195
+        ]
+      },
+      "id": "node/1912735060"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1912743390",
+        "check_date": "2023-07-14",
+        "government": "prosecutor",
+        "name": "Öffentliche Rechtsauskunft- und Vergleichsstelle Hamburg",
+        "office": "government",
+        "opening_hours": "Mo-Fr 08:00-13:00",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9882829,
+          53.5572263
+        ]
+      },
+      "id": "node/1912743390"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2132542707",
+        "description:de": "Außenstellen der Bundesnetzagentur für Seefunk",
+        "email": "Hamb12.Postfach@bnetza.de",
+        "fax": "+49 40 23655-180",
+        "name": "Bundesnetzagentur Außenstelle Hamburg",
+        "office": "government",
+        "phone": "+49 40 23655-0",
+        "website": "https://www.bundesnetzagentur.de/DE/Allgemeines/DieBundesnetzagentur/UeberdieAgentur/Aussenstellen/Seefunk/HamburgHamburg_basepage.html"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.027582,
+          53.5457603
+        ]
+      },
+      "id": "node/2132542707"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2311086457",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "1",
+        "addr:postcode": "22299",
+        "addr:street": "Bussestraße",
+        "government": "legislative",
+        "name": "Bündnis90/DIE GRÜNEN, Fraktion Hamburg-Nord",
+        "office": "government",
+        "phone": "+49 40 5117919",
+        "website": "https://www.gruene-nord.de/bezirksfraktion/",
+        "wheelchair": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9973961,
+          53.5985121
+        ]
+      },
+      "id": "node/2311086457"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2465057373",
+        "amenity": "townhall",
+        "government": "administrative",
+        "name": "Bezirksamt Wandsbek",
+        "office": "government",
+        "opening_hours": "Mo,We 07:30-13:00; Tu 09:00-16:00; Th 09:00-18:00; Fr 09:00-16:00",
+        "phone": "+49 40 428280",
+        "website": "https://www.hamburg.de/bezirke/wandsbek/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0707898,
+          53.5716732
+        ]
+      },
+      "id": "node/2465057373"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2471286299",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "1",
+        "addr:postcode": "22041",
+        "addr:street": "Am Alten Posthaus",
+        "contact:phone": "+49 40 428812749",
+        "contact:website": "http://www.hamburg.de/",
+        "government": "register_office",
+        "name": "Bezirksamt Wandsbek - Standesamt",
+        "office": "government",
+        "opening_hours": "Mo,Th 08:00-15:00; Tu 08:00-12:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0706896,
+          53.5714601
+        ]
+      },
+      "id": "node/2471286299"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3014387069",
+        "entrance": "yes",
+        "government": "customs",
+        "name": "Hauptzollamt Hamburg-Stadt",
+        "note": "Shouldn't be only \"entrance\" but whole building...",
+        "office": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0121947,
+          53.5272746
+        ]
+      },
+      "id": "node/3014387069"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3590774517",
+        "government": "customs",
+        "name": "Zoll",
+        "office": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9613815,
+          53.5292008
+        ]
+      },
+      "id": "node/3590774517"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3603697373",
+        "name": "Landesbetrieb Straßen, Brücken und Gewässer",
+        "office": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0222131,
+          53.5453137
+        ]
+      },
+      "id": "node/3603697373"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3603697379",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "47",
+        "addr:postcode": "20097",
+        "addr:street": "Nagelsweg",
+        "check_date:opening_hours": "2022-07-07",
+        "name": "Bundesbauabteilung",
+        "office": "government",
+        "opening_hours:signed": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0214056,
+          53.545173
+        ]
+      },
+      "id": "node/3603697379"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3899739131",
+        "check_date:opening_hours": "2023-08-06",
+        "government": "administrative",
+        "name": "Kundenzentrum Barmbek-Uhlenhorst",
+        "office": "government",
+        "old_name": "Bürgerzentrum - Ortsamt",
+        "opening_hours": "Mo-Fr 07:00-19:00",
+        "operator": "Bezirk Hamburg-Nord",
+        "website": "https://www.hamburg.de/kundenzentrum/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0440128,
+          53.5859072
+        ]
+      },
+      "id": "node/3899739131"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4016859938",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "19",
+        "addr:postcode": "21109",
+        "addr:street": "Neuenfelder Straße",
+        "name": "Behörde für Stadtentwicklung und Wohnen",
+        "office": "government",
+        "toilets:wheelchair": "yes",
+        "website": "https://www.hamburg.de/bsw/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0034758,
+          53.4979146
+        ]
+      },
+      "id": "node/4016859938"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4016859939",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "19",
+        "addr:postcode": "21109",
+        "addr:street": "Neuenfelder Straße",
+        "name": "Behörde für Umwelt und Energie",
+        "name:de": "Behörde für Umwelt, Klima, Energie und Agrarwirtschaft",
+        "name:en": "Behörde für Umwelt, Klima, Energie und Agrarwirtschaft",
+        "office": "government",
+        "toilets:wheelchair": "yes",
+        "website": "https://www.hamburg.de/bukea/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0040808,
+          53.4977289
+        ]
+      },
+      "id": "node/4016859939"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4016859940",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "19",
+        "addr:postcode": "21109",
+        "addr:street": "Neuenfelder Straße",
+        "contact:website": "http://www.hamburg.de/bsw/landesbetrieb-geoinformation-und-vermessung/",
+        "government": "cadaster",
+        "name": "Landesbetrieb Geoinformation und Vermessung",
+        "office": "government",
+        "opening_hours": "Tu,We 08:00-13:00; Th 08:00-16:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0025146,
+          53.4982988
+        ]
+      },
+      "id": "node/4016859940"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4019998671",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "63",
+        "addr:postcode": "20097",
+        "addr:street": "Süderstraße",
+        "contact:email": "poststelle@itzbund.de",
+        "contact:fax": "+49 22899 680 5050",
+        "contact:phone": "+49 22899 680-0",
+        "government": "it",
+        "name": "Informationstechnikzentrum Bund",
+        "office": "government",
+        "operator:wikidata": "Q23786362",
+        "short_name": "ITZBund",
+        "website": "https://www.itzbund.de/DE/home/home_node.html",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0266915,
+          53.5450435
+        ]
+      },
+      "id": "node/4019998671"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4170564142",
+        "contact:website": "https://polizei.hamburg",
+        "government": "police",
+        "name": "Landesbereitschaftspolizei Hamburg",
+        "office": "government",
+        "operator": "Polizei Hamburg",
+        "operator:wikidata": "Q882239",
+        "operator:wikipedia": "de:Polizei Hamburg",
+        "police": "offices"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0118499,
+          53.6039323
+        ]
+      },
+      "id": "node/4170564142"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4281430693",
+        "check_date": "2023-04-01",
+        "entrance": "yes",
+        "name": "Familienkasse Nord",
+        "office": "government",
+        "opening_hours": "Mo-Fr 08:00-12:00, Th 16:00-18:00; PH closed",
+        "operator": "Agentur für Arbeit",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0167347,
+          53.5508686
+        ]
+      },
+      "id": "node/4281430693"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4610764360",
+        "government": "education",
+        "name": "Landeszentrale für politische Bildung",
+        "office": "government",
+        "opening_hours": "Mo-Th 12:30-17:00; Fr 12:30-16:30",
+        "wikidata": "Q1802767"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9877002,
+          53.5575317
+        ]
+      },
+      "id": "node/4610764360"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4682247721",
+        "email": "FAHamburgOst@finanzamt.hamburg.de",
+        "fax": "+49 40 4273-10514",
+        "government": "tax",
+        "name": "Finanzamt Hamburg-Ost",
+        "office": "government",
+        "opening_hours": "Mo,We 08:00-14:00, Tu 07:00-14:00, Th 08:00-18:00, Fr 08:00-12:00; PH closed",
+        "phone": "+49 40 42828-0",
+        "ref:bufa": "2244",
+        "website": "https://www.hamburg.de/fb/ost-start/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0164453,
+          53.5484437
+        ]
+      },
+      "id": "node/4682247721"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4696369786",
+        "check_date": "2023-06-07",
+        "government": "customs",
+        "name": "Generalzolldirektion Hamburg",
+        "office": "government",
+        "operator": "Generalzolldirektion"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9811809,
+          53.5454506
+        ]
+      },
+      "id": "node/4696369786"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4888269645",
+        "check_date": "2023-06-07",
+        "government": "tax",
+        "name": "Finanzamt Hamburg-Oberalster",
+        "office": "government",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0165817,
+          53.5482625
+        ]
+      },
+      "id": "node/4888269645"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4995016023",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "23-27",
+        "addr:postcode": "20354",
+        "addr:street": "Große Bleichen",
+        "email": "poststelle@fb.hamburg.de",
+        "government": "tax",
+        "level": "4;5;6",
+        "name": "Finanzbehörde Hamburg",
+        "office": "government",
+        "phone": "+49 40 428 28 0",
+        "wikidata": "Q1416300",
+        "wikipedia": "de:Finanzbehörde (Hamburg)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9893504,
+          53.5523636
+        ]
+      },
+      "id": "node/4995016023"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5243803008",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "20",
+        "addr:postcode": "20457",
+        "addr:street": "Brooktorkai",
+        "check_date": "2023-06-07",
+        "name": "Bundesanstalt für Wasserbau, Referat Schiffstechnik",
+        "office": "government",
+        "opening_hours": "Mo-Fr 08:00-16:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0019763,
+          53.5446894
+        ]
+      },
+      "id": "node/5243803008"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5496859744",
+        "government": "healthcare",
+        "level": "3;4;5",
+        "name": "Gesundheitsamt Bergedorf",
+        "office": "government",
+        "operator": "Bezirksamt Bergedorf"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2069472,
+          53.4907796
+        ]
+      },
+      "id": "node/5496859744"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5538658576",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "1-3",
+        "addr:postcode": "22335",
+        "addr:street": "Flughafenstraße",
+        "email": "poststelle.za-hamburg-flughafen@zoll.bund.de",
+        "fax": "+49 40 598098",
+        "government": "customs",
+        "name": "Zollamt Hamburg-Flughafen",
+        "office": "government",
+        "official_name": "Hauptzollamt Itzehoe, Zollamt Hamburg-Flughafen",
+        "opening_hours": "Mo-Fr 07:30-19:30; PH,Sa,Su 07:30-13:30",
+        "operator": "Bundeszollverwaltung",
+        "operator:wikidata": "Q1009333",
+        "operator:wikipedia": "de:Bundeszollverwaltung",
+        "phone": "+49 40 50752431",
+        "website": "http://www.zoll.de/SharedDocs/Dienststellen/DE/1_DSSD_Importer/Hauptzollamt/HZA_Itzehoe/ZA/ZA_Hamburg_Flughafen_4701/ZA_Hamburg_Flughafen_4701.html",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0063304,
+          53.6285953
+        ]
+      },
+      "id": "node/5538658576"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5768606225",
+        "check_date": "2023-07-24",
+        "contact:phone": "+49 40 115",
+        "name": "Kundenzentrum Hamburg-Mitte",
+        "office": "government",
+        "opening_hours": "Mo-Fr 07:00-19:00; PH closed",
+        "operator": "Bezirksamt Hamburg-Mitte",
+        "short_name": "KUZ Hbg.-Mitte"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9834729,
+          53.553924
+        ]
+      },
+      "id": "node/5768606225"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5768612768",
+        "name": "Kundenzentrum Finkenwerder",
+        "office": "government",
+        "opening_hours": "We 08:00-14:30; PH closed",
+        "operator": "Bezirksamt Hamburg-Mitte"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8774423,
+          53.5360617
+        ]
+      },
+      "id": "node/5768612768"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5768614932",
+        "check_date:opening_hours": "2023-08-25",
+        "name": "Kundenzentrum Billstedt",
+        "office": "government",
+        "opening_hours": "Mo-Fr 07:00-19:00; PH off",
+        "operator": "Bezirksamt Hamburg-Mitte"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1062719,
+          53.5402752
+        ]
+      },
+      "id": "node/5768614932"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5768621012",
+        "name": "Kundenzentrum Wilhelmsburg",
+        "office": "government",
+        "opening_hours": "Mo 08:00-14:30; Tu 11:30-18:00; PH closed",
+        "operator": "Bezirksamt Hamburg-Mitte",
+        "short_name": "KUZ Wilhelmsburg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0039632,
+          53.4976617
+        ]
+      },
+      "id": "node/5768621012"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5812902565",
+        "amenity": "social_facility",
+        "email": "asd-fuhlsbuettel@hamburg-nord.hamburg.de",
+        "fax": "+49 40 427904803",
+        "government": "social_services",
+        "name": "Allgemeine Soziale Dienste Fuhlsbüttel und Ohlsdorf",
+        "office": "government",
+        "opening_hours": "Mo-Th 08:00-16:00, Fr 08:00-14:00",
+        "phone": "+49 40 428043917",
+        "short_name": "ASD Fuhlsbüttel und Ohlsdorf",
+        "social_facility": "outreach",
+        "website": "https://hamburg-aktiv.info/a9651"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0275764,
+          53.6309236
+        ]
+      },
+      "id": "node/5812902565"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5848159713",
+        "contact:email": "bafoeg@studierendenwerk-hamburg.de",
+        "contact:fax": "+49 40 41902-6126",
+        "contact:phone": "+49 40 42815",
+        "contact:website": "http://www.studierendenwerk-hamburg.de",
+        "description:de": "Zuständig für Namen A-L",
+        "name": "Amt für Ausbildungsförderung",
+        "office": "government",
+        "short_name": "BAföG-Amt"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.983062,
+          53.5649471
+        ]
+      },
+      "id": "node/5848159713"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5859151400",
+        "contact:email": "FAHamburgMitte@finanzamt.hamburg.de",
+        "contact:fax": "+49 40 4273-10647",
+        "contact:phone": "+49 40 115",
+        "contact:website": "https://www.hamburg.de",
+        "government": "tax",
+        "name": "Finanzamt Hamburg-Mitte",
+        "office": "government",
+        "opening_hours": "Mo,We 08:00-14:00, Tu 07:00-14:00, Th 08:00-18:00, Fr 08:00-12:00; PH closed; Dec 24 off; Dec 31 off",
+        "ref:bufa": "2248",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0033368,
+          53.5502464
+        ]
+      },
+      "id": "node/5859151400"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5859151401",
+        "contact:email": "FAHamburgHansa@finanzamt.hamburg.de",
+        "contact:fax": "+49 40 4273-10644",
+        "contact:phone": "+49 40 115",
+        "contact:website": "https://www.hamburg.de",
+        "government": "tax",
+        "name": "Finanzamt Hamburg-Hansa",
+        "office": "government",
+        "opening_hours": "Mo,We 08:00-14:00, Tu 07:00-14:00, Th 08:00-18:00, Fr 08:00-12:00; PH closed; Dec 24 off; Dec 31 off",
+        "ref:bufa": "2246",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0032496,
+          53.5502488
+        ]
+      },
+      "id": "node/5859151401"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6029083211",
+        "addr:housenumber": "82",
+        "addr:street": "Billstraße",
+        "name": "dataport",
+        "office": "government",
+        "phone": "+49 40428460",
+        "website": "https://www.dataport.de/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0415649,
+          53.5403462
+        ]
+      },
+      "id": "node/6029083211"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6128126674",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "7",
+        "addr:postcode": "22415",
+        "addr:street": "Langenhorner Markt",
+        "check_date:opening_hours": "2021-11-12",
+        "email": "kundenzentrum-langenhorn@hamburg-nord.hamburg.de",
+        "government": "register_office",
+        "level": "1",
+        "name": "Kundenzentrum Langenhorn",
+        "office": "government",
+        "opening_hours": "Mo-Fr 07:00-19:00",
+        "operator": "Bezirksamt Hamburg-Nord",
+        "phone": "+49 40 428 28-0",
+        "short_name": "KUZ Langenhorn",
+        "website": "https://www.hamburg.de/hamburg-nord/kundenzentren/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0135758,
+          53.6496939
+        ]
+      },
+      "id": "node/6128126674"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6216373330",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "2",
+        "addr:postcode": "20095",
+        "addr:street": "Schmiedestraße",
+        "check_date": "2023-10-03",
+        "description": "Parlamentsverwaltung in der Hamburgischen Bürgerschaft",
+        "email": "Jana.Nielsen@bk.hamburg.de",
+        "government": "public_service",
+        "name": "Bürgerschaftskanzlei",
+        "office": "government",
+        "phone": "+49 40 428312633",
+        "website": "https://www.hamburgische-buergerschaft.de/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9960634,
+          53.5495602
+        ]
+      },
+      "id": "node/6216373330"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6239606411",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "22",
+        "addr:postcode": "20459",
+        "addr:street": "Ludwig-Erhard-Straße",
+        "check_date": "2023-06-07",
+        "government": "data_protection",
+        "name": "Der Hamburgische Beauftragte für Datenschutz und Informationsfreiheit",
+        "office": "government",
+        "website": "https://datenschutz-hamburg.de/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9781154,
+          53.5498693
+        ]
+      },
+      "id": "node/6239606411"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6552177678",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "63",
+        "addr:postcode": "20097",
+        "addr:street": "Süderstraße",
+        "description": "EU-Zahlstelle",
+        "government": "customs",
+        "name": "Hauptzollamt Hamburg",
+        "office": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0267213,
+          53.5450565
+        ]
+      },
+      "id": "node/6552177678"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7061471170",
+        "check_date:opening_hours": "2023-10-04",
+        "government": "social_services",
+        "name": "öffentliche Rechtsauskunft",
+        "office": "government",
+        "opening_hours": "Mo,Th 17:00-18:30",
+        "website": "https://www.hamburg.de/oera/kontakt/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0136738,
+          53.6463536
+        ]
+      },
+      "id": "node/7061471170"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7061478422",
+        "government": "social_services",
+        "name": "Mütterberatung",
+        "office": "government",
+        "opening_hours": "Tu 15:00-16:00",
+        "website": "https://www.hamburg.de/hamburg-nord/gesundheit/38600/muetterberatung",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0135314,
+          53.6464327
+        ]
+      },
+      "id": "node/7061478422"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7061486125",
+        "email": "gs-fuhlsbuettel@hamburg-nord.hamburg.de",
+        "government": "social_welfare",
+        "name": "Grundsicherung und Soziales",
+        "office": "government",
+        "opening_hours": "Tu,Th 09:00-12:00",
+        "phone": "+49 40 42804-4181",
+        "website": "https://www.hamburg.de/behoerdenfinder/hamburg/11258228/",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0132536,
+          53.6463124
+        ]
+      },
+      "id": "node/7061486125"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7258873183",
+        "check_date:opening_hours": "2023-05-27",
+        "contact:email": "Zentrales-Fundbuero@altona.hamburg.de",
+        "contact:fax": "+49 40 4279-02680",
+        "contact:phone": "+49 40 42811-3501",
+        "contact:website": "https://www.hamburg.de/fundbuero",
+        "government": "public_service",
+        "level": "1",
+        "name": "Zentrales Fundbüro Hamburg",
+        "office": "government",
+        "opening_hours": "Mo 07:00-16:00; Tu 07:00-13:00; Th 08:30-13:00,14:00-18:00",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.892993,
+          53.5720076
+        ]
+      },
+      "id": "node/7258873183"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7344438235",
+        "contact:fax": "+49 531 2355-8399",
+        "contact:phone": "+49 531 2355-8309",
+        "contact:website": "https://www.lba.de",
+        "government": "aerospace",
+        "name": "Luftfahrt-Bundesamt Außenstelle Hamburg",
+        "office": "government",
+        "operator": "Bundesministeriums für Verkehr und digitale Infrastruktur"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0190525,
+          53.6532412
+        ]
+      },
+      "id": "node/7344438235"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7618292913",
+        "contact:email": "poststelle@bwvi.hamburg.de",
+        "contact:fax": "+49 40 4279-41333",
+        "contact:phone": "+49 115",
+        "contact:website": "https://www.hamburg.de/bwvi",
+        "government": "administrative",
+        "name": "Behörde für Wirtschaft und Innovation",
+        "office": "government",
+        "old_name": "Behörde für Wirtschaft, Verkehr und Innovation",
+        "wikidata": "Q814588",
+        "wikipedia": "de:Behörde für Wirtschaft und Innovation"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9840313,
+          53.5506068
+        ]
+      },
+      "id": "node/7618292913"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7618292914",
+        "check_date": "2023-06-24",
+        "contact:phone": "+49 115",
+        "government": "transportation",
+        "name": "Behörde für Verkehr und Mobilitätswende",
+        "office": "government",
+        "wikidata": "Q96207614",
+        "wikipedia": "de:Behörde für Verkehr und Mobilitätswende"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9837762,
+          53.5506223
+        ]
+      },
+      "id": "node/7618292914"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7942192992",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "8",
+        "addr:postcode": "22041",
+        "addr:street": "Robert-Schuman-Brücke",
+        "government": "healthcare",
+        "name": "Gesundheitsamt Wandsbek",
+        "office": "government",
+        "source": "https://tools.rki.de/PLZTool/?q=22041"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0715248,
+          53.5708544
+        ]
+      },
+      "id": "node/7942192992"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8553070786",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "32b",
+        "addr:postcode": "20097",
+        "addr:street": "Süderstraße",
+        "government": "migration",
+        "name": "Hamburg Welcome Center for Professionals",
+        "office": "government",
+        "phone": "+4940 428 39 5500",
+        "website": "https://welcome.hamburg.de"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0297508,
+          53.5441871
+        ]
+      },
+      "id": "node/8553070786"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8669519655",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "26",
+        "addr:postcode": "22309",
+        "addr:street": "Gründgensstraße",
+        "alt_name": "ASD",
+        "government": "social_services",
+        "name": "Allgemeiner Sozialer Dienst Steilshoop",
+        "office": "government",
+        "operator": "Bezirksamt Wandsbek",
+        "website": "https://hamburg-aktiv.info/a814482"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0585872,
+          53.609963
+        ]
+      },
+      "id": "node/8669519655"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8736486650",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "5",
+        "addr:postcode": "20095",
+        "addr:street": "Mönckebergstraße",
+        "contact:email": "beschwerdestelle@polizei.hamburg.de",
+        "contact:fax": "+49 40 428625030",
+        "contact:phone": "+49 40 428625025",
+        "contact:website": "https://serviceportal.hamburg.de/HamburgGateway/Service/Entry/AFM_BeschP",
+        "government": "police",
+        "name": "Polizei Hamburg, Beschwerdemanagement und Disziplinarangelegenheiten",
+        "office": "government",
+        "opening_hours": "Mo-We 10:00-16:00, Fr 10:00-14:30",
+        "operator": "Polizei Hamburg",
+        "operator:wikidata": "Q882239",
+        "operator:wikipedia": "de:Polizei Hamburg",
+        "police": "offices"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0037002,
+          53.551349
+        ]
+      },
+      "id": "node/8736486650"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9098793753",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "71",
+        "addr:street": "Wandsbeker Allee",
+        "government": "social_services",
+        "name": "Soziales Dienstleistungszentrum Wandsbek",
+        "office": "government",
+        "operator": "Bezirk Wandsbek",
+        "operator:wikidata": "Q1633"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.070386,
+          53.574512
+        ]
+      },
+      "id": "node/9098793753"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9098793754",
+        "government": "social_security",
+        "name": "Grundsicherung und Sozialamt Wandsbek",
+        "office": "government",
+        "operator": "Bezirk Wandsbek",
+        "operator:wikidata": "Q1633"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0703999,
+          53.5743574
+        ]
+      },
+      "id": "node/9098793754"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9327792843",
+        "contact:email": "poststelle.hza-hamburg@zoll.bund.de",
+        "contact:fax": "+49 40 303789113",
+        "contact:phone": "+49 40 3037890",
+        "contact:website": "https://www.zoll.de/SharedDocs/Dienststellen/DE/1_DSSD_Importer/Hauptzollamt/HZA_Hamburg/interne_Einheiten/HZA_Hamburg_DO_Ahrensburger_Strasse_4821/HZA_Hamburg_DO_Ahrensburger_Strasse_4821.html?bcnn=282256",
+        "government": "customs",
+        "name": "Verwertungsstelle des Hauptzollamts Hamburg",
+        "office": "government",
+        "official_name": "Hauptzollamt Hamburg, Dienstort Ahrensburger Straße",
+        "operator": "Bundeszollverwaltung",
+        "operator:wikidata": "Q1009333",
+        "operator:wikipedia": "de:Bundeszollverwaltung"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1042569,
+          53.580917
+        ]
+      },
+      "id": "node/9327792843"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9934071726",
+        "name": "Kundenzentrum Hamburg-City",
+        "office": "government",
+        "opening_hours": "Mo-Fr 07:00-19:00",
+        "operator": "Bezirksamt Hamburg-Mitte"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0044792,
+          53.5526221
+        ]
+      },
+      "id": "node/9934071726"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9941769317",
+        "name": "Kundenzentrum Hamburg City",
+        "office": "government",
+        "opening_hours": "Mo-Fr 07:00-19:00",
+        "website": "https://www.hamburg.de/kundenzentrum"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0044792,
+          53.5525967
+        ]
+      },
+      "id": "node/9941769317"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10121445544",
+        "contact:website": "https://justiz.hamburg.de/staatsanwaltschaft-hamburg-neu/",
+        "government": "prosecutor",
+        "name": "Staatsanwaltschaft Hamburg",
+        "office": "government",
+        "opening_hours": "Mo,Tu,Fr 09:00-13:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9823143,
+          53.5568881
+        ]
+      },
+      "id": "node/10121445544"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10154780359",
+        "email": "pflanzengesundheit@bwvi.hamburg.de",
+        "government": "environment",
+        "level": "1",
+        "name": "Behörde für Wirtschaft, Verkehr, und Innovation - Pflanzengesundheitskontrolle",
+        "office": "government",
+        "opening_hours": "Mo-We 07:30-12:00,12:30-16:00; Th 07:30-12:00,12:30-15:30; Fr 07:30-12:00,12:30-15:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0211388,
+          53.5407476
+        ]
+      },
+      "id": "node/10154780359"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10175680384",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "31",
+        "addr:postcode": "22083",
+        "addr:street": "Hamburger Straße",
+        "level": "1",
+        "name": "Behörde für Schule und Berufsbildung",
+        "office": "government",
+        "website": "https://www.hamburg.de/bsb/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0303816,
+          53.5729316
+        ]
+      },
+      "id": "node/10175680384"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10175686897",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "23",
+        "addr:postcode": "22083",
+        "addr:street": "Hamburger Straße",
+        "government": "tax",
+        "level": "1",
+        "name": "Finanzamt Barmbek-Uhlenhorst",
+        "office": "government",
+        "website": "https://www.hamburg.de/fb/bustart/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0294634,
+          53.5723171
+        ]
+      },
+      "id": "node/10175686897"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10223597556",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "11",
+        "addr:postcode": "22415",
+        "addr:street": "Tannenweg",
+        "government": "social_services",
+        "name": "Landesbetrieb Erziehung und Beratung - Clearingstelle",
+        "office": "government",
+        "website": "https://www.hamburg.de/leb/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.013855,
+          53.6445225
+        ]
+      },
+      "id": "node/10223597556"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10552912195",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "29-39",
+        "addr:postcode": "22767",
+        "addr:street": "Alte Königstraße",
+        "government": "social_services",
+        "name": "Bezirksamt Altona, Fachamt Grundsicherung und Soziales - Elterngeld",
+        "office": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9373705,
+          53.5472127
+        ]
+      },
+      "id": "node/10552912195"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10783657575",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "96-98",
+        "addr:postcode": "20097",
+        "addr:street": "Heidenkampsweg",
+        "check_date:opening_hours": "2023-06-23",
+        "name": "Autobahn GmbH Niederlassung Nord",
+        "office": "government",
+        "opening_hours:signed": "no",
+        "phone": "+49 40 23513380"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0301894,
+          53.5446152
+        ]
+      },
+      "id": "node/10783657575"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10787302916",
+        "addr:housenumber": "260",
+        "addr:street": "Bahrenfelder Straße",
+        "email": "gesundheit@altona.hamburg.de",
+        "fax": "+49 40 4279 02910",
+        "government": "healthcare",
+        "level": "2",
+        "name": "Gesundheitsamt",
+        "office": "government",
+        "opening_hours": "Mo-Th 09:00-15:00, Fr 09:00-13:00, PH off",
+        "phone": "+49 40 428 11 2097;+49 40 428 11 2557"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9287598,
+          53.557971
+        ]
+      },
+      "id": "node/10787302916"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10787302917",
+        "email": "info@kasse.hamburg.de",
+        "fax": "+49 40 4279 23 855",
+        "government": "yes",
+        "name": "Kasse.Hamburg",
+        "office": "government",
+        "opening_hours": "Mo-Th 09:00-15:00",
+        "phone": "+49 40 428 23 1800",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9146898,
+          53.5607486
+        ]
+      },
+      "id": "node/10787302917"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10787302918",
+        "addr:housenumber": "260",
+        "addr:street": "Bahrenfelder Straße",
+        "email": "muetterberatung@altona.hamburg.de",
+        "level": "1",
+        "name": "Mütterberatung",
+        "office": "government",
+        "opening_hours": "We 11:00-12:00, \"weitere Termine nach Vereinbarung\"",
+        "phone": "+49 40 428 11 2067"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.928741,
+          53.55806
+        ]
+      },
+      "id": "node/10787302918"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/10936961091",
+        "check_date:opening_hours": "2023-05-29",
+        "name": "Bundesbauabteilung",
+        "office": "government",
+        "opening_hours:signed": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0264627,
+          53.6047299
+        ]
+      },
+      "id": "node/10936961091"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11136990779",
+        "addr:city": "Hamburg",
+        "addr:housenumber": "12",
+        "addr:postcode": "20097",
+        "addr:street": "Sachsenstraße",
+        "contact:email": "fks.hza-hamburg@zoll.bund.de",
+        "contact:fax": "+49 40 800035090",
+        "contact:phone": "+49 40 800035000",
+        "contact:website": "https://www.zoll.de/SharedDocs/Dienststellen/DE/1_DSSD_Importer/ZZ_FKS_Zustaendigkeitssuche/HZA_Hamburg_FKS_Hamburg_4622/HZA_Hamburg_FKS_Hamburg_4622.html?bcnn=282256",
+        "government": "customs",
+        "name": "Hauptzollamt Hamburg, Finanzkontrolle Schwarzarbeit",
+        "office": "government",
+        "official_name": "Hauptzollamt Hamburg, Finanzkontrolle Schwarzarbeit, Dienstort Hamburg",
+        "operator": "Bundeszollverwaltung",
+        "operator:wikidata": "Q1009333",
+        "operator:wikipedia": "de:Bundeszollverwaltung",
+        "wheelchair": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.027305,
+          53.5456958
+        ]
+      },
+      "id": "node/11136990779"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11136990780",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "4",
+        "addr:postcode": "20457",
+        "addr:street": "Koreastraße",
+        "alt_name": "Zollamt Hamburg - AG 50",
+        "contact:email": "postabfertigung.za-hamburg@zoll.bund.de",
+        "contact:fax": "+49 40 800039030",
+        "contact:phone": "+49 40 800030",
+        "contact:website": "https://www.zoll.de/SharedDocs/Dienststellen/DE/1_DSSD_Importer/Hauptzollamt/HZA_Hamburg/ZA/ZA_Hamburg_DO_Koreastrasse_4603/ZA_Hamburg_DO_Koreastrasse_4603.html?bcnn=282256",
+        "description:de": "Ausschließlich auf die Abfertigung von Sendungen der Deutschen Post AG beschränkt",
+        "government": "customs",
+        "name": "Hauptzollamt Hamburg, Dienstort Koreastraße",
+        "note": "Die zwei hier an der Adresse eingezeichneten Zollämter sind in der Tat separate vom Zoll ausgewiesene Ämter. Nicht zusammenlegen.",
+        "office": "government",
+        "official_name": "Hauptzollamt Hamburg, Zollamt Hamburg, Dienstort Koreastraße",
+        "opening_hours": "Mo 08:00-17:00, Tu,We 08:00-16:00, Th 10:00-18:00, Fr 07:00-14:00",
+        "operator": "Bundeszollverwaltung",
+        "operator:wikidata": "Q1009333",
+        "operator:wikipedia": "de:Bundeszollverwaltung",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0013288,
+          53.5433024
+        ]
+      },
+      "id": "node/11136990780"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11136990781",
+        "addr:city": "Hamburg",
+        "addr:country": "DE",
+        "addr:housenumber": "4",
+        "addr:postcode": "20457",
+        "addr:street": "Koreastraße",
+        "alt_name": "Zollamt Hamburg - AG 50",
+        "contact:email": "poststelle.hza-hamburg@zoll.bund.de",
+        "contact:fax": "+49 40 800031200",
+        "contact:phone": "+49 40 800030",
+        "contact:website": "https://www.zoll.de/SharedDocs/Dienststellen/DE/1_DSSD_Importer/Hauptzollamt/HZA_Hamburg/HZA_Hamburg_4600/HZA_Hamburg_4600.html?bcnn=282256",
+        "description:de": "Ausschließlich auf die Abfertigung von Sendungen der Deutschen Post AG beschränkt",
+        "government": "customs",
+        "name": "Hauptzollamt Hamburg",
+        "note": "Die zwei hier an der Adresse eingezeichneten Zollämter sind in der Tat separate vom Zoll ausgewiesene Ämter. Nicht zusammenlegen.",
+        "office": "government",
+        "official_name": "Hauptzollamt Hamburg",
+        "opening_hours": "Mo 08:00-17:00, Tu,We 08:00-16:00, Th 10:00-18:00, Fr 07:00-14:00",
+        "operator": "Bundeszollverwaltung",
+        "operator:wikidata": "Q1009333",
+        "operator:wikipedia": "de:Bundeszollverwaltung",
+        "ref:col": "DE004600",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0016356,
+          53.5433757
+        ]
+      },
+      "id": "node/11136990781"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11139550104",
+        "contact:phone": "+49 40 428650",
+        "contact:website": "https://polizei.hamburg",
+        "government": "police",
+        "name": "Landeskriminalamt Hamburg",
+        "office": "government",
+        "operator": "Polizei Hamburg",
+        "operator:wikidata": "Q882239",
+        "operator:wikipedia": "de:Polizei Hamburg",
+        "police": "offices",
+        "short_name": "LKA",
+        "wikidata": "Q1802337",
+        "wikipedia": "de:Landeskriminalamt Hamburg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0110126,
+          53.6050966
+        ]
+      },
+      "id": "node/11139550104"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11222756402",
+        "addr:housenumber": "19",
+        "addr:street": "Mengestraße",
+        "government": "administrative",
+        "level": "0",
+        "name": "Kundenzentrum Bezirksamt Hamburg-Mitte",
+        "office": "government",
+        "opening_hours": "Mo 08:00-14:30; Tu 11:30-18:00",
+        "operator": "Bezirksamt Hamburg-Mitte",
+        "phone": "+49 40 428716321"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9968437,
+          53.4990026
+        ]
+      },
+      "id": "node/11222756402"
+    }
+  ]
+}

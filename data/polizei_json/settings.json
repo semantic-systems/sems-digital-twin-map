@@ -1,0 +1,50 @@
+{
+    "display_name": "Polizeikommissariate",
+    "default_show": false,
+    "files": {
+        "de_hh_up_pk_grenzen_EPSG_4326.json": {
+            "name": "Polizei",
+            "color": "darkblue",
+            "type": "geojson",
+            "line_weight": 3,
+            "popup_properties": {
+                "Kommissariat": "pk",
+                "Gebiet (qkm)": "berechnu_1"
+            }
+        },
+        "de_hh_up_pk_grenzen_EPSG_25832.json": {
+            "name": "Polizei",
+            "color": "darkblue",
+            "type": "geojson",
+            "line_weight": 3,
+            "popup_properties": {
+                "Kommissariat": "pk",
+                "Gebiet (qkm)": "berechnu_1"
+            }
+        },
+        "de_hh_up_pk_standorte_EPSG_4326.json": {
+            "name": "Polizei",
+            "color": "darkblue",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "handcuffs",
+            "popup_properties": {
+                "Name": "name",
+                "Adresse": "straße",
+                "Tel.Nr": "telefonnr"
+            }
+        },
+        "de_hh_up_pk_standorte_EPSG_25832.json": {
+            "name": "Polizei",
+            "color": "darkblue",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "handcuffs",
+            "popup_properties": {
+                "Name": "name",
+                "Adresse": "straße",
+                "Tel.Nr": "telefonnr"
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "display_name": "Regierungsgebäude",
+    "default_show": false,
+    "files": {
+        "de_hh_regierungsgebauede_EPSG_4326.json": {
+            "name": "Regierungsgebäude",
+            "color": "lightblue",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "building-columns",
+            "popup_properties": {
+                "Name": "name",
+                "Rollstuhlzugang": "wheelchair"
+            }
+        }
+    }
+}

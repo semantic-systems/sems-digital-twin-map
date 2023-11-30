@@ -1,0 +1,18 @@
+{
+    "display_name": "Rathäuser",
+    "default_show": false,
+    "files": {
+        "de_hh_rathaeuser_EPSG_4326.json": {
+            "name": "Rathäuser",
+            "color": "lightblue",
+            "type": "marker",
+            "icon-prefix": "fa",
+            "icon": "building-columns",
+            "popup_properties": {
+                "Name": "name",
+                "Straße": "addr:street",
+                "Hausnummer": "addr:housenumber"
+            }
+        }
+    }
+}

@@ -239,7 +239,7 @@ app = Dash(
 
 # get all available feature sets
 engine, session = connect_db()
-feature_sets = session.query(FeatureSet).filter(FeatureSet.name != "Straße").all()  # exclude Straße, very big dataset
+feature_sets = session.query(FeatureSet).all()
 
 # close database connection
 session.close()
@@ -281,11 +281,13 @@ app.layout = html.Div([
             'padding': '10px',
             'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
             'border-radius': '5px',
-            'max-height': '400px',
+            'max-height': '700px',
             'overflow-y': 'auto',
             'z-index': '1000',
             'right': '0',
-            'top': '0'
+            'top': '0',
+            'width:': '200px',
+            'color': '#333'
             }
         ),
     ],
