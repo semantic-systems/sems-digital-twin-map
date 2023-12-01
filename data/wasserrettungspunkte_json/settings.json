@@ -1,9 +1,9 @@
 {
-    "display_name": "Wasserrettungspunkte",
+    "layer": "Wasserrettungspunkte",
     "default_show": false,
     "files": {
         "de_hh_up_wasserrettungspunkte_EPSG_4326.json": {
-            "name": "Wasserrettungspunkte",
+            "name": "Wasserrettungspunkt",
             "color": "darkblue",
             "type": "marker",
             "icon-prefix": "fa",

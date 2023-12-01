@@ -1,5 +1,5 @@
 {
-    "display_name": "Regierungsgebäude",
+    "layer": "Regierungsgebäude",
     "default_show": false,
     "files": {
         "de_hh_regierungsgebauede_EPSG_4326.json": {

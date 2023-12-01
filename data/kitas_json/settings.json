@@ -1,5 +1,5 @@
 {
-    "display_name": "Kitas",
+    "layer": "Kitas",
     "default_show": false,
     "files": {
         "app_KitaEinrichtungen_EPSG_4326.json": {

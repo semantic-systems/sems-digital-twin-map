@@ -1,9 +1,9 @@
 {
-    "display_name": "Versammlungspunkte",
+    "layer": "Versammlungspunkte",
     "default_show": false,
     "files": {
         "de_hh_versammlungspunkte_EPSG_4326.json": {
-            "name": "Versammlungspunkte",
+            "name": "Versammlungspunkt",
             "color": "purple",
             "type": "marker",
             "icon-prefix": "fa",

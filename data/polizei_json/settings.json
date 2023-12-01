@@ -1,9 +1,9 @@
 {
-    "display_name": "Polizeikommissariate",
+    "layer": "Polizei",
     "default_show": false,
     "files": {
         "de_hh_up_pk_grenzen_EPSG_4326.json": {
-            "name": "Polizei",
+            "name": "Kommissariatsgebiet",
             "color": "darkblue",
             "type": "geojson",
             "line_weight": 3,
@@ -13,7 +13,7 @@
             }
         },
         "de_hh_up_pk_grenzen_EPSG_25832.json": {
-            "name": "Polizei",
+            "name": "Kommissariatsgebiet",
             "color": "darkblue",
             "type": "geojson",
             "line_weight": 3,
@@ -23,7 +23,7 @@
             }
         },
         "de_hh_up_pk_standorte_EPSG_4326.json": {
-            "name": "Polizei",
+            "name": "Polizeistation",
             "color": "darkblue",
             "type": "marker",
             "icon-prefix": "fa",
@@ -35,7 +35,7 @@
             }
         },
         "de_hh_up_pk_standorte_EPSG_25832.json": {
-            "name": "Polizei",
+            "name": "Polizeistation",
             "color": "darkblue",
             "type": "marker",
             "icon-prefix": "fa",

@@ -1,9 +1,9 @@
 {
-    "display_name": "Rettungspunkte",
+    "layer": "Rettungspunkte",
     "default_show": false,
     "files": {
         "de_hh_rettungspunkte_EPSG_4326.json": {
-            "name": "Rettungspunkte",
+            "name": "Rettungspunkt",
             "color": "red",
             "type": "marker",
             "icon-prefix": "fa",

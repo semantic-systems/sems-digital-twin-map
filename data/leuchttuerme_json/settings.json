@@ -1,9 +1,9 @@
 {
-    "display_name": "Leuchttürme",
+    "layer": "Leuchttürme",
     "default_show": false,
     "files": {
         "de_hh_leuchttuerme_EPSG_4326.json": {
-            "name": "Leuchttürme",
+            "name": "Leuchtturm",
             "color": "gray",
             "type": "marker",
             "icon-prefix": "fa",

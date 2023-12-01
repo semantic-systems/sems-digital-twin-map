@@ -1,5 +1,5 @@
 {
-    "display_name": "Telekommunikation",
+    "layer": "Telekommunikation",
     "default_show": false,
     "files": {
         "de_hh_datacenter_EPSG_4326.json": {

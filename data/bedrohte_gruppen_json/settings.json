@@ -1,5 +1,5 @@
 {
-    "display_name": "Bedrohte Gruppen",
+    "layer": "Bedrohte Gruppen",
     "default_show": false,
     "files": {
         "app_perspektive_wohnen_bestehend_EPSG_4326.json": {

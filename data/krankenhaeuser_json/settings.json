@@ -1,5 +1,5 @@
 {
-    "display_name": "Krankenhäuser",
+    "layer": "Krankenhäuser",
     "default_show": false,
     "files": {
         "de_hh_up_gesundheit_krankenhaeuser_EPSG_4326.json": {
@@ -24,6 +24,18 @@
                 "Name": "name",
                 "Verzeichnis": "krankenhausverzeichnis",
                 "Versorgung": "not_und_unfallversorgung"
+            }
+        },
+        "de_hh_up_hubschrauberlandplaetzekrankenhaeuser_EPSG_4326.json": {
+            "name": "Helilandeplatz Krankenhaus",
+            "color": "lightgreen",
+            "type": "point",
+            "icon-prefix": "fa",
+            "icon": "helicopter-symbol",
+            "popup_properties": {
+                "Name": "objekt", 
+                "Typ": "objektbesc", 
+                "Adresse": "adresse"
             }
         }
     }

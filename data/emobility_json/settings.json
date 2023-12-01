@@ -1,5 +1,5 @@
 {
-    "display_name": "Emobility",
+    "layer": "Emobility",
     "default_show": false,
     "files": {
         "app_stromnetz_emobility_EPSG_4326.json": {

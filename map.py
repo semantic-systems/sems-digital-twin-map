@@ -11,16 +11,17 @@ from shapely.geometry import mapping
 from shapely.wkb import loads
 
 # data models
-from database import Base, Feature, FeatureSet, Style, Colormap, connect_db
+from database import Base, Feature, FeatureSet, Layer, Style, Colormap, connect_db
 
 def style_to_dict(style) -> dict:
     """
     Convert a Style from the database to a dictionary that can be used by dash-leaflet
     """
+
     style_dict = {
         'color': style.color,
         'fillColor': style.fill_color,
-        'weight': style.line_weight
+        'weight': style.line_weight,
     }
 
     return style_dict
@@ -169,9 +170,9 @@ def feature_to_map_object(feature, popup=None):
 
     return map_object
 
-def feature_set_to_layer_group(feature_set) -> dl.LayerGroup:
+def feature_set_to_map_objects(feature_set) -> list:
     """
-    Takes in a FeatureSet from the database and returns a dash-leaflet LayerGroup
+    Takes in a FeatureSet from the database and returns a list of dash-leaflet objects.
     that contains all AwesomeMarkers or GeoJSON objects of the FeatureSet
     """
 
@@ -195,13 +196,8 @@ def feature_set_to_layer_group(feature_set) -> dl.LayerGroup:
     
         map_object = feature_to_map_object(feature, popup_content)
         map_objects.append(map_object)
-    
-    layer_group = dl.LayerGroup(
-        children=map_objects,
-        id=f'layergroup-{feature_set.id}'
-    )
 
-    return layer_group
+    return map_objects
 
 def overlay_id_to_layer_group(overlay_id) -> dl.LayerGroup:
     """
@@ -211,15 +207,25 @@ def overlay_id_to_layer_group(overlay_id) -> dl.LayerGroup:
 
     engine, session = connect_db()
 
-    # get the feature set with the given id
-    feature_set = session.query(FeatureSet).get(overlay_id)
+    # get the layer with the given id
+    layer = session.query(Layer).get(overlay_id)
+    feature_sets = layer.feature_set
 
-    # build the layer group for this feature set
-    layer_group = feature_set_to_layer_group(feature_set)
+    map_objects = []
+
+    for feature_set in feature_sets:
+        # build the layer group for this feature set
+        map_objects.extend(feature_set_to_map_objects(feature_set))
 
     # close database connection
     session.close()
     engine.dispose()
+
+    # create the layer group
+    layer_group = dl.LayerGroup(
+        children=map_objects,
+        id=f'layergroup-{overlay_id}'
+    )
 
     return layer_group
 
@@ -237,9 +243,9 @@ app = Dash(
     ]
 )
 
-# get all available feature sets
+# get all available layers sets
 engine, session = connect_db()
-feature_sets = session.query(FeatureSet).all()
+layers = session.query(Layer).all()
 
 # close database connection
 session.close()
@@ -269,7 +275,7 @@ app.layout = html.Div([
         html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
             dcc.Checklist(
                 id='overlay_checklist',
-                options=[{'label': feature_set.name, 'value': feature_set.id} for feature_set in feature_sets],
+                options=[{'label': layer.name, 'value': layer.id} for layer in layers],
                 value=[]
             ),
             style={
@@ -312,7 +318,6 @@ def update_map(selected_overlays, map_children, active_overlays_data):
 
     for child in map_children:
 
-        # get the childs id
         id = child['props']['id']
 
         # check if the child is a layer group

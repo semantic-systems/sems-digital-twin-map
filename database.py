@@ -19,9 +19,17 @@ class FeatureSet(Base):
     __tablename__ = 'feature_sets'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    layer_id = Column(Integer, ForeignKey('layers.id'), nullable=False)
+    layer = relationship('Layer', back_populates='feature_set')
     style_id = Column(Integer, ForeignKey('styles.id'), nullable=True)
     style = relationship('Style', back_populates='feature_sets')
     features = relationship('Feature', back_populates='feature_set')
+
+class Layer(Base):
+    __tablename__ = 'layers'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    feature_set = relationship('FeatureSet', back_populates='layer')
 
 class Colormap(Base):
     __tablename__ = 'colormaps'

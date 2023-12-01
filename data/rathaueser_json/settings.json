@@ -1,9 +1,9 @@
 {
-    "display_name": "Rathäuser",
+    "layer": "Rathäuser",
     "default_show": false,
     "files": {
         "de_hh_rathaeuser_EPSG_4326.json": {
-            "name": "Rathäuser",
+            "name": "Rathaus",
             "color": "lightblue",
             "type": "marker",
             "icon-prefix": "fa",

@@ -1,5 +1,5 @@
 {
-    "display_name": "Hydranten",
+    "layer": "Hydranten",
     "default_show": false,
     "files": {
         "de_hh_hydranten_EPSG_4326.json": {

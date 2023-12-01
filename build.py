@@ -6,7 +6,7 @@ from tqdm import tqdm
 from sqlalchemy import text, func
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from database import Base, Feature, FeatureSet, Style, Colormap, connect_db
+from database import Base, Feature, FeatureSet, Layer, Style, Colormap, connect_db
 
 def get_files(path='data') -> dict:
     """
@@ -54,6 +54,16 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
         
         if os.path.exists(settings_path):
             category_settings = load_json(settings_path)
+
+            layer_name = category_settings['layer']
+
+            # create a new Layer if it doesn't exist yet
+            layer = session.query(Layer).filter_by(name=layer_name).first()
+
+            if not layer:
+                layer = Layer(
+                    name=layer_name
+                    )
             
             # process each file in the category
             for file_name, file_settings in category_settings['files'].items():
@@ -86,7 +96,7 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
                         # create a new style
                         # takes the style from the first file of settings.json
                         style = Style(
-                            name=category_settings['display_name'],
+                            name=file_settings['name'],
                             popup_properties=file_settings.get('popup_properties', {}),
                             color=file_settings.get('fill_color', 'blue'),
                             fill_color=file_settings.get('fill_color', 'black'),
@@ -101,6 +111,7 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
                         # finally, create the feature set
                         feature_set = FeatureSet(
                             name=file_settings['name'],
+                            layer=layer,
                             style=style
                         )
                         session.add(feature_set)

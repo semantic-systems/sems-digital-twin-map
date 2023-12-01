@@ -1,5 +1,5 @@
 {
-    "display_name": "Feuerwehr",
+    "layer": "Feuerwehr",
     "default_show": false,
     "files": {
         "de_hh_up_berufsfeuerwehr_EPSG_4326.json": {

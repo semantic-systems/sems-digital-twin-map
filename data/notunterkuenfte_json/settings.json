@@ -1,9 +1,9 @@
 {
-    "display_name": "Notunterkünfte",
+    "layer": "Notunterkünfte",
     "default_show": false,
     "files": {
         "de_hh_up_notunterkuenfte_EPSG_4326.json": {
-            "name": "Notunterkünfte",
+            "name": "Notunterkunft",
             "color": "orange",
             "type": "marker",
             "icon-prefix": "fa",

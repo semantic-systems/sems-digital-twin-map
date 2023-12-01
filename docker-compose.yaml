@@ -8,10 +8,10 @@ services:
     depends_on:
       - postgis
     
-  postgis: #default username should be postgres not rescue
+  postgis:
     image: postgis/postgis
     environment:
-      POSTGRES_PASSWORD: rescuemate 
+      POSTGRES_PASSWORD: rescuemate
     ports:
       - "5432:5432"
     volumes:
