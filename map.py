@@ -26,6 +26,42 @@ def style_to_dict(style) -> dict:
 
     return style_dict
 
+def style_to_dict_colormap(style, feature) -> dict:
+    """
+    Convert a Style from the database to a dictionary that can be used by dash-leaflet
+    This function is used for features that have a colormap
+    """
+
+    style_dict_base = style_to_dict(style)
+
+    # get the colormap
+    colormap = style.colormap
+    colormap_property = colormap.property
+    colormap_min_value = colormap.min_value
+    colormap_max_value = colormap.max_value
+    colormap_min_color = colormap.min_color
+    colormap_max_color = colormap.max_color
+
+    # get the value of the colormap property
+    properties = feature.properties
+    colormap_value = properties.get(colormap_property, 0)
+
+    # create the colormap
+    colormap = cm.LinearColormap(
+        [colormap_min_color, colormap_max_color],
+        vmin=colormap_min_value,
+        vmax=colormap_max_value
+    )
+
+    # get the color from the colormap
+    colormap_color = colormap.rgb_hex_str(colormap_value)
+
+    # add the colormap color to the style dict
+    style_dict_base['color'] = colormap_color
+    style_dict_base['fillColor'] = colormap_color
+
+    return style_dict_base
+
 def get_lat_long(feature) -> tuple:
     """
     Get the latitude and longitude of a feature, if its geometry type is 'Point'
@@ -93,11 +129,18 @@ def create_geojson(feature, popup=None) -> dl.GeoJSON:
     # create the dl.GeoJSON object
     children = []
 
+    # build the popup window
     if popup is not None:
         children.append(dl.Popup(content=popup))
     
+    # build the style dict
     if style is not None:
-        style_dict = style_to_dict(style)
+        if style.colormap is not None:  
+            # if the style has a colormap, use the colormap style
+            style_dict = style_to_dict_colormap(style, feature)
+        else:                           
+            # otherwise use the normal style
+            style_dict = style_to_dict(style)
     
     geojson = dl.GeoJSON(
         data=geojson_dict,
