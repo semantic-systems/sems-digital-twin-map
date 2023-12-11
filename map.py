@@ -19,8 +19,8 @@ def style_to_dict(style) -> dict:
     """
 
     style_dict = {
-       'color': style.color,
-        'fillColor': style.fill_color,
+        'borderColor': style.border_color,
+        'areaColor': style.area_color,
         'weight': style.line_weight,
         'stroke': style.stroke,
         'opacity': style.opacity,

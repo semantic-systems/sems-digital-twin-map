@@ -98,8 +98,8 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
                         style = Style(
                             name=file_settings['name'],
                             popup_properties=file_settings.get('popup_properties', {}),
-                            color=file_settings.get('fill_color', 'blue'),
-                            fill_color=file_settings.get('fill_color', 'black'),
+                            border_color=file_settings.get('border_color', 'blue'),
+                            area_color=file_settings.get('area_color', 'black'),
                             icon_prefix=file_settings.get('icon-prefix', 'fa'),
                             icon_name=file_settings.get('icon', 'circle'),
                             line_weight=file_settings.get('line_weight', 1.0),
