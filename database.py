@@ -51,12 +51,21 @@ class Style(Base):
     icon_prefix = Column(String)
     icon_name = Column(String)
     line_weight = Column(Float)
+    #stroke = Column(bool)
+    opacity = Column(Float)
+    line_cap = Column(String)
+    line_join = Column(String)
+    dash_array = Column(String)
+    dash_offset = Column(String) # incompatible old browsers
+    #fill = Column(bool) 
+    fill_opacity = Column(Float)
+    fill_rule = Column(String)
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
     colormap = relationship('Colormap', back_populates='styles')
     feature_sets = relationship('FeatureSet', back_populates='style')
 
 # create a connection
-def connect_db(host="postgis", port=5432, user="postgres", password="rescuemate", echo=False):
+def connect_db(host="localhost", port=5432, user="postgres", password="rescuemate", echo=False):
     # build the connection string
     db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
     engine = create_engine(db_string, echo=echo)

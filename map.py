@@ -19,9 +19,20 @@ def style_to_dict(style) -> dict:
     """
 
     style_dict = {
-        'color': style.color,
+       'color': style.color,
         'fillColor': style.fill_color,
         'weight': style.line_weight,
+        'stroke': style.stroke,
+        'opacity': style.opacity,
+        'lineCap': style.line_cap,
+        'lineJoin': style.line_join,
+        'dashArray': style.dash_array,
+        'dashOffset': style.dash_offset,
+        'fill': style.fill, #boolean
+        'fillColor': style.fill_color, 
+        'fillOpacity': style.fill_opacity,
+        'fillRule': style.fill_rule
+        
     }
 
     return style_dict
