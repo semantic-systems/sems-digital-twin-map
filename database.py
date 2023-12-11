@@ -51,13 +51,13 @@ class Style(Base):
     icon_prefix = Column(String)
     icon_name = Column(String)
     line_weight = Column(Float)
-    #stroke = Column(bool)
+    stroke = Column(String) # should be boolean
     opacity = Column(Float)
     line_cap = Column(String)
     line_join = Column(String)
     dash_array = Column(String)
     dash_offset = Column(String) # incompatible old browsers
-    #fill = Column(bool) 
+    fill = Column(String) # should be boolean
     fill_opacity = Column(Float)
     fill_rule = Column(String)
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
