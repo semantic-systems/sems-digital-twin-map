@@ -21,6 +21,7 @@ def style_to_dict(style) -> dict:
     style_dict = {
         'borderColor': style.border_color,
         'areaColor': style.area_color,
+        'iconColor':style.icon_color,
         'weight': style.line_weight,
         'stroke': style.stroke,
         'opacity': style.opacity,
@@ -29,7 +30,7 @@ def style_to_dict(style) -> dict:
         'dashArray': style.dash_array,
         'dashOffset': style.dash_offset,
         'fill': style.fill, #boolean
-        'fillColor': style.fill_color, 
+        'fillColor': style.border_color, #same thing as borderColor?
         'fillOpacity': style.fill_opacity,
         'fillRule': style.fill_rule
         
@@ -184,7 +185,7 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
     if style is not None:
         icon = style.icon_name
         icon_prefix = style.icon_prefix # currently unused, we only use fontawesome
-        color = style.color
+        icon_color = style.icon_color
 
     if popup is not None:
         children.append(dl.Popup(content=popup))
@@ -193,7 +194,7 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
         position=position,
         children=children,
         iconOptions=dict(
-            html=f'<i class="awesome-marker awesome-marker-icon-{color} leaflet-zoom-animated leaflet-interactive"></i>'
+            html=f'<i class="awesome-marker awesome-marker-icon-{icon_color} leaflet-zoom-animated leaflet-interactive"></i>'
             f'<i class="fa fa-{icon} icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
             className='custom-div-icon',
             iconSize=[20, 20],

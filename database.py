@@ -50,6 +50,7 @@ class Style(Base):
     area_color = Column(String)
     icon_prefix = Column(String)
     icon_name = Column(String)
+    icon_color = Column(String)
     line_weight = Column(Float)
     stroke = Column(Boolean) 
     opacity = Column(Float)

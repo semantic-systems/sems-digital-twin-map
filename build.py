@@ -102,6 +102,7 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
                             area_color=file_settings.get('area_color', 'black'),
                             icon_prefix=file_settings.get('icon-prefix', 'fa'),
                             icon_name=file_settings.get('icon', 'circle'),
+                            icon_color=file_settings.get('icon_color', 'blue'),
                             line_weight=file_settings.get('line_weight', 1.0),
                             stroke=file_settings.get('stroke', True),
                             opacity=file_settings.get('opacity', 1.0),
