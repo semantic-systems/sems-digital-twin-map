@@ -66,7 +66,7 @@ class Style(Base):
     feature_sets = relationship('FeatureSet', back_populates='style')
 
 # create a connection
-def connect_db(host="localhost", port=5432, user="postgres", password="rescuemate", echo=False):
+def connect_db(host="postgis", port=5432, user="postgres", password="rescuemate", echo=False):
     # build the connection string
     db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
     engine = create_engine(db_string, echo=echo)
