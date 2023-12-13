@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, JSON, Table
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, JSON, Table, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from geoalchemy2 import Geometry
@@ -46,11 +46,21 @@ class Style(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     popup_properties = Column(JSON)
-    color = Column(String)
-    fill_color = Column(String)
+    border_color = Column(String)
+    area_color = Column(String)
     icon_prefix = Column(String)
     icon_name = Column(String)
+    icon_color = Column(String)
     line_weight = Column(Float)
+    stroke = Column(Boolean) 
+    opacity = Column(Float)
+    line_cap = Column(String)
+    line_join = Column(String)
+    dash_array = Column(String)
+    dash_offset = Column(String) # incompatible old browsers
+    fill = Column(Boolean) 
+    fill_opacity = Column(Float)
+    fill_rule = Column(String)
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
     colormap = relationship('Colormap', back_populates='styles')
     feature_sets = relationship('FeatureSet', back_populates='style')

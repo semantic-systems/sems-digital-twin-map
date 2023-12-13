@@ -98,11 +98,21 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
                         style = Style(
                             name=file_settings['name'],
                             popup_properties=file_settings.get('popup_properties', {}),
-                            color=file_settings.get('fill_color', 'blue'),
-                            fill_color=file_settings.get('fill_color', 'black'),
+                            border_color=file_settings.get('border_color', 'blue'),
+                            area_color=file_settings.get('area_color', 'black'),
                             icon_prefix=file_settings.get('icon-prefix', 'fa'),
                             icon_name=file_settings.get('icon', 'circle'),
+                            icon_color=file_settings.get('icon_color', 'blue'),
                             line_weight=file_settings.get('line_weight', 1.0),
+                            stroke=file_settings.get('stroke', True),
+                            opacity=file_settings.get('opacity', 1.0),
+                            line_cap=file_settings.get('line_cap', 'round'),
+                            line_join=file_settings.get('line_join', 'round'),
+                            dash_array=file_settings.get('dash_array', 1.0),
+                            dash_offset=file_settings.get('dash_offset', 1.0),
+                            fill=file_settings.get('fill', True),
+                            fill_opacity=file_settings.get('fill_opacity', 0.2),
+                            fill_rule=file_settings.get('fill_rule', 'evenodd'),
                             colormap=colormap
                         )
                         session.add(style)
