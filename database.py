@@ -13,25 +13,15 @@ class Feature(Base):
     properties = Column(JSON)
     geometry_type = Column(String, nullable=False)
     geometry = Column(Geometry(geometry_type='GEOMETRY'), nullable=False)
-    feature_set_id = Column(Integer, ForeignKey('feature_sets.id'))
-    feature_set = relationship('FeatureSet', back_populates='features')
 
-class FeatureSet(Base):
-    __tablename__ = 'feature_sets'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    layer_id = Column(Integer, ForeignKey('layers.id'), nullable=False)
-    layer = relationship('Layer', back_populates='feature_set')
-    style_id = Column(Integer, ForeignKey('styles.id'), nullable=True)
-    style = relationship('Style', back_populates='feature_sets')
-    features = relationship('Feature', back_populates='feature_set')
-    dataset = relationship('Dataset', uselist=False, back_populates='feature_set')
+    collection_id = Column(String, ForeignKey('collections.id'), nullable=False)
+    collection = relationship('Collection', back_populates='features')
 
 class Layer(Base):
     __tablename__ = 'layers'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    feature_set = relationship('FeatureSet', back_populates='layer')
+    collections = relationship('Collection', back_populates='layer')
 
 class Dataset(Base):
     __tablename__ = 'datasets'
@@ -39,9 +29,26 @@ class Dataset(Base):
     title = Column(String, nullable=False)
     description = Column(String)
     url = Column(String, nullable=False)
-    collection_ids = Column(ARRAY(String), nullable=False)
+    collection_identifiers = Column(ARRAY(String), nullable=False)
+    collections = relationship('Collection', back_populates='dataset')
+
+class Collection(Base):
+    __tablename__ = 'collections'
+    id = Column(String, primary_key=True)
+    identifier = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+
+    dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
+    dataset = relationship('Dataset', back_populates='collections')
+
     layer_id = Column(Integer, ForeignKey('layers.id'), nullable=False)
-    layer = relationship('Layer', back_populates='dataset')
+    layer = relationship('Layer', back_populates='collections')
+
+    style_id = Column(Integer, ForeignKey('styles.id'), nullable=False)
+    style = relationship('Style', back_populates='collections')
+
+    features = relationship('Feature', back_populates='collection')
 
 class Colormap(Base):
     __tablename__ = 'colormaps'
@@ -75,7 +82,7 @@ class Style(Base):
     fill_rule = Column(String)
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
     colormap = relationship('Colormap', back_populates='styles')
-    feature_sets = relationship('FeatureSet', back_populates='style')
+    collections = relationship('Collection', back_populates='style')
 
 # create a connection
 def connect_db(host="localhost", port=5432, user="postgres", password="rescuemate", echo=False):
