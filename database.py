@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, JSON, Table, Boolean
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from geoalchemy2 import Geometry
@@ -24,12 +25,23 @@ class FeatureSet(Base):
     style_id = Column(Integer, ForeignKey('styles.id'), nullable=True)
     style = relationship('Style', back_populates='feature_sets')
     features = relationship('Feature', back_populates='feature_set')
+    dataset = relationship('Dataset', uselist=False, back_populates='feature_set')
 
 class Layer(Base):
     __tablename__ = 'layers'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     feature_set = relationship('FeatureSet', back_populates='layer')
+
+class Dataset(Base):
+    __tablename__ = 'datasets'
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
+    description = Column(String)
+    url = Column(String, nullable=False)
+    collection_ids = Column(ARRAY(String), nullable=False)
+    layer_id = Column(Integer, ForeignKey('layers.id'), nullable=False)
+    layer = relationship('Layer', back_populates='dataset')
 
 class Colormap(Base):
     __tablename__ = 'colormaps'
@@ -66,7 +78,7 @@ class Style(Base):
     feature_sets = relationship('FeatureSet', back_populates='style')
 
 # create a connection
-def connect_db(host="postgis", port=5432, user="postgres", password="rescuemate", echo=False):
+def connect_db(host="localhost", port=5432, user="postgres", password="rescuemate", echo=False):
     # build the connection string
     db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
     engine = create_engine(db_string, echo=echo)

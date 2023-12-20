@@ -1,0 +1,12 @@
+https://api.hamburg.de/datasets/v1/perspektive_wohnen
+https://api.hamburg.de/datasets/v1/schulen
+https://api.hamburg.de/datasets/v1/pflegeeinrichtungen
+https://api.hamburg.de/datasets/v1/krankenhaeuser
+https://api.hamburg.de/datasets/v1/notunterkuenfte
+https://api.hamburg.de/datasets/v1/waermekataster_stromverbrauch
+https://api.hamburg.de/datasets/v1/feuerwehrstandorte
+https://api.hamburg.de/datasets/v1/deichinformationen
+https://api.hamburg.de/datasets/v1/wasserrettungspunkte
+https://api.hamburg.de/datasets/v1/uesg
+https://api.hamburg.de/datasets/v1/deichinformationen
+https://api.hamburg.de/datasets/v1/hvv_einzugsbereiche

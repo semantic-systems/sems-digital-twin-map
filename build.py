@@ -1,12 +1,16 @@
 import os
 import json
+import requests
 from tqdm import tqdm
 
 # database imports
 from sqlalchemy import text, func
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from database import Base, Feature, FeatureSet, Layer, Style, Colormap, connect_db
+from database import Base, Feature, FeatureSet, Layer, Style, Dataset, Colormap, connect_db
+
+# the accepted json types for the items endpoint
+ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 
 def get_files(path='data') -> dict:
     """
@@ -39,7 +43,117 @@ def load_json(json_path, encoding='utf-8') -> dict:
         json_data = json.load(settings_file)
     return json_data
 
-def transform_geojson_to_db(files, session, base_path='data', verbose=False):
+def get_api_collections(base_api):
+    """
+    Returns the collections endpoint from the API base URL
+    For example:
+    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/
+    returns
+    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/collections
+    """
+    # the header we send with our requests
+    headers = {'Content-Type': 'application/json'}
+
+    base_response = requests.get(base_api, headers=headers)
+
+    collection_links = []
+
+    # check if the request was successful
+    if base_response.status_code == 200:
+
+        base_json = base_response.json()
+        base_links = base_json['links']
+
+        # find the link with the rel 'data'
+        for base_link in base_links:
+            if base_link['rel'] == 'data':
+                collections_api = base_link['href']
+
+                collections_response = requests.get(collections_api, headers=headers)
+
+                # check if the request was successful
+                if collections_response.status_code == 200:
+                    collections_json = collections_response.json()
+
+                    return collections_json['collections']
+
+def get_api_items(base_api):
+    """
+    Returns the items endpoint from the API base URL
+    For example:
+    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/
+    returns
+    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/collections/items?f=json
+
+    :param base_api: the base URL of the API
+    :return: the items endpoint or None if the items endpoint could not be found
+    """
+
+    # the header we send with our requests
+    headers = {'Content-Type': 'application/json'}
+
+    base_response = requests.get(base_api, headers=headers)
+
+    item_links = []
+
+    # check if the request was successful
+    if base_response.status_code == 200:
+
+        base_json = base_response.json()
+        base_links = base_json['links']
+
+        # find the link with the rel 'data'
+        for base_link in base_links:
+            if base_link['rel'] == 'data':
+                collections_api = base_link['href']
+
+                collections_response = requests.get(collections_api, headers=headers)
+
+                # check if the request was successful
+                if collections_response.status_code == 200:
+                    collections_json = collections_response.json()
+
+                    collections = collections_json['collections']
+
+                    for collection in collections:
+                        collection_links = collection['links']
+
+                        # find the link with the rel 'items'
+                        # and the type 'application/json' or 'application/geo+json'
+                        for collection_link in collection_links:
+                            if collection_link['rel'] == 'items' and collection_link['type'] in ACCEPTED_JSON_TYPES:
+                                item_links.append(collection_link['href'])
+    
+    return item_links
+
+def urls_to_db(session, verbose=False):
+    """
+    Gets all datasets from the API, requests their data and saves it into the database.
+    """
+
+    # read all urls from urls.txt
+    with open('urls.txt', 'r') as urls_file:
+        urls = urls_file.readlines()
+
+    print(urls)
+
+def datasets_to_db(session, verbose=False):
+    """
+    Gets all datasets in the database, requests their data and saves it into the database.
+    """
+
+    # get all datasets
+    datasets = session.query(Dataset).all()
+
+    for dataset in tqdm(datasets, disable=not verbose):
+        dataset_to_db(dataset, session, verbose=verbose)
+
+def dataset_to_db(dataset, session, verbose=False):
+    """
+    Takes a dataset, requests its data and transforms it into database entries.
+    """
+
+def files_to_db(files, session, base_path='data', verbose=False):
     """
     Transforms geojson files into database entries.
     Takes in files as a dictionary with the folder name as key and a list of files as value.
@@ -78,44 +192,15 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
 
                     # Create a new FeatureSet if it doesn't exist yet
                     if not feature_set:
+                            
+                        # create the style and colormap
+                        style, colormap = style_to_db(file_settings)
 
-                        # check for a colormap
-                        colormap = None
-
-                        if 'colormap' in file_settings:
-                            colormap = Colormap(
-                                property=file_settings['colormap']['property'],
-                                min_color=file_settings['colormap']['colors'][0],
-                                max_color=file_settings['colormap']['colors'][1],
-                                min_value=file_settings['colormap']['vmin'],
-                                max_value=file_settings['colormap']['vmax']
-                            )
-                            session.add(colormap)
-                            session.commit()
-
-                        # create a new style
-                        # takes the style from the first file of settings.json
-                        style = Style(
-                            name=file_settings['name'],
-                            popup_properties=file_settings.get('popup_properties', {}),
-                            border_color=file_settings.get('border_color', 'blue'),
-                            area_color=file_settings.get('area_color', 'black'),
-                            icon_prefix=file_settings.get('icon-prefix', 'fa'),
-                            icon_name=file_settings.get('icon', 'circle'),
-                            icon_color=file_settings.get('icon_color', 'blue'),
-                            line_weight=file_settings.get('line_weight', 1.0),
-                            stroke=file_settings.get('stroke', True),
-                            opacity=file_settings.get('opacity', 1.0),
-                            line_cap=file_settings.get('line_cap', 'round'),
-                            line_join=file_settings.get('line_join', 'round'),
-                            dash_array=file_settings.get('dash_array', 1.0),
-                            dash_offset=file_settings.get('dash_offset', 1.0),
-                            fill=file_settings.get('fill', True),
-                            fill_opacity=file_settings.get('fill_opacity', 0.2),
-                            fill_rule=file_settings.get('fill_rule', 'evenodd'),
-                            colormap=colormap
-                        )
+                        # add them to the session
                         session.add(style)
+                        if colormap:
+                            session.add(colormap)
+                        
                         session.commit()
 
                         # finally, create the feature set
@@ -128,35 +213,85 @@ def transform_geojson_to_db(files, session, base_path='data', verbose=False):
                         session.commit()
 
                     # Process each feature
-                    for feature in geojson_data['features']:
+                    for geojson_feature in geojson_data['features']:
 
-                        # Skip features without a geometry
-                        if feature['geometry'] is None:
-                            continue
+                        feature = feature_to_db(geojson_feature, session)
 
-                        # Convert GeoJSON geometry to a Shapely geometry
-                        shapely_geom = shape(feature['geometry'])
-
-                        # Use Shapely geometry with `geoalchemy2`
-                        geometry_type = shapely_geom.geom_type
-                        wkt_geometry = shapely_geom.wkt
-                        srid = 4326
-                        geometry_element = WKTElement(wkt_geometry, srid)
-
-                        # Get the properties of the feature
-                        properties = feature.get('properties', {})
-
-                        # finally, create the feature
-                        feature = Feature(
-                            feature_set=feature_set,
-                            properties=properties,
-                            geometry_type=geometry_type,
-                            geometry=geometry_element
-                        )
-
-                        session.add(feature)
+                        if feature:
+                            feature.feature_set = feature_set
+                            session.add(feature)
 
                     session.commit()
+
+def feature_to_db(geojson_feature):
+    """
+    Transforms a geojson feature into a database entry.
+    """
+
+    if geojson_feature['geometry'] is None:
+        return None
+
+    # Convert GeoJSON geometry to a Shapely geometry
+    shapely_geom = shape(geojson_feature['geometry'])
+
+    # Use Shapely geometry with `geoalchemy2`
+    geometry_type = shapely_geom.geom_type
+    wkt_geometry = shapely_geom.wkt
+    srid = 4326
+    geometry_element = WKTElement(wkt_geometry, srid)
+
+    # Get the properties of the feature
+    properties = geojson_feature.get('properties', {})
+
+    # finally, create the feature
+    feature = Feature(
+        feature_set=None,   # None for now, must be set later manually
+        properties=properties,
+        geometry_type=geometry_type,
+        geometry=geometry_element
+    )
+
+    return feature
+
+def style_to_db(file_settings):
+    """
+    Transforms file specific settings from a settings.json into a Style database entry.
+    """
+
+    # check for a colormap
+    colormap = None
+
+    if 'colormap' in file_settings:
+        colormap = Colormap(
+            property=file_settings['colormap']['property'],
+            min_color=file_settings['colormap']['colors'][0],
+            max_color=file_settings['colormap']['colors'][1],
+            min_value=file_settings['colormap']['vmin'],
+            max_value=file_settings['colormap']['vmax']
+        )
+    
+    style = Style(
+        name=file_settings['name'],
+        popup_properties=file_settings.get('popup_properties', {}),
+        border_color=file_settings.get('border_color', 'blue'),
+        area_color=file_settings.get('area_color', 'black'),
+        icon_prefix=file_settings.get('icon-prefix', 'fa'),
+        icon_name=file_settings.get('icon', 'circle'),
+        icon_color=file_settings.get('icon_color', 'blue'),
+        line_weight=file_settings.get('line_weight', 1.0),
+        stroke=file_settings.get('stroke', True),
+        opacity=file_settings.get('opacity', 1.0),
+        line_cap=file_settings.get('line_cap', 'round'),
+        line_join=file_settings.get('line_join', 'round'),
+        dash_array=file_settings.get('dash_array', 1.0),
+        dash_offset=file_settings.get('dash_offset', 1.0),
+        fill=file_settings.get('fill', True),
+        fill_opacity=file_settings.get('fill_opacity', 0.2),
+        fill_rule=file_settings.get('fill_rule', 'evenodd'),
+        colormap=colormap
+    )
+
+    return style, colormap
 
 # build the database and populate it with data
 # only needs to be run once
