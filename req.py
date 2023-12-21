@@ -18,8 +18,6 @@ def get_api_collections(base_api):
 
     base_response = requests.get(base_api, headers=headers)
 
-    collection_links = []
-
     # check if the request was successful
     if base_response.status_code == 200:
 
@@ -60,8 +58,13 @@ def request_items(collection, verbose=False):
     """
 
     url = collection.url
+    entries = collection.entries
 
+    # also add the limit parameter to the url
+    # it controls how many items are returned
+    url = url + f'&limit={entries}'
     response = requests.get(url)
+
     if response.status_code == 200:
 
         response_json = response.json()

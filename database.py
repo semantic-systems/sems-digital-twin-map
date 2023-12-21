@@ -38,6 +38,7 @@ class Collection(Base):
     identifier = Column(String, nullable=False)
     title = Column(String, nullable=False)
     url = Column(String, nullable=False)
+    entries = Column(Integer, nullable=False)
 
     dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
     dataset = relationship('Dataset', back_populates='collections')
@@ -67,7 +68,6 @@ class Style(Base):
     popup_properties = Column(JSON)
     border_color = Column(String)
     area_color = Column(String)
-    icon_prefix = Column(String)
     icon_name = Column(String)
     icon_color = Column(String)
     line_weight = Column(Float)
@@ -76,7 +76,7 @@ class Style(Base):
     line_cap = Column(String)
     line_join = Column(String)
     dash_array = Column(String)
-    dash_offset = Column(String) # incompatible old browsers
+    dash_offset = Column(String)    # incompatible with old browsers
     fill = Column(Boolean) 
     fill_opacity = Column(Float)
     fill_rule = Column(String)

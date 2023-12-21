@@ -104,7 +104,6 @@ def create_marker(feature, popup=None) -> dl.Marker:
 
     if style is not None:
         icon = style.icon_name
-        icon_prefix = style.icon_prefix
         color = style.color
 
     if popup is not None:
@@ -184,7 +183,6 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
 
     if style is not None:
         icon = style.icon_name
-        icon_prefix = style.icon_prefix # currently unused, we only use fontawesome
         icon_color = style.icon_color
 
     if popup is not None:

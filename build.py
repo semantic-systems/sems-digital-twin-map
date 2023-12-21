@@ -15,37 +15,6 @@ from req import get_api_collections, get_items_endpoint, request_items
 # the accepted json types for the items endpoint
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 
-def get_files(path='data') -> dict:
-    """
-    Returns a dictionary with the folder name as key and a list of files as value.
-    """
-    files = {}
-
-    for root, dirs, filenames in os.walk(path):
-        for f in filenames:
-
-            # get the folder name after data\
-            # i.e. emobility_json or hafengebiets_json
-            folder = root.split(os.sep)[-1]
-
-            # create a new list if the folder name is not in the dictionary
-            if folder not in files:
-                files[folder] = []
-            
-            # append the file name to the list
-            files[folder].append(f)
-
-    return files
-
-def load_json(json_path, encoding='utf-8') -> dict:
-    """
-    Loads a json file and returns the json data as a dictionary.
-    """
-    json_data = {}
-    with open(json_path, 'r', encoding=encoding) as settings_file:
-        json_data = json.load(settings_file)
-    return json_data
-
 def api_to_db(session, refresh=True, verbose=False):
     """
     Reloads all datasets from api_configs.json, requests their data and saves it into the database.
@@ -102,21 +71,28 @@ def api_to_db(session, refresh=True, verbose=False):
                 popup_properties = collection_config.get('popup_properties', {})
 
                 # create a new style
+                # set default values here
                 style = Style(
                     name=collection['title'],
                     area_color='#000000',
+                    icon_name='circle',
                     opacity=0.5,
                     popup_properties=popup_properties
                 )
 
                 session.add(style)
 
-                # create a Collection database object
+                # number of features in the collection
+                entries = collection['itemCount']
+
+                # the link to the features/items
                 items_link = get_items_endpoint(collection)
 
+                # create a Collection database object
                 db_collection = Collection(
                     identifier=collection.get('id', 'collection_identifier'),
                     title=collection_config.get('name', collection.get('title', 'collection_title')),
+                    entries=entries,
                     url=items_link,
 
                     dataset=dataset,
@@ -133,11 +109,11 @@ def api_to_db(session, refresh=True, verbose=False):
 
 def refresh(session, verbose=False):
     """
-    Gets all datasets in the database, requests their data and saves it into the database.
+    Gets all Datasets in the database, requests their data and saves it into the database.
     This overwrite existing database entries for Feature only.
     """
 
-    # drop all features
+    # drop all existing features
     session.query(Feature).delete()
 
     # get all datasets
@@ -187,76 +163,6 @@ def refresh(session, verbose=False):
                 session.add(db_feature)
     
             session.commit()
-
-def files_to_db(files, session, base_path='data', verbose=False):
-    """
-    Transforms geojson files into database entries.
-    Takes in files as a dictionary with the folder name as key and a list of files as value.
-    These files are then processed and saved into the database.
-    Each folder name should contain a settings.json file.
-    """
-    
-    for category, file_list in tqdm(files.items(), disable=not verbose):
-
-        # get the settings file for the category
-        settings_path = os.path.join(base_path, category, 'settings.json')
-        
-        if os.path.exists(settings_path):
-            category_settings = load_json(settings_path)
-
-            layer_name = category_settings['layer']
-
-            # create a new Layer if it doesn't exist yet
-            layer = session.query(Layer).filter_by(name=layer_name).first()
-
-            if not layer:
-                layer = Layer(
-                    name=layer_name
-                    )
-            
-            # process each file in the category
-            for file_name, file_settings in category_settings['files'].items():
-
-                # only process files with the "standard" EPSG_4326 projection
-                if "EPSG_4326" in file_name:
-                    geojson_path = os.path.join(base_path, category, file_name)
-                    geojson_data = load_json(geojson_path)
-
-                    # Get the respective FeatureSet
-                    feature_set = session.query(FeatureSet).filter_by(name=file_settings['name']).first()
-
-                    # Create a new FeatureSet if it doesn't exist yet
-                    if not feature_set:
-                            
-                        # create the style and colormap
-                        style, colormap = style_to_obj(file_settings)
-
-                        # add them to the session
-                        session.add(style)
-                        if colormap:
-                            session.add(colormap)
-                        
-                        session.commit()
-
-                        # finally, create the feature set
-                        feature_set = FeatureSet(
-                            name=file_settings['name'],
-                            layer=layer,
-                            style=style
-                        )
-                        session.add(feature_set)
-                        session.commit()
-
-                    # Process each feature
-                    for geojson_feature in geojson_data['features']:
-
-                        feature = feature_to_obj(geojson_feature, session)
-
-                        if feature:
-                            feature.feature_set = feature_set
-                            session.add(feature)
-
-                    session.commit()
 
 def feature_to_obj(geojson_feature):
     """
