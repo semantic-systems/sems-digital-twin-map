@@ -15,5 +15,8 @@ EXPOSE 8050
 # Define environment variable
 ENV NAME World
 
+# Rebuild the database first
+CMD ["python", "./build.py"]
+
 # Run main.py when the container launches
 CMD ["python", "./main.py"]

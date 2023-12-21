@@ -11,7 +11,7 @@ from shapely.geometry import mapping
 from shapely.wkb import loads
 
 # data models
-from database import Base, Feature, FeatureSet, Layer, Style, Colormap, connect_db
+from database import Base, Feature, Collection, Dataset, Layer, Style, Colormap, connect_db
 
 def style_to_dict(style) -> dict:
     """
@@ -100,7 +100,7 @@ def create_marker(feature, popup=None) -> dl.Marker:
 
     children = []
 
-    style = feature.feature_set.style
+    style = feature.collection.style
 
     if style is not None:
         icon = style.icon_name
@@ -124,8 +124,8 @@ def create_geojson(feature, popup=None) -> dl.GeoJSON:
 
     properties = feature.properties
     geometry_type = feature.geometry_type
-    feature_set = feature.feature_set
-    style = feature_set.style
+    collection = feature.collection
+    style = collection.style
 
     # create a geojson dict from the feature
     raw_geometry = feature.geometry.data
@@ -177,7 +177,7 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
 
     position = get_lat_long(feature)
 
-    style = feature.feature_set.style
+    style = feature.collection.style
 
     children = []
 
@@ -225,7 +225,7 @@ def feature_to_map_object(feature, popup=None):
 
     return map_object
 
-def feature_set_to_map_objects(feature_set) -> list:
+def collection_to_map_objects(collection) -> list:
     """
     Takes in a FeatureSet from the database and returns a list of dash-leaflet objects.
     that contains all AwesomeMarkers or GeoJSON objects of the FeatureSet
@@ -234,20 +234,22 @@ def feature_set_to_map_objects(feature_set) -> list:
     map_objects = []
 
     # get the popup properties of this feature
-    style = feature_set.style
+    style = collection.style
     popup_properties = style.popup_properties
 
-    for feature in feature_set.features:
+    for feature in collection.features:
 
         properties = feature.properties
             
         # build the popup window
-        popup_content = f"<b>{feature_set.name}</b><br>"
+        popup_content = f"<b>{collection.title}</b><br>"
 
-        for property in popup_properties:
-            current_property = popup_properties[property]
-            value = properties.get(current_property, '')
-            popup_content += f"<b>{property}</b>: {value}<br>"
+        if popup_properties is not None:
+
+            for property in popup_properties:
+                current_property = popup_properties[property]
+                value = properties.get(current_property, '')
+                popup_content += f"<b>{property}</b>: {value}<br>"
     
         map_object = feature_to_map_object(feature, popup_content)
         map_objects.append(map_object)
@@ -257,20 +259,20 @@ def feature_set_to_map_objects(feature_set) -> list:
 def overlay_id_to_layer_group(overlay_id) -> dl.LayerGroup:
     """
     Takes in an overlay_id and returns the corresponding layer group.
-    This is a wrapper for feature_set_to_layer_group()
+    This is a wrapper for collection_to_map_objects()
     """
 
     engine, session = connect_db()
 
     # get the layer with the given id
     layer = session.query(Layer).get(overlay_id)
-    feature_sets = layer.feature_set
+    collections = layer.collections
 
     map_objects = []
 
-    for feature_set in feature_sets:
-        # build the layer group for this feature set
-        map_objects.extend(feature_set_to_map_objects(feature_set))
+    for collection in collections:
+        # build the layer group for this collections
+        map_objects.extend(collection_to_map_objects(collection))
 
     # close database connection
     session.close()

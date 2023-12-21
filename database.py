@@ -14,7 +14,7 @@ class Feature(Base):
     geometry_type = Column(String, nullable=False)
     geometry = Column(Geometry(geometry_type='GEOMETRY'), nullable=False)
 
-    collection_id = Column(String, ForeignKey('collections.id'), nullable=False)
+    collection_id = Column(Integer, ForeignKey('collections.id'), nullable=False)
     collection = relationship('Collection', back_populates='features')
 
 class Layer(Base):
@@ -34,7 +34,7 @@ class Dataset(Base):
 
 class Collection(Base):
     __tablename__ = 'collections'
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
     identifier = Column(String, nullable=False)
     title = Column(String, nullable=False)
     url = Column(String, nullable=False)
@@ -85,7 +85,7 @@ class Style(Base):
     collections = relationship('Collection', back_populates='style')
 
 # create a connection
-def connect_db(host="localhost", port=5432, user="postgres", password="rescuemate", echo=False):
+def connect_db(host="postgis", port=5432, user="postgres", password="rescuemate", echo=False):
     # build the connection string
     db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
     engine = create_engine(db_string, echo=echo)

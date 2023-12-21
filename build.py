@@ -7,7 +7,10 @@ from tqdm import tqdm
 from sqlalchemy import text, func
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from database import Base, Feature, FeatureSet, Layer, Style, Dataset, Colormap, connect_db
+from database import Base, Feature, Dataset, Collection, Layer, Style, Colormap, connect_db
+
+# request imports
+from req import get_api_collections, get_items_endpoint, request_items
 
 # the accepted json types for the items endpoint
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
@@ -43,115 +46,147 @@ def load_json(json_path, encoding='utf-8') -> dict:
         json_data = json.load(settings_file)
     return json_data
 
-def get_api_collections(base_api):
+def api_to_db(session, refresh=True, verbose=False):
     """
-    Returns the collections endpoint from the API base URL
-    For example:
-    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/
-    returns
-    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/collections
-    """
-    # the header we send with our requests
-    headers = {'Content-Type': 'application/json'}
-
-    base_response = requests.get(base_api, headers=headers)
-
-    collection_links = []
-
-    # check if the request was successful
-    if base_response.status_code == 200:
-
-        base_json = base_response.json()
-        base_links = base_json['links']
-
-        # find the link with the rel 'data'
-        for base_link in base_links:
-            if base_link['rel'] == 'data':
-                collections_api = base_link['href']
-
-                collections_response = requests.get(collections_api, headers=headers)
-
-                # check if the request was successful
-                if collections_response.status_code == 200:
-                    collections_json = collections_response.json()
-
-                    return collections_json['collections']
-
-def get_api_items(base_api):
-    """
-    Returns the items endpoint from the API base URL
-    For example:
-    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/
-    returns
-    https://api.hamburg.de/datasets/v1/fahrradhaeuschen/collections/items?f=json
-
-    :param base_api: the base URL of the API
-    :return: the items endpoint or None if the items endpoint could not be found
+    Reloads all datasets from api_configs.json, requests their data and saves it into the database.
+    This creates new database entries for Dataset, Collection, Layer and Style.
+    If refresh is set to True, it will overwrite existing database entries for Feature.
     """
 
-    # the header we send with our requests
-    headers = {'Content-Type': 'application/json'}
+    # open api_config.json as json
+    api_configs = json.load(open('api_config.json', 'r', encoding='utf-8'))
+    dataset_configs = api_configs['datasets']
 
-    base_response = requests.get(base_api, headers=headers)
+    # iterate over all api configs
+    for dataset_config in tqdm(dataset_configs):
 
-    item_links = []
+        # split the line at the comma
+        url = dataset_config['url']
+        collection_identifiers = dataset_config['collections'].keys()
 
-    # check if the request was successful
-    if base_response.status_code == 200:
+        # request the dataset from the API
+        dataset_response = requests.get(url).json()
 
-        base_json = base_response.json()
-        base_links = base_json['links']
+        # takes the name from the api_config.json if it exists
+        # otherwise use the title from the API response
+        dataset_title = dataset_config.get('name', dataset_response['title'])
+        dataset_description = dataset_response['description']
 
-        # find the link with the rel 'data'
-        for base_link in base_links:
-            if base_link['rel'] == 'data':
-                collections_api = base_link['href']
+        dataset = Dataset(
+            title=dataset_title,
+            description=dataset_description,
+            url=url,
+            collection_identifiers=collection_identifiers
+        )
 
-                collections_response = requests.get(collections_api, headers=headers)
+        session.add(dataset)
 
-                # check if the request was successful
-                if collections_response.status_code == 200:
-                    collections_json = collections_response.json()
+        # create a new layer
+        layer = Layer(
+            name=dataset_title
+        )
 
-                    collections = collections_json['collections']
+        session.add(layer)
 
-                    for collection in collections:
-                        collection_links = collection['links']
+        # get all collections from the collections endpoint
+        collections = get_api_collections(url)
 
-                        # find the link with the rel 'items'
-                        # and the type 'application/json' or 'application/geo+json'
-                        for collection_link in collection_links:
-                            if collection_link['rel'] == 'items' and collection_link['type'] in ACCEPTED_JSON_TYPES:
-                                item_links.append(collection_link['href'])
-    
-    return item_links
+        for collection in collections:
 
-def urls_to_db(session, verbose=False):
-    """
-    Gets all datasets from the API, requests their data and saves it into the database.
-    """
+            collection_id = collection['id']
 
-    # read all urls from urls.txt
-    with open('urls.txt', 'r') as urls_file:
-        urls = urls_file.readlines()
+            if collection_id in collection_identifiers:
 
-    print(urls)
+                collection_config = dataset_config['collections'][collection_id]
 
-def datasets_to_db(session, verbose=False):
+                popup_properties = collection_config.get('popup_properties', {})
+
+                # create a new style
+                style = Style(
+                    name=collection['title'],
+                    area_color='#000000',
+                    opacity=0.5,
+                    popup_properties=popup_properties
+                )
+
+                session.add(style)
+
+                # create a Collection database object
+                items_link = get_items_endpoint(collection)
+
+                db_collection = Collection(
+                    identifier=collection.get('id', 'collection_identifier'),
+                    title=collection_config.get('name', collection.get('title', 'collection_title')),
+                    url=items_link,
+
+                    dataset=dataset,
+                    layer=layer,
+                    style=style
+                )
+
+                session.add(db_collection)
+
+            session.commit()
+        
+        if refresh:
+            refresh(session, verbose=verbose)
+
+def refresh(session, verbose=False):
     """
     Gets all datasets in the database, requests their data and saves it into the database.
+    This overwrite existing database entries for Feature only.
     """
+
+    # drop all features
+    session.query(Feature).delete()
 
     # get all datasets
     datasets = session.query(Dataset).all()
 
+    # iterate over all datasets
     for dataset in tqdm(datasets, disable=not verbose):
-        dataset_to_db(dataset, session, verbose=verbose)
 
-def dataset_to_db(dataset, session, verbose=False):
-    """
-    Takes a dataset, requests its data and transforms it into database entries.
-    """
+        collections = dataset.collections
+
+        # iterate over all collections in the dataset
+        for collection in collections:
+                
+            # request the items from the API
+            items_response = request_items(collection)
+    
+            if items_response is None:
+                continue
+    
+            # get all items from the items endpoint
+            features = items_response['features']
+    
+            for feature in features:
+    
+                # skip features without a geometry
+                if feature['geometry'] is None:
+                    continue
+    
+                # Convert GeoJSON geometry to a Shapely geometry
+                shapely_geom = shape(feature['geometry'])
+    
+                # Use Shapely geometry with `geoalchemy2`
+                geometry_type = shapely_geom.geom_type
+                wkt_geometry = shapely_geom.wkt
+                srid = 4326
+                geometry_element = WKTElement(wkt_geometry, srid)
+    
+                # create a new Feature database object
+                db_feature = Feature(
+                    geometry=geometry_element,
+                    geometry_type=feature['geometry']['type'],
+                    properties=feature['properties'],
+    
+                    collection=collection
+                )
+    
+                session.add(db_feature)
+    
+            session.commit()
 
 def files_to_db(files, session, base_path='data', verbose=False):
     """
@@ -194,7 +229,7 @@ def files_to_db(files, session, base_path='data', verbose=False):
                     if not feature_set:
                             
                         # create the style and colormap
-                        style, colormap = style_to_db(file_settings)
+                        style, colormap = style_to_obj(file_settings)
 
                         # add them to the session
                         session.add(style)
@@ -215,7 +250,7 @@ def files_to_db(files, session, base_path='data', verbose=False):
                     # Process each feature
                     for geojson_feature in geojson_data['features']:
 
-                        feature = feature_to_db(geojson_feature, session)
+                        feature = feature_to_obj(geojson_feature, session)
 
                         if feature:
                             feature.feature_set = feature_set
@@ -223,7 +258,7 @@ def files_to_db(files, session, base_path='data', verbose=False):
 
                     session.commit()
 
-def feature_to_db(geojson_feature):
+def feature_to_obj(geojson_feature):
     """
     Transforms a geojson feature into a database entry.
     """
@@ -253,7 +288,7 @@ def feature_to_db(geojson_feature):
 
     return feature
 
-def style_to_db(file_settings):
+def style_to_obj(file_settings):
     """
     Transforms file specific settings from a settings.json into a Style database entry.
     """
@@ -321,18 +356,23 @@ def build(verbose=False):
     Base.metadata.create_all(engine)
     if verbose: print("Done!")
 
-    # get all geojson files
-    files = get_files()
-
-    n_categories = len(files)
-    n_files = sum([len(v) for v in files.values()])
-
-    print(f'Found {n_categories} categories with {n_files} files')
-
     # transform geojson files to database entries
-    if verbose: print("Transfering geojson files into the database... ")
-    transform_geojson_to_db(files, session, verbose=verbose)
-    if verbose: print("Done!")
+    if verbose: print("Getting API Metadata... ")
+    api_to_db(session, refresh=False, verbose=verbose)
+
+    # get the number of Datasets and Collections
+    dataset_count = session.query(Dataset).count()
+    collection_count = session.query(Collection).count()
+    if verbose: print(f"Saved {dataset_count} Datasets with {collection_count} Collections to the database")
+
+    # reload all datasets
+    if verbose: print("Refreshing Features... ")
+    refresh(session, verbose=verbose)
+
+    # get the number of Datasets and Collections
+
+    feature_count = session.query(Feature).count()
+    if verbose: print(f"Saved {feature_count} Features to the database")
 
     # close the database connection
     session.close()
@@ -341,5 +381,6 @@ def build(verbose=False):
     if verbose: print("Database rebuild finished")
     if verbose: print("=========================")
 
+# if this file is run directly, rebuild the database
 if __name__ == '__main__':
     build(verbose=True)

@@ -1,0 +1,219 @@
+{
+    "datasets":[
+        {
+            "name":"Perspektive Wohnen",
+            "id":"perspektive_wohnen",
+            "url":"https://api.hamburg.de/datasets/v1/perspektive_wohnen",
+            "collections":{
+                "perspektive_wohnen_bestehend":{
+                    "name":"Perspektive Wohnen",
+                    "popup_properties": {
+                        "Bezeichnung": "bezeichnung", 
+                        "Bezirk": "bezirk", 
+                        "Plätze": "platzzahl"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Schulen",
+            "id":"schulen",
+            "url":"https://api.hamburg.de/datasets/v1/schulen",
+            "collections":{
+                "staatliche_schulen": {
+                    "name": "Staatliche Schule",
+                    "popup_properties": {
+                        "Name": "schulname", 
+                        "Typ": "kapitelbezeichnung", 
+                        "Adresse": "adresse_strasse_hausnr",
+                        "Schüler": "anzahl_schueler",
+                        "Tel.Nr.": "schul_telefonnr",
+                        "Homepage": "schul_homepage"
+                    }
+                },
+                "nicht_staatliche_schulen": {
+                    "name": "Nicht-Staatliche Schule",
+                    "popup_properties": {
+                        "Name": "schulname", 
+                        "Typ": "kapitelbezeichnung", 
+                        "Adresse": "adresse_strasse_hausnr",
+                        "Schüler": "anzahl_schueler",
+                        "Tel.Nr.": "schul_telefonnr",
+                        "Homepage": "schul_homepage"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Pflegeeinrichtungen",
+            "id":"pflegeeinrichtungen",
+            "url":"https://api.hamburg.de/datasets/v1/pflegeeinrichtungen",
+            "collections":{
+                "vollstationaere_pflegeeinrichtungen": {
+                    "name": "Pflegeeinrichtung",
+                    "popup_properties": {
+                        "Name": "pflegeeinrichtung", 
+                        "Adresse": "adresse",
+                        "Plätze": "plaetze",
+                        "Homepage": "homepage",
+                        "Tel.Nr.": "telefonnummer",
+                        "Email": "email"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Krankenhäuser",
+            "id":"krankenhaeuser",
+            "url":"https://api.hamburg.de/datasets/v1/krankenhaeuser",
+            "collections":{
+                "gesundheit_krankenhaeuser": {
+                    "name": "Krankenhaus",
+                    "popup_properties": {
+                        "Name": "name", 
+                        "Adresse": "adresse",
+                        "Ort": "ort",
+                        "Homepage": "homepage",
+                        "Planbetten": "planbetten"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Notunterkünfte",
+            "id":"notunterkuenfte",
+            "url":"https://api.hamburg.de/datasets/v1/notunterkuenfte",
+            "collections":{
+                "notunterkuenfte": {
+                    "name": "Notunterkunft",
+                    "popup_properties": {
+                        "Bezeichnung": "bezeichnung",
+                        "Adresse": "adresse",
+                        "Max. Kapazität": "maximale_kapazitaet",
+                        "Betreuungsbeuftrager": "betreuungsbeauftragter_hilfsorganisation",
+                        "Kernmannschaft": "kernmannschaften_hilfsorganisation",
+                        "Ansprechpartner": "kernmannschaften_ansprechpartner"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Feuerwehrstandorte",
+            "id":"feuerwehrstandorte",
+            "url":"https://api.hamburg.de/datasets/v1/feuerwehrstandorte",
+            "collections":{
+                "berufsfeuerwehr": {
+                    "name": "Berufsfeuerwehr",
+                    "popup_properties": {
+                        "Name": "Bezeichnung",
+                        "Strasse": "strasse",
+                        "Hausnummer": "hausnummer",
+                        "Ort": "ab_ort",
+                        "PLZ": "postleitzahl"
+                    }
+                },
+                "freiwillige_feuerwehr": {
+                    "name": "Freiwillige Feuerwehr",
+                    "popup_properties": {
+                        "Name": "Bezeichnung",
+                        "Strasse": "strasse",
+                        "Hausnummer": "hausnummer",
+                        "Ort": "ab_ort",
+                        "PLZ": "postleitzahl"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Deichinformationen",
+            "id":"deichinformationen",
+            "url":"https://api.hamburg.de/datasets/v1/deichinformationen",
+            "collections":{
+                "deichverteidigung": {
+                    "name": "Deichverteidigung",
+                    "popup_properties": {
+                        "Deichwart": "deichwart",
+                        "Oberdeichwart": "oberdeichwart",
+                        "Bereich": "bereich"
+                    }
+                },
+                "hauptdeichlinie": {
+                    "name": "Hauptdeichlinie",
+                    "popup_properties": {
+                        "Name": "anlagenname",
+                        "Typ": "anlagentyp",
+                        "Höhe (m)": "schutzhohe_m",
+                        "Deichwart": "deichwart",
+                        "Aufsicht": "zustaendigkeit_aufsicht",
+                        "Unterhaltung": "zustaendigkeit_unterhaltung"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Wasserrettungspunkte",
+            "id":"wasserrettungspunkte",
+            "url":"https://api.hamburg.de/datasets/v1/wasserrettungspunkte",
+            "collections":{
+                "wasserrettungspunkte": {
+                    "name": "Wasserrettungspunkt",
+                    "popup_properties": {
+                        "Nr.": "wasserrettungspunkt",
+                        "Straße": "strasse",
+                        "Beschreibung": "beschreibung"
+                    }
+                }
+            }
+        },
+        {
+            "name":"Überschwemmungsgebiete",
+            "id":"uesg",
+            "url":"https://api.hamburg.de/datasets/v1/uesg",
+            "collections":{
+                "ueberschwemmungsgebiete":{
+                    "name":"Überschwemmungsgebiet",
+                    "popup_properties": {
+                        "Name": "name",
+                        "Verordnung": "verordnung"
+                    }
+                }
+            }
+        },
+        {
+            "name":"HVV",
+            "id":"hvv",
+            "url":"https://api.hamburg.de/datasets/v1/hvv_einzugsbereiche",
+            "collections":{
+                "haltestellenbereiche_bahn": {
+                    "name": "Bahn Haltestelle",
+                    "popup_properties": {
+                        "Name": "name",
+                        "Linien": "linien",
+                        "Art": "art",
+                        "Abfahrten": "abfahrten"
+                    }
+                },
+                "haltestellenbereiche_bus": {
+                    "name": "Bus Haltestelle",
+                    "popup_properties": {
+                        "Name": "name",
+                        "Linien": "linien",
+                        "Art": "art",
+                        "Abfahrten": "abfahrten"
+                    }
+                },
+                "haltestellenbereiche_faehre": {
+                    "name": "Fähren Haltestelle",
+                    "popup_properties": {
+                        "Name": "name",
+                        "Linien": "linien",
+                        "Art": "art",
+                        "Abfahrten": "abfahrten"
+                    }
+                }
+            }
+        }
+
+    ]
+
+}
