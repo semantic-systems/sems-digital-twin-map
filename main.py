@@ -7,8 +7,8 @@ def main():
     m = get_app()
 
     # run the app
-    # TO RUN IN  DOCKER: m.run(host='0.0.0.0')
-    # TO RUN IN LOCALLY: m.run()
+    # TO RUN IN DOCKER: m.run(host='0.0.0.0')
+    # TO RUN   LOCALLY: m.run()
     m.run(host='0.0.0.0')
 
 if __name__ == '__main__':

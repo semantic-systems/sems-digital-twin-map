@@ -23,10 +23,14 @@ Example:
                 "Bezeichnung": "bezeichnung", 
                 "Bezirk": "bezirk", 
                 "Plätze": "platzzahl"
+            },
+            "style": {
+                "marker_color": "beige",
+                "marker_icon": "person-shelter"
             }
         }
     }
-}
+},
 ```
 - `name`: Display name of the Dataset
 - `id`: Unique identifier of the Dataset
@@ -35,3 +39,4 @@ Example:
 - `collections.<collection_id>`: Unique identifier of the collection. Must be the same as the collection id in the API.
 - `collections.<collection_id>.name`: Display name of the collection, gets used in popups
 - `collections.<collection_id>.popup_properties`: Display names and fields to be used in popups.
+- `collections.<collection_id>.style`: Controls how the collections features get styled. See [dash-leaflet documentation](https://leafletjs.com/reference.html#path) or `database.py` for more information.

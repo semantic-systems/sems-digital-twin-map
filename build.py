@@ -69,15 +69,27 @@ def api_to_db(session, refresh=True, verbose=False):
                 collection_config = dataset_config['collections'][collection_id]
 
                 popup_properties = collection_config.get('popup_properties', {})
+                collection_style = collection_config.get('style', {})
 
                 # create a new style
                 # set default values here
                 style = Style(
-                    name=collection['title'],
-                    area_color='#000000',
-                    icon_name='circle',
-                    opacity=0.5,
-                    popup_properties=popup_properties
+                    name             = collection['title'],
+                    popup_properties = popup_properties,
+                    border_color     = collection_style.get('border_color', '#3388ff'),
+                    area_color       = collection_style.get('area_color', '#2277ee'),
+                    marker_icon      = collection_style.get('marker_icon', 'circle'),
+                    marker_color     = collection_style.get('marker_color', 'black'),
+                    line_weight      = collection_style.get('line_weight', 3),
+                    stroke           = collection_style.get('stroke', True),
+                    opacity          = collection_style.get('opacity', 1.0),
+                    line_cap         = collection_style.get('line_cap', 'round'),
+                    line_join        = collection_style.get('line_join', 'round'),
+                    dash_array       = collection_style.get('dash_array', None),
+                    dash_offset      = collection_style.get('dash_offset', None),
+                    fill             = collection_style.get('fill', True),
+                    fill_opacity     = collection_style.get('fill_opacity', 0.2),
+                    fill_rule        = collection_style.get('fill_rule', 'evenodd'),
                 )
 
                 session.add(style)

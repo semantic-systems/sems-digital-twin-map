@@ -11,6 +11,10 @@
                         "Bezeichnung": "bezeichnung", 
                         "Bezirk": "bezirk", 
                         "Plätze": "platzzahl"
+                    },
+                    "style": {
+                        "marker_color": "beige",
+                        "marker_icon": "person-shelter"
                     }
                 }
             }
@@ -29,6 +33,10 @@
                         "Schüler": "anzahl_schueler",
                         "Tel.Nr.": "schul_telefonnr",
                         "Homepage": "schul_homepage"
+                    },
+                    "style": {
+                        "marker_color": "blue",
+                        "marker_icon": "school-flag"
                     }
                 },
                 "nicht_staatliche_schulen": {
@@ -40,6 +48,10 @@
                         "Schüler": "anzahl_schueler",
                         "Tel.Nr.": "schul_telefonnr",
                         "Homepage": "schul_homepage"
+                    },
+                    "style": {
+                        "marker_color": "blue",
+                        "marker_icon": "school"
                     }
                 }
             }
@@ -58,6 +70,10 @@
                         "Homepage": "homepage",
                         "Tel.Nr.": "telefonnummer",
                         "Email": "email"
+                    },
+                    "style": {
+                        "marker_color": "gray",
+                        "marker_icon": "person-cane"
                     }
                 }
             }
@@ -75,6 +91,10 @@
                         "Ort": "ort",
                         "Homepage": "homepage",
                         "Planbetten": "planbetten"
+                    },
+                    "style": {
+                        "marker_color": "red",
+                        "marker_icon": "hospital"
                     }
                 }
             }
@@ -93,6 +113,10 @@
                         "Betreuungsbeuftrager": "betreuungsbeauftragter_hilfsorganisation",
                         "Kernmannschaft": "kernmannschaften_hilfsorganisation",
                         "Ansprechpartner": "kernmannschaften_ansprechpartner"
+                    },
+                    "style": {
+                        "marker_color": "orange",
+                        "marker_icon": "people-roof"
                     }
                 }
             }
@@ -110,6 +134,10 @@
                         "Hausnummer": "hausnummer",
                         "Ort": "ab_ort",
                         "PLZ": "postleitzahl"
+                    },
+                    "style": {
+                        "marker_color": "red",
+                        "marker_icon": "fire"
                     }
                 },
                 "freiwillige_feuerwehr": {
@@ -120,6 +148,10 @@
                         "Hausnummer": "hausnummer",
                         "Ort": "ab_ort",
                         "PLZ": "postleitzahl"
+                    },
+                    "style": {
+                        "marker_color": "lightred",
+                        "marker_icon": "fire"
                     }
                 }
             }
@@ -161,6 +193,10 @@
                         "Nr.": "wasserrettungspunkt",
                         "Straße": "strasse",
                         "Beschreibung": "beschreibung"
+                    },
+                    "style": {
+                        "marker_color": "darkblue",
+                        "marker_icon": "life-ring"
                     }
                 }
             }
@@ -191,6 +227,10 @@
                         "Linien": "linien",
                         "Art": "art",
                         "Abfahrten": "abfahrten"
+                    },
+                    "style": {
+                        "marker_color": "lightblue",
+                        "marker_icon": "train-subway"
                     }
                 },
                 "haltestellenbereiche_bus": {
@@ -200,6 +240,10 @@
                         "Linien": "linien",
                         "Art": "art",
                         "Abfahrten": "abfahrten"
+                    },
+                    "style": {
+                        "marker_color": "orange",
+                        "marker_icon": "bus"
                     }
                 },
                 "haltestellenbereiche_faehre": {
@@ -209,6 +253,10 @@
                         "Linien": "linien",
                         "Art": "art",
                         "Abfahrten": "abfahrten"
+                    },
+                    "style": {
+                        "marker_color": "green",
+                        "marker_icon": "ferry"
                     }
                 }
             }

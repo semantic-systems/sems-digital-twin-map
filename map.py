@@ -182,8 +182,8 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
 
 
     if style is not None:
-        icon = style.icon_name
-        icon_color = style.icon_color
+        marker_icon = style.marker_icon
+        marker_color = style.marker_color
 
     if popup is not None:
         children.append(dl.Popup(content=popup))
@@ -192,8 +192,8 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
         position=position,
         children=children,
         iconOptions=dict(
-            html=f'<i class="awesome-marker awesome-marker-icon-{icon_color} leaflet-zoom-animated leaflet-interactive"></i>'
-            f'<i class="fa fa-{icon} icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
+            html=f'<i class="awesome-marker awesome-marker-icon-{marker_color} leaflet-zoom-animated leaflet-interactive"></i>'
+            f'<i class="fa fa-{marker_icon} icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
             className='custom-div-icon',
             iconSize=[20, 20],
             iconAnchor=[10, 30],
