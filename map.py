@@ -11,7 +11,7 @@ from shapely.geometry import mapping
 from shapely.wkb import loads
 
 # data models
-from database import Base, Feature, Collection, Dataset, Layer, Style, Colormap, connect_db
+from database import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, connect_db
 
 def style_to_dict(style) -> dict:
     """
@@ -21,7 +21,6 @@ def style_to_dict(style) -> dict:
     style_dict = {
         'borderColor': style.border_color,
         'areaColor': style.area_color,
-        'iconColor':style.icon_color,
         'weight': style.line_weight,
         'stroke': style.stroke,
         'opacity': style.opacity,
@@ -33,7 +32,6 @@ def style_to_dict(style) -> dict:
         'fillColor': style.border_color, #same thing as borderColor?
         'fillOpacity': style.fill_opacity,
         'fillRule': style.fill_rule
-        
     }
 
     return style_dict
@@ -100,7 +98,8 @@ def create_marker(feature, popup=None) -> dl.Marker:
 
     children = []
 
-    style = feature.collection.style
+    # get the style of the feature
+    style = feature.feature_set.style
 
     if style is not None:
         icon = style.icon_name
@@ -123,8 +122,8 @@ def create_geojson(feature, popup=None) -> dl.GeoJSON:
 
     properties = feature.properties
     geometry_type = feature.geometry_type
-    collection = feature.collection
-    style = collection.style
+    feature_set = feature.feature_set
+    style = feature_set.style
 
     # create a geojson dict from the feature
     raw_geometry = feature.geometry.data
@@ -176,7 +175,7 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
 
     position = get_lat_long(feature)
 
-    style = feature.collection.style
+    style = feature.feature_set.style
 
     children = []
 
@@ -223,7 +222,7 @@ def feature_to_map_object(feature, popup=None):
 
     return map_object
 
-def collection_to_map_objects(collection) -> list:
+def feature_set_to_map_objects(feature_set) -> list:
     """
     Takes in a FeatureSet from the database and returns a list of dash-leaflet objects.
     that contains all AwesomeMarkers or GeoJSON objects of the FeatureSet
@@ -232,15 +231,15 @@ def collection_to_map_objects(collection) -> list:
     map_objects = []
 
     # get the popup properties of this feature
-    style = collection.style
+    style = feature_set.style
     popup_properties = style.popup_properties
 
-    for feature in collection.features:
+    for feature in feature_set.features:
 
         properties = feature.properties
             
         # build the popup window
-        popup_content = f"<b>{collection.title}</b><br>"
+        popup_content = f"<b>{feature_set.name}</b><br>"
 
         if popup_properties is not None:
 
@@ -264,13 +263,13 @@ def overlay_id_to_layer_group(overlay_id) -> dl.LayerGroup:
 
     # get the layer with the given id
     layer = session.query(Layer).get(overlay_id)
-    collections = layer.collections
+    feature_sets = layer.feature_sets
 
     map_objects = []
 
-    for collection in collections:
+    for feature_set in feature_sets:
         # build the layer group for this collections
-        map_objects.extend(collection_to_map_objects(collection))
+        map_objects.extend(feature_set_to_map_objects(feature_set))
 
     # close database connection
     session.close()

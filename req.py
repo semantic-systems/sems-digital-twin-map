@@ -7,7 +7,7 @@ ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 
 def get_api_collections(base_api):
     """
-    Returns the collections endpoint from the API base URL
+    Returns the collections object from the API base URL
     For example:
     https://api.hamburg.de/datasets/v1/fahrradhaeuschen/
     returns the response from:
@@ -42,13 +42,26 @@ def get_items_endpoint(collection):
     Returns the correct items endpoint from a collection response
     """
 
-    # check if the request was successful
+    # get the links from the collection
     collection_links = collection['links']
 
     # find the link with the rel 'items'
     # and the type 'application/json' or 'application/geo+json'
     for collection_link in collection_links:
         if collection_link['rel'] == 'items' and collection_link['type'] in ACCEPTED_JSON_TYPES:
+            return collection_link['href']
+
+def get_base_endpoint(collection):
+    """
+    Returns the base endpoint from a collection response
+    """
+
+    # get the links from the collection
+    collection_links = collection['links']
+
+    # find the link with the rel 'self'
+    for collection_link in collection_links:
+        if collection_link['rel'] == 'self':
             return collection_link['href']
         
 def request_items(collection, verbose=False):
@@ -57,13 +70,14 @@ def request_items(collection, verbose=False):
     Returns the GeoJSON response from the API or None if the request failed.
     """
 
-    url = collection.url
+    url_items = collection.url_items
     entries = collection.entries
 
     # also add the limit parameter to the url
     # it controls how many items are returned
-    url = url + f'&limit={entries}'
-    response = requests.get(url)
+    # TODO: if the number of items is large, make multiple smaller requests
+    url_items = url_items + f'&limit={entries}'
+    response = requests.get(url_items)
 
     if response.status_code == 200:
 

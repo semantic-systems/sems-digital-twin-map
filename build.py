@@ -7,10 +7,10 @@ from tqdm import tqdm
 from sqlalchemy import text, func
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from database import Base, Feature, Dataset, Collection, Layer, Style, Colormap, connect_db
+from database import Base, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap, connect_db
 
 # request imports
-from req import get_api_collections, get_items_endpoint, request_items
+from req import get_api_collections, get_items_endpoint, get_base_endpoint, request_items
 
 # the accepted json types for the items endpoint
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
@@ -37,12 +37,12 @@ def api_to_db(session, refresh=True, verbose=False):
         dataset_response = requests.get(url).json()
 
         # takes the name from the api_config.json if it exists
-        # otherwise use the title from the API response
-        dataset_title = dataset_config.get('name', dataset_response['title'])
+        # otherwise use the name from the API response
+        dataset_name = dataset_config.get('name', dataset_response['title'])
         dataset_description = dataset_response['description']
 
         dataset = Dataset(
-            title=dataset_title,
+            name=dataset_name,
             description=dataset_description,
             url=url,
             collection_identifiers=collection_identifiers
@@ -50,11 +50,10 @@ def api_to_db(session, refresh=True, verbose=False):
 
         session.add(dataset)
 
-        # create a new layer
+        # create a layer for the dataset
         layer = Layer(
-            name=dataset_title
+            name=dataset.name
         )
-
         session.add(layer)
 
         # get all collections from the collections endpoint
@@ -97,22 +96,31 @@ def api_to_db(session, refresh=True, verbose=False):
                 # number of features in the collection
                 entries = collection['itemCount']
 
-                # the link to the features/items
-                items_link = get_items_endpoint(collection)
+                # the link to the items and collection
+                url_items = get_items_endpoint(collection)
+                url_collection = get_base_endpoint(collection)
 
                 # create a Collection database object
                 db_collection = Collection(
                     identifier=collection.get('id', 'collection_identifier'),
-                    title=collection_config.get('name', collection.get('title', 'collection_title')),
+                    name=collection_config.get('name', collection.get('name', 'collection_name')),
                     entries=entries,
-                    url=items_link,
-
+                    url_items=url_items,
+                    url_collection=url_collection,
                     dataset=dataset,
-                    layer=layer,
-                    style=style
                 )
 
                 session.add(db_collection)
+
+                 # create a FeatureSet for the collection
+                feature_set = FeatureSet(
+                    name=db_collection.name,
+                    layer=layer,
+                    style=style,
+                    collection=db_collection
+                )
+
+                session.add(feature_set)
 
             session.commit()
         
@@ -129,52 +137,55 @@ def refresh(session, verbose=False):
     session.query(Feature).delete()
 
     # get all datasets
-    datasets = session.query(Dataset).all()
+    feature_sets = session.query(FeatureSet).all()
 
-    # iterate over all datasets
-    for dataset in tqdm(datasets, disable=not verbose):
-
-        collections = dataset.collections
-
+    # iterate over all FeatureSets
+    for feature_set in tqdm(feature_sets, disable=not verbose):
+        
         # iterate over all collections in the dataset
-        for collection in collections:
-                
-            # request the items from the API
-            items_response = request_items(collection)
+        collection = feature_set.collection
+
+        # skip if the collection is None, meaning the FeatureSet is not accessible via API
+        if collection is None:
+            continue
+
+        # request the items from the API
+        items_response = request_items(collection)
     
-            if items_response is None:
+        # skip if the request failed
+        if items_response is None:
+            continue
+    
+        # get all items from the items endpoint
+        features = items_response['features']
+    
+        for feature in features:
+    
+            # skip features without a geometry
+            if feature['geometry'] is None:
                 continue
     
-            # get all items from the items endpoint
-            features = items_response['features']
+            # Convert GeoJSON geometry to a Shapely geometry
+            shapely_geom = shape(feature['geometry'])
     
-            for feature in features:
+            # Use Shapely geometry with `geoalchemy2`
+            geometry_type = shapely_geom.geom_type
+            wkt_geometry = shapely_geom.wkt
+            srid = 4326
+            geometry_element = WKTElement(wkt_geometry, srid)
     
-                # skip features without a geometry
-                if feature['geometry'] is None:
-                    continue
+            # create a new Feature database object
+            db_feature = Feature(
+                geometry=geometry_element,
+                geometry_type=feature['geometry']['type'],
+                properties=feature['properties'],
     
-                # Convert GeoJSON geometry to a Shapely geometry
-                shapely_geom = shape(feature['geometry'])
+                feature_set=feature_set
+            )
     
-                # Use Shapely geometry with `geoalchemy2`
-                geometry_type = shapely_geom.geom_type
-                wkt_geometry = shapely_geom.wkt
-                srid = 4326
-                geometry_element = WKTElement(wkt_geometry, srid)
+            session.add(db_feature)
     
-                # create a new Feature database object
-                db_feature = Feature(
-                    geometry=geometry_element,
-                    geometry_type=feature['geometry']['type'],
-                    properties=feature['properties'],
-    
-                    collection=collection
-                )
-    
-                session.add(db_feature)
-    
-            session.commit()
+        session.commit()
 
 def feature_to_obj(geojson_feature):
     """
@@ -245,7 +256,7 @@ def style_to_obj(file_settings):
     )
 
     return style, colormap
-
+    
 # build the database and populate it with data
 # only needs to be run once
 def build(verbose=False):
