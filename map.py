@@ -1,5 +1,7 @@
 from tqdm import tqdm
 import branca.colormap as cm
+from datetime import date, timedelta, datetime
+from datetime import datetime
 
 from dash import Dash, html, dcc, Output, Input, State, callback
 from dash.exceptions import PreventUpdate
@@ -336,8 +338,9 @@ app.layout = html.Div([
                 'width': '100vw', 
                 'height': '100vh',
                 'display': 'inline-block',
-                'position': 'relative'
-                },
+                'position': 'relative',
+                'z-index': '0'
+            },
             id='map'
             ),
         dcc.Store(id='active_overlays', data=[]),   # we store the active overlays in here
@@ -362,8 +365,37 @@ app.layout = html.Div([
                         {'label': 'Show Predictions', 'value': 'show_predictions'}
                         ],
                     value=[]
+                )                    
+            ],
+            style={
+                'position': 'absolute',
+                'float': 'right',
+                'margin': '10px',
+                'background-color': 'white',
+                'border': '1px solid #ccc',
+                'padding': '10px',
+                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                'border-radius': '5px',
+                'max-height': '700px',
+                'overflow-y': 'auto',
+                'z-index': '1000',
+                'right': '0',
+                'top': '0',
+                'width:': '200px',
+                'color': '#333'
+            }
+        ),
+        dcc.Store(id='event_range', data=[]),   # we store the event range in here
+        html.Div(
+            children=[
+                # DatePickerRange component
+                dcc.DatePickerRange(
+                    id='event_range_picker',
+                    with_portal=True,
+                    display_format='DD.MM.YYYY'
                 ),
-                html.Div(   # for some reason dcc.RangeSliders dont have style attributes, so we need to wrap it in a div to style it
+                # Div wrapper for RangeSlider component
+                html.Div(
                     dcc.RangeSlider(
                         id='slider_events',
                         min=0,
@@ -375,36 +407,39 @@ app.layout = html.Div([
                             50: '50%',
                             75: '75%',
                             100: '100%'
-                        }
+                        },
+                        tooltip={'always_visible': False, 'placement': 'bottom'}
                     ),
                     style={
-                        'margin': '10px 0 0 0',
-                        'padding': '0'
+                        'flex': '1',  # Allows the range slider to grow as needed within the flex container
+                        'margin-left': '10px'
                     }
-                )
+                ),
             ],
             style={
-            'position': 'absolute',
-            'float': 'right',
-            'margin': '10px',
-            'background-color': 'white',
-            'border': '1px solid #ccc',
-            'padding': '10px',
-            'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-            'border-radius': '5px',
-            'max-height': '700px',
-            'overflow-y': 'auto',
-            'z-index': '1000',
-            'right': '0',
-            'top': '0',
-            'width:': '200px',
-            'color': '#333'
+                'display': 'flex',  # This will lay out the children in a row
+                'align-items': 'center',  # Align items vertically in the center
+                'justify-content': 'space-between',  # Spreads out the children to use the available space
+                'position': 'absolute',
+                'left': '0',
+                'right': '0',
+                'bottom': '0',
+                'margin': '10px',
+                'background-color': 'white',
+                'border': '1px solid #ccc',
+                'padding': '10px',
+                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                'border-radius': '5px',
+                'z-index': '1000',
+                'color': '#333'
             }
         ),
+        html.Div(id='dummy_output', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ],
     style={'display': 'flex', 'flex-wrap': 'wrap'}
     )
 
+# a new layer was selected or deselected
 @app.callback(
     [Output('map', 'children'), Output('active_overlays', 'data')],
     [Input('overlay_checklist', 'value')],
@@ -478,6 +513,88 @@ def update_map(selected_overlays, map_children, active_overlays_data):
 
     # return the updated map children and active_overlays_data
     return new_map_children, active_overlays_data
+
+# if a new event range was selected, update the event_range marks
+@app.callback(
+    [Output('slider_events', 'marks'),
+     Output('slider_events', 'min'),
+     Output('slider_events', 'max'),
+     Output('slider_events', 'value'),
+     Output('event_range', 'data')], # Adding output for dcc.Store component
+    [Input('event_range_picker', 'start_date'),
+     Input('event_range_picker', 'end_date')]
+)
+def update_slider_marks(start_date_str, end_date_str):
+    """
+    This callback is triggered when the event_range_picker date range changes.
+    It updates the slider marks, the min and max values of the slider, the slider value,
+    and stores the new event range in the dcc.Store component.
+    """
+    
+    if start_date_str is None or end_date_str is None:
+        # If no dates are selected, raise PreventUpdate to stop the callback from firing
+        raise PreventUpdate
+    
+    # Convert string dates to date objects
+    start_date = date.fromisoformat(start_date_str)
+    end_date = date.fromisoformat(end_date_str)
+
+    # Calculate the total number of days in the range
+    total_days = (end_date - start_date).days
+
+    # Update the slider's minimum and maximum values to match the total days
+    min_value = 0
+    max_value = total_days
+
+    # Create the slider marks at 25% intervals
+    slider_marks = {
+        min_value: start_date.strftime('%d.%m.%Y'),
+        int(total_days * 0.25): (start_date + timedelta(days=int(total_days * 0.25))).strftime('%d.%m.%Y'),
+        int(total_days * 0.5): (start_date + timedelta(days=int(total_days * 0.5))).strftime('%d.%m.%Y'),
+        int(total_days * 0.75): (start_date + timedelta(days=int(total_days * 0.75))).strftime('%d.%m.%Y'),
+        max_value: end_date.strftime('%d.%m.%Y'),
+    }
+
+    # Set the slider value to the full range
+    slider_value = [min_value, max_value]
+
+    # Update the dcc.Store with the new date range
+    event_range_data = {'start_date': start_date_str, 'end_date': end_date_str}
+
+    return slider_marks, min_value, max_value, slider_value, event_range_data
+
+@app.callback(
+    Output('dummy_output', 'children'),  # Dummy output, uses a hidden dummy div
+    [Input('slider_events', 'value')],
+    [State('event_range', 'data')]
+)
+def print_slider_value(value, event_range_data):
+    """
+    This callback is triggered when the slider value changes.
+    It prints the current slider value to the console.
+    """
+
+    # If no event range data is available, raise PreventUpdate to stop the callback from firing
+    if event_range_data is None or value is None:
+        print("No event range data or slider value available. Stopping event range update.")
+        raise PreventUpdate
+
+    # Convert string dates to datetime objects
+    start_datetime = datetime.fromisoformat(event_range_data['start_date'])
+    end_datetime = datetime.fromisoformat(event_range_data['end_date'])
+
+    # Calculate the total time range in seconds
+    total_seconds = (end_datetime - start_datetime).total_seconds()
+
+    # Calculate the new start and end times based on the slider values
+    new_start_datetime = start_datetime + timedelta(seconds=total_seconds * value[0])
+    new_end_datetime = start_datetime + timedelta(seconds=total_seconds * value[1])
+
+    # Print the new start and end times
+    print(f"New Start DateTime: {new_start_datetime}, New End DateTime: {new_end_datetime}")
+
+    # Since it's a dummy output, we will raise PreventUpdate to prevent any actual updates
+    raise PreventUpdate
 
 # returns the app object for use in main.py
 def get_app() -> Dash:

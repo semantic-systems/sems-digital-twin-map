@@ -1,0 +1,6 @@
+/* INSERT CUSTOM CSS RULES IN HERE */
+
+/* The Datepicker is hidden behind the map, this fixes it */
+.DayPicker {
+    z-index: 9999 !important;
+}
