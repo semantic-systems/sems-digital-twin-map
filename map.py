@@ -74,19 +74,30 @@ def style_to_dict_colormap(style, feature) -> dict:
 
 def get_lat_long(feature) -> tuple:
     """
-    Get the latitude and longitude of a feature, if its geometry type is 'Point'
+    Get the latitude and longitude of a feature, if its geometry type is 'Point' or 'MultiPoint'
     returns a tuple of (lat, long)
     """
 
-    assert feature.geometry_type == 'Point', 'Features geometry_type must be "Point"'
+    assert feature.geometry_type in ['Point', 'MultiPoint'], 'Features geometry_type must be "Point" or "MultiPoint"'
+
+    # save the coordinates in here
+    coordinates = []
 
     geometry = feature.geometry
+    geometry_type = feature.geometry_type
     shapely_geometry = loads(bytes(geometry.data), hex=True)
 
-    longitude = shapely_geometry.x
-    latitude = shapely_geometry.y
+    if geometry_type == 'Point':
+        coordinate = (shapely_geometry.y, shapely_geometry.x)
+        coordinates.append(coordinate)
+    
+    if geometry_type == 'MultiPoint':
+        print(shapely_geometry)
+        for point in shapely_geometry.geoms:
+            coordinate = (point.y, point.x)
+            coordinates.append(coordinate)
 
-    return (latitude, longitude)
+    return coordinates
 
 def create_marker(feature, popup=None) -> dl.Marker:
     """
@@ -173,12 +184,14 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
     lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black}```
     """
 
-    position = get_lat_long(feature)
+    # get all coordinates of the feature
+    # if Point -> one coordinate
+    # if MultiPoint -> multiple coordinates
+    coordinates = get_lat_long(feature)
 
     style = feature.feature_set.style
 
     children = []
-
 
     if style is not None:
         marker_icon = style.marker_icon
@@ -187,20 +200,22 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
     if popup is not None:
         children.append(dl.Popup(content=popup))
 
-    awesome_marker = dl.DivMarker(
-        position=position,
-        children=children,
-        iconOptions=dict(
-            html=f'<i class="awesome-marker awesome-marker-icon-{marker_color} leaflet-zoom-animated leaflet-interactive"></i>'
-            f'<i class="fa fa-{marker_icon} icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
-            className='custom-div-icon',
-            iconSize=[20, 20],
-            iconAnchor=[10, 30],
-            tooltipAnchor=[10, -20],
-            popupAnchor=[-3, -31]
-        ),
-        id=f'marker-{id}'
-    )
+    for coordinate in coordinates:
+
+        awesome_marker = dl.DivMarker(
+            position=coordinate,
+            children=children,
+            iconOptions=dict(
+                html=f'<i class="awesome-marker awesome-marker-icon-{marker_color} leaflet-zoom-animated leaflet-interactive"></i>'
+                f'<i class="fa fa-{marker_icon} icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
+                className='custom-div-icon',
+                iconSize=[20, 20],
+                iconAnchor=[10, 30],
+                tooltipAnchor=[10, -20],
+                popupAnchor=[-3, -31]
+            ),
+            id=f'marker-{id}'
+        )
 
     return awesome_marker
 
@@ -212,9 +227,9 @@ def feature_to_map_object(feature, popup=None):
 
     geometry_type = feature.geometry_type
 
-    # if the geometry type is a point, create a marker
+    # if the geometry type is a point or multiple points, create markers
     # otherwise create a geojson object
-    if geometry_type == 'Point':
+    if geometry_type in ['Point', 'MultiPoint']:
         map_object = create_awesome_marker(feature, popup=popup)
 
     else:

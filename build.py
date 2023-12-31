@@ -18,7 +18,7 @@ ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 def api_to_db(session, refresh=True, verbose=False):
     """
     Reloads all datasets from api_configs.json, requests their data and saves it into the database.
-    This creates new database entries for Dataset, Collection, Layer and Style.
+    This creates new database entries for Dataset, Collection, FeatureSet, Layer and Style.
     If refresh is set to True, it will overwrite existing database entries for Feature.
     """
 
@@ -130,7 +130,7 @@ def api_to_db(session, refresh=True, verbose=False):
 def refresh(session, verbose=False):
     """
     Gets all Datasets in the database, requests their data and saves it into the database.
-    This overwrite existing database entries for Feature only.
+    This overwrites existing database entries for Feature only.
     """
 
     # drop all existing features
