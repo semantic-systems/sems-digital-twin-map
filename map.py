@@ -342,11 +342,47 @@ app.layout = html.Div([
             ),
         dcc.Store(id='active_overlays', data=[]),   # we store the active overlays in here
         html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
-            dcc.Checklist(
-                id='overlay_checklist',
-                options=[{'label': layer.name, 'value': layer.id} for layer in layers],
-                value=[]
-            ),
+            [
+                dcc.Checklist(
+                    id='overlay_checklist',
+                    options=[{'label': layer.name, 'value': layer.id} for layer in layers],
+                    value=[]
+                ),
+                html.Hr(
+                    style={
+                        'margin': '5px 4px 5px 4px',
+                        'border': '0',
+                        'border-bottom': '1px solid #777'
+                    }
+                ),
+                dcc.Checklist(
+                    id='event_visibility_checklist',
+                    options=[
+                        {'label': 'Show Events', 'value': 'show_events'},
+                        {'label': 'Show Predictions', 'value': 'show_predictions'}
+                        ],
+                    value=[]
+                ),
+                html.Div(   # for some reason dcc.RangeSliders dont have style attributes, so we need to wrap it in a div to style it
+                    dcc.RangeSlider(
+                        id='slider_events',
+                        min=0,
+                        max=100,
+                        value=[25, 75],
+                        marks={
+                            0: '0%',
+                            25: '25%',
+                            50: '50%',
+                            75: '75%',
+                            100: '100%'
+                        }
+                    ),
+                    style={
+                        'margin': '10px 0 0 0',
+                        'padding': '0'
+                    }
+                )
+            ],
             style={
             'position': 'absolute',
             'float': 'right',
