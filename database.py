@@ -10,6 +10,14 @@ from os import getenv
 Base = declarative_base()
 
 class Feature(Base):
+    """
+    Table name: features
+    - `properties` [JSON] Properties of the feature. You can control which properties are displayed in the popup by setting the `popup_properties` attribute of the style.
+    - `geometry_type` [String] Type of the geometry
+    - `geometry` [Geometry] Geometry of the feature. Possible values: ```{Point, LineString, Polygon, MultiPoint, MultiLineString,  MultiPolygon}```
+    - `feature_set_id` [Integer] ID of the FeatureSet the feature belongs to
+    - `feature_set` [FeatureSet] FeatureSet the feature belongs to
+    """
     __tablename__ = 'features'
     id = Column(Integer, primary_key=True)
     properties = Column(JSON)
@@ -19,6 +27,17 @@ class Feature(Base):
     feature_set = relationship('FeatureSet', back_populates='features')    
 
 class FeatureSet(Base):
+    """
+    Table name: feature_sets
+    - `name` [String] Name of the feature set
+    - `features` [Feature Array] List of features that belong to the feature set
+    - `layer_id` [Integer] ID of the layer the feature set belongs to
+    - `layer` [Layer] Layer the feature set belongs to
+    - `style_id` [Integer] ID of the style to be used for the feature set
+    - `style` [Style] Style to be used for the feature set
+    - `collection_id` [Integer] (Optional) ID of the Collection the feature set belongs to
+    - `collection` [Collection] (Optional) The Collection the feature set belongs to
+    """
     __tablename__ = 'feature_sets'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -36,12 +55,25 @@ class FeatureSet(Base):
     collection = relationship('Collection', back_populates='feature_sets')
 
 class Layer(Base):
+    """
+    Table name: layers
+    - `name` [String] Name of the layer. Gets displayed in the UI
+    - `feature_sets` [FeatureSet Array] List of FeatureSets that belong to the layer
+    """
     __tablename__ = 'layers'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     feature_sets = relationship('FeatureSet', back_populates='layer')
 
 class Dataset(Base):
+    """
+    Table name: datasets
+    - `name` [String] Name of the dataset. Gets displayed in the UI
+    - `description` [String] Description of the dataset. Gets displayed in the UI
+    - `url` [String] URL to the dataset
+    - `collection_identifiers` [String Array] List of identifiers of the collection. Only collections with these identifiers will be requested and displayed.
+    - `collections` [Collection Array] List of collections that belong to the dataset
+    """
     __tablename__ = 'datasets'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -51,6 +83,17 @@ class Dataset(Base):
     collections = relationship('Collection', back_populates='dataset')
 
 class Collection(Base):
+    """
+    Table name: collections
+    - `identifier` [String] Identifier of the collection, for example "hauptdeichlinie"
+    - `name` [String] Name of the collection. Gets displayed in the UI
+    - `url_items` [String] URL to the items of the collection. You can download the items as GeoJSON from this URL
+    - `url_collection` [String] URL to the collection
+    - `entries` [Integer] Number of items in the collection. Request this number of features from the api using ?limit=ENTRIES
+    - `dataset_id` [Integer] ID of the dataset the collection belongs to
+    - `dataset` [Dataset] Dataset the collection belongs to
+    - `feature_sets` [FeatureSet Array] List of FeatureSets that use the collection
+    """
     __tablename__ = 'collections'
     id = Column(Integer, primary_key=True)
     identifier = Column(String, nullable=False)
@@ -65,6 +108,15 @@ class Collection(Base):
     feature_sets = relationship('FeatureSet', back_populates='collection')
 
 class Colormap(Base):
+    """
+    Table name: colormaps
+    - `property` [String] Feature Property to be mapped
+    - `min_value` [Float] Minimum value of the property
+    - `max_value` [Float] Maximum value of the property
+    - `min_color` [String] Hex color for the minimum value
+    - `max_color` [String] Hex color for the maximum value
+    - `styles` [Style Array] List of styles that use the colormap
+    """
     __tablename__ = 'colormaps'
     id = Column(Integer, primary_key=True)
     property = Column(String, nullable=False)
@@ -75,6 +127,18 @@ class Colormap(Base):
     styles = relationship('Style', back_populates='colormap')
 
 class Style(Base):
+    """
+    Table name: styles
+    For most styling attributes, check out the [Leaflet Path documentation](https://leafletjs.com/reference.html#path).
+    - `name` [String] Name of the style
+    - `popup_properties` [JSON] List of properties to be displayed in the popup, the value is the name of the property, the key is the label
+    - `marker_icon` [String] The icon to be used for the marker. Check out [fontawesome.com](https://fontawesome.com/search?o=r&m=free&s=solid) for a list of usable icons.
+    - `marker_color` [String] Color of the marker. Possible values: ```{red, darkred, lightred, orange, beige, green, darkgreen,
+    lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black}```
+    - `colormap_id` [Integer] ID of the colormap to be used for the style
+    - `colormap` [Colormap] Colormap to be used for the style. Overrides 
+    - `feature_sets` [FeatureSet Array] List of feature sets that use the style
+    """
     __tablename__ = 'styles'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -127,7 +191,13 @@ def autoconnect_db(port=5432, user="postgres", password="rescuemate", echo=False
 
 # create a connection to the database
 def connect_db(host="postgis", port=5432, user="postgres", password="rescuemate", echo=False):
-    # build the connection string
+    """
+    Connect to the database. This function builds the database connection string and returns an engine and a session.
+
+    returns ```(engine, session)```
+    - `engine` [Engine] SQLAlchemy engine
+    - `session` [Session] SQLAlchemy session
+    """
     db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
     engine = create_engine(db_string, echo=echo)
     DBSession = sessionmaker(bind=engine)

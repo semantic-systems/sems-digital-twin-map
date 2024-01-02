@@ -161,23 +161,26 @@
             "id":"deichinformationen",
             "url":"https://api.hamburg.de/datasets/v1/deichinformationen",
             "collections":{
-                "deichverteidigung": {
-                    "name": "Deichverteidigung",
-                    "popup_properties": {
-                        "Deichwart": "deichwart",
-                        "Oberdeichwart": "oberdeichwart",
-                        "Bereich": "bereich"
-                    }
-                },
                 "hauptdeichlinie": {
                     "name": "Hauptdeichlinie",
                     "popup_properties": {
                         "Name": "anlagenname",
                         "Typ": "anlagentyp",
-                        "Höhe (m)": "schutzhohe_m",
-                        "Deichwart": "deichwart",
+                        "Höhe (m)": "schutzhoehe_m",
+                        "Verteidigungsgebiet": "deichverteidigungsgebiet",
                         "Aufsicht": "zustaendigkeit_aufsicht",
-                        "Unterhaltung": "zustaendigkeit_unterhaltung"
+                        "Unterhaltung": "zustaendigkeit_unterhaltung",
+                        "Deichwart": "deichwart"
+                    },
+                    "style": {
+                        "line_weight": 20
+                    },
+                    "colormap": {
+                        "property": "schutzhoehe_m",
+                        "min_value": 7,
+                        "max_value": 10,
+                        "min_color": "#ff0000",
+                        "max_color": "#ffff00"
                     }
                 }
             }

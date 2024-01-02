@@ -18,7 +18,7 @@ ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 def api_to_db(session, refresh=True, verbose=False):
     """
     Reloads all datasets from api_configs.json, requests their data and saves it into the database.
-    This creates new database entries for Dataset, Collection, FeatureSet, Layer and Style.
+    This creates new database entries for Dataset, Collection, FeatureSet, Layer Style and Colormap.
     If refresh is set to True, it will overwrite existing database entries for Feature.
     """
 
@@ -69,6 +69,21 @@ def api_to_db(session, refresh=True, verbose=False):
 
                 popup_properties = collection_config.get('popup_properties', {})
                 collection_style = collection_config.get('style', {})
+                collection_colormap = collection_config.get('colormap', None)
+
+                colormap = None
+
+                if collection_colormap:
+
+                    colormap = Colormap(
+                        property=collection_colormap['property'],
+                        min_color=collection_colormap['min_color'],
+                        max_color=collection_colormap['max_color'],
+                        min_value=collection_colormap['min_value'],
+                        max_value=collection_colormap['max_value']
+                    )
+
+                    session.add(colormap)
 
                 # create a new style
                 # set default values here
@@ -89,6 +104,7 @@ def api_to_db(session, refresh=True, verbose=False):
                     fill             = collection_style.get('fill', True),
                     fill_opacity     = collection_style.get('fill_opacity', 0.2),
                     fill_rule        = collection_style.get('fill_rule', 'evenodd'),
+                    colormap         = colormap
                 )
 
                 session.add(style)
@@ -216,51 +232,22 @@ def feature_to_obj(geojson_feature):
     )
 
     return feature
-
-def style_to_obj(file_settings):
-    """
-    Transforms file specific settings from a settings.json into a Style database entry.
-    """
-
-    # check for a colormap
-    colormap = None
-
-    if 'colormap' in file_settings:
-        colormap = Colormap(
-            property=file_settings['colormap']['property'],
-            min_color=file_settings['colormap']['colors'][0],
-            max_color=file_settings['colormap']['colors'][1],
-            min_value=file_settings['colormap']['vmin'],
-            max_value=file_settings['colormap']['vmax']
-        )
-    
-    style = Style(
-        name=file_settings['name'],
-        popup_properties=file_settings.get('popup_properties', {}),
-        border_color=file_settings.get('border_color', 'blue'),
-        area_color=file_settings.get('area_color', 'black'),
-        icon_prefix=file_settings.get('icon-prefix', 'fa'),
-        icon_name=file_settings.get('icon', 'circle'),
-        icon_color=file_settings.get('icon_color', 'blue'),
-        line_weight=file_settings.get('line_weight', 1.0),
-        stroke=file_settings.get('stroke', True),
-        opacity=file_settings.get('opacity', 1.0),
-        line_cap=file_settings.get('line_cap', 'round'),
-        line_join=file_settings.get('line_join', 'round'),
-        dash_array=file_settings.get('dash_array', 1.0),
-        dash_offset=file_settings.get('dash_offset', 1.0),
-        fill=file_settings.get('fill', True),
-        fill_opacity=file_settings.get('fill_opacity', 0.2),
-        fill_rule=file_settings.get('fill_rule', 'evenodd'),
-        colormap=colormap
-    )
-
-    return style, colormap
     
 # build the database and populate it with data
 # only needs to be run once
 # but you should still refresh once in a while with database.refresh()
 def build(verbose=False):
+
+    """
+    Drops all tables and rebuilds the database.
+    1. Connects to the database
+    2. Activates postgis with `CREATE EXTENSION IF NOT EXISTS postgis`
+    3. Drops all tables
+    4. Creates new empty tables for all database objects from database.py
+    5. Requests all datasets from the API and saves them to the database (Updates tables Dataset, Collection, FeatureSet, Style, Colormap)
+    6. Request all items from the collections, transform them into Features and save them to the database (Updates table Feature)
+    7. Closes the connection to the database
+    """
 
     if verbose: print("=========================")
     if verbose: print(" Rebuilding the database")
@@ -300,12 +287,12 @@ def build(verbose=False):
     refresh(session, verbose=verbose)
 
     # get the number of Datasets and Collections
-
     feature_count = session.query(Feature).count()
     if verbose: print(f"Saved {feature_count} Features to the database")
 
     # close the database connection
     session.close()
+    engine.dispose()
 
     if verbose: print("=========================")
     if verbose: print("Database rebuild finished")

@@ -17,7 +17,8 @@ from database import Base, Feature, FeatureSet, Collection, Dataset, Layer, Styl
 
 def style_to_dict(style) -> dict:
     """
-    Convert a Style from the database to a dictionary that can be used by dash-leaflet
+    Convert a Style from the database to a dictionary that can be used by dash-leaflet.
+    See the [leaflet docs](https://leafletjs.com/reference.html#path)
     """
 
     style_dict = {
@@ -31,7 +32,8 @@ def style_to_dict(style) -> dict:
         'dashArray': style.dash_array,
         'dashOffset': style.dash_offset,
         'fill': style.fill, #boolean
-        'fillColor': style.border_color, #same thing as borderColor?
+        'fillColor': style.area_color, #same thing as borderColor?
+        'color': style.area_color,
         'fillOpacity': style.fill_opacity,
         'fillRule': style.fill_rule
     }
