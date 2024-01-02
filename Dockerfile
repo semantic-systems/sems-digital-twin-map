@@ -6,17 +6,15 @@ WORKDIR /usr/src/app
 # Copy the current directory contents into the container at /app
 COPY . .
 
-# Install any needed packages specified in requirements.txt
+# Install the packages in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Make port 8050 available to the world outside this container
 EXPOSE 8050
 
-# Define environment variable
-ENV NAME World
+# Define environment variable, used for determining the host name of the database
+ENV IN_DOCKER=true
 
-# Rebuild the database first
-CMD ["python", "./build.py"]
-
-# Run main.py when the container launches
-CMD ["python", "./main.py"]
+# 1. Rebuild the database with python build.py
+# 2. Start the app with python main.py
+CMD python ./build.py && python ./main.py

@@ -4,6 +4,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from geoalchemy2 import Geometry
 
+from os import getenv
+
 
 Base = declarative_base()
 
@@ -95,7 +97,35 @@ class Style(Base):
     colormap = relationship('Colormap', back_populates='styles')
     feature_sets = relationship('FeatureSet', back_populates='style')
 
-# create a connection
+
+def autoconnect_db(port=5432, user="postgres", password="rescuemate", echo=False):
+    """
+    Connect to the database. The hostname is dynamically set depending based on whether the environment variable IN_DOCKER is set to true or false.
+    - if IN_DOCKER = true, then hostname = postgis
+    - if IN_DOCKER = false, then hostname = localhost\\
+    Basically just a simple wrapper around connect_db.
+    """
+
+    ALWAYS_PRINT = True
+
+    (engine, session) = (None, None)   
+
+    in_docker: bool = getenv("IN_DOCKER", False)
+
+    # determine the hostname
+    if in_docker:
+        if ALWAYS_PRINT: print("\nenv IN_DOCKER=True: hostname=postgis")
+        host="postgis"
+    else:
+        if ALWAYS_PRINT: print("\nenv IN_DOCKER=False: hostname=localhost")	
+        host="localhost"
+
+    # connect to the database
+    (engine, session) = connect_db(host=host, port=port, user=user, password=password, echo=echo)
+    
+    return (engine, session)
+
+# create a connection to the database
 def connect_db(host="postgis", port=5432, user="postgres", password="rescuemate", echo=False):
     # build the connection string
     db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"

@@ -13,7 +13,7 @@ from shapely.geometry import mapping
 from shapely.wkb import loads
 
 # data models
-from database import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, connect_db
+from database import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, autoconnect_db
 
 def style_to_dict(style) -> dict:
     """
@@ -276,7 +276,7 @@ def overlay_id_to_layer_group(overlay_id) -> dl.LayerGroup:
     This is a wrapper for collection_to_map_objects()
     """
 
-    engine, session = connect_db()
+    engine, session = autoconnect_db()
 
     # get the layer with the given id
     layer = session.query(Layer).get(overlay_id)
@@ -315,7 +315,7 @@ app = Dash(
 )
 
 # get all available layers sets
-engine, session = connect_db()
+engine, session = autoconnect_db()
 layers = session.query(Layer).all()
 
 # close database connection
@@ -392,7 +392,9 @@ app.layout = html.Div([
                 dcc.DatePickerRange(
                     id='event_range_picker',
                     with_portal=True,
-                    display_format='DD.MM.YYYY'
+                    display_format='DD.MM.YYYY',
+                    minimum_nights=1,
+                    clearable=True
                 ),
                 # Div wrapper for RangeSlider component
                 html.Div(
@@ -400,26 +402,67 @@ app.layout = html.Div([
                         id='slider_events',
                         min=0,
                         max=100,
+                        step=1.0/24.0,  # 1 hour steps
                         value=[25, 75],
                         marks={
-                            0: '0%',
-                            25: '25%',
-                            50: '50%',
-                            75: '75%',
-                            100: '100%'
+                            0: 'XX.XX.XXXX',
+                            100: 'XX.XX.XXXX'
                         },
-                        tooltip={'always_visible': False, 'placement': 'bottom'}
+                        updatemode='mouseup'    # update the slider value when the mouse is released
                     ),
                     style={
                         'flex': '1',  # Allows the range slider to grow as needed within the flex container
                         'margin-left': '10px'
                     }
                 ),
+                html.Div( # shows the selected event range
+                    id='event_range_text',
+                    children=[
+                        html.Div(
+                            html.U(
+                                children='Selected',
+                                style={
+                                    'font-size': '14pt',
+                                    'font-weight': 'bold',
+                                    'margin': '4px 2px 0px 2px',
+                                }
+                            ),
+                            style={
+                                'text-align': 'center'
+                            }
+                        ),
+                        html.P(
+                            children=[
+                            'XX:XX XX.XX.XXXX -',
+                            html.Br(),
+                            'XX:XX XX.XX.XXXX'
+                        ],
+                        style={
+                            'font-size': '14pt',
+                            'font-weight': 'bold',
+                            'margin': '2px 2px 0px 2px'
+                        }
+                        )
+                    ],
+                    style={
+                        'margin-left': '20px',
+                        'font-size': '14pt',
+                        'font-weight': 'bold',
+                        'text-align': 'left',
+                        'font-family': '"Courier New", monospace',
+                        'color': '#333',
+                        'padding': '5px',
+                        'border-radius': '4px',
+                        'background-color': '#f3f3f3',
+                        'display': 'inline-block',
+                        'box-shadow': '0px 2px 4px rgba(0, 0, 0, 0.1)'
+                    }
+                )
             ],
             style={
-                'display': 'flex',  # This will lay out the children in a row
-                'align-items': 'center',  # Align items vertically in the center
-                'justify-content': 'space-between',  # Spreads out the children to use the available space
+                'display': 'flex',
+                'align-items': 'center',
+                'justify-content': 'space-between',
                 'position': 'absolute',
                 'left': '0',
                 'right': '0',
@@ -522,7 +565,7 @@ def update_map(selected_overlays, map_children, active_overlays_data):
      Output('slider_events', 'value'),
      Output('event_range', 'data')], # Adding output for dcc.Store component
     [Input('event_range_picker', 'start_date'),
-     Input('event_range_picker', 'end_date')]
+     Input('event_range_picker', 'end_date')],
 )
 def update_slider_marks(start_date_str, end_date_str):
     """
@@ -564,7 +607,7 @@ def update_slider_marks(start_date_str, end_date_str):
     return slider_marks, min_value, max_value, slider_value, event_range_data
 
 @app.callback(
-    Output('dummy_output', 'children'),  # Dummy output, uses a hidden dummy div
+    [Output('event_range_text', 'children')],
     [Input('slider_events', 'value')],
     [State('event_range', 'data')]
 )
@@ -575,26 +618,57 @@ def print_slider_value(value, event_range_data):
     """
 
     # If no event range data is available, raise PreventUpdate to stop the callback from firing
-    if event_range_data is None or value is None:
-        print("No event range data or slider value available. Stopping event range update.")
+    if event_range_data is None:
+        print("No event range data found. Stopping event range update.")
         raise PreventUpdate
-
+    
+    if type(event_range_data) == list:
+        print("No event range data found. Stopping event range update.")
+        raise PreventUpdate
+    
+    if value is None:
+        print("No slider value available. Stopping event range update.")
+        raise PreventUpdate
+        
     # Convert string dates to datetime objects
     start_datetime = datetime.fromisoformat(event_range_data['start_date'])
     end_datetime = datetime.fromisoformat(event_range_data['end_date'])
 
-    # Calculate the total time range in seconds
-    total_seconds = (end_datetime - start_datetime).total_seconds()
-
     # Calculate the new start and end times based on the slider values
-    new_start_datetime = start_datetime + timedelta(seconds=total_seconds * value[0])
-    new_end_datetime = start_datetime + timedelta(seconds=total_seconds * value[1])
+    new_start_datetime = start_datetime + timedelta(days=value[0])
+    new_end_datetime = start_datetime + timedelta(days=value[1])
 
-    # Print the new start and end times
-    print(f"New Start DateTime: {new_start_datetime}, New End DateTime: {new_end_datetime}")
+    # Update the event range text
+    event_range_text = [
+        html.Div(
+            html.U(
+                children='Selected',
+                style={
+                    'font-size': '14pt',
+                    'font-weight': 'bold',
+                    'margin': '4px 2px 0px 2px',
+                }
+            ),
+            style={
+                'text-align': 'center'
+            }
+        ),
+        html.P(
+            children=[
+                new_start_datetime.strftime('%H:%M %d.%m.%Y') + ' -',
+                html.Br(),
+                new_end_datetime.strftime('%H:%M %d.%m.%Y')
+            ],
+            style={
+                'font-size': '14pt',
+                'font-weight': 'bold',
+                'margin': '4px 2px 0px 2px'
+            }
+        )
+        
+    ],
 
-    # Since it's a dummy output, we will raise PreventUpdate to prevent any actual updates
-    raise PreventUpdate
+    return event_range_text
 
 # returns the app object for use in main.py
 def get_app() -> Dash:

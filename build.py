@@ -7,7 +7,7 @@ from tqdm import tqdm
 from sqlalchemy import text, func
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from database import Base, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap, connect_db
+from database import Base, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap, autoconnect_db
 
 # request imports
 from req import get_api_collections, get_items_endpoint, get_base_endpoint, request_items
@@ -259,6 +259,7 @@ def style_to_obj(file_settings):
     
 # build the database and populate it with data
 # only needs to be run once
+# but you should still refresh once in a while with database.refresh()
 def build(verbose=False):
 
     if verbose: print("=========================")
@@ -267,7 +268,7 @@ def build(verbose=False):
 
     # connect to the database
     if verbose: print("Connecting to the database... ", end='')
-    engine, session = connect_db()
+    engine, session = autoconnect_db()
     if verbose: print("Done!")
 
     # activate postGIS if its not already enabled
