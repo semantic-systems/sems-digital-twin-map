@@ -3,9 +3,11 @@
 import requests
 import json
 
+from database import Collection, Feature
+
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 
-def get_api_collections(base_api):
+def get_api_collections(base_api: str):
     """
     Returns the collections object from the API base URL
     For example:
@@ -36,10 +38,15 @@ def get_api_collections(base_api):
                     collections_json = collections_response.json()
 
                     return collections_json['collections']
+    
+    # if the request failed, return None
+    return None
 
-def get_items_endpoint(collection):
+def get_items_endpoint(collection: dict):
     """
-    Returns the correct items endpoint from a collection response
+    Returns the correct items endpoint from a collection response.\\
+    This function searches for the link with the rel 'items'.\\
+    If no link is found, None is returned.
     """
 
     # get the links from the collection
@@ -50,10 +57,15 @@ def get_items_endpoint(collection):
     for collection_link in collection_links:
         if collection_link['rel'] == 'items' and collection_link['type'] in ACCEPTED_JSON_TYPES:
             return collection_link['href']
+    
+    # if no link was found, return None
+    return None
 
-def get_base_endpoint(collection):
+def get_base_endpoint(collection: dict):
     """
-    Returns the base endpoint from a collection response
+    Returns the base endpoint from a collection response.\\
+    This function searches for the link with the rel 'self'.\\
+    If no link is found, None is returned.
     """
 
     # get the links from the collection
@@ -63,8 +75,11 @@ def get_base_endpoint(collection):
     for collection_link in collection_links:
         if collection_link['rel'] == 'self':
             return collection_link['href']
+    
+    # if no link was found, return None
+    return None
         
-def request_items(collection, verbose=False):
+def request_items(collection: Collection, verbose=False):
     """
     Takes in a Collection object from the database and requests the dataset items from the API.
     Returns the GeoJSON response from the API or None if the request failed.
@@ -88,9 +103,9 @@ def request_items(collection, verbose=False):
     
     return None
 
-def get_collection_properties(collection):
+def get_collection_properties(collection: Collection):
     """
-    This function takes in a Collection object from the database and returns the set of all properties of the features.
+    This function takes in a Collection object from the database and returns the set of all properties of its features.
     """
 
     # a set of all keys

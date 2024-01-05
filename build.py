@@ -177,35 +177,22 @@ def refresh(session, verbose=False):
     
         for feature in features:
     
-            # skip features without a geometry
-            if feature['geometry'] is None:
+            # transform the feature into a database object
+            db_feature = feature_to_obj(feature)
+
+            if db_feature is None:
                 continue
-    
-            # Convert GeoJSON geometry to a Shapely geometry
-            shapely_geom = shape(feature['geometry'])
-    
-            # Use Shapely geometry with `geoalchemy2`
-            geometry_type = shapely_geom.geom_type
-            wkt_geometry = shapely_geom.wkt
-            srid = 4326
-            geometry_element = WKTElement(wkt_geometry, srid)
-    
-            # create a new Feature database object
-            db_feature = Feature(
-                geometry=geometry_element,
-                geometry_type=feature['geometry']['type'],
-                properties=feature['properties'],
-    
-                feature_set=feature_set
-            )
-    
+
+            # set the feature set manually
+            db_feature.feature_set = feature_set
+
             session.add(db_feature)
     
         session.commit()
 
-def feature_to_obj(geojson_feature):
+def feature_to_obj(geojson_feature: dict):
     """
-    Transforms a geojson feature into a database entry.
+    Transforms a GeoJSON feature (as a dictionary) into a database entry.
     """
 
     if geojson_feature['geometry'] is None:
@@ -232,19 +219,80 @@ def feature_to_obj(geojson_feature):
     )
 
     return feature
+
+def create_event_entries(session):
+    """
+    Creates a layer and style database entry for the Events and Predictions.
+    """
+
+    # get all layers and styles with the name 'Events'
+    db_layer = session.query(Layer).filter(Layer.name == 'Events').first()
+    db_style = session.query(Style).filter(Style.name == 'Events').first()
+
+    # if the layer or style do not exist, create them
+    if db_layer is None:
+        db_layer = Layer(
+            name='Events'
+        )
+        session.add(db_layer)
+        session.commit()
+    
+    if db_style is None:
+        # style events and predictions here
+        # TODO: create a json entry that holds these values
+        db_style_events = Style(
+            name             = 'Events',
+            popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
+            border_color     = '#ee4433',
+            area_color       = '#ee2211',
+            marker_icon      = 'circle',
+            marker_color     = 'red',
+            line_weight      = 3,
+            stroke           = True,
+            opacity          = 1.0,
+            line_cap         = 'round',
+            line_join        = 'round',
+            dash_array       = None,
+            dash_offset      = None,
+            fill             = True,
+            fill_opacity     = 0.3,
+            fill_rule        = 'evenodd',
+            colormap         = None
+        )
+        db_style_predictions = Style(
+            name             = 'Predictions',
+            popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
+            border_color     = '#3388ff',
+            area_color       = '#2277ee',
+            marker_icon      = 'circle',
+            marker_color     = 'lightred',
+            line_weight      = 2,
+            stroke           = True,
+            opacity          = 0.8,
+            line_cap         = 'round',
+            line_join        = 'round',
+            dash_array       = None,
+            dash_offset      = None,
+            fill             = True,
+            fill_opacity     = 0.2,
+            fill_rule        = 'evenodd',
+            colormap         = None
+        )
+        session.add(db_style_events)
+        session.add(db_style_predictions)
+        session.commit()
     
 # build the database and populate it with data
 # only needs to be run once
 # but you should still refresh once in a while with database.refresh()
 def build(verbose=False):
-
     """
     Drops all tables and rebuilds the database.
     1. Connects to the database
     2. Activates postgis with `CREATE EXTENSION IF NOT EXISTS postgis`
     3. Drops all tables
     4. Creates new empty tables for all database objects from database.py
-    5. Requests all datasets from the API and saves them to the database (Updates tables Dataset, Collection, FeatureSet, Style, Colormap)
+    5. Requests all datasets and collections from the API and saves them to the database (Updates tables Dataset, Collection, FeatureSet, Style, Colormap)
     6. Request all items from the collections, transform them into Features and save them to the database (Updates table Feature)
     7. Closes the connection to the database
     """
@@ -271,6 +319,11 @@ def build(verbose=False):
     # create the tables
     if verbose: print("Creating tables... ", end='')
     Base.metadata.create_all(engine)
+    if verbose: print("Done!")
+
+    # create special database entries for events
+    if verbose: print("Creating layer and style database entries for Event Propagation... ", end='')
+    create_event_entries(session)
     if verbose: print("Done!")
 
     # transform geojson files to database entries

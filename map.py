@@ -15,7 +15,10 @@ from shapely.wkb import loads
 # data models
 from database import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, autoconnect_db
 
-def style_to_dict(style) -> dict:
+# update the database
+from build import api_to_db, refresh
+
+def style_to_dict(style: Style) -> dict:
     """
     Convert a Style from the database to a dictionary that can be used by dash-leaflet.
     See the [leaflet docs](https://leafletjs.com/reference.html#path)
@@ -33,16 +36,16 @@ def style_to_dict(style) -> dict:
         'dashOffset': style.dash_offset,
         'fill': style.fill, #boolean
         'fillColor': style.area_color, #same thing as borderColor?
-        'color': style.area_color,
+        'color': style.border_color,
         'fillOpacity': style.fill_opacity,
         'fillRule': style.fill_rule
     }
 
     return style_dict
 
-def style_to_dict_colormap(style, feature) -> dict:
+def style_to_dict_colormap(style: Style, feature: Feature) -> dict:
     """
-    Convert a Style from the database to a dictionary that can be used by dash-leaflet
+    Convert a Style from the database to a dictionary that can be used by dash-leaflet.
     This function is used for features that have a colormap
     """
 
@@ -76,7 +79,7 @@ def style_to_dict_colormap(style, feature) -> dict:
 
     return style_dict_base
 
-def get_lat_long(feature) -> tuple:
+def get_lat_long(feature: Feature) -> tuple:
     """
     Get the latitude and longitude of a feature, if its geometry type is 'Point' or 'MultiPoint'
     returns a tuple of (lat, long)
@@ -103,7 +106,7 @@ def get_lat_long(feature) -> tuple:
 
     return coordinates
 
-def create_marker(feature, popup=None) -> dl.Marker:
+def create_marker(feature: Feature, popup=None) -> dl.Marker:
     """
     Create a simple dash-leaflet Marker from a feature.
     Don't use this, use create_awesome_marker() instead (much cooler)
@@ -130,7 +133,7 @@ def create_marker(feature, popup=None) -> dl.Marker:
 
     return marker
 
-def create_geojson(feature, popup=None) -> dl.GeoJSON:
+def create_geojson(feature: Feature, popup=None) -> dl.GeoJSON:
     """
     Create a dash-leaflet GeoJSON object from a database Feature.
     """
@@ -177,7 +180,7 @@ def create_geojson(feature, popup=None) -> dl.GeoJSON:
     return geojson
 
 # david is a god for making this work
-def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
+def create_awesome_marker(feature: Feature, popup=None) -> dl.DivMarker:
     """
     Create an awesome marker with a Font Awesome icon
     - feature: Feature from the database
@@ -223,10 +226,10 @@ def create_awesome_marker(feature, popup=None) -> dl.DivMarker:
 
     return awesome_marker
 
-def feature_to_map_object(feature, popup=None):
+def feature_to_map_object(feature: Feature, popup=None):
     """
     Takes in a Feature from the database and returns a dash-leaflet object.
-    Either a awesome Marker or a GeoJSON object, based on its geometry_type
+    Returns an awesome marker or a GeoJSON object, based on its geometry_type
     """
 
     geometry_type = feature.geometry_type
@@ -241,7 +244,7 @@ def feature_to_map_object(feature, popup=None):
 
     return map_object
 
-def feature_set_to_map_objects(feature_set) -> list:
+def feature_set_to_map_objects(feature_set: FeatureSet) -> list:
     """
     Takes in a FeatureSet from the database and returns a list of dash-leaflet objects.
     that contains all AwesomeMarkers or GeoJSON objects of the FeatureSet
@@ -348,6 +351,32 @@ app.layout = html.Div([
         dcc.Store(id='active_overlays', data=[]),   # we store the active overlays in here
         html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
             [
+                html.Div(
+                    children=[
+                        html.Button(
+                            children="Reload Datasets",
+                            id="button_reload_datasets",
+                            style={
+                                "padding": "5px",
+                                "margin": "5px"
+                            }
+                        ),
+                        html.Button(
+                            children="Refresh Items",
+                            id="button_refresh_items",
+                            style={
+                                "padding": "5px",
+                                "margin": "5px"
+                            }
+                        )
+                    ],
+                    style={
+                        "display": "flex",
+                        "flex-wrap": "wrap",
+                        "justify-content": "center",
+                        "align-items": "center"
+                    }
+                ),
                 dcc.Checklist(
                     id='overlay_checklist',
                     options=[{'label': layer.name, 'value': layer.id} for layer in layers],
@@ -479,7 +508,8 @@ app.layout = html.Div([
                 'color': '#333'
             }
         ),
-        html.Div(id='dummy_output', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
+        html.Div(id='dummy_output_1', style={'display': 'none'}),  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
+        html.Div(id='dummy_output_2', style={'display': 'none'})
     ],
     style={'display': 'flex', 'flex-wrap': 'wrap'}
     )
@@ -671,6 +701,64 @@ def print_slider_value(value, event_range_data):
     ],
 
     return event_range_text
+
+# call function reload on button press
+@app.callback(
+    [Output('dummy_output_1', 'children')],
+    [Input('button_reload_datasets', 'n_clicks')]
+)
+def reload_datasets(n_clicks):
+    """
+    This callback is triggered when the reload button is clicked.
+    It calls the api_to_db() function from build.py to update the database.
+    """
+
+    # if the reload button was not clicked, do nothing
+    if n_clicks is None:
+        raise PreventUpdate
+    
+    engine, session = autoconnect_db()
+
+    # call the reload function
+    api_to_db(session, refresh=False, verbose=True)
+
+    # close database connection
+    session.close()
+    engine.dispose()
+
+    raise PreventUpdate
+
+    # return nothing
+    return []
+
+# call api to refresh the database
+@app.callback(
+    [Output('dummy_output_2', 'children')],
+    [Input('button_refresh_items', 'n_clicks')]
+)
+def refresh_items(n_clicks):
+    """
+    This callback is triggered when the refresh button is clicked.
+    It calls the refresh() function from build.py to update the database.
+    """
+
+    # if the refresh button was not clicked, do nothing
+    if n_clicks is None:
+        raise PreventUpdate
+    
+    engine, session = autoconnect_db()
+
+    # call the reload function
+    refresh(session, True)
+
+    # close database connection
+    session.close()
+    engine.dispose()
+    
+    raise PreventUpdate
+
+    # return nothing
+    return []
 
 # returns the app object for use in main.py
 def get_app() -> Dash:

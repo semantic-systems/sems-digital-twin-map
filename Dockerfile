@@ -15,6 +15,5 @@ EXPOSE 8050
 # Define environment variable, used for determining the host name of the database
 ENV IN_DOCKER=true
 
-# 1. Rebuild the database with python build.py
-# 2. Start the app with python main.py
-CMD python ./build.py && python ./main.py
+# Start the app with python main.py
+CMD python ./main.py
