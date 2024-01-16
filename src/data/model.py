@@ -1,11 +1,8 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, JSON, Table, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
-
-from os import getenv
-
 
 Base = declarative_base()
 
@@ -160,46 +157,3 @@ class Style(Base):
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
     colormap = relationship('Colormap', back_populates='styles')
     feature_sets = relationship('FeatureSet', back_populates='style')
-
-
-def autoconnect_db(port=5432, user="postgres", password="rescuemate", echo=False):
-    """
-    Connect to the database. The hostname is dynamically set depending based on whether the environment variable IN_DOCKER is set to true or false.
-    - if IN_DOCKER = true, then hostname = postgis
-    - if IN_DOCKER = false, then hostname = localhost\\
-    Basically just a simple wrapper around connect_db.
-    """
-
-    ALWAYS_PRINT = True
-
-    (engine, session) = (None, None)   
-
-    in_docker: bool = getenv("IN_DOCKER", False)
-
-    # determine the hostname
-    if in_docker:
-        if ALWAYS_PRINT: print("\nenv IN_DOCKER=True: hostname=postgis")
-        host="postgis"
-    else:
-        if ALWAYS_PRINT: print("\nenv IN_DOCKER=False: hostname=localhost")	
-        host="localhost"
-
-    # connect to the database
-    (engine, session) = connect_db(host=host, port=port, user=user, password=password, echo=echo)
-    
-    return (engine, session)
-
-# create a connection to the database
-def connect_db(host="postgis", port=5432, user="postgres", password="rescuemate", echo=False):
-    """
-    Connect to the database. This function builds the database connection string and returns an engine and a session.
-
-    returns ```(engine, session)```
-    - `engine` [Engine] SQLAlchemy engine
-    - `session` [Session] SQLAlchemy session
-    """
-    db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
-    engine = create_engine(db_string, echo=echo)
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-    return (engine, session)

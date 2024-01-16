@@ -1,9 +1,9 @@
-# Handling API requests
+# Handling API requests to api.hamburg.de
 
 import requests
 import json
 
-from database import Collection, Feature
+from data.model import Collection, Feature
 
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 

@@ -2,9 +2,20 @@ version: '3'
 
 services:
   python-map:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile_map
     ports:
       - "8050:8050"
+    depends_on:
+      - postgis
+    
+  python-eventserver:
+    build: 
+      context: .
+      dockerfile: Dockerfile_eventserver
+    ports:
+      - "8051:8051"
     depends_on:
       - postgis
     

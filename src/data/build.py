@@ -1,4 +1,3 @@
-import os
 import json
 import requests
 from tqdm import tqdm
@@ -7,10 +6,11 @@ from tqdm import tqdm
 from sqlalchemy import text, func
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from database import Base, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap, autoconnect_db
+from data.model import Base, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap
+from data.connect import autoconnect_db
 
 # request imports
-from req import get_api_collections, get_items_endpoint, get_base_endpoint, request_items
+from data.req import get_api_collections, get_items_endpoint, get_base_endpoint, request_items
 
 # the accepted json types for the items endpoint
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']

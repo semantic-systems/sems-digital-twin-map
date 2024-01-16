@@ -16,4 +16,4 @@ EXPOSE 8050
 ENV IN_DOCKER=true
 
 # Start the app with python main.py
-CMD python ./main.py
+CMD python ./src/main.py
