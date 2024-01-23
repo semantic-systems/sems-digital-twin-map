@@ -91,13 +91,14 @@ def request_items(collection: Collection, verbose=False):
     # also add the limit parameter to the url
     # it controls how many items are returned
     # TODO: if the number of items is large, make multiple smaller requests
+
     url_items = url_items + f'&limit={entries}'
     response = requests.get(url_items)
 
     if response.status_code == 200:
 
         response_json = response.json()
-        if verbose: print(f'{response_json["numberReturned"]} items returned from {response_json["totalFeatures"]}')
+        if verbose: print(f'{collection.identifier} returned {response_json["numberReturned"]} out of {entries} items')
 
         return response_json
     

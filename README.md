@@ -19,6 +19,7 @@ Example:
     "collections":{
         "perspektive_wohnen_bestehend":{
             "name":"Perspektive Wohnen",
+            "layer": "Perspektive Wohnen",
             "popup_properties": {
                 "Bezeichnung": "bezeichnung", 
                 "Bezirk": "bezirk", 
@@ -38,5 +39,6 @@ Example:
 - `collections`: List of collections to be used from the Dataset. Only collections listed here will be requested.
 - `collections.<collection_id>`: Unique identifier of the collection. Must be the same as the collection id in the API.
 - `collections.<collection_id>.name`: Display name of the collection, gets used in popups
+- `collections.<collection_id>.layer`: The layer the collection gets assigned to
 - `collections.<collection_id>.popup_properties`: Display names and fields to be used in popups.
 - `collections.<collection_id>.style`: Controls how the collections features get styled. See [dash-leaflet documentation](https://leafletjs.com/reference.html#path) or `database.py` for more information.

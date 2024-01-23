@@ -16,18 +16,16 @@ def style_to_dict(style: Style) -> dict:
     """
 
     style_dict = {
-        'borderColor': style.border_color,
-        'areaColor': style.area_color,
-        'weight': style.line_weight,
         'stroke': style.stroke,
+        'color': style.border_color,
+        'weight': style.line_weight,
         'opacity': style.opacity,
         'lineCap': style.line_cap,
         'lineJoin': style.line_join,
         'dashArray': style.dash_array,
         'dashOffset': style.dash_offset,
-        'fill': style.fill, #boolean
-        'fillColor': style.area_color, #same thing as borderColor?
-        'color': style.border_color,
+        'fill': style.fill,
+        'fillColor': style.area_color,
         'fillOpacity': style.fill_opacity,
         'fillRule': style.fill_rule
     }

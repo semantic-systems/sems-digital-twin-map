@@ -7,6 +7,7 @@
             "collections":{
                 "perspektive_wohnen_bestehend":{
                     "name":"Perspektive Wohnen",
+                    "layer":"Perspektive Wohnen",
                     "popup_properties": {
                         "Bezeichnung": "bezeichnung", 
                         "Bezirk": "bezirk", 
@@ -26,6 +27,7 @@
             "collections":{
                 "staatliche_schulen": {
                     "name": "Staatliche Schule",
+                    "layer": "Schulen",
                     "popup_properties": {
                         "Name": "schulname", 
                         "Typ": "kapitelbezeichnung", 
@@ -41,6 +43,7 @@
                 },
                 "nicht_staatliche_schulen": {
                     "name": "Nicht-Staatliche Schule",
+                    "layer": "Schulen",
                     "popup_properties": {
                         "Name": "schulname", 
                         "Typ": "kapitelbezeichnung", 
@@ -63,6 +66,7 @@
             "collections":{
                 "vollstationaere_pflegeeinrichtungen": {
                     "name": "Pflegeeinrichtung",
+                    "layer":"Pflegeeinrichtungen",
                     "popup_properties": {
                         "Name": "pflegeeinrichtung", 
                         "Adresse": "adresse",
@@ -85,6 +89,7 @@
             "collections":{
                 "gesundheit_krankenhaeuser": {
                     "name": "Krankenhaus",
+                    "layer":"Krankenhäuser",
                     "popup_properties": {
                         "Name": "name", 
                         "Adresse": "adresse",
@@ -106,6 +111,7 @@
             "collections":{
                 "notunterkuenfte": {
                     "name": "Notunterkunft",
+                    "layer":"Notunterkünfte",
                     "popup_properties": {
                         "Bezeichnung": "bezeichnung",
                         "Adresse": "adresse",
@@ -128,8 +134,9 @@
             "collections":{
                 "berufsfeuerwehr": {
                     "name": "Berufsfeuerwehr",
+                    "layer": "Feuerwehr",
                     "popup_properties": {
-                        "Name": "Bezeichnung",
+                        "Name": "bezeichnung",
                         "Strasse": "strasse",
                         "Hausnummer": "hausnummer",
                         "Ort": "ab_ort",
@@ -142,8 +149,9 @@
                 },
                 "freiwillige_feuerwehr": {
                     "name": "Freiwillige Feuerwehr",
+                    "layer":"Feuerwehr",
                     "popup_properties": {
-                        "Name": "Bezeichnung",
+                        "Name": "bezeichnung",
                         "Strasse": "strasse",
                         "Hausnummer": "hausnummer",
                         "Ort": "ab_ort",
@@ -163,6 +171,7 @@
             "collections":{
                 "hauptdeichlinie": {
                     "name": "Hauptdeichlinie",
+                    "layer":"Hauptdeichlinie",
                     "popup_properties": {
                         "Name": "anlagenname",
                         "Typ": "anlagentyp",
@@ -192,6 +201,7 @@
             "collections":{
                 "wasserrettungspunkte": {
                     "name": "Wasserrettungspunkt",
+                    "layer":"Wasserrettungspunkte",
                     "popup_properties": {
                         "Nr.": "wasserrettungspunkt",
                         "Straße": "strasse",
@@ -211,6 +221,7 @@
             "collections":{
                 "ueberschwemmungsgebiete":{
                     "name":"Überschwemmungsgebiet",
+                    "layer":"Überschwemmungsgebiete",
                     "popup_properties": {
                         "Name": "name",
                         "Verordnung": "verordnung"
@@ -225,6 +236,7 @@
             "collections":{
                 "haltestellenbereiche_bahn": {
                     "name": "Bahn Haltestelle",
+                    "layer":"Bahn Haltestellen",
                     "popup_properties": {
                         "Name": "name",
                         "Linien": "linien",
@@ -238,6 +250,7 @@
                 },
                 "haltestellenbereiche_bus": {
                     "name": "Bus Haltestelle",
+                    "layer":"Bus Haltestellen",
                     "popup_properties": {
                         "Name": "name",
                         "Linien": "linien",
@@ -251,6 +264,7 @@
                 },
                 "haltestellenbereiche_faehre": {
                     "name": "Fähren Haltestelle",
+                    "layer":"Fähren Haltestellen",
                     "popup_properties": {
                         "Name": "name",
                         "Linien": "linien",

@@ -5,21 +5,52 @@ from dash import Dash, html, dcc, Output, Input, State, callback
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 
+from sqlalchemy import inspect
+from sqlalchemy.exc import OperationalError
+
 # internal imports
 from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap
 from data.connect import autoconnect_db
-from data.build import api_to_db, refresh
+from data.build import build, refresh
 from map.convert import overlay_id_to_layer_group
 
-def get_app():
+def build_layer_checkboxes():
+    """
+    Build the layer checkboxes for the layers control.
+    Format: [{'label': 'Layer Display Name', 'value': 'Layer ID'}]
+    """
 
     # get all available layers sets
     engine, session = autoconnect_db()
+
+    # Check if the Layer table exists
+    inspector = inspect(engine)
+    if 'layers' not in inspector.get_table_names():
+        # Close database connection and return empty list if Layer does not exist
+        session.close()
+        engine.dispose()
+        print("Warning: Table 'layers' does not exist. No Layer checkboxes will be created. You can rebuild the database by running 'python main.py -rebuild'. See more information with 'python main.py -help'.")
+        return []
+
     layers = session.query(Layer).all()
+
+    layer_checkboxes = [{'label': layer.name, 'value': layer.id} for layer in layers]
+
+    # remove the layer with the name 'Events' from the list
+    # this layer is handled separately
+    for layer in layer_checkboxes:
+        if layer['label'] == 'Events':
+            layer_checkboxes.remove(layer)
 
     # close database connection
     session.close()
     engine.dispose()
+
+    return layer_checkboxes
+
+def get_app():
+
+    layer_checkboxes = build_layer_checkboxes()
 
     app = Dash(
         __name__,
@@ -62,8 +93,8 @@ def get_app():
                     html.Div(
                         children=[
                             html.Button(
-                                children="Reload Datasets",
-                                id="button_reload_datasets",
+                                children="Full Rebuild",
+                                id="button_rebuild",
                                 style={
                                     "padding": "5px",
                                     "margin": "5px"
@@ -87,7 +118,7 @@ def get_app():
                     ),
                     dcc.Checklist(
                         id='overlay_checklist',
-                        options=[{'label': layer.name, 'value': layer.id} for layer in layers],
+                        options=layer_checkboxes,
                         value=[]
                     ),
                     html.Hr(
@@ -411,33 +442,29 @@ def get_app():
         return event_range_text
 
     # call function reload on button press
+    # updates the layer checkboxes
     @app.callback(
-        [Output('dummy_output_1', 'children')],
-        [Input('button_reload_datasets', 'n_clicks')]
+        [Output('overlay_checklist', 'options'),],
+        [Input('button_rebuild', 'n_clicks')]
     )
-    def reload_datasets(n_clicks):
+    def rebuild_database(n_clicks):
         """
         This callback is triggered when the reload button is clicked.
-        It calls the api_to_db() function from build.py to update the database.
+        It calls the build() function from src/data/build.py to update the database.
         """
 
         # if the reload button was not clicked, do nothing
         if n_clicks is None:
             raise PreventUpdate
-        
-        engine, session = autoconnect_db()
 
-        # call the reload function
-        api_to_db(session, refresh=False, verbose=True)
+        # call the build function
+        build()
 
-        # close database connection
-        session.close()
-        engine.dispose()
+        # update the layer checkboxes
+        layer_checkboxes = build_layer_checkboxes()
 
-        raise PreventUpdate
-
-        # return nothing
-        return []
+        # return the updated layer checkboxes
+        return [layer_checkboxes]
 
     # call api to refresh the database
     @app.callback(

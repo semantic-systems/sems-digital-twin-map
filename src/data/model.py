@@ -11,7 +11,7 @@ class Feature(Base):
     Table name: features
     - `properties` [JSON] Properties of the feature. You can control which properties are displayed in the popup by setting the `popup_properties` attribute of the style.
     - `geometry_type` [String] Type of the geometry
-    - `geometry` [Geometry] Geometry of the feature. Possible values: ```{Point, LineString, Polygon, MultiPoint, MultiLineString,  MultiPolygon}```
+    - `geometry` [Geometry] Geometry of the feature. Possible values: ```{Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon}```
     - `feature_set_id` [Integer] ID of the FeatureSet the feature belongs to
     - `feature_set` [FeatureSet] FeatureSet the feature belongs to
     """
@@ -21,7 +21,7 @@ class Feature(Base):
     geometry_type = Column(String, nullable=False)
     geometry = Column(Geometry(geometry_type='GEOMETRY'), nullable=False)
     feature_set_id = Column(Integer, ForeignKey('feature_sets.id'), nullable=False)
-    feature_set = relationship('FeatureSet', back_populates='features')    
+    feature_set = relationship('FeatureSet', back_populates='features')
 
 class FeatureSet(Base):
     """
@@ -97,7 +97,7 @@ class Collection(Base):
     name = Column(String, nullable=False)
     url_items = Column(String, nullable=False)
     url_collection = Column(String, nullable=False)
-    entries = Column(Integer, nullable=False)       # number of items in the collection
+    entries = Column(Integer, nullable=False)
 
     dataset_id = Column(Integer, ForeignKey('datasets.id'), nullable=False)
     dataset = relationship('Dataset', back_populates='collections')

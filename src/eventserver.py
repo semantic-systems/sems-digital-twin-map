@@ -33,14 +33,19 @@ def receive_data(verbose=True):
     # find the layer and style with the names 'Events'
     # TODO: later this should be replaced with a query to find the layer and style with the same name as the event_type
     if verbose: print('Creating FeatureSet...', end='')
-    db_layer = session.query(Layer).filter(Layer.name == 'Events').first()
+    db_layer_events = session.query(Layer).filter(Layer.name == 'Events').first()
+    db_layer_predictions = session.query(Layer).filter(Layer.name == 'Predictions').first()
     db_style_events = session.query(Style).filter(Style.name == 'Events').first()
     db_style_predictions = session.query(Style).filter(Style.name == 'Predictions').first()
 
 
-    if db_layer is None:
+    if db_layer_events is None:
         if verbose: print('No Layer with name "Events" found!')
         return jsonify({'status': 'error', 'message': 'Internal Server Error: No Layer with name "Events" found'})
+
+    if db_layer_predictions is None:
+        if verbose: print('No Layer with name "Predictions" found!')
+        return jsonify({'status': 'error', 'message': 'Internal Server Error: No Layer with name "Predictions" found'})
     
     if db_style_events is None:
         if verbose: print('No Style with name "Events" found!')

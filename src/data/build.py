@@ -12,13 +12,13 @@ from data.connect import autoconnect_db
 # request imports
 from data.req import get_api_collections, get_items_endpoint, get_base_endpoint, request_items
 
-# the accepted json types for the items endpoint
+# the accepted json types for the item endpoints
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 
 def api_to_db(session, refresh=True, verbose=False):
     """
     Reloads all datasets from api_configs.json, requests their data and saves it into the database.
-    This creates new database entries for Dataset, Collection, FeatureSet, Layer Style and Colormap.
+    This creates new database entries for Dataset, Collection, FeatureSet, Layer, Style and Colormap.
     If refresh is set to True, it will overwrite existing database entries for Feature.
     """
 
@@ -27,7 +27,7 @@ def api_to_db(session, refresh=True, verbose=False):
     dataset_configs = api_configs['datasets']
 
     # iterate over all api configs
-    for dataset_config in tqdm(dataset_configs):
+    for dataset_config in tqdm(dataset_configs, disable=not verbose):
 
         # split the line at the comma
         url = dataset_config['url']
@@ -50,12 +50,6 @@ def api_to_db(session, refresh=True, verbose=False):
 
         session.add(dataset)
 
-        # create a layer for the dataset
-        layer = Layer(
-            name=dataset.name
-        )
-        session.add(layer)
-
         # get all collections from the collections endpoint
         collections = get_api_collections(url)
 
@@ -65,8 +59,23 @@ def api_to_db(session, refresh=True, verbose=False):
 
             if collection_id in collection_identifiers:
 
+                # get the collection config from the api_config.json
                 collection_config = dataset_config['collections'][collection_id]
 
+                # if a layer is specified in the api_config.json, use it
+                # otherwise use the dataset name
+                layer_name = collection_config.get('layer', dataset_name)
+
+                # get the layer from the database
+                layer = session.query(Layer).filter(Layer.name == layer_name).first()
+
+                # if the layer does not exist, create it
+                if layer is None:
+                    layer = Layer(
+                        name=layer_name
+                    )
+                    session.add(layer)
+                
                 popup_properties = collection_config.get('popup_properties', {})
                 collection_style = collection_config.get('style', {})
                 collection_colormap = collection_config.get('colormap', None)
@@ -128,7 +137,7 @@ def api_to_db(session, refresh=True, verbose=False):
 
                 session.add(db_collection)
 
-                 # create a FeatureSet for the collection
+                # create a FeatureSet for the collection
                 feature_set = FeatureSet(
                     name=db_collection.name,
                     layer=layer,
