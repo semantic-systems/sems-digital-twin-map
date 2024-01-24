@@ -58,14 +58,14 @@ def receive_data(verbose=True):
     # create a FeatureSet for the event and predictions
     db_feature_set_event = FeatureSet(
         name='Event',
-        layer=db_layer,
+        layer=db_layer_events,
         style=db_style_events,
         collection=None
     )
 
     db_feature_set_prediction = FeatureSet(
         name='Prediction',
-        layer=db_layer,
+        layer=db_layer_predictions,
         style=db_style_predictions,
         collection=None
     )
