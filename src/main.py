@@ -29,7 +29,7 @@ def main():
         elif '-help' in params:
             print("""Launch Parameters:
                     -rebuild: rebuilds the database
-                    -verbose: prints status information when rebuilding the database
+                    -verbose: prints status information when rebuilding the database. Must be used with -rebuild
                     -help: prints this help message
                     """)
             return

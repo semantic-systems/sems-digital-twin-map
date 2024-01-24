@@ -3,7 +3,9 @@ from datetime import datetime
 
 from dash import Dash, html, dcc, Output, Input, State, callback
 from dash.exceptions import PreventUpdate
+from dash.long_callback import DiskcacheLongCallbackManager
 import dash_leaflet as dl
+import diskcache
 
 from sqlalchemy import inspect
 from sqlalchemy.exc import OperationalError
@@ -52,6 +54,10 @@ def get_app():
 
     layer_checkboxes = build_layer_checkboxes()
 
+    # long callback setup
+    cache = diskcache.Cache("./cache")
+    long_callback_manager = DiskcacheLongCallbackManager(cache)
+
     app = Dash(
         __name__,
         external_stylesheets=[
@@ -63,7 +69,8 @@ def get_app():
         external_scripts=[
             'http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js',
             'https://kit.fontawesome.com/5ae05e6c33.js'
-        ]
+        ],
+        long_callback_manager=long_callback_manager
     )
 
     # create the map layout
@@ -443,9 +450,13 @@ def get_app():
 
     # call function reload on button press
     # updates the layer checkboxes
-    @app.callback(
+    @app.long_callback(
         [Output('overlay_checklist', 'options'),],
-        [Input('button_rebuild', 'n_clicks')]
+        [Input('button_rebuild', 'n_clicks')],
+        running=[
+            (Output("button_rebuild", "disabled"), True, False),
+            (Output("button_refresh_items", "disabled"), True, False),
+        ],
     )
     def rebuild_database(n_clicks):
         """
@@ -467,9 +478,13 @@ def get_app():
         return [layer_checkboxes]
 
     # call api to refresh the database
-    @app.callback(
+    @app.long_callback(
         [Output('dummy_output_2', 'children')],
-        [Input('button_refresh_items', 'n_clicks')]
+        [Input('button_refresh_items', 'n_clicks')],
+        running=[
+            (Output("button_rebuild", "disabled"), True, False),
+            (Output("button_refresh_items", "disabled"), True, False),
+        ],
     )
     def refresh_items(n_clicks):
         """
