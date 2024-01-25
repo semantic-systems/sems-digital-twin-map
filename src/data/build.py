@@ -234,19 +234,29 @@ def create_event_entries(session):
     Creates a layer and style database entry for the Events and Predictions.
     """
 
-    # get all layers and styles with the name 'Events'
-    db_layer = session.query(Layer).filter(Layer.name == 'Events').first()
-    db_style = session.query(Style).filter(Style.name == 'Events').first()
+    # get all layers and styles with the name 'Events' and 'Predictions'
+    db_layer_event = session.query(Layer).filter(Layer.name == 'Events').first()
+    db_style_event = session.query(Style).filter(Style.name == 'Events').first()
+
+    db_layer_preds = session.query(Layer).filter(Layer.name == 'Predictions').first()
+    db_style_preds = session.query(Style).filter(Style.name == 'Predictions').first()
 
     # if the layer or style do not exist, create them
-    if db_layer is None:
-        db_layer = Layer(
+    if db_layer_event is None:
+        db_layer_event = Layer(
             name='Events'
         )
-        session.add(db_layer)
+        session.add(db_layer_event)
+        session.commit()
+
+    if db_layer_preds is None:
+        db_layer_preds = Layer(
+            name='Predictions'
+        )
+        session.add(db_layer_preds)
         session.commit()
     
-    if db_style is None:
+    if db_style_event is None:
         # style events and predictions here
         # TODO: create a json entry that holds these values
         db_style_events = Style(
@@ -268,7 +278,13 @@ def create_event_entries(session):
             fill_rule        = 'evenodd',
             colormap         = None
         )
-        db_style_predictions = Style(
+        session.add(db_style_events)
+        session.commit()
+
+    if db_style_preds is None:
+        # style events and predictions here
+        # TODO: create a json entry that holds these values
+        db_style_preds = Style(
             name             = 'Predictions',
             popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
             border_color     = '#3388ff',
@@ -287,8 +303,7 @@ def create_event_entries(session):
             fill_rule        = 'evenodd',
             colormap         = None
         )
-        session.add(db_style_events)
-        session.add(db_style_predictions)
+        session.add(db_style_preds)
         session.commit()
     
 # build the database and populate it with data
