@@ -70,7 +70,8 @@ def get_app():
             'http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js',
             'https://kit.fontawesome.com/5ae05e6c33.js'
         ],
-        long_callback_manager=long_callback_manager
+        long_callback_manager=long_callback_manager,
+        prevent_initial_callbacks='initial_duplicate'
     )
 
     # create the map layout
@@ -262,15 +263,15 @@ def get_app():
 
     # a new layer was selected or deselected
     @app.callback(
-        [Output('map', 'children'), Output('active_overlays', 'data')],
+        [Output('map', 'children',allow_duplicate=True), Output('active_overlays', 'data')],
         [Input('overlay_checklist', 'value')],
-        [State('map', 'children'), State('active_overlays', 'data')]
+        [State('map', 'children'), State('active_overlays', 'data')],
     )
     def update_map(selected_overlays, map_children, active_overlays_data):
         """
         This callback is triggered when the overlay_checklist changes.
         It updates the map children and the active_overlays_data.
-        """
+        """  
 
         # first, divide the map children into layer groups and non-layer groups
         # we only want to manipulate the layer groups (map_children_layergroup)
@@ -334,6 +335,112 @@ def get_app():
 
         # return the updated map children and active_overlays_data
         return new_map_children, active_overlays_data
+
+    # a new event was selected or deselected
+    @app.callback(
+        [Output('map', 'children', allow_duplicate = True), Output('active_events_pred', 'data')],
+        [Input('event_visibility_checklist', 'value')],
+        [State('map', 'children'), State('active_events_pred', 'data')],
+    )
+    def update_event_pred(selected_events_preds, map_children, active_event_pred_data):
+
+        #!!anpassen an singular überall für events preds
+        """
+        This callback is triggered when the overlay_checklist changes regarding events/predictions.
+        It updates the map children and the active_events_pred_data.
+        """
+
+        print('x')
+
+        # first, divide the map children into layer groups and non-layer groups
+        # we only want to manipulate the layer groups (map_children_layergroup)
+        map_event_children_no_layergroup = []
+        map_event_children_layergroup = []
+
+        for child in map_children: 
+
+            id = child['props']['id']
+
+            # check if the child is a layer group
+            # layer groups have an id that starts with 'layergroup'
+            if id.startswith('layergroup'):
+           
+                map_event_children_layergroup.append(child)
+            else:
+                map_event_children_no_layergroup.append(child)
+        
+        # compare selected_events_preds with active_overlays_data
+        # find out if an overlay was selected or deselected
+        # if an overlay was selected, add it to the map
+        # if an overlay was deselected, remove it from the map
+        if selected_events_preds != active_event_pred_data:
+            engine,session = autoconnect_db()
+
+            # get the overlay that was selected or deselected
+            changed_overlay = list(set(selected_events_preds) ^ set(active_overlays_data))[0]
+
+            # this translates show_events or show_predictions to the id of the layer of the with the name Events or Predictions
+            if changed_overlay == 'show_events':
+                l = session.query(Layer).filter(Layer.name == 'Events').first()
+                changed_overlay = l.id
+
+            elif changed_overlay == 'show_predictions':
+                l = session.query(Layer).filter(Layer.name == 'Predictions').first()
+                changed_overlay = l.id
+
+            else:
+                session.close()
+                engine.dispose()
+                raise PreventUpdate
+
+            print(changed_overlay)
+            session.close()
+            engine.dispose()
+
+
+            # check if the overlay was selected or deselected
+            if changed_overlay in selected_events_preds:
+                # overlay was selected
+                # add it to the map
+
+                # get the layer group
+                layer_group = overlay_id_to_layer_group(changed_overlay)
+                '''methode aus map.convert, verwendet dash standard
+                methode um dl.layergroup um layer zu erzeugen -> sollte nutzbar sein'''
+
+                # add the layer group to the map
+                map_event_children_layergroup.append(layer_group)
+                '''hier wird die neue erstellte layer group an selected layers in 
+                die map event children layergroup hinzugefügt'''
+
+            else:
+                # overlay was deselected
+                # remove it from the map
+
+                # get the layer group id
+                layer_group_id = f'layergroup-{changed_overlay}'
+                '''f' printed fix dinge -> was genau wird hier geprintet?? welches feld'''
+
+                # search for the layer group in the map children
+                for child in map_event_children_layergroup:
+
+                    # if the layer group was found, remove it from the map children
+                    if child['props']['id'] == layer_group_id:
+                        map_event_children_layergroup.remove(child)
+        else:
+            # no overlays were selected or deselected, do nothing
+            # (this should never happen)
+            raise PreventUpdate
+
+        # update the active_overlays_data
+        active_overlays_data = selected_events_preds
+
+        # combine the map children again
+        new_event_map_children = map_event_children_no_layergroup + map_event_children_layergroup
+
+        # return the updated map children and active_overlays_data
+        return new_event_map_children, active_event_pred_data
+        #new event map zurückbennen
 
     # if a new event range was selected, update the event_range marks
     @app.callback(
