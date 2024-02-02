@@ -163,7 +163,7 @@ def create_geojson(feature: Feature, popup=None) -> dl.GeoJSON:
         data=geojson_dict,
         style=style_dict,
         children=children,
-        id=f'geojson-{feature.id}'
+        id=f'feature-{feature.id}'
     )
 
     return geojson
@@ -210,7 +210,7 @@ def create_awesome_marker(feature: Feature, popup=None) -> dl.DivMarker:
                 tooltipAnchor=[10, -20],
                 popupAnchor=[-3, -31]
             ),
-            id=f'marker-{id}'
+            id=f'feature-{feature.id}'
         )
 
     return awesome_marker

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -18,6 +18,7 @@ class Feature(Base):
     __tablename__ = 'features'
     id = Column(Integer, primary_key=True)
     properties = Column(JSON)
+    timestamp = Column(DateTime, nullable=True)
     geometry_type = Column(String, nullable=False)
     geometry = Column(Geometry(geometry_type='GEOMETRY'), nullable=False)
     feature_set_id = Column(Integer, ForeignKey('feature_sets.id'), nullable=False)
@@ -50,6 +51,9 @@ class FeatureSet(Base):
 
     collection_id = Column(Integer, ForeignKey('collections.id'), nullable=True)    # nullable, because the feature set might not be associated with a collection
     collection = relationship('Collection', back_populates='feature_sets')
+
+    scenario_id = Column(Integer, ForeignKey('scenarios.id'), nullable=True)    # nullable, because the feature set might not be associated with a scenario
+    scenario = relationship('Scenario', back_populates='feature_sets')
 
 class Layer(Base):
     """
@@ -103,6 +107,23 @@ class Collection(Base):
     dataset = relationship('Dataset', back_populates='collections')
 
     feature_sets = relationship('FeatureSet', back_populates='collection')
+
+
+class Scenario(Base):
+    """
+    A logical grouping of FeatureSets for a single use case
+    Table name: scenarios
+    - `name` [String] Name of the scenario
+    - `description` [String] Description of the scenario
+    - `feature_sets` [FeatureSet Array] List of FeatureSets that belong to the scenario
+    """
+    __tablename__ = 'scenarios'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(String)
+    
+    # Relationship to FeatureSets
+    feature_sets = relationship('FeatureSet', back_populates='scenario')
 
 class Colormap(Base):
     """

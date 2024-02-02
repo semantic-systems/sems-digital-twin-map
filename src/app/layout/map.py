@@ -1,25 +1,22 @@
 from datetime import date, timedelta, datetime
 from datetime import datetime
 
-from dash import Dash, html, dcc, Output, Input, State, callback
+from dash import Dash, html, dcc, Output, Input, State
 from dash.exceptions import PreventUpdate
-from dash.long_callback import DiskcacheLongCallbackManager
 import dash_leaflet as dl
-import diskcache
 
 from sqlalchemy import inspect
-from sqlalchemy.exc import OperationalError
 
 # internal imports
-from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap
+from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario
 from data.connect import autoconnect_db
 from data.build import build, refresh
-from map.convert import overlay_id_to_layer_group
+from app.convert import overlay_id_to_layer_group
 
 def build_layer_checkboxes():
     """
     Build the layer checkboxes for the layers control.
-    Format: [{'label': 'Layer Display Name', 'value': 'Layer ID'}]
+    Format: `[{'label': 'Layer Display Name', 'value': 'Layer ID'}]`
     """
 
     # get all available layers sets
@@ -50,215 +47,206 @@ def build_layer_checkboxes():
 
     return layer_checkboxes
 
-def get_app():
+def get_layout_map():
+    """
+    Returns the layout for the map app. Callbacks need to be configured separately.
+    This gets set as the child of a dcc.Tab in the main app.
+    """
 
+    # build the layer checkboxes
     layer_checkboxes = build_layer_checkboxes()
 
-    # long callback setup
-    cache = diskcache.Cache("./cache")
-    long_callback_manager = DiskcacheLongCallbackManager(cache)
-
-    app = Dash(
-        __name__,
-        external_stylesheets=[
-            'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
-            'http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css',
-            'https://raw.githubusercontent.com/lennardv2/Leaflet.awesome-markers/2.0/develop/dist/leaflet.awesome-markers.css',
-            'https://getbootstrap.com/1.0.0/assets/css/bootstrap-1.0.0.min.css',
-        ],
-        external_scripts=[
-            'http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js',
-            'https://kit.fontawesome.com/5ae05e6c33.js'
-        ],
-        long_callback_manager=long_callback_manager
-    )
-
-    # create the map layout
-    app.layout = html.Div([
-            dl.Map(
-                [
-                    dl.TileLayer(
-                        url='https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_farbe/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png',
-                        attribution='&copy; <a href="https://basemap.de/">basemap.de</a>',
-                        id='tile_layer'
-                    )
-                ],
-                zoom=12,
-                center=(53.55, 9.99),
-                style={
-                    'width': '100vw', 
-                    'height': '100vh',
-                    'display': 'inline-block',
-                    'position': 'relative',
-                    'z-index': '0'
-                },
-                id='map'
-                ),
-            dcc.Store(id='active_overlays', data=[]),   # we store the active overlays in here
-            html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
-                [
-                    html.Div(
-                        children=[
-                            html.Button(
-                                children="Full Rebuild",
-                                id="button_rebuild",
-                                style={
-                                    "padding": "5px",
-                                    "margin": "5px"
-                                }
-                            ),
-                            html.Button(
-                                children="Refresh Items",
-                                id="button_refresh_items",
-                                style={
-                                    "padding": "5px",
-                                    "margin": "5px"
-                                }
-                            )
-                        ],
-                        style={
-                            "display": "flex",
-                            "flex-wrap": "wrap",
-                            "justify-content": "center",
-                            "align-items": "center"
-                        }
-                    ),
-                    dcc.Checklist(
-                        id='overlay_checklist',
-                        options=layer_checkboxes,
-                        value=[]
-                    ),
-                    html.Hr(
-                        style={
-                            'margin': '5px 4px 5px 4px',
-                            'border': '0',
-                            'border-bottom': '1px solid #777'
-                        }
-                    ),
-                    dcc.Checklist(
-                        id='event_visibility_checklist',
-                        options=[
-                            {'label': 'Show Events', 'value': 'show_events'},
-                            {'label': 'Show Predictions', 'value': 'show_predictions'}
-                            ],
-                        value=[]
-                    )                    
-                ],
-                style={
-                    'position': 'absolute',
-                    'float': 'right',
-                    'margin': '10px',
-                    'background-color': 'white',
-                    'border': '1px solid #ccc',
-                    'padding': '10px',
-                    'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                    'border-radius': '5px',
-                    'max-height': '700px',
-                    'overflow-y': 'auto',
-                    'z-index': '1000',
-                    'right': '0',
-                    'top': '0',
-                    'width:': '200px',
-                    'color': '#333'
-                }
+    layout_map = [
+        dl.Map(
+            children = [
+                dl.TileLayer(
+                    url='https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_farbe/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png',
+                    attribution='&copy; <a href="https://basemap.de/">basemap.de</a>',
+                    id='tile_layer'
+                )
+            ],
+            zoom=12,
+            center=(53.55, 9.99),
+            style={
+                'width': '100vw', 
+                'height': '100vh',
+                'display': 'inline-block',
+                'position': 'relative',
+                'z-index': '0'
+            },
+            id='map'
             ),
-            dcc.Store(id='event_range', data=[]),   # we store the event range in here
-            html.Div(
-                children=[
-                    # DatePickerRange component
-                    dcc.DatePickerRange(
-                        id='event_range_picker',
-                        with_portal=True,
-                        display_format='DD.MM.YYYY',
-                        minimum_nights=1,
-                        clearable=True
-                    ),
-                    # Div wrapper for RangeSlider component
-                    html.Div(
-                        dcc.RangeSlider(
-                            id='slider_events',
-                            min=0,
-                            max=100,
-                            step=1.0/24.0,  # 1 hour steps
-                            value=[25, 75],
-                            marks={
-                                0: 'XX.XX.XXXX',
-                                100: 'XX.XX.XXXX'
-                            },
-                            updatemode='mouseup'    # update the slider value when the mouse is released
+        dcc.Store(id='active_overlays', data=[]),   # we store the active overlays in here
+        html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
+            [
+                html.Div(
+                    children=[
+                        html.Button(
+                            children="Full Rebuild",
+                            id="button_rebuild",
+                            style={
+                                "padding": "5px",
+                                "margin": "5px"
+                            }
                         ),
-                        style={
-                            'flex': '1',  # Allows the range slider to grow as needed within the flex container
-                            'margin-left': '10px'
-                        }
+                        html.Button(
+                            children="Refresh Items",
+                            id="button_refresh_items",
+                            style={
+                                "padding": "5px",
+                                "margin": "5px"
+                            }
+                        )
+                    ],
+                    style={
+                        "display": "flex",
+                        "flex-wrap": "wrap",
+                        "justify-content": "center",
+                        "align-items": "center"
+                    }
+                ),
+                dcc.Checklist(
+                    id='overlay_checklist',
+                    options=layer_checkboxes,
+                    value=[]
+                ),
+                html.Hr(
+                    style={
+                        'margin': '5px 4px 5px 4px',
+                        'border': '0',
+                        'border-bottom': '1px solid #777'
+                    }
+                ),
+                dcc.Checklist(
+                    id='event_visibility_checklist',
+                    options=[
+                        {'label': 'Show Events', 'value': 'show_events'},
+                        {'label': 'Show Predictions', 'value': 'show_predictions'}
+                        ],
+                    value=[]
+                )                    
+            ],
+            style={
+                'position': 'absolute',
+                'float': 'right',
+                'margin': '10px',
+                'background-color': 'white',
+                'border': '1px solid #ccc',
+                'padding': '10px',
+                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                'border-radius': '5px',
+                'max-height': '700px',
+                'overflow-y': 'auto',
+                'z-index': '1000',
+                'right': '0',
+                'top': '60px',
+                'width:': '200px',
+                'color': '#333'
+            }
+        ),
+        dcc.Store(id='event_range', data=[]),   # we store the event range in here
+        html.Div(
+            children=[
+                # DatePickerRange component
+                dcc.DatePickerRange(
+                    id='event_range_picker',
+                    with_portal=True,
+                    display_format='DD.MM.YYYY',
+                    minimum_nights=1,
+                    clearable=True
+                ),
+                # Div wrapper for RangeSlider component
+                html.Div(
+                    dcc.RangeSlider(
+                        id='slider_events',
+                        min=0,
+                        max=100,
+                        step=1.0/24.0,  # 1 hour steps
+                        value=[25, 75],
+                        marks={
+                            0: 'XX.XX.XXXX',
+                            100: 'XX.XX.XXXX'
+                        },
+                        updatemode='mouseup'    # update the slider value when the mouse is released
                     ),
-                    html.Div( # shows the selected event range
-                        id='event_range_text',
-                        children=[
-                            html.Div(
-                                html.U(
-                                    children='Selected',
-                                    style={
-                                        'font-size': '14pt',
-                                        'font-weight': 'bold',
-                                        'margin': '4px 2px 0px 2px',
-                                    }
-                                ),
+                    style={
+                        'flex': '1',  # Allows the range slider to grow as needed within the flex container
+                        'margin-left': '10px'
+                    }
+                ),
+                html.Div( # shows the selected event range
+                    id='event_range_text',
+                    children=[
+                        html.Div(
+                            html.U(
+                                children='Selected',
                                 style={
-                                    'text-align': 'center'
+                                    'font-size': '14pt',
+                                    'font-weight': 'bold',
+                                    'margin': '4px 2px 0px 2px',
                                 }
                             ),
-                            html.P(
-                                children=[
-                                'XX:XX XX.XX.XXXX -',
-                                html.Br(),
-                                'XX:XX XX.XX.XXXX'
-                            ],
                             style={
-                                'font-size': '14pt',
-                                'font-weight': 'bold',
-                                'margin': '2px 2px 0px 2px'
+                                'text-align': 'center'
                             }
-                            )
+                        ),
+                        html.P(
+                            children=[
+                            'XX:XX XX.XX.XXXX -',
+                            html.Br(),
+                            'XX:XX XX.XX.XXXX'
                         ],
                         style={
-                            'margin-left': '20px',
                             'font-size': '14pt',
                             'font-weight': 'bold',
-                            'text-align': 'left',
-                            'font-family': '"Courier New", monospace',
-                            'color': '#333',
-                            'padding': '5px',
-                            'border-radius': '4px',
-                            'background-color': '#f3f3f3',
-                            'display': 'inline-block',
-                            'box-shadow': '0px 2px 4px rgba(0, 0, 0, 0.1)'
+                            'margin': '2px 2px 0px 2px'
                         }
-                    )
-                ],
-                style={
-                    'display': 'flex',
-                    'align-items': 'center',
-                    'justify-content': 'space-between',
-                    'position': 'absolute',
-                    'left': '0',
-                    'right': '0',
-                    'bottom': '0',
-                    'margin': '10px',
-                    'background-color': 'white',
-                    'border': '1px solid #ccc',
-                    'padding': '10px',
-                    'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                    'border-radius': '5px',
-                    'z-index': '1000',
-                    'color': '#333'
-                }
-            ),
-            html.Div(id='dummy_output_1', style={'display': 'none'}),  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
-            html.Div(id='dummy_output_2', style={'display': 'none'})
-        ],
-        style={'display': 'flex', 'flex-wrap': 'wrap'}
-        )
+                        )
+                    ],
+                    style={
+                        'margin-left': '20px',
+                        'font-size': '14pt',
+                        'font-weight': 'bold',
+                        'text-align': 'left',
+                        'font-family': '"Courier New", monospace',
+                        'color': '#333',
+                        'padding': '5px',
+                        'border-radius': '4px',
+                        'background-color': '#f3f3f3',
+                        'display': 'inline-block',
+                        'box-shadow': '0px 2px 4px rgba(0, 0, 0, 0.1)'
+                    }
+                )
+            ],
+            style={
+                'display': 'flex',
+                'align-items': 'center',
+                'justify-content': 'space-between',
+                'position': 'absolute',
+                'left': '0',
+                'right': '0',
+                'bottom': '0',
+                'margin': '10px',
+                'background-color': 'white',
+                'border': '1px solid #ccc',
+                'padding': '10px',
+                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                'border-radius': '5px',
+                'z-index': '1000',
+                'color': '#333'
+            }
+        ),
+        html.Div(id='dummy_output_1', style={'display': 'none'}),  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
+        html.Div(id='dummy_output_2', style={'display': 'none'})
+    ]
+    
+    return layout_map
+
+def callbacks_map(app: Dash):
+    """
+    Links the dash app with the necessary callbacks.
+    Pass the Dash app as an argument.
+    """
 
     # a new layer was selected or deselected
     @app.callback(
@@ -509,5 +497,3 @@ def get_app():
 
         # return nothing
         return []
-
-    return app

@@ -1,5 +1,5 @@
 # Launches the map app
-from map.app import get_app
+from app.app import get_app
 from data.build import build
 
 import sys
