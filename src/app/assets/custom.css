@@ -1,6 +1,112 @@
 /* INSERT CUSTOM CSS RULES IN HERE */
 
+/* === Map Rules === */
 /* The Datepicker is hidden behind the map, this fixes it */
 .DayPicker {
     z-index: 9999 !important;
+}
+
+
+/* === Scenario Editor Rules === */
+.editor-container {
+    width: calc(100vw - 40px);
+    height: calc(100vh - 100px);
+    padding: 20px;
+}
+
+.editor-title {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block; /* Labels appear on their own line */
+    font-size: 1.1em;
+    margin-bottom: 2px;
+}
+
+/* Dropdown styling */
+#scenario_dropdown,
+#feature_set_dropdown{
+    width: calc(80% + 25px);
+    font-size: 1.1em;
+    margin-bottom: 10px;
+
+}
+
+#scenario_name_input,
+#scenario_description_input {
+    width: 80%;
+    padding: 10px;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+/* Button styling */
+.button-common {
+    align-items: center;
+    background-clip: padding-box;
+    background-color: #fa6400;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+    box-sizing: border-box;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 1.25;
+    margin: 0;
+    min-height: 3rem;
+    padding: calc(.875rem - 1px) calc(1.5rem - 1px);
+    position: relative;
+    text-decoration: none;
+    transition: all 250ms;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: baseline;
+    width: auto;
+}
+
+.button-common:hover {
+    transform: translateY(-1px);
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+}
+
+.button-common:active {
+    transform: translateY(0);
+    box-shadow: rgba(0, 0, 0, 0.3) 0 4px 12px;
+}
+
+.button-common:disabled {
+    background-color: #6c757d !important;
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.65;
+}
+
+#button_refresh_scenarios,
+#button_create_scenario,
+#button_delete_scenario,
+#button_refresh_feature_sets,
+#button_save_scenario {
+    margin-bottom: 10px;
+}
+
+/* Specific button colors */
+#button_refresh_scenarios,
+#button_refresh_feature_sets {
+    background-color: #17a2b8;
+}
+
+#button_create_scenario,
+#button_save_scenario {
+    background-color: #28a745;
+}
+
+#button_delete_scenario {
+    background-color: #dc3545;
 }

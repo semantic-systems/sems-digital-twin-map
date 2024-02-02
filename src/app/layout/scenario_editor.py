@@ -105,81 +105,71 @@ def get_layout_scenario_editor():
     dropdown_feature_sets = build_feature_set_dropdown()
 
     layout_scenario_editor = [
-        html.Div( # this div is just here to force 100% width and height
+        html.Div(
+            className='editor-container',
             children=[
-                html.H1('Scenario Editor'),
-                dcc.Dropdown(
-                    id='scenario_dropdown',
-                    options=dropdown_scenarios,
-                    value=None,
-                    placeholder='Select Scenario'
+                html.H1('Scenario Editor', className='editor-title'),
+                html.Label('Select a Scenario', className='form-label'),
+                html.Div(
+                    className='dropdown-container',
+                    children=[
+                        dcc.Dropdown(
+                            id='scenario_dropdown',
+                            options=dropdown_scenarios,
+                            value=None,
+                            placeholder='Scenarios',
+                            className='form-dropdown'
+                        ),
+                    ]
                 ),
-                dcc.Store(id='selected_scenario', data=None),   # we store the scenario data in here
-                html.Button(
-                    children='Refresh Scenarios',
-                    id='button_refresh_scenarios',
-                    style={
-                        'margin': '5px',
-                        'padding': '5px'
-                    }
+                dcc.Store(id='selected_scenario', data=None),
+                html.Div(
+                    className='button-group',
+                    children=[
+                        html.Button('Refresh Scenarios', id='button_refresh_scenarios', className='button-common'),
+                        html.Button('Create Scenario', id='button_create_scenario', className='button-common'),
+                        html.Button('Delete Scenario', id='button_delete_scenario', className='button-common'),
+                    ]
                 ),
-                html.Button(
-                    children='Create Scenario',
-                    id='button_create_scenario',
-                    style={
-                        'margin': '5px',
-                        'padding': '5px'
-                    }
+                html.Div(
+                    className='input-group',
+                    children=[
+                        html.Label('Scenario Name', className='form-label'),
+                        dcc.Input(id='scenario_name_input', type='text', value='', className='form-input')
+                    ]
                 ),
-                html.Button(
-                    children='Delete Scenario',
-                    id='button_delete_scenario',
-                    style={
-                        'margin': '5px',
-                        'padding': '5px'
-                    }
+                html.Div(
+                    className='input-group',
+                    children=[
+                        html.Label('Scenario Description', className='form-label'),
+                        dcc.Input(id='scenario_description_input', type='text', value='', className='form-input')
+                    ]
                 ),
-                dcc.Input(
-                    id='scenario_name_input',
-                    placeholder='Scenario Name',
-                    type='text',
-                    value=''
+                html.Div( # just some vertical spacing
+                    style={'height': '20px'}
                 ),
-                dcc.Input(
-                    id='scenario_description_input',
-                    placeholder='Scenario Description',
-                    type='text',
-                    value=''
+                html.Label('Assign FeatureSets to the Scenario', className='form-label'),
+                html.Div(
+                    className='dropdown-container',
+                    children=[
+                        dcc.Dropdown(
+                            id='feature_set_dropdown',
+                            options=dropdown_feature_sets,
+                            value=None,
+                            multi=True,
+                            placeholder='FeatureSets',
+                            className='form-dropdown'
+                        ),
+                    ]
                 ),
-                html.Br(),
-                dcc.Dropdown(
-                    id='feature_set_dropdown',
-                    options=dropdown_feature_sets,
-                    value=None,
-                    multi=True,
-                    placeholder='Assign FeatureSets'
-                ),
-                html.Button(
-                    children='Refresh FeatureSets',
-                    id='button_refresh_feature_sets',
-                    style={
-                        'margin': '5px',
-                        'padding': '5px'
-                    }
-                ),
-                html.Button(
-                    children='Save',
-                    id='button_save_scenario',
-                    style={
-                        'margin': '5px',
-                        'padding': '5px'
-                    }
+                html.Div(
+                    className='button-group',
+                    children=[
+                        html.Button('Refresh FeatureSets', id='button_refresh_feature_sets', className='button-common'),
+                        html.Button('Save', id='button_save_scenario', className='button-common'),
+                    ]
                 )
-            ],
-            style={
-                'width': '100vw',
-                'height': '100vh'
-            }
+            ]
         )
     ]
 
@@ -191,12 +181,12 @@ def callbacks_scenario_editor(app: Dash):
     Pass the Dash app as an argument.
     """
 
-    @app.long_callback(
+    @app.callback(
         [Output('feature_set_dropdown', 'options')],
         [Input('button_refresh_feature_sets', 'n_clicks')],
         running=[
             (Output("button_refresh_feature_sets", "disabled"), True, False),
-        ],
+        ]
     )
     def refresh_feature_sets(n_clicks):
         """
@@ -231,6 +221,11 @@ def callbacks_scenario_editor(app: Dash):
         ],
         [
             State('selected_scenario', 'data'),
+        ],
+        running=[
+            (Output("button_create_scenario", "disabled"), True, False),
+            (Output("button_delete_scenario", "disabled"), True, False),
+            (Output("button_refresh_scenarios", "disabled"), True, False),
         ],
         prevent_initial_call=True
     )
@@ -329,13 +324,15 @@ def callbacks_scenario_editor(app: Dash):
 
         return scenario_name, scenario_description, feature_set_ids, scenario_dropdown, next_scenario_id, next_scenario_id
 
-    @app.long_callback(
+    @app.callback(
         [Output('button_save_scenario', 'children')],
         [Input('button_save_scenario', 'n_clicks')],
         [State('scenario_dropdown', 'value'), State('scenario_name_input', 'value'), State('scenario_description_input', 'value'), State('feature_set_dropdown', 'value')],
         running=[
             (Output("button_save_scenario", "disabled"), True, False),
         ],
+        prevent_initial_call=True,
+        background=True
     )
     def save_scenario(n_clicks, scenario_id, name, description, feature_set_ids):
         """
@@ -356,6 +353,12 @@ def callbacks_scenario_editor(app: Dash):
 
         if scenario_id is None:
 
+            # discard empty scenarios
+            if name == '' and description == '':
+                session.close()
+                engine.dispose()
+                raise PreventUpdate
+
             # create a new scenario
             scenario = Scenario(
                 name=name,
@@ -374,6 +377,11 @@ def callbacks_scenario_editor(app: Dash):
                 
             # get the scenario
             scenario = session.query(Scenario).get(scenario_id)
+
+            if scenario is None:
+                session.close()
+                engine.dispose()
+                raise PreventUpdate
     
             # update the scenario
             scenario.name = name
