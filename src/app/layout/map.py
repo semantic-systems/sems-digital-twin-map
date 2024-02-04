@@ -68,10 +68,8 @@ def get_layout_map():
             zoom=12,
             center=(53.55, 9.99),
             style={
-                'width': '100vw', 
-                'height': '100vh',
-                'display': 'inline-block',
-                'position': 'relative',
+                'width': '100%', 
+                'height': '100%',
                 'z-index': '0'
             },
             id='map'

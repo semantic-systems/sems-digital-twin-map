@@ -106,8 +106,7 @@ def get_layout_scenario_editor():
 
     layout_scenario_editor = [
         html.Div(
-            className='editor-container',
-            children=[
+            children = [
                 html.H1('Scenario Editor', className='editor-title'),
                 html.Label('Select a Scenario', className='form-label'),
                 html.Div(
@@ -169,7 +168,8 @@ def get_layout_scenario_editor():
                         html.Button('Save', id='button_save_scenario', className='button-common'),
                     ]
                 )
-            ]
+            ],
+            style = {'padding': '20px'}
         )
     ]
 

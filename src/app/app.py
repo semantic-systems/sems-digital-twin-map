@@ -5,6 +5,7 @@ import diskcache
 # map layout imports
 from app.layout.map import get_layout_map, callbacks_map
 from app.layout.scenario_editor import get_layout_scenario_editor, callbacks_scenario_editor
+from app.layout.data_viewer import build_layout_data_viewer, callbacks_data_viewer
 
 def get_app():
 
@@ -34,13 +35,18 @@ def get_app():
                     # Tab 1: The Map
                     dcc.Tab(
                         label='Map',
-                        children = get_layout_map()
-                ),
+                        children = html.Div(get_layout_map(), className='fullscreen-container') # these outer divs are here to force the tabs to fill the screen
+                    ),
                     # Tab 2: The Scenario Editor
                     dcc.Tab(
                         label='Scenario Editor',
-                        children = get_layout_scenario_editor()
-                    )
+                        children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
+                    ),
+                    # Tab 3: The Data Viewer
+                    dcc.Tab(
+                        label='Data Viewer',
+                        children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
+                    ),
                 ]
             )
         ],
@@ -50,5 +56,7 @@ def get_app():
     # link the callbacks
     callbacks_map(app)
     callbacks_scenario_editor(app)
+    callbacks_data_viewer(app)
+
 
     return app
