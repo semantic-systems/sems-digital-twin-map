@@ -248,11 +248,15 @@ def callbacks_scenario_editor(app: Dash):
         if trigger_id == 'scenario_dropdown':
             # if no scenario was selected, do nothing
             if scenario_id is None:
+                session.close()
+                engine.dispose()
                 raise PreventUpdate
             
             # if the selected scenario is the same as the currently selected scenario, do nothing
             # this is done to prevent circular callbacks
             if scenario_id is selected_scenario:
+                session.close()
+                engine.dispose()
                 raise PreventUpdate
 
             # get the scenario
@@ -289,16 +293,24 @@ def callbacks_scenario_editor(app: Dash):
             scenario = session.query(Scenario).get(scenario_id)
 
             if scenario is None:
-                raise PreventUpdate
+                prevent_update = True
     
             # delete the scenario
             session.delete(scenario)
             session.commit()
+
+            # get the scenario right before the deleted one
+            scenario = session.query(Scenario).filter(Scenario.id < scenario_id).order_by(Scenario.id.desc()).first()
+
+            if scenario is None:
+                # it seems like the scenario was the first one
+                # instead, just select the first scenario
+                scenario = session.query(Scenario).first()
     
-            scenario_name = ''
-            scenario_description = ''
-            feature_set_ids = []
-            next_scenario_id = None
+            scenario_name = scenario.name
+            scenario_description = scenario.description
+            feature_set_ids = get_feature_sets_scenario(scenario.id)
+            next_scenario_id = scenario.id
 
         elif trigger_id == 'button_refresh_scenarios':
 
@@ -320,12 +332,13 @@ def callbacks_scenario_editor(app: Dash):
         session.close()
         engine.dispose()
 
+        # refresh the scenario dropdown
         scenario_dropdown = build_scenario_dropdown()
 
         return scenario_name, scenario_description, feature_set_ids, scenario_dropdown, next_scenario_id, next_scenario_id
 
     @app.callback(
-        [Output('button_save_scenario', 'children')],
+        [Output('scenario_dropdown', 'options', allow_duplicate=True)],
         [Input('button_save_scenario', 'n_clicks')],
         [State('scenario_dropdown', 'value'), State('scenario_name_input', 'value'), State('scenario_description_input', 'value'), State('feature_set_dropdown', 'value')],
         running=[
@@ -399,7 +412,7 @@ def callbacks_scenario_editor(app: Dash):
         session.close()
         engine.dispose()
 
-        raise PreventUpdate
+        # refresh the scenario dropdown
+        scenario_dropdown = build_scenario_dropdown()
 
-        # return nothing
-        return []
+        return [scenario_dropdown]
