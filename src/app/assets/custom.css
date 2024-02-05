@@ -112,18 +112,33 @@
 }
 
 /* === Data Viewer Rules === */
-/* I cant get it to take up the whole height of its container... 
-   Maybe someone else can get it to work */
+
+/* The outermost DataTable container */
 .dash-table-container {
     width: 100%;
     height: 100% !important;
-    overflow-x: auto;
+    color: #000 !important;
+    display: block;
+    margin: 0;
+}
+
+.dash-header,
+.dash-cell{
+    border-width: 1px !important;
+    border-color: #8f8f8f !important;
 }
 
 .dash-spreadsheet.dash-freeze-top, .dash-spreadsheet.dash-virtualized {
-    max-height: unset !important;
+    max-height: none !important;
+    height: 100% !important;
 }
 
+.cell-1-1{
+    height: 100% !important;
+}
+
+/* When using fixed_rows={'headers':True} in a DataTable,
+   theres a weird gap between the header and the table. This fixes it */
 table{
     margin-bottom: 0 !important;
 }

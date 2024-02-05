@@ -37,6 +37,8 @@ def main():
     # get the map app
     m = get_app()
 
+    m.title = "Hamburg Data Map"
+
     # run the app
     m.run(host='0.0.0.0')
 

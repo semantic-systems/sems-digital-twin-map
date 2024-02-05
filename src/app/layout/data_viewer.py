@@ -68,8 +68,16 @@ def build_layout_data_viewer():
                     id='datatable',
                     columns=columns,
                     data=data,
-                    virtualization=True,
-                    fixed_rows={'headers':True}
+                    fixed_rows={'headers':True},
+                    style_table={'overflow':'scroll','height':550},
+                    style_header={'backgroundColor':'#305D91','padding':'10px','color':'#FFFFFF'},
+                    style_cell={'textAlign':'center','minWidth': 95, 'maxWidth': 95, 'width': 95,'font_size': '12px','whiteSpace':'normal','height':'auto'},
+                    filter_action="native",     # allow filtering of data by user ('native') or not ('none')
+                    sort_action="native",       # enables data to be sorted per-column by user or not ('none')
+                    sort_mode="single",         # sort across 'multi' or 'single' columns
+                    selected_columns=[],        # ids of columns that user selects
+                    selected_rows=[],           # indices of rows that user selects
+                    page_action="native"
                 ),
             ],
             style = {'padding': '20px'}

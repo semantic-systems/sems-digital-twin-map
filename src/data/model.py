@@ -1,10 +1,19 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
 Base = declarative_base()
+
+# Association Table for many-to-many relationship between FeatureSets and Scenarios
+feature_set_scenario_association = Table(
+    'feature_set_scenario_association',
+    Base.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('feature_set_id', Integer, ForeignKey('feature_sets.id'), nullable=False),
+    Column('scenario_id', Integer, ForeignKey('scenarios.id'), nullable=False)
+)
 
 class Feature(Base):
     """
@@ -52,8 +61,7 @@ class FeatureSet(Base):
     collection_id = Column(Integer, ForeignKey('collections.id'), nullable=True)    # nullable, because the feature set might not be associated with a collection
     collection = relationship('Collection', back_populates='feature_sets')
 
-    scenario_id = Column(Integer, ForeignKey('scenarios.id'), nullable=True)    # nullable, because the feature set might not be associated with a scenario
-    scenario = relationship('Scenario', back_populates='feature_sets')
+    scenarios = relationship('Scenario', secondary=feature_set_scenario_association, back_populates='feature_sets') # many-to-many relationship to scenarios
 
 class Layer(Base):
     """
@@ -122,8 +130,8 @@ class Scenario(Base):
     name = Column(String, nullable=False)
     description = Column(String)
     
-    # Relationship to FeatureSets
-    feature_sets = relationship('FeatureSet', back_populates='scenario')
+    # Many-to-Many Relationship to FeatureSet
+    feature_sets = relationship('FeatureSet', secondary=feature_set_scenario_association, back_populates='scenarios')
 
 class Colormap(Base):
     """
