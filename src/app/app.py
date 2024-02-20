@@ -6,6 +6,7 @@ import diskcache
 from app.layout.map import get_layout_map, callbacks_map
 from app.layout.scenario_editor import get_layout_scenario_editor, callbacks_scenario_editor
 from app.layout.data_viewer import build_layout_data_viewer, callbacks_data_viewer
+from app.layout.nina_warnings import build_layout_nina_warnings, callbacks_nina_warnings
 
 def get_app():
 
@@ -42,7 +43,12 @@ def get_app():
                         label='Scenario Editor',
                         children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
                     ),
-                    # Tab 3: The Data Viewer
+                    # Tab 3: The NINA Warnings
+                    dcc.Tab(
+                        label='NINA Warnings',
+                        children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
+                    ),
+                    # Tab 4: The Data Viewer
                     dcc.Tab(
                         label='Data Viewer',
                         children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
@@ -57,6 +63,6 @@ def get_app():
     callbacks_map(app)
     callbacks_scenario_editor(app)
     callbacks_data_viewer(app)
-
+    callbacks_nina_warnings(app)
 
     return app

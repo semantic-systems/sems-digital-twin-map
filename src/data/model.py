@@ -186,3 +186,56 @@ class Style(Base):
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
     colormap = relationship('Colormap', back_populates='styles')
     feature_sets = relationship('FeatureSet', back_populates='style')
+
+class Alert(Base):
+    """
+    A single alert from the NINA API. Many values are nullable because the NINA API does not always provide them.
+    Table name: alerts
+    - `api_identifier` [String] Identifier of the alert in the NINA API
+    - `hash` [String] Unique hash of the alert
+    - `sender` [String] Sender of the alert
+    - `sent` [DateTime] Time the alert was sent
+    - `status` [String] Status of the alert
+    - `msg_type` [String] Type of the message
+    - `scope` [String] Scope of the alert
+    - `category` [String] Category of the alert
+    - `event` [String] Event of the alert
+    - `urgency` [String] Urgency of the alert
+    - `severiy` [String] Severity of the alert
+    - `certainty` [String] Certainty of the alert
+    - `sender_name` [String] Name of the sender
+    - `headline` [String] Headline of the alert
+    - `description` [String] Description of the alert
+    - `web` [String] Web link of the alert
+    - `contact` [String] Contact of the alert
+    - `area_description` [String] Description of the area
+    - `zgem` [String] zgem code of the area
+    """
+    __tablename__ = 'alerts'
+    id = Column(Integer, primary_key=True)
+    api_identifier = Column(String, nullable=False)
+    hash = Column(String, nullable=False)
+
+    sender = Column(String, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+    status = Column(String, nullable=True)
+    msg_type = Column(String, nullable=True)
+    scope = Column(String, nullable=True)
+
+    category = Column(String, nullable=True)
+    event = Column(String, nullable=True)
+    urgency = Column(String, nullable=True)
+    severity = Column(String, nullable=True)
+    certainty = Column(String, nullable=True)
+
+    sender_name = Column(String, nullable=True)
+    headline = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    web = Column(String, nullable=True)
+    contact = Column(String, nullable=True)
+
+    # geojson area
+    geometry = Column(Geometry(geometry_type='GEOMETRY'), nullable=True)
+    area_description = Column(String, nullable=True)
+
+    zgem = Column(String, nullable=True)        # zgem is some sort of area code, but i don't know what it stands for

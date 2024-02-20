@@ -98,6 +98,7 @@
 
 /* Specific button colors */
 #button_refresh_scenarios,
+#button-refresh-nina,
 #button_refresh_feature_sets {
     background-color: #17a2b8;
 }

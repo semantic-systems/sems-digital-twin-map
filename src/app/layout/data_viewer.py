@@ -8,7 +8,7 @@ import dash_leaflet as dl
 from sqlalchemy import inspect
 
 # internal imports
-from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario
+from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario, Alert
 from data.connect import autoconnect_db
 from app.convert import overlay_id_to_layer_group
 
@@ -21,7 +21,8 @@ tables = {
     'Layer': Layer,
     'Style': Style,
     'Colormap': Colormap,
-    'Scenario': Scenario
+    'Scenario': Scenario,
+    'Alert': Alert 
 }
 
 def format_table(table_name):

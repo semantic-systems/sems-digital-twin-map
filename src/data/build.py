@@ -10,7 +10,7 @@ from data.model import Base, Feature, FeatureSet, Dataset, Collection, Layer, St
 from data.connect import autoconnect_db
 
 # request imports
-from data.req import get_api_collections, get_items_endpoint, get_base_endpoint, request_items
+from data.req_hamburg import get_api_collections, get_items_endpoint, get_base_endpoint, request_items
 
 # the accepted json types for the item endpoints
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
