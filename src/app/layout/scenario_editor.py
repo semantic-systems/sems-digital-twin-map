@@ -231,8 +231,13 @@ def callbacks_scenario_editor(app: Dash):
     )
     def load_create_delete_scenario(scenario_id, n_clicks_create, n_clicks_delete, n_clicks_refresh, selected_scenario):
         """
-        This callback is triggered when a scenario is selected from the dropdown or created with the create scenario button.
-        It loads the scenario's name, description and feature sets into the corresponding inputs.
+        This callback is triggered when:
+        - a scenario is selected from the dropdown
+        - a scenario is created with the create scenario button
+        - a scenario is deleted with the delete scenario button
+        - the refresh scenarios button is clicked
+
+        This function sets the scenario name, description, feature set ids in the menu.
         """
 
         trigger_id = callback_context.triggered[0]['prop_id'].split('.')[0]
@@ -293,7 +298,9 @@ def callbacks_scenario_editor(app: Dash):
             scenario = session.query(Scenario).get(scenario_id)
 
             if scenario is None:
-                prevent_update = True
+                session.close()
+                engine.dispose()
+                raise PreventUpdate
     
             # delete the scenario
             session.delete(scenario)
@@ -306,11 +313,20 @@ def callbacks_scenario_editor(app: Dash):
                 # it seems like the scenario was the first one
                 # instead, just select the first scenario
                 scenario = session.query(Scenario).first()
-    
-            scenario_name = scenario.name
-            scenario_description = scenario.description
-            feature_set_ids = get_feature_sets_scenario(scenario.id)
-            next_scenario_id = scenario.id
+
+            if scenario is None:
+                # we tried to select the first scenario, but got None
+                # this means that there are no scenarios left
+                scenario_name = ''
+                scenario_description = ''
+                feature_set_ids = []
+                next_scenario_id = None
+            else:
+                # get the scenario's name and description
+                scenario_name = scenario.name
+                scenario_description = scenario.description
+                feature_set_ids = get_feature_sets_scenario(scenario.id)
+                next_scenario_id = scenario.id
 
         elif trigger_id == 'button_refresh_scenarios':
 
@@ -318,15 +334,23 @@ def callbacks_scenario_editor(app: Dash):
             scenario = session.query(Scenario).get(selected_scenario)
 
             if scenario is None:
-                # it seems like the scenario was deleted
-                # instead, just select the first scenario
+                # it seems like the selected scenario was just deleted
+                # instead, now select the first scenario
                 scenario = session.query(Scenario).first()	
             
-            # get the scenario's name and description
-            scenario_name = scenario.name
-            scenario_description = scenario.description
-            feature_set_ids = get_feature_sets_scenario(scenario.id)
-            next_scenario_id = scenario.id
+            if scenario is None:
+                # we tried to select the first scenario, but got None
+                # this means that there are no scenarios left
+                scenario_name = ''
+                scenario_description = ''
+                feature_set_ids = []
+                next_scenario_id = None
+            else:
+                # get the scenario's name and description
+                scenario_name = scenario.name
+                scenario_description = scenario.description
+                feature_set_ids = get_feature_sets_scenario(scenario.id)
+                next_scenario_id = scenario.id
         
         # close database connection
         session.close()
