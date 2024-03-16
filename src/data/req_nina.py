@@ -1,7 +1,6 @@
 # Handling API requests to api.hamburg.de
 
 import requests
-import json
 from datetime import datetime, timedelta
 from shapely.geometry import shape
 from geoalchemy2 import WKTElement
@@ -16,7 +15,7 @@ BASE_URL = 'https://warnung.bund.de/api31'
 # see here: https://www.penultima.de/ars/
 ARS = '020000000000'
 
-def save_alerts():
+def save_alerts(ars=ARS):
     """
     Save new all alerts from the nina api for the configured ARS to the database.
     """
@@ -28,7 +27,7 @@ def save_alerts():
     # save all alerts to the database
     engine, session = autoconnect_db()
 
-    # get all existing Alerts from the last 3 days
+    # get all existing Alerts from the last 30 days
     # to avoid duplicates
     alerts_existing = session.query(Alert).filter(Alert.timestamp > datetime.now() - timedelta(days=30)).all()
 

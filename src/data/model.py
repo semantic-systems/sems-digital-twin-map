@@ -19,6 +19,7 @@ class Feature(Base):
     """
     Table name: features
     - `properties` [JSON] Properties of the feature. You can control which properties are displayed in the popup by setting the `popup_properties` attribute of the style.
+    - `timestamp` [DateTime] (Optional) Timestamp of the feature
     - `geometry_type` [String] Type of the geometry
     - `geometry` [Geometry] Geometry of the feature. Possible values: ```{Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon}```
     - `feature_set_id` [Integer] ID of the FeatureSet the feature belongs to
@@ -44,6 +45,7 @@ class FeatureSet(Base):
     - `style` [Style] Style to be used for the feature set
     - `collection_id` [Integer] (Optional) ID of the Collection the feature set belongs to
     - `collection` [Collection] (Optional) The Collection the feature set belongs to
+    - `scenarios` [Scenario Array] List of scenarios the feature set belongs to
     """
     __tablename__ = 'feature_sets'
     id = Column(Integer, primary_key=True)
@@ -239,3 +241,19 @@ class Alert(Base):
     area_description = Column(String, nullable=True)
 
     zgem = Column(String, nullable=True)        # zgem is some sort of area code, but i don't know what it stands for
+
+# the following tables are defined in the database
+# UPDATE THIS IF YOU ADD NEW TABLES
+# this is used at startup to check if any tables are missing
+# if any are missing, the database is rebuilt
+TABLES = [
+    Feature,
+    FeatureSet,
+    Layer,
+    Dataset,
+    Collection,
+    Scenario,
+    Colormap,
+    Style,
+    Alert
+]

@@ -16,4 +16,4 @@ EXPOSE 8051
 ENV IN_DOCKER=true
 
 # Start the eventserver
-CMD python ./src/eventserver.py
+CMD python ./src/server_events.py

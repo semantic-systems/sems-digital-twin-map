@@ -67,12 +67,12 @@ def build_layout_nina_warnings():
         html.Div(
             children=[
                 html.H1('NINA Warnings', style={'margin-bottom': '20px'}),
-                html.Button('Refresh', id='button-refresh-nina', className='button-common', style={'margin-bottom': '20px'}, n_clicks=0),
+                html.Button('Refresh', id='button-refresh-nina', className='button-common', style={'margin-bottom': '20px', 'width': '100px'}, n_clicks=0),
                 dcc.Input(
                     id='input_nina',
                     type='text',
                     placeholder='Search...',
-                    style={'margin-left': '20px', 'padding': '14px', 'transform': 'translateY(-2px)', 'width': '90%'}
+                    style={'margin-left': '20px', 'padding': '14px', 'transform': 'translateY(-2px)', 'width': 'calc(100% - 100px - 20px - 32px)'}
                 ),
                 dash_table.DataTable(
                     id='datatable_nina',

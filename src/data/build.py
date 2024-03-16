@@ -1,12 +1,13 @@
 import json
 import requests
+from datetime import datetime, timezone
 from tqdm import tqdm
 
 # database imports
-from sqlalchemy import text, func
+from sqlalchemy import text, func, inspect
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from data.model import Base, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap
+from data.model import Base, TABLES, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap
 from data.connect import autoconnect_db
 
 # request imports
@@ -219,10 +220,18 @@ def feature_to_obj(geojson_feature: dict):
     # Get the properties of the feature
     properties = geojson_feature.get('properties', {})
 
+    # get and convert the timestamp from the properties
+    unix_timestamp = properties.get('timestamp', None)
+    if unix_timestamp is not None:
+        timestamp = datetime.fromtimestamp(unix_timestamp, tz=timezone.utc)
+    else:
+        timestamp = None
+
     # finally, create the feature
     feature = Feature(
         feature_set=None,   # None for now, must be set later manually
         properties=properties,
+        timestamp=timestamp,
         geometry_type=geometry_type,
         geometry=geometry_element
     )
@@ -231,24 +240,33 @@ def feature_to_obj(geojson_feature: dict):
 
 def create_event_entries(session):
     """
-    Creates a layer and style database entry for the Events and Predictions.
+    Creates custom layer and style database entries for the Events and Predictions.
     """
 
-    # get all layers and styles with the name 'Events'
-    db_layer = session.query(Layer).filter(Layer.name == 'Events').first()
-    db_style = session.query(Style).filter(Style.name == 'Events').first()
+    # get all layers and styles with the name 'Events' and 'Predictions'
+    db_layer_events = session.query(Layer).filter(Layer.name == 'Events').first()
+    db_style_events = session.query(Style).filter(Style.name == 'Events').first()
+    db_layer_predictions = session.query(Layer).filter(Layer.name == 'Predictions').first()
+    db_style_predictions = session.query(Style).filter(Style.name == 'Predictions').first()
 
-    # if the layer or style do not exist, create them
-    if db_layer is None:
+    # if any layers or styles do not exist, create them
+    if db_layer_events is None:
         db_layer = Layer(
             name='Events'
         )
         session.add(db_layer)
         session.commit()
     
-    if db_style is None:
-        # style events and predictions here
-        # TODO: create a json entry that holds these values
+    if db_layer_predictions is None:
+        db_layer = Layer(
+            name='Predictions'
+        )
+        session.add(db_layer)
+        session.commit()
+    
+    if db_style_events is None:
+        # default style for events
+        # TODO: cleaner to read these from a config json file
         db_style_events = Style(
             name             = 'Events',
             popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
@@ -268,6 +286,11 @@ def create_event_entries(session):
             fill_rule        = 'evenodd',
             colormap         = None
         )
+        session.add(db_style_events)
+        session.commit()
+    
+    if db_style_predictions is None:
+        # default style for predictions
         db_style_predictions = Style(
             name             = 'Predictions',
             popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
@@ -287,9 +310,51 @@ def create_event_entries(session):
             fill_rule        = 'evenodd',
             colormap         = None
         )
-        session.add(db_style_events)
         session.add(db_style_predictions)
         session.commit()
+    
+def build_if_uninitialized():
+    """
+    Check if the database is uninitialized.
+    If it is, run build().
+    """
+
+    # connect to the database
+    engine, session = autoconnect_db()
+
+    # check if the tables exist
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+
+    # check if all tables exist
+    # cross check with the TABLES list from model.py
+    missing_tables = []
+    for table in TABLES:
+        if table.__tablename__ not in existing_tables:
+            missing_tables.append(table.__tablename__)
+
+    # if any tables are missing, run build()
+    if len(missing_tables) > 0:
+
+        print(f"Database is missing tables {missing_tables}")
+        print("Running build()...")
+
+        build(verbose=True)
+
+        # close the database connection
+        session.close()
+        engine.dispose()
+
+        return True
+
+    # close the database connection
+    session.close()
+    engine.dispose()
+
+    # if we get this point, the database is initialized
+    print("Database is initialized")
+    return False
+
     
 # build the database and populate it with data
 # only needs to be run once

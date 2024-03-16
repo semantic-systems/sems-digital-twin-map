@@ -1,15 +1,14 @@
 # Launches the map app
 from app.app import get_app
-from data.build import build
-
+from data.build import build, build_if_uninitialized
 import sys
 
 def main():
     """
     Launches the map app. Launch parameters:
-    -rebuild: rebuilds the database
-    -verbose: prints status information when rebuilding the database
-    -help: prints this help message
+    `-rebuild`: rebuilds the database
+    `-verbose`: prints status information when used with `-rebuild`
+    `-help`: prints this help message
     """
 
     # launch parameter handling
@@ -33,6 +32,10 @@ def main():
                     -help: prints this help message
                     """)
             return
+
+    # inspect to see if the database has been built
+    # if not, build it
+    build_if_uninitialized()
 
     # get the map app
     m = get_app()

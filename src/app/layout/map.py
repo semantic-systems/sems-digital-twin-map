@@ -35,12 +35,6 @@ def build_layer_checkboxes():
 
     layer_checkboxes = [{'label': layer.name, 'value': layer.id} for layer in layers]
 
-    # remove the layer with the name 'Events' from the list
-    # this layer is handled separately
-    for layer in layer_checkboxes:
-        if layer['label'] == 'Events':
-            layer_checkboxes.remove(layer)
-
     # close database connection
     session.close()
     engine.dispose()
@@ -107,22 +101,7 @@ def get_layout_map():
                     id='overlay_checklist',
                     options=layer_checkboxes,
                     value=[]
-                ),
-                html.Hr(
-                    style={
-                        'margin': '5px 4px 5px 4px',
-                        'border': '0',
-                        'border-bottom': '1px solid #777'
-                    }
-                ),
-                dcc.Checklist(
-                    id='event_visibility_checklist',
-                    options=[
-                        {'label': 'Show Events', 'value': 'show_events'},
-                        {'label': 'Show Predictions', 'value': 'show_predictions'}
-                        ],
-                    value=[]
-                )                    
+                )               
             ],
             style={
                 'position': 'absolute',
