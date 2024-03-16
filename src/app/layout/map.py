@@ -1,7 +1,7 @@
 from datetime import date, timedelta, datetime
 from datetime import datetime
 
-from dash import Dash, html, dcc, Output, Input, State
+from dash import Dash, html, dcc, Output, Input, State, callback_context
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 
@@ -11,7 +11,7 @@ from sqlalchemy import inspect
 from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario
 from data.connect import autoconnect_db
 from data.build import build, refresh
-from app.convert import overlay_id_to_layer_group
+from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group
 
 def build_layer_checkboxes():
     """
@@ -41,14 +41,43 @@ def build_layer_checkboxes():
 
     return layer_checkboxes
 
+def build_scenario_checkboxes():
+    """
+    Build the scenario checkboxes for the scenario control.
+    Format: `[{'label': 'Scenario Display Name', 'value': 'Scenario ID'}]`
+    """
+
+    # get all available layers sets
+    engine, session = autoconnect_db()
+
+    # Check if the Layer table exists
+    inspector = inspect(engine)
+    if 'scenarios' not in inspector.get_table_names():
+        # Close database connection and return empty list if Layer does not exist
+        session.close()
+        engine.dispose()
+        print("Warning: Table 'scenarios' does not exist. No Layer checkboxes will be created. You can rebuild the database by running 'python main.py -rebuild'. See more information with 'python main.py -help'.")
+        return []
+
+    scenarios = session.query(Scenario).all()
+
+    scenario_checkboxes = [{'label': scenario.name, 'value': scenario.id} for scenario in scenarios]
+
+    # close database connection
+    session.close()
+    engine.dispose()
+
+    return scenario_checkboxes
+
 def get_layout_map():
     """
     Returns the layout for the map app. Callbacks need to be configured separately.
     This gets set as the child of a dcc.Tab in the main app.
     """
 
-    # build the layer checkboxes
+    # build the option checkboxes
     layer_checkboxes = build_layer_checkboxes()
+    scenario_checkboxes = build_scenario_checkboxes()
 
     layout_map = [
         dl.Map(
@@ -68,24 +97,31 @@ def get_layout_map():
             },
             id='map'
             ),
-        dcc.Store(id='active_overlays', data=[]),   # we store the active overlays in here
         html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
             [
                 html.Div(
                     children=[
                         html.Button(
-                            children="Full Rebuild",
+                            children="Rebuild",
                             id="button_rebuild",
                             style={
-                                "padding": "5px",
+                                "padding": "10px 20px 10px 20px",
                                 "margin": "5px"
                             }
                         ),
                         html.Button(
-                            children="Refresh Items",
+                            children="Refresh",
                             id="button_refresh_items",
                             style={
-                                "padding": "5px",
+                                "padding": "10px 20px 10px 20px",
+                                "margin": "5px"
+                            }
+                        ),
+                        html.Button(
+                            children="Update Menu",
+                            id="button_update_menu",
+                            style={
+                                "padding": "10px 20px 10px 20px",
                                 "margin": "5px"
                             }
                         )
@@ -97,11 +133,46 @@ def get_layout_map():
                         "align-items": "center"
                     }
                 ),
+                dcc.Tabs(
+                    id='map-tabs',
+                    children=[
+                    dcc.Tab(
+                        label='Layers',
+                        children=[
+                            dcc.Checklist(
+                                id='overlay_checklist',
+                                options=layer_checkboxes,
+                                value=[]
+                            )
+                        ]
+                    ),
+                    dcc.Tab(
+                        label='Scenarios',
+                        children=[
+                            dcc.Checklist(
+                                id='scenario_checklist',
+                                options=scenario_checkboxes,
+                                value=[]
+                            )
+                        ]
+                    )
+                ]),
+                html.Hr(
+                    style={
+                        'margin': '5px 4px 5px 4px',
+                        'border': '0',
+                        'border-bottom': '1px solid #777'
+                    }
+                ),
                 dcc.Checklist(
-                    id='overlay_checklist',
-                    options=layer_checkboxes,
+                    id='options_checklist',
+                    options=[
+                        {'label': 'Hide Features with Timestamp', 'value': 'hide_with_timestamp'},
+                        {'label': 'Hide Features without Timestamp', 'value': 'hide_without_timestamp'},
+                        {'label': 'Filter by Timestamp', 'value': 'filter_by_timestamp'}
+                        ],
                     value=[]
-                )               
+                )                    
             ],
             style={
                 'position': 'absolute',
@@ -121,7 +192,6 @@ def get_layout_map():
                 'color': '#333'
             }
         ),
-        dcc.Store(id='event_range', data=[]),   # we store the event range in here
         html.Div(
             children=[
                 # DatePickerRange component
@@ -213,8 +283,9 @@ def get_layout_map():
                 'color': '#333'
             }
         ),
-        html.Div(id='dummy_output_1', style={'display': 'none'}),  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
-        html.Div(id='dummy_output_2', style={'display': 'none'})
+        dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
+        dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
+        html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ]
     
     return layout_map
@@ -225,20 +296,32 @@ def callbacks_map(app: Dash):
     Pass the Dash app as an argument.
     """
 
-    # a new layer was selected or deselected
+    # this super function is a long callback that updates the map children and the active_overlays_data
+    # meaning, we create/modify/delete markers and polygons on the map
     @app.callback(
-        [Output('map', 'children'), Output('active_overlays', 'data')],
-        [Input('overlay_checklist', 'value')],
-        [State('map', 'children'), State('active_overlays', 'data')]
+        [
+            Output('map', 'children')
+        ],
+        [
+            Input('overlay_checklist', 'value'),        # triggered when a layer is selected or deselected
+            Input('scenario_checklist', 'value'),       # triggered when a scenario is selected or deselected
+            Input('options_checklist', 'value'),        # triggered when the options checklist changes
+            Input('event_range_selected', 'data'),      # triggered when a different event range is selected
+            Input('map-tabs', 'value')                  # triggered when the tab value changes
+        ],
+        [
+            State('map', 'children'),
+        ]
     )
-    def update_map(selected_overlays, map_children, active_overlays_data):
+    def update_map(overlay_checklist_value, scenario_checklist_value, options_checklist_value, event_range_selected_data, map_tabs_value, map_children):
         """
         This callback is triggered when the overlay_checklist changes.
         It updates the map children and the active_overlays_data.
         """
 
         # first, divide the map children into layer groups and non-layer groups
-        # we only want to manipulate the layer groups (map_children_layergroup)
+        # we keep the non-layer groups and delete the layer groups
+        # afterwards, we create new layer groups and add them to the map children
         map_children_no_layergroup = []
         map_children_layergroup = []
 
@@ -248,57 +331,51 @@ def callbacks_map(app: Dash):
 
             # check if the child is a layer group
             # layer groups have an id that starts with 'layergroup'
-            if id.startswith('layergroup'):
+            if id.startswith('layer') or id.startswith('scenario'):
                 map_children_layergroup.append(child)
             else:
                 map_children_no_layergroup.append(child)
         
-        # compare selected_overlays with active_overlays_data
-        # find out if an overlay was selected or deselected
-        # if an overlay was selected, add it to the map
-        # if an overlay was deselected, remove it from the map
-        if selected_overlays != active_overlays_data:
+        # delete all current layer groups (meaning, delete all existing markers and polygons)
+        # TODO: this can be done more efficiently by only changing the layer groups, not rebuilding them from scratch
+        # but i will warn you, it will cost you a lot of time and nerves (as it has me already)
+        map_children_layergroup = []
 
-            # get the overlay that was selected or deselected
-            changed_overlay = list(set(selected_overlays) ^ set(active_overlays_data))[0]
+        # the selected options
+        hide_with_timestamp: bool = 'hide_with_timestamp' in options_checklist_value
+        hide_without_timestamp: bool = 'hide_without_timestamp' in options_checklist_value
+        filter_by_timestamp: bool = 'filter_by_timestamp' in options_checklist_value
 
-            # check if the overlay was selected or deselected
-            if changed_overlay in selected_overlays:
-                # overlay was selected
-                # add it to the map
-
-                # get the layer group
-                layer_group = overlay_id_to_layer_group(changed_overlay)
+        # we are in the Layers tab
+        if map_tabs_value == 'tab-1':
+            for overlay in overlay_checklist_value:
+                if filter_by_timestamp:
+                    # get the layer group with the event range data
+                    layer_group = layer_id_to_layer_group(overlay, event_range_selected_data, hide_with_timestamp, hide_without_timestamp)
+                else:
+                    # get the layer group with the event range data
+                    layer_group = layer_id_to_layer_group(overlay, None, hide_with_timestamp, hide_without_timestamp)
 
                 # add the layer group to the map
                 map_children_layergroup.append(layer_group)
+        
+        elif map_tabs_value == 'tab-2':
+            for scenario in scenario_checklist_value:
+                if filter_by_timestamp:
+                    # get the layer group with the event range data
+                    layer_group = scenario_id_to_layer_group(scenario, event_range_selected_data, hide_with_timestamp, hide_without_timestamp)
+                else:
+                    # get the layer group with the event range data
+                    layer_group = scenario_id_to_layer_group(scenario, None, hide_with_timestamp, hide_without_timestamp)
 
-            else:
-                # overlay was deselected
-                # remove it from the map
-
-                # get the layer group id
-                layer_group_id = f'layergroup-{changed_overlay}'
-
-                # search for the layer group in the map children
-                for child in map_children_layergroup:
-
-                    # if the layer group was found, remove it from the map children
-                    if child['props']['id'] == layer_group_id:
-                        map_children_layergroup.remove(child)
+                # add the layer group to the map
+                map_children_layergroup.append(layer_group)
+        
         else:
-            # no overlays were selected or deselected, do nothing
-            # (this should never happen)
+            # unknown tab selected, do nothing
             raise PreventUpdate
 
-        # update the active_overlays_data
-        active_overlays_data = selected_overlays
-
-        # combine the map children again
-        new_map_children = map_children_no_layergroup + map_children_layergroup
-
-        # return the updated map children and active_overlays_data
-        return new_map_children, active_overlays_data
+        return [map_children_no_layergroup + map_children_layergroup]
 
     # if a new event range was selected, update the event_range marks
     @app.callback(
@@ -306,7 +383,7 @@ def callbacks_map(app: Dash):
         Output('slider_events', 'min'),
         Output('slider_events', 'max'),
         Output('slider_events', 'value'),
-        Output('event_range', 'data')], # Adding output for dcc.Store component
+        Output('event_range_full', 'data')], # Adding output for dcc.Store component
         [Input('event_range_picker', 'start_date'),
         Input('event_range_picker', 'end_date')],
     )
@@ -345,41 +422,44 @@ def callbacks_map(app: Dash):
         slider_value = [min_value, max_value]
 
         # Update the dcc.Store with the new date range
-        event_range_data = {'start_date': start_date_str, 'end_date': end_date_str}
+        event_range_full_data = {'start': start_date_str, 'end': end_date_str}
 
-        return slider_marks, min_value, max_value, slider_value, event_range_data
+        return slider_marks, min_value, max_value, slider_value, event_range_full_data
 
     @app.callback(
-        [Output('event_range_text', 'children')],
+        [Output('event_range_text', 'children'), Output('event_range_selected', 'data', allow_duplicate=True)],
         [Input('slider_events', 'value')],
-        [State('event_range', 'data')]
+        [State('event_range_full', 'data')],
+        prevent_initial_call=True
     )
-    def print_slider_value(value, event_range_data):
+    def display_slider_value(value, event_range_full_data):
         """
         This callback is triggered when the slider value changes.
-        It prints the current slider value to the console.
+        It changes the event range text and updates the selected event range data.
         """
 
         # If no event range data is available, raise PreventUpdate to stop the callback from firing
-        if event_range_data is None:
-            print("No event range data found. Stopping event range update.")
+        if event_range_full_data is None:
+            print("No event range data found. Stopping selected event range update.")
             raise PreventUpdate
         
-        if type(event_range_data) == list:
-            print("No event range data found. Stopping event range update.")
+        if type(event_range_full_data) == list:
+            print("No event range data found. Stopping selected event range update.")
             raise PreventUpdate
         
         if value is None:
-            print("No slider value available. Stopping event range update.")
+            print("No slider value available. Stopping selected event range update.")
             raise PreventUpdate
             
         # Convert string dates to datetime objects
-        start_datetime = datetime.fromisoformat(event_range_data['start_date'])
-        end_datetime = datetime.fromisoformat(event_range_data['end_date'])
+        start_datetime = datetime.fromisoformat(event_range_full_data['start'])
+        end_datetime = datetime.fromisoformat(event_range_full_data['end'])
 
         # Calculate the new start and end times based on the slider values
         new_start_datetime = start_datetime + timedelta(days=value[0])
         new_end_datetime = start_datetime + timedelta(days=value[1])
+
+        event_range_selected_data = {'start': new_start_datetime, 'end': new_end_datetime}
 
         # Update the event range text
         event_range_text = [
@@ -408,10 +488,9 @@ def callbacks_map(app: Dash):
                     'margin': '4px 2px 0px 2px'
                 }
             )
-            
-        ],
+        ]
 
-        return event_range_text
+        return event_range_text, event_range_selected_data
 
     # call function reload on button press
     # updates the layer checkboxes
@@ -474,3 +553,31 @@ def callbacks_map(app: Dash):
 
         # return nothing
         return []
+    
+    # call function to update the menu
+    # updates the values of the layer and scenario checkboxes
+    @app.callback(
+        [Output('overlay_checklist', 'options', allow_duplicate=True), Output('scenario_checklist', 'options')],
+        [Input('button_update_menu', 'n_clicks')],
+        running=[
+            (Output("button_rebuild", "disabled"), True, False),
+            (Output("button_refresh_items", "disabled"), True, False),
+        ],
+        prevent_initial_call=True
+    )
+    def update_menu(n_clicks):
+        """
+        This callback is triggered when the update menu button is clicked.
+        It updates the values of the layer and scenario checkboxes.
+        """
+
+        # if the update menu button was not clicked, do nothing
+        if n_clicks is None:
+            raise PreventUpdate
+
+        # update the layer and scenario checkboxes
+        layer_checkboxes = build_layer_checkboxes()
+        scenario_checkboxes = build_scenario_checkboxes()
+
+        # return the updated layer and scenario checkboxes
+        return [layer_checkboxes, scenario_checkboxes]

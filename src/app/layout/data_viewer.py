@@ -10,7 +10,7 @@ from sqlalchemy import inspect
 # internal imports
 from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario, Alert
 from data.connect import autoconnect_db
-from app.convert import overlay_id_to_layer_group
+from app.convert import layer_id_to_layer_group
 
 # tables to display in the data viewer
 tables = {

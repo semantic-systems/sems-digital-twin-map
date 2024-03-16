@@ -12,6 +12,10 @@
     z-index: 9999 !important;
 }
 
+/* Make the tabs of the layer/scenario picker smaller */
+#map-tabs .tab {
+    padding: 10px 10px !important;
+}
 
 /* === Scenario Editor Rules === */
 .editor-title {
