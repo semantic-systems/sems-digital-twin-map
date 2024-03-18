@@ -1,6 +1,8 @@
 # sems-digital-twin-map
 An interactive map to visualize datasets from the [Urban Data Hub](https://api.hamburg.de/datasets/v1/).
 
+![Screenshot of Map](/examples/screenshot_map.png)
+
 ## Usage
 
 First, configure the `.env.example` file in the base directory and rename it to `.env`.

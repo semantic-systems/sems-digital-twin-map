@@ -159,8 +159,18 @@ def refresh(session, verbose=False):
     This overwrites existing database entries for Feature only.
     """
 
-    # drop all existing features
-    session.query(Feature).delete()
+    # iterate through all Features, and delete those whose FeatureSet has a Collection
+    # those are the Features that are accessible via API and get requested again
+    # if we would not delete them, we would have duplicates
+    features = session.query(Feature).all()
+
+    for feature in features:
+
+        # if the collection is not None, the FeatureSet is accessible via API
+        if feature.feature_set.collection is not None:
+            
+            # this Feature will be requested again, so delete it
+            session.delete(feature)
 
     # get all datasets
     feature_sets = session.query(FeatureSet).all()
