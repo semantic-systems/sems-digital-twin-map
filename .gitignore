@@ -6,3 +6,6 @@ __pycache__/
 
 # ignore the cache folder
 cache/
+
+# ignore the .env file
+.env

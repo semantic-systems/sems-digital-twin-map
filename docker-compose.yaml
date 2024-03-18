@@ -29,7 +29,7 @@ services:
   postgis:
     image: postgis/postgis
     environment:
-      POSTGRES_PASSWORD: rescuemate
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -38,8 +38,8 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: rescue@mate.com
-      PGADMIN_DEFAULT_PASSWORD: rescuemate
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "8080:80"
     volumes:

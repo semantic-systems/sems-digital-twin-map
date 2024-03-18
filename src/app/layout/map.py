@@ -101,17 +101,19 @@ def get_layout_map():
             [
                 html.Div(
                     children=[
-                        html.Button(
-                            children="Rebuild",
-                            id="button_rebuild",
-                            style={
-                                "padding": "10px 20px 10px 20px",
-                                "margin": "5px"
-                            }
-                        ),
+                        # Hide the Rebuild button from the user
+                        # html.Button(
+                        #     children="Rebuild",
+                        #     id="button_rebuild",
+                        #     style={
+                        #         "padding": "10px 20px 10px 20px",
+                        #         "margin": "5px"
+                        #     }
+                        # ),
                         html.Button(
                             children="Refresh",
                             id="button_refresh_items",
+                            className='button-common',
                             style={
                                 "padding": "10px 20px 10px 20px",
                                 "margin": "5px"
@@ -120,6 +122,7 @@ def get_layout_map():
                         html.Button(
                             children="Update Menu",
                             id="button_update_menu",
+                            className='button-common',
                             style={
                                 "padding": "10px 20px 10px 20px",
                                 "margin": "5px"
@@ -296,7 +299,7 @@ def callbacks_map(app: Dash):
     Pass the Dash app as an argument.
     """
 
-    # this super function is a long callback that updates the map children and the active_overlays_data
+    # this big function is a callback that updates the map children
     # meaning, we create/modify/delete markers and polygons on the map
     @app.callback(
         [
@@ -320,7 +323,7 @@ def callbacks_map(app: Dash):
         """
 
         # first, divide the map children into layer groups and non-layer groups
-        # we keep the non-layer groups and delete the layer groups
+        # we keep the non-layer groups (i.e. the tilemap) and delete the layer groups (markers and polygons)
         # afterwards, we create new layer groups and add them to the map children
         map_children_no_layergroup = []
         map_children_layergroup = []
@@ -330,7 +333,7 @@ def callbacks_map(app: Dash):
             id = child['props']['id']
 
             # check if the child is a layer group
-            # layer groups have an id that starts with 'layergroup'
+            # layer groups have an id that starts with 'layer' or 'scenario'
             if id.startswith('layer') or id.startswith('scenario'):
                 map_children_layergroup.append(child)
             else:
@@ -353,19 +356,20 @@ def callbacks_map(app: Dash):
                     # get the layer group with the event range data
                     layer_group = layer_id_to_layer_group(overlay, event_range_selected_data, hide_with_timestamp, hide_without_timestamp)
                 else:
-                    # get the layer group with the event range data
+                    # get the layer group without the event range data
                     layer_group = layer_id_to_layer_group(overlay, None, hide_with_timestamp, hide_without_timestamp)
 
                 # add the layer group to the map
                 map_children_layergroup.append(layer_group)
         
+        # we are in the Scenarios tab
         elif map_tabs_value == 'tab-2':
             for scenario in scenario_checklist_value:
                 if filter_by_timestamp:
                     # get the layer group with the event range data
                     layer_group = scenario_id_to_layer_group(scenario, event_range_selected_data, hide_with_timestamp, hide_without_timestamp)
                 else:
-                    # get the layer group with the event range data
+                    # get the layer group without the event range data
                     layer_group = scenario_id_to_layer_group(scenario, None, hide_with_timestamp, hide_without_timestamp)
 
                 # add the layer group to the map
@@ -379,13 +383,17 @@ def callbacks_map(app: Dash):
 
     # if a new event range was selected, update the event_range marks
     @app.callback(
-        [Output('slider_events', 'marks'),
-        Output('slider_events', 'min'),
-        Output('slider_events', 'max'),
-        Output('slider_events', 'value'),
-        Output('event_range_full', 'data')], # Adding output for dcc.Store component
-        [Input('event_range_picker', 'start_date'),
-        Input('event_range_picker', 'end_date')],
+        [
+            Output('slider_events', 'marks'),
+            Output('slider_events', 'min'),
+            Output('slider_events', 'max'),
+            Output('slider_events', 'value'),
+            Output('event_range_full', 'data')
+        ],
+        [
+            Input('event_range_picker', 'start_date'),
+            Input('event_range_picker', 'end_date')
+        ],
     )
     def update_slider_marks(start_date_str, end_date_str):
         """
@@ -492,41 +500,15 @@ def callbacks_map(app: Dash):
 
         return event_range_text, event_range_selected_data
 
-    # call function reload on button press
-    # updates the layer checkboxes
-    @app.long_callback(
-        [Output('overlay_checklist', 'options'),],
-        [Input('button_rebuild', 'n_clicks')],
-        running=[
-            (Output("button_rebuild", "disabled"), True, False),
-            (Output("button_refresh_items", "disabled"), True, False),
-        ],
-    )
-    def rebuild_database(n_clicks):
-        """
-        This callback is triggered when the reload button is clicked.
-        It calls the build() function from src/data/build.py to update the database.
-        """
-
-        # if the reload button was not clicked, do nothing
-        if n_clicks is None:
-            raise PreventUpdate
-
-        # call the build function
-        build()
-
-        # update the layer checkboxes
-        layer_checkboxes = build_layer_checkboxes()
-
-        # return the updated layer checkboxes
-        return [layer_checkboxes]
-
     # call api to refresh the database
     @app.long_callback(
-        [Output('dummy_output_2', 'children')],
-        [Input('button_refresh_items', 'n_clicks')],
+        [
+            Output('dummy_output_1', 'children')
+        ],
+        [
+            Input('button_refresh_items', 'n_clicks')
+        ],
         running=[
-            (Output("button_rebuild", "disabled"), True, False),
             (Output("button_refresh_items", "disabled"), True, False),
         ],
     )
@@ -559,10 +541,6 @@ def callbacks_map(app: Dash):
     @app.callback(
         [Output('overlay_checklist', 'options', allow_duplicate=True), Output('scenario_checklist', 'options')],
         [Input('button_update_menu', 'n_clicks')],
-        running=[
-            (Output("button_rebuild", "disabled"), True, False),
-            (Output("button_refresh_items", "disabled"), True, False),
-        ],
         prevent_initial_call=True
     )
     def update_menu(n_clicks):

@@ -6,3 +6,4 @@ dash-leaflet==1.0.11
 shapely==2.0.2
 geoalchemy2==0.14.2
 psycopg2-binary==2.9.9
+python-dotenv==1.0.1

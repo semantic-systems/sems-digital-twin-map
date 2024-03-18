@@ -1,8 +1,11 @@
 # sems-digital-twin-map
-An interactive map to display responses from queries from the digital twin. Runs on Python and dash-leaflet.
+An interactive map to visualize datasets from the [Urban Data Hub](https://api.hamburg.de/datasets/v1/).
 
 ## Usage
-Run `docker compose up -d --build` in the project directory.
+
+First, configure the `.env.example` file in the base directory and rename it to `.env`.
+
+Then, run `docker compose up -d --build` in the project directory.
 
 This will launch a simple dash Flask server accessible under [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 
@@ -41,4 +44,4 @@ Example:
 - `collections.<collection_id>.name`: Display name of the collection, gets used in popups
 - `collections.<collection_id>.layer`: The layer the collection gets assigned to
 - `collections.<collection_id>.popup_properties`: Display names and fields to be used in popups.
-- `collections.<collection_id>.style`: Controls how the collections features get styled. See [dash-leaflet documentation](https://leafletjs.com/reference.html#path) or `database.py` for more information.
+- `collections.<collection_id>.style`: Controls how the collections features get styled. See [dash-leaflet documentation](https://leafletjs.com/reference.html#path) or the `Style` class in `src/data/model.py` for more information.

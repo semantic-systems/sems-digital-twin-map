@@ -101,6 +101,8 @@
 }
 
 /* Specific button colors */
+#button_refresh_items,
+#button_update_menu,
 #button_refresh_scenarios,
 #button-refresh-nina,
 #button_refresh_feature_sets {

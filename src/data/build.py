@@ -315,8 +315,8 @@ def create_event_entries(session):
     
 def build_if_uninitialized():
     """
-    Check if the database is uninitialized.
-    If it is, run build().
+    Check if the database is uninitialized and if it is, run `build()`.
+    Returns True if the database is uninitialized.
     """
 
     # connect to the database
@@ -332,6 +332,10 @@ def build_if_uninitialized():
     for table in TABLES:
         if table.__tablename__ not in existing_tables:
             missing_tables.append(table.__tablename__)
+    
+    # close the database connection
+    session.close()
+    engine.dispose()
 
     # if any tables are missing, run build()
     if len(missing_tables) > 0:
@@ -341,15 +345,7 @@ def build_if_uninitialized():
 
         build(verbose=True)
 
-        # close the database connection
-        session.close()
-        engine.dispose()
-
         return True
-
-    # close the database connection
-    session.close()
-    engine.dispose()
 
     # if we get this point, the database is initialized
     print("Database is initialized")
