@@ -318,8 +318,14 @@ def callbacks_map(app: Dash):
     )
     def update_map(overlay_checklist_value, scenario_checklist_value, options_checklist_value, event_range_selected_data, map_tabs_value, map_children):
         """
-        This callback is triggered when the overlay_checklist changes.
-        It updates the map children and the active_overlays_data.
+        This callback is triggered on the following events:
+        - A layer is selected or deselected in the overlay_checklist
+        - A scenario is selected or deselected in the scenario_checklist
+        - The options checklist changes
+        - A different event range is selected
+        - The tab value changes
+
+        It updates the map children, meaning it deletes all existing marker/polygon objects and creates new ones from the Features in the database.
         """
 
         # first, divide the map children into layer groups and non-layer groups
@@ -339,9 +345,11 @@ def callbacks_map(app: Dash):
             else:
                 map_children_no_layergroup.append(child)
         
-        # delete all current layer groups (meaning, delete all existing markers and polygons)
-        # TODO: this can be done more efficiently by only changing the layer groups, not rebuilding them from scratch
+        # TODO: modifying the layer groups can be done more efficiently by only adding/removing the layer groups affected by the change, not rebuilding them from scratch
         # but i will warn you, it will cost you a lot of time and nerves (as it has me already)
+        # here, we take the easy way and just delete all layer groups and create new ones
+        
+        # delete all current layer groups (meaning, delete all existing markers and polygons)
         map_children_layergroup = []
 
         # the selected options

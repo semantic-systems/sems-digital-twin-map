@@ -25,10 +25,11 @@ def autoconnect_db(echo=False):
     port = getenv('DB_PORT', None)
     user = getenv('DB_USER', None)
     password = getenv('DB_PASSWORD', None)
+    db_name = getenv('DB_NAME', None)
 
     # If any of the environment variables are not set, raise an error
-    if port is None or user is None or password is None:
-        raise ValueError("One or more of the required environment variables DB_PORT, DB_USER, or DB_PASSWORD are not set. See .env.example for more information.")
+    if port is None or user is None or password is None or db_name is None:
+        raise ValueError("One or more of the required environment variables are not set. See .env.example for more information.")
 
     # Determine the hostname
     host = "postgis" if in_docker else "localhost"
@@ -36,11 +37,11 @@ def autoconnect_db(echo=False):
         print(f"env IN_DOCKER={in_docker}: hostname={host}")
 
     # connect to the database
-    (engine, session) = connect_db(host=host, port=int(port), user=user, password=password, echo=echo)
+    (engine, session) = connect_db(host=host, port=int(port), user=user, password=password, echo=echo, db_name=db_name)
     
     return (engine, session)
 
-def connect_db(host: str, port: int, user: str, password: str, echo=False):
+def connect_db(host: str, port: int, user: str, password: str, db_name: str, echo=False):
     """
     Connect to the database. This function builds the database connection string and returns an engine and a session.
 
@@ -48,7 +49,7 @@ def connect_db(host: str, port: int, user: str, password: str, echo=False):
     - `engine` [Engine] SQLAlchemy engine
     - `session` [Session] SQLAlchemy session
     """
-    db_string = f"postgresql://{user}:{password}@{host}:{port}/postgres"
+    db_string = f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
     engine = create_engine(db_string, echo=echo)
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
