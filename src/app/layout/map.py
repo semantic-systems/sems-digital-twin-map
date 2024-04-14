@@ -1,7 +1,8 @@
 from datetime import date, timedelta, datetime
 from datetime import datetime
+import json
 
-from dash import Dash, html, dcc, Output, Input, State, callback_context
+from dash import Dash, html, dcc, Output, Input, State, callback_context, MATCH, ALL
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 
@@ -11,7 +12,7 @@ from sqlalchemy import inspect
 from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario
 from data.connect import autoconnect_db
 from data.build import build, refresh
-from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group
+from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 
 def build_layer_checkboxes():
     """
@@ -68,6 +69,83 @@ def build_scenario_checkboxes():
     engine.dispose()
 
     return scenario_checkboxes
+
+def highlight_events_predictions(hash, map_children):
+    """
+    Highlights all events and predictions with the same hash.
+    """
+
+    ctx = callback_context
+
+    if not ctx.triggered:
+        print("No trigger")
+        raise PreventUpdate
+
+    # connect to the db
+    engine, session = autoconnect_db()
+
+    # get the styles for later
+    # this first gets the styles from the database, then converts them to dictionaries that can be used in the map children
+    style_event_default = style_to_dict(session.query(Style).filter(Style.name == 'Events').first())
+    style_event_highlight = style_to_dict(session.query(Style).filter(Style.name == 'Events Selected').first())
+    style_prediction_default = style_to_dict(session.query(Style).filter(Style.name == 'Predictions').first())
+    style_prediction_highlight = style_to_dict(session.query(Style).filter(Style.name == 'Predictions Selected').first())
+
+    session.close()
+    engine.dispose()
+
+
+    # iterate over all children, change the following:
+    # - if the child is a Event or Prediction with a different hash, change the color to the default color
+    # - if the child is a Event or Prediction with the same hash, change the color to the highlight color
+    # - else do nothing
+
+    for child in map_children:
+
+        id = child['props']['id']
+
+        # check if the child is a layer group
+        # layer groups have an id that starts with 'layer' or 'scenario'
+        if id.startswith('layer'):
+
+            features = child['props']['children']
+
+            for feature in features:
+
+                feature_id_dict = feature['props']['id']
+
+                if type(feature_id_dict) == str:
+                    # skip features which id is just a string
+                    continue
+
+                # split something like this: {'type': 'geojson', 'id': 'events-4365'}
+                # into feature_type = 'events' and feature_id = '4365'
+                feature_type, feature_id = feature_id_dict['id'].split('-')
+
+                if feature_type in ['events', 'predictions']:
+
+                    feature_properties = feature['props']['data']['properties']
+
+                    if 'hash' in feature_properties:
+
+                        if feature_properties['hash'] == hash:
+
+                            # same hash, highlight styling
+                            if feature_type == 'events':
+                                feature['props']['style'] = style_event_highlight
+                            else:
+                                feature['props']['style'] = style_prediction_highlight
+
+                        else:
+                            # different hash, default styling
+                            if feature_type == 'events':
+                                feature['props']['style'] = style_event_default
+                            else:
+                                feature['props']['style'] = style_prediction_default
+    
+    return map_children
+
+
 
 def get_layout_map():
     """
@@ -567,3 +645,69 @@ def callbacks_map(app: Dash):
 
         # return the updated layer and scenario checkboxes
         return [layer_checkboxes, scenario_checkboxes]
+    
+    # on click on a event or prediction geojson feature
+    # change the color of all other features with the same hash
+    @app.callback(
+        Output('map', 'children', allow_duplicate=True),
+        [
+            Input({'type': 'geojson', 'id': ALL}, 'n_clicks'),
+            Input({'type': 'geojson', 'id': ALL}, 'clickData')
+        ],  
+        [
+            State('map', 'children')
+        ],
+        prevent_initial_call=True
+    )
+    def highlight_prediction(n_clicks, click_data, map_children):
+        """
+        This callback is triggered when a feature is clicked.
+        It changes the color of all other features with the same hash.
+        Basically just a wrapper around highlight_events_predictions.
+        """
+
+        # because all features fire when they are created, we need to check if a click was actually made
+        # we get back an array of clicks for every feature that is able to trigger this function
+        # if all clicks are None, no click was made and the callback was triggered by the creation of the features
+        # if that happens, we raise PreventUpdate to stop the callback from firing
+        if all([n is None for n in n_clicks]):
+            raise PreventUpdate
+
+        if click_data is None:
+            raise PreventUpdate
+        
+        if n_clicks is None:
+            raise PreventUpdate
+
+        # get the callback content, to get the trigger id
+        # we use this id to find the correct database feature
+        # and use that features hash to highlight all other features with the same hash
+        ctx = callback_context
+
+        if not ctx.triggered:
+            raise PreventUpdate
+        
+        trigger_id = json.loads(ctx.triggered[0]['prop_id'].split('.')[0])
+    
+        # if we get here, we have a valid click on a prediction feature
+        trigger_type, trigger_number = trigger_id['id'].split('-')
+    
+        # connect to the db
+        engine, session = autoconnect_db()
+
+        if trigger_type == 'events':
+            feature_hash = session.query(Feature).filter(Feature.id == trigger_number).first().properties['hash']
+        elif trigger_type == 'predictions':
+            feature_hash = session.query(Feature).filter(Feature.id == trigger_number).first().properties['hash']
+        else:
+            print(f"Invalid trigger type {trigger_type} in highlight_prediction")
+            raise PreventUpdate
+        
+        # close database connection
+        session.close()
+        engine.dispose()
+
+        # highlight all features with the same hash
+        map_children = highlight_events_predictions(feature_hash, map_children)
+
+        return map_children

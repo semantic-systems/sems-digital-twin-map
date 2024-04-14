@@ -253,25 +253,31 @@ def create_event_entries(session):
     Creates custom layer and style database entries for the Events and Predictions.
     """
 
-    # get all layers and styles with the name 'Events' and 'Predictions'
+    # get all layers, styles and featuresets with the name 'Events' and 'Predictions'
     db_layer_events = session.query(Layer).filter(Layer.name == 'Events').first()
     db_style_events = session.query(Style).filter(Style.name == 'Events').first()
+    db_feature_set_events = session.query(FeatureSet).filter(FeatureSet.name == 'Events').first()
     db_layer_predictions = session.query(Layer).filter(Layer.name == 'Predictions').first()
     db_style_predictions = session.query(Style).filter(Style.name == 'Predictions').first()
+    db_feature_set_predictions = session.query(FeatureSet).filter(FeatureSet.name == 'Predictions').first()
 
-    # if any layers or styles do not exist, create them
+    # special styles that get used when an event of prediction is selected
+    db_style_events_selected = session.query(Style).filter(Style.name == 'Events Selected').first()
+    db_style_predictions_selected = session.query(Style).filter(Style.name == 'Predictions Selected').first()
+
+    # if any layers, styles or featuresets do not exist, create them
     if db_layer_events is None:
-        db_layer = Layer(
+        db_layer_events = Layer(
             name='Events'
         )
-        session.add(db_layer)
+        session.add(db_layer_events)
         session.commit()
     
     if db_layer_predictions is None:
-        db_layer = Layer(
+        db_layer_predictions = Layer(
             name='Predictions'
         )
-        session.add(db_layer)
+        session.add(db_layer_predictions)
         session.commit()
     
     if db_style_events is None:
@@ -280,11 +286,11 @@ def create_event_entries(session):
         db_style_events = Style(
             name             = 'Events',
             popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
-            border_color     = '#ee4433',
-            area_color       = '#ee2211',
+            border_color     = '#8206e8',
+            area_color       = '#9121ed',
             marker_icon      = 'circle',
             marker_color     = 'red',
-            line_weight      = 3,
+            line_weight      = 2,
             stroke           = True,
             opacity          = 1.0,
             line_cap         = 'round',
@@ -308,7 +314,7 @@ def create_event_entries(session):
             area_color       = '#2277ee',
             marker_icon      = 'circle',
             marker_color     = 'lightred',
-            line_weight      = 2,
+            line_weight      = 1,
             stroke           = True,
             opacity          = 0.8,
             line_cap         = 'round',
@@ -323,6 +329,76 @@ def create_event_entries(session):
         session.add(db_style_predictions)
         session.commit()
     
+    if db_feature_set_events is None:
+        db_feature_set = FeatureSet(
+            name='Events',
+            layer=db_layer_events,
+            style=db_style_events,
+            collection=None
+        )
+        session.add(db_feature_set)
+        session.commit()
+    
+    if db_feature_set_predictions is None:
+        db_feature_set = FeatureSet(
+            name='Predictions',
+            layer=db_layer_predictions,
+            style=db_style_predictions,
+            collection=None
+        )
+        session.add(db_feature_set)
+        session.commit()
+    
+    if db_style_events_selected is None:
+        # default style for when an event is selected
+        db_style_events_selected = Style(
+            name             = 'Events Selected',
+            popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
+            border_color     = '#ed3821',
+            area_color       = '#ee4433',
+            marker_icon      = 'circle',
+            marker_color     = 'red',
+            line_weight      = 3,
+            stroke           = True,
+            opacity          = 1.0,
+            line_cap         = 'round',
+            line_join        = 'round',
+            dash_array       = None,
+            dash_offset      = None,
+            fill             = True,
+            fill_opacity     = 0.4,
+            fill_rule        = 'evenodd',
+            colormap         = None
+        )
+
+        session.add(db_style_events_selected)
+        session.commit()
+    
+    if db_style_predictions_selected is None:
+        # default style for when a prediction is selected
+        db_style_predictions_selected = Style(
+            name             = 'Predictions Selected',
+            popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
+            border_color     = '#ed810e',
+            area_color       = '#ed8a21',
+            marker_icon      = 'circle',
+            marker_color     = 'lightred',
+            line_weight      = 2,
+            stroke           = True,
+            opacity          = 0.8,
+            line_cap         = 'round',
+            line_join        = 'round',
+            dash_array       = None,
+            dash_offset      = None,
+            fill             = True,
+            fill_opacity     = 0.3,
+            fill_rule        = 'evenodd',
+            colormap         = None
+        )
+
+        session.add(db_style_predictions_selected)
+        session.commit()
+
 def build_if_uninitialized():
     """
     Check if the database is uninitialized and if it is, run `build()`.
@@ -402,7 +478,7 @@ def build(verbose=False):
     if verbose: print("Done!")
 
     # create special database entries for events
-    if verbose: print("Creating layer and style database entries for Event Propagation... ", end='')
+    if verbose: print("Preparing database entries for Event Propagation... ", end='')
     create_event_entries(session)
     if verbose: print("Done!")
 

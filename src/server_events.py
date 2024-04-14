@@ -31,6 +31,10 @@ def receive_data(verbose=True):
 
     # find the layer and style with the names 'Events'
     # TODO: later this should be replaced with a query to find the layer and style with the same name as the event_type
+    # find the FeatureSet for event and predictions
+    # they have the name "Event" and "Prediction"
+    db_feature_set_event = session.query(FeatureSet).filter(FeatureSet.name == 'Events').first()
+    db_feature_set_prediction = session.query(FeatureSet).filter(FeatureSet.name == 'Predictions').first()
     db_layer_events = session.query(Layer).filter(Layer.name == 'Events').first()
     db_layer_predictions = session.query(Layer).filter(Layer.name == 'Predictions').first()
     db_style_events = session.query(Style).filter(Style.name == 'Events').first()
@@ -53,40 +57,27 @@ def receive_data(verbose=True):
         if verbose: print('No Style with name "Predictions" found!')
         return jsonify({'status': 'error', 'message': 'Internal Server Error: No Style with name "Predictions" found'})
 
-    # create a FeatureSet for the event and predictions
-    # TODO: later create only one FeatureSet for each event_type
-    db_feature_set_event = FeatureSet(
-        name='Event',
-        layer=db_layer_events,
-        style=db_style_events,
-        collection=None
-    )
-
-    db_feature_set_prediction = FeatureSet(
-        name='Prediction',
-        layer=db_layer_predictions,
-        style=db_style_predictions,
-        collection=None
-    )
-
-    # save the FeatureSet to the database
-    session.add(db_feature_set_event)
-    session.add(db_feature_set_prediction)
-    session.commit()
+    
     
     # Convert JSON data to database objects
     if verbose: print('Creating Features from Event and Predictions...', end='')
 
+    # prepare the event data
     event_type = event['event_type']
     event_timestamp = event['timestamp']
 
     # transform the timestamp into a datetime string of format HH:MM:SS DD.MM.YYYY
     event_datetime = datetime.fromtimestamp(event_timestamp).strftime('%H:%M:%S %d.%m.%Y')
 
+    # create a hash for the event
+    # this is used to identify which events belong to which predictions and vice versa
+    event_hash = hash_event(event)
+
     feature_properties = {
         'event_type': event_type,
         'time': event_datetime,
-        'timestamp': event_timestamp
+        'timestamp': event_timestamp,
+        'hash': event_hash
     }
 
     # save the properties in the event
@@ -109,7 +100,8 @@ def receive_data(verbose=True):
         feature_properties = {
             'event_type': prediction_type,
             'time': prediction_datetime,
-            'timestamp': prediction_timestamp
+            'timestamp': prediction_timestamp,
+            'hash': event_hash
         }
 
         # save the properties in the prediction
@@ -150,6 +142,9 @@ def receive_data(verbose=True):
     # return jsonify(data)
     if verbose: print("Success! Returning {'status': 'success'}")
     return jsonify({'status': 'success'})
+
+def hash_event(event):
+    return f'{event["timestamp"]}_{event["event_type"]}'
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8051)
