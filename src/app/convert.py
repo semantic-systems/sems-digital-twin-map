@@ -166,7 +166,6 @@ def create_geojson(feature: Feature, popup=None) -> dl.GeoJSON:
     # so we can target these features with a callback in the frontend
     if feature_set_name in ['Events', 'Predictions']:
         id = {'type': 'geojson', 'id': f'{feature_set_name.lower()}-{feature.id}'}  # e.g. {'type': 'geojson', 'id': 'events-17'}
-        print(id)
     else:
         id = f'feature-{feature.id}'    # e.g. 'feature-17'
     

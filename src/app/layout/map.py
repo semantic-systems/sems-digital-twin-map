@@ -70,9 +70,12 @@ def build_scenario_checkboxes():
 
     return scenario_checkboxes
 
-def highlight_events_predictions(hash, map_children):
+def highlight_events_predictions(hash, map_children, hide_other=False):
     """
     Highlights all events and predictions with the same hash.
+    - hash: The hash to highlight
+    - map_children: The map children to iterate over
+    - hide_other: If True, hides all events and predictions with a different hash
     """
 
     ctx = callback_context
@@ -109,6 +112,7 @@ def highlight_events_predictions(hash, map_children):
         if id.startswith('layer'):
 
             features = child['props']['children']
+            new_features = []
 
             for feature in features:
 
@@ -135,6 +139,8 @@ def highlight_events_predictions(hash, map_children):
                                 feature['props']['style'] = style_event_highlight
                             else:
                                 feature['props']['style'] = style_prediction_highlight
+                            
+                            new_features.append(feature)
 
                         else:
                             # different hash, default styling
@@ -142,6 +148,13 @@ def highlight_events_predictions(hash, map_children):
                                 feature['props']['style'] = style_event_default
                             else:
                                 feature['props']['style'] = style_prediction_default
+
+                            # only append if we dont want to hide other features
+                            if not hide_other:
+                                new_features.append(feature)
+            
+            child['props']['children'] = new_features
+                
     
     return map_children
 
@@ -709,5 +722,58 @@ def callbacks_map(app: Dash):
 
         # highlight all features with the same hash
         map_children = highlight_events_predictions(feature_hash, map_children)
+
+        return map_children
+
+    # on double click, hide all other predictions
+    @app.callback(
+        Output('map', 'children', allow_duplicate=True),
+        [
+            Input({'type': 'geojson', 'id': ALL}, 'n_clicks'),
+            Input({'type': 'geojson', 'id': ALL}, 'dblclickData')
+        ],  
+        [
+            State('map', 'children')
+        ],
+        prevent_initial_call=True
+    )
+    def hide_other_predictions(n_clicks, dbl_click_data, map_children):
+        """
+        This callback is triggered when a feature is clicked.
+        It changes the color of all other features with the same hash.
+        Basically just a wrapper around highlight_events_predictions.
+        """
+
+        if all([n is None for n in n_clicks]):
+            raise PreventUpdate
+
+        if dbl_click_data is None:
+            raise PreventUpdate
+        
+        if n_clicks is None:
+            raise PreventUpdate
+
+        # get the callback content, to get the trigger id
+        # we use this id to find the correct database feature
+        # and use that features hash to highlight all other features with the same hash
+        ctx = callback_context
+
+        if not ctx.triggered:
+            raise PreventUpdate
+        
+        feature_hash = None
+        
+        for click_element in dbl_click_data:
+            if click_element is None:
+                continue
+
+            feature_hash = click_element['properties']['hash']
+            break
+
+        if feature_hash is None:
+            raise PreventUpdate
+
+        # hide all features with a different hash
+        map_children = highlight_events_predictions(feature_hash, map_children, hide_other=True)
 
         return map_children
