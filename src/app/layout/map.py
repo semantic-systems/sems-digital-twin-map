@@ -189,43 +189,33 @@ def get_layout_map():
             },
             id='map'
             ),
-        html.Div(                                   # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
-            [
-                html.Div(
-                    children=[
-                        # Hide the Rebuild button from the user
-                        # html.Button(
-                        #     children="Rebuild",
-                        #     id="button_rebuild",
-                        #     style={
-                        #         "padding": "10px 20px 10px 20px",
-                        #         "margin": "5px"
-                        #     }
-                        # ),
-                        html.Button(
-                            children="Refresh",
-                            id="button_refresh_items",
-                            className='button-common',
-                            style={
-                                "padding": "10px 20px 10px 20px",
-                                "margin": "5px"
-                            }
-                        ),
-                        html.Button(
-                            children="Update Menu",
-                            id="button_update_menu",
-                            className='button-common',
-                            style={
-                                "padding": "10px 20px 10px 20px",
-                                "margin": "5px"
-                            }
-                        )
-                    ],
+        html.Button(
+            id='button_toggle_layers',
+            children='-',
+            style={
+                'position': 'absolute',
+                'float': 'right',
+                'top': '60px',
+                'right': '0',
+                'margin': '10px',
+                'z-index': '1001',
+                'padding': '10px',
+                'border': '1px solid #ccc',
+                'width': '35px',
+                'height': '35px'
+            }
+        ),
+        html.Div(  # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
+            id='layers_control',
+            children=[
+                html.P(
+                    children='Layers',
                     style={
-                        "display": "flex",
-                        "flex-wrap": "wrap",
-                        "justify-content": "center",
-                        "align-items": "center"
+                        'font-size': '14pt',
+                        'font-weight': 'bold',
+                        'margin': '4px 2px 4 2px',
+                        'text-align': 'center',
+                        'color': '#404040'
                     }
                 ),
                 dcc.Tabs(
@@ -267,7 +257,44 @@ def get_layout_map():
                         {'label': 'Filter by Timestamp', 'value': 'filter_by_timestamp'}
                         ],
                     value=[]
-                )                    
+                ),
+                html.Div(
+                    children=[
+                        # Hide the Rebuild button from the user
+                        # html.Button(
+                        #     children="Rebuild",
+                        #     id="button_rebuild",
+                        #     style={
+                        #         "padding": "10px 20px 10px 20px",
+                        #         "margin": "5px"
+                        #     }
+                        # ),
+                        html.Button(
+                            children="Refresh",
+                            id="button_refresh_items",
+                            className='button-common',
+                            style={
+                                "padding": "10px 20px 10px 20px",
+                                "margin": "5px"
+                            }
+                        ),
+                        html.Button(
+                            children="Update Menu",
+                            id="button_update_menu",
+                            className='button-common',
+                            style={
+                                "padding": "10px 20px 10px 20px",
+                                "margin": "5px"
+                            }
+                        )
+                    ],
+                    style={
+                        "display": "flex",
+                        "flex-wrap": "wrap",
+                        "justify-content": "center",
+                        "align-items": "center"
+                    }
+                ),
             ],
             style={
                 'position': 'absolute',
@@ -287,7 +314,24 @@ def get_layout_map():
                 'color': '#333'
             }
         ),
+        html.Button(
+            id='button_toggle_event_range',
+            children='-',
+            style={
+                'position': 'absolute',
+                'float': 'left',
+                'top': '908px',
+                'left': '0',
+                'margin': '10px',
+                'z-index': '1001',
+                'padding': '10px',
+                'border': '1px solid #ccc',
+                'width': '35px',
+                'height': '35px'
+            }
+        ),
         html.Div(
+            id='event_range',
             children=[
                 # DatePickerRange component
                 dcc.DatePickerRange(
@@ -371,11 +415,27 @@ def get_layout_map():
                 'margin': '10px',
                 'background-color': 'white',
                 'border': '1px solid #ccc',
-                'padding': '10px',
+                'padding': '10px 10px 10px 50px',
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
                 'border-radius': '5px',
                 'z-index': '1000',
                 'color': '#333'
+            }
+        ),
+        html.Button(
+            id='button_toggle_rss',
+            children='-',
+            style={
+                'position': 'absolute',
+                'float': 'left',
+                'top': '150px',
+                'left': '0',
+                'margin': '10px',
+                'z-index': '1001',
+                'padding': '10px',
+                'border': '1px solid #ccc',
+                'width': '35px',
+                'height': '35px'
             }
         ),
         html.Div(
@@ -387,7 +447,8 @@ def get_layout_map():
                         'font-size': '14pt',
                         'font-weight': 'bold',
                         'margin': '4px 2px 4 2px',
-                        'text-align': 'center'
+                        'text-align': 'center',
+                        'color': '#404040'
                     }
                 ),
                 html.Ul(
@@ -444,7 +505,7 @@ def get_layout_map():
                 'z-index': '1000',
                 'max-height': '660px',
                 'overflow-y': 'auto',
-                'width': '250px',
+                'width': '250px'
             }
         ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
@@ -912,7 +973,84 @@ def callbacks_map(app: Dash):
             headlines.append(headline_to_li(report_title, report_link))            
         
         return headlines
+    
+    # toggle the layers widget
+    @app.callback(
+        [Output('layers_control', 'style'), Output('button_toggle_layers', 'children')],
+        [Input('button_toggle_layers', 'n_clicks')],
+        [State('layers_control', 'style')],
+        prevent_initial_call=True
+    )
+    def toggle_visibility_layers(n_clicks, overlay_checklist_style):
+        """
+        This callback is triggered when the toggle layers button is clicked.
+        It toggles the visibility of the layers list.
+        """
+
+        # if the toggle button was not clicked, do nothing
+        if n_clicks is None:
+            raise PreventUpdate
         
+        # on  odd clicks, hide
+        # on even clicks, show
+        if n_clicks % 2 == 1:
+            overlay_checklist_style['display'] = 'none'
+            return [overlay_checklist_style, '+']
+        else:
+            overlay_checklist_style['display'] = 'block'
+            return [overlay_checklist_style, '-']
+    
+    # toggle the rss headlines widget
+    @app.callback(
+        [Output('rss_headlines', 'style'), Output('button_toggle_rss', 'children')],
+        [Input('button_toggle_rss', 'n_clicks')],
+        [State('rss_headlines', 'style')],
+        prevent_initial_call=True
+    )
+    def toggle_visibility_rss(n_clicks, rss_headlines_style):
+        """
+        This callback is triggered when the toggle rss button is clicked.
+        It toggles the visibility of the rss headlines list.
+        """
+
+        # if the toggle button was not clicked, do nothing
+        if n_clicks is None:
+            raise PreventUpdate
+        
+        # on  odd clicks, hide
+        # on even clicks, show
+        if n_clicks % 2 == 1:
+            rss_headlines_style['display'] = 'none'
+            return [rss_headlines_style, '+']
+        else:
+            rss_headlines_style['display'] = 'block'
+            return [rss_headlines_style, '-']
+    
+    # toggle the event range widget
+    @app.callback(
+        [Output('event_range', 'style'), Output('button_toggle_event_range', 'children')],
+        [Input('button_toggle_event_range', 'n_clicks')],
+        [State('event_range', 'style')],
+        prevent_initial_call=True
+    )
+    def toggle_visibility_event_range(n_clicks, event_range_style):
+        """
+        This callback is triggered when the toggle event range button is clicked.
+        It toggles the visibility of the event range widget.
+        """
+
+        # if the toggle button was not clicked, do nothing
+        if n_clicks is None:
+            raise PreventUpdate
+        
+        # on  odd clicks, hide
+        # on even clicks, show
+        if n_clicks % 2 == 1:
+            event_range_style['display'] = 'none'
+            return [event_range_style, '+']
+        else:
+            event_range_style['display'] = 'flex'
+            return [event_range_style, '-']
 
 
 
