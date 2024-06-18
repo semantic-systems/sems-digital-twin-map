@@ -1,3 +1,4 @@
+numpy<2
 sqlalchemy==2.0.23
 tqdm==4.66.1
 branca==0.7.0
@@ -7,3 +8,6 @@ shapely==2.0.2
 geoalchemy2==0.14.2
 psycopg2-binary==2.9.9
 python-dotenv==1.0.1
+requests==2.32.3
+feedparser==6.0.11
+python-dateutil==2.9.0.post0

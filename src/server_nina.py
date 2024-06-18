@@ -4,10 +4,10 @@
 from time import sleep
 from data.req_nina import save_alerts
 
-VERBOSE = True
-REFRESH_RATE = 60   # in seconds
-
 if __name__ == '__main__':
+
+    VERBOSE = True
+    REFRESH_RATE = 600   # in seconds
 
     if VERBOSE:
         print("=========================")

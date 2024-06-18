@@ -28,7 +28,7 @@ def api_to_db(session, refresh=True, verbose=False):
     dataset_configs = api_configs['datasets']
 
     # iterate over all api configs
-    for dataset_config in tqdm(dataset_configs, disable=not verbose):
+    for dataset_config in tqdm(dataset_configs, disable=not verbose, leave=False):
 
         # split the line at the comma
         url = dataset_config['url']
@@ -176,7 +176,7 @@ def refresh(session, verbose=False):
     feature_sets = session.query(FeatureSet).all()
 
     # iterate over all FeatureSets
-    for feature_set in tqdm(feature_sets, disable=not verbose):
+    for feature_set in tqdm(feature_sets, disable=not verbose, leave=False):
         
         # iterate over all collections in the dataset
         collection = feature_set.collection
@@ -483,8 +483,9 @@ def build(verbose=False):
     if verbose: print("Done!")
 
     # transform geojson files to database entries
-    if verbose: print("Getting API Metadata... ")
+    if verbose: print("Getting API Metadata... ", end='')
     api_to_db(session, refresh=False, verbose=verbose)
+    if verbose: print("Done!")
 
     # get the number of Datasets and Collections
     dataset_count = session.query(Dataset).count()
@@ -492,8 +493,9 @@ def build(verbose=False):
     if verbose: print(f"Saved {dataset_count} Datasets with {collection_count} Collections to the database")
 
     # reload all datasets
-    if verbose: print("Refreshing Features... ")
+    if verbose: print("Refreshing Features... ", end='')
     refresh(session, verbose=verbose)
+    if verbose: print("Done!")
 
     # get the number of Datasets and Collections
     feature_count = session.query(Feature).count()

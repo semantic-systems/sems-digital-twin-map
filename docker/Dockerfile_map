@@ -14,6 +14,7 @@ EXPOSE 8050
 
 # Define environment variable, used for determining the host name of the database
 ENV IN_DOCKER=true
+ENV PYTHONUNBUFFERED=1
 
 # Start the app with python main.py
 CMD python ./src/main.py

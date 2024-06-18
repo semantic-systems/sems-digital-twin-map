@@ -31,6 +31,15 @@ services:
       - postgis
     networks:
       - rescuemate_map
+  
+  python-server-rss:
+    build: 
+      context: .
+      dockerfile: docker/Dockerfile_server_rss
+    depends_on:
+      - postgis
+    networks:
+      - rescuemate_map
     
   postgis:
     image: postgis/postgis

@@ -4,6 +4,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
+# This file defines the database model for the application
+# Every class represents a table and their attributes represent the columns
+
 Base = declarative_base()
 
 # Association Table for many-to-many relationship between FeatureSets and Scenarios
@@ -242,6 +245,20 @@ class Alert(Base):
 
     zgem = Column(String, nullable=True)        # zgem is some sort of area code, but i don't know what it stands for
 
+class Report(Base):
+    """
+    A single RSS entry from a news site.
+    """
+    __tablename__ = 'reports'
+    id = Column(Integer, primary_key=True)          # db internal id
+    identifier = Column(String, nullable=False)     # unique identifier of the report as used by the source
+
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    link = Column(String, nullable=False)
+    source = Column(String, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+
 # the following tables are defined in the database
 # UPDATE THIS IF YOU ADD NEW TABLES
 # this is used at startup to check if any tables are missing
@@ -255,5 +272,6 @@ TABLES = [
     Scenario,
     Colormap,
     Style,
-    Alert
+    Alert,
+    Report
 ]

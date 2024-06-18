@@ -148,7 +148,10 @@ def create_geojson(feature: Feature, popup=None) -> dl.GeoJSON:
 
     # build the popup window
     if popup is not None:
-        children.append(dl.Popup(content=popup))
+        children.append(dl.Popup(
+            content=popup,
+            offset=(0, -10)
+            ))
     
     # build the style dict
     if style is not None:

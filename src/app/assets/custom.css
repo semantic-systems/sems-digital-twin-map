@@ -17,6 +17,11 @@
     padding: 10px 10px !important;
 }
 
+/* Increase the spacing between li items in the rss feed */
+.rss-feed-li li {
+    margin-bottom: 10px;
+}
+
 /* === Scenario Editor Rules === */
 .editor-title {
     margin-bottom: 20px;

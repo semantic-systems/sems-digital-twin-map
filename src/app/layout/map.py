@@ -9,7 +9,7 @@ import dash_leaflet as dl
 from sqlalchemy import inspect
 
 # internal imports
-from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario
+from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario, Report
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
@@ -180,6 +180,7 @@ def get_layout_map():
                 )
             ],
             zoom=12,
+            doubleClickZoom=False,
             center=(53.55, 9.99),
             style={
                 'width': '100%', 
@@ -357,7 +358,7 @@ def get_layout_map():
                         'display': 'inline-block',
                         'box-shadow': '0px 2px 4px rgba(0, 0, 0, 0.1)'
                     }
-                )
+                ),
             ],
             style={
                 'display': 'flex',
@@ -377,8 +378,78 @@ def get_layout_map():
                 'color': '#333'
             }
         ),
+        html.Div(
+            id='rss_headlines',
+            children=[
+                html.P(
+                    children='Headlines',
+                    style={
+                        'font-size': '14pt',
+                        'font-weight': 'bold',
+                        'margin': '4px 2px 4 2px',
+                        'text-align': 'center'
+                    }
+                ),
+                html.Ul(
+                    id='rss_headlines_list',
+                    children=[
+                        html.Li(
+                            html.A(
+                                children='RSS Headline',
+                                href='https://example.com',
+                                target='_blank'
+                            ),
+                        ),
+                        html.Li( 
+                            html.A(
+                                children='Tiny',
+                                href='https://example.com',
+                                target='_blank'
+                            ),
+                        ),
+                        html.Li( 
+                            html.A(
+                                children='Looooong Headline',
+                                href='https://example.com',
+                                target='_blank'
+                            ),
+                        ),
+                        html.Li( 
+                            html.A(
+                                children='SUPER LONG HEADLINE THAT IS SO LONG IT WILL BREAK THE LAYOUT AND MAKE EVERYTHING LOOK UGLY',
+                                href='https://example.com',
+                                target='_blank'
+                            )
+                        )
+                    ],
+                    style={
+                        # increase child seperator
+                        'margin': '0',
+                        'padding': '0',
+                        'list-style-type': 'none'
+                    }
+                )
+            ],
+            style={
+                'position': 'absolute',
+                'top': '150px',
+                'left': '0',
+                'float': 'left',
+                'background-color': 'white',
+                'border': '1px solid #ccc',
+                'border-radius': '5px',
+                'margin': '10px',
+                'padding': '10px',
+                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                'z-index': '1000',
+                'max-height': '660px',
+                'overflow-y': 'auto',
+                'width': '250px',
+            }
+        ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
+        dcc.Interval(id='interval_refresh_rss', interval=3600000 , n_intervals=0),  # refresh the rss feed every hour
         html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ]
     
@@ -744,13 +815,16 @@ def callbacks_map(app: Dash):
         Basically just a wrapper around highlight_events_predictions.
         """
 
-        if all([n is None for n in n_clicks]):
-            raise PreventUpdate
-
         if dbl_click_data is None:
+            print("s0")
             raise PreventUpdate
         
         if n_clicks is None:
+            print("s1")
+            raise PreventUpdate
+        
+        if all([n is None for n in n_clicks]):
+            print("s2")
             raise PreventUpdate
 
         # get the callback content, to get the trigger id
@@ -759,11 +833,16 @@ def callbacks_map(app: Dash):
         ctx = callback_context
 
         if not ctx.triggered:
+            print("s3", ctx.triggered)
             raise PreventUpdate
         
         feature_hash = None
         
         for click_element in dbl_click_data:
+
+            print(click_element)
+
+
             if click_element is None:
                 continue
 
@@ -771,9 +850,69 @@ def callbacks_map(app: Dash):
             break
 
         if feature_hash is None:
+            print("s4")
             raise PreventUpdate
 
         # hide all features with a different hash
         map_children = highlight_events_predictions(feature_hash, map_children, hide_other=True)
 
         return map_children
+    
+    # update the rss headlines
+    @app.callback(
+        Output('rss_headlines_list', 'children'),
+        [Input('interval_refresh_rss', 'n_intervals')],
+    )
+    def update_rss_headlines(n_clicks):
+        """
+        This callback is triggered when the refresh button is clicked.
+        It updates the RSS headlines list.
+        """
+
+        def headline_to_li(headline, href):
+            """
+            Converts a headline string to a html list item.
+            """
+            return html.Li(
+                html.A(
+                    children=headline,
+                    href=href,
+                    target='_blank',
+                    rel='noopener noreferrer'
+                ),
+                style={
+                    'margin-bottom': '10px'
+                }
+            )
+
+        # if the refresh button was not clicked, do nothing
+        if n_clicks is None:
+            raise PreventUpdate
+        
+        # how many headlines we want to display
+        MAX_HEADLINES = 10
+        
+        # get the MAX_HEADLINES newest headlines
+        engine, session = autoconnect_db()
+        reports = session.query(Report).order_by(Report.timestamp.desc()).limit(MAX_HEADLINES).all()
+
+        # build the headlines list
+        headlines = []
+
+        for report in reports:
+
+            # get report properties
+            report_title = report.title
+            report_link = report.link
+            report_date = report.timestamp.strftime('%d.%m.%Y')
+
+            # add the date to the title
+            report_title += f' ({report_date})'
+
+            headlines.append(headline_to_li(report_title, report_link))            
+        
+        return headlines
+        
+
+
+
