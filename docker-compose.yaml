@@ -11,6 +11,7 @@ services:
       - postgis
     networks:
       - rescuemate_map
+    restart: always
     
   python-server-events:
     build: 
@@ -22,6 +23,7 @@ services:
       - postgis
     networks:
       - rescuemate_map
+    restart: always
   
   python-server-nina:
     build: 
@@ -31,6 +33,7 @@ services:
       - postgis
     networks:
       - rescuemate_map
+    restart: always
   
   python-server-rss:
     build: 
@@ -40,6 +43,7 @@ services:
       - postgis
     networks:
       - rescuemate_map
+    restart: always
     
   postgis:
     image: postgis/postgis
@@ -53,6 +57,7 @@ services:
       - postgis_data:/var/lib/postgresql/data
     networks:
       - rescuemate_map
+    restart: always
 
   pgadmin:
     image: dpage/pgadmin4
@@ -65,6 +70,7 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     networks:
       - rescuemate_map
+    restart: always
 
 volumes:
   postgis_data:
