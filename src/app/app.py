@@ -40,20 +40,20 @@ def get_app():
                         children = html.Div(get_layout_map(), className='fullscreen-container') # these outer divs are here to force the tabs to fill the screen
                     ),
                     # Tab 2: The Scenario Editor
-                    dcc.Tab(
-                        label='Scenario Editor',
-                        children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
-                    ),
+                    # dcc.Tab(
+                    #     label='Scenario Editor',
+                    #     children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
+                    # ),
                     # Tab 3: The NINA Warnings
                     dcc.Tab(
                         label='NINA Warnings',
                         children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
                     ),
                     # Tab 4: The Data Viewer
-                    dcc.Tab(
-                        label='Data Viewer',
-                        children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
-                    ),
+                    # dcc.Tab(
+                    #     label='Data Viewer',
+                    #     children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
+                    # ),
                 ]
             )
         ],

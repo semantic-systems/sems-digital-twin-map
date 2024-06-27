@@ -235,13 +235,12 @@
             "url":"https://api.hamburg.de/datasets/v1/hvv_einzugsbereiche",
             "collections":{
                 "haltestellenbereiche_bahn": {
-                    "name": "Bahn Haltestelle",
-                    "layer":"Bahn Haltestellen",
+                    "name": "Bahnhaltestelle",
+                    "layer":"Bahnhaltestellen",
                     "popup_properties": {
                         "Name": "name",
                         "Linien": "linien",
-                        "Art": "art",
-                        "Abfahrten": "abfahrten"
+                        "Art": "art"
                     },
                     "style": {
                         "marker_color": "lightblue",
@@ -249,13 +248,12 @@
                     }
                 },
                 "haltestellenbereiche_bus": {
-                    "name": "Bus Haltestelle",
-                    "layer":"Bus Haltestellen",
+                    "name": "Bushaltestelle",
+                    "layer":"Bushaltestellen",
                     "popup_properties": {
                         "Name": "name",
                         "Linien": "linien",
-                        "Art": "art",
-                        "Abfahrten": "abfahrten"
+                        "Art": "art"
                     },
                     "style": {
                         "marker_color": "orange",
@@ -263,13 +261,12 @@
                     }
                 },
                 "haltestellenbereiche_faehre": {
-                    "name": "Fähren Haltestelle",
-                    "layer":"Fähren Haltestellen",
+                    "name": "Fährenhaltestelle",
+                    "layer":"Fährenhaltestellen",
                     "popup_properties": {
                         "Name": "name",
                         "Linien": "linien",
-                        "Art": "art",
-                        "Abfahrten": "abfahrten"
+                        "Art": "art"
                     },
                     "style": {
                         "marker_color": "green",

@@ -258,43 +258,44 @@ def get_layout_map():
                         ],
                     value=[]
                 ),
-                html.Div(
-                    children=[
-                        # Hide the Rebuild button from the user
-                        # html.Button(
-                        #     children="Rebuild",
-                        #     id="button_rebuild",
-                        #     style={
-                        #         "padding": "10px 20px 10px 20px",
-                        #         "margin": "5px"
-                        #     }
-                        # ),
-                        html.Button(
-                            children="Refresh",
-                            id="button_refresh_items",
-                            className='button-common',
-                            style={
-                                "padding": "10px 20px 10px 20px",
-                                "margin": "5px"
-                            }
-                        ),
-                        html.Button(
-                            children="Update Menu",
-                            id="button_update_menu",
-                            className='button-common',
-                            style={
-                                "padding": "10px 20px 10px 20px",
-                                "margin": "5px"
-                            }
-                        )
-                    ],
-                    style={
-                        "display": "flex",
-                        "flex-wrap": "wrap",
-                        "justify-content": "center",
-                        "align-items": "center"
-                    }
-                ),
+                # special buttons, hidden for now from the end user
+                # html.Div(
+                #     children=[
+                #         Hide the Rebuild button from the user
+                #         html.Button(
+                #             children="Rebuild",
+                #             id="button_rebuild",
+                #             style={
+                #                 "padding": "10px 20px 10px 20px",
+                #                 "margin": "5px"
+                #             }
+                #         ),
+                #         html.Button(
+                #             children="Refresh",
+                #             id="button_refresh_items",
+                #             className='button-common',
+                #             style={
+                #                 "padding": "10px 20px 10px 20px",
+                #                 "margin": "5px"
+                #             }
+                #         ),
+                #         html.Button(
+                #             children="Update Menu",
+                #             id="button_update_menu",
+                #             className='button-common',
+                #             style={
+                #                 "padding": "10px 20px 10px 20px",
+                #                 "margin": "5px"
+                #             }
+                #         )
+                #     ],
+                #     style={
+                #         "display": "flex",
+                #         "flex-wrap": "wrap",
+                #         "justify-content": "center",
+                #         "align-items": "center"
+                #     }
+                # ),
             ],
             style={
                 'position': 'absolute',

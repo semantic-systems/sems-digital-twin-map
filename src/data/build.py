@@ -478,14 +478,14 @@ def build(verbose=False):
     if verbose: print("Done!")
 
     # create special database entries for events
-    if verbose: print("Preparing database entries for Event Propagation... ", end='')
-    create_event_entries(session)
-    if verbose: print("Done!")
+    # currently unused until the event prediction project is finished
+    # if verbose: print("Preparing database entries for Event Propagation... ", end='')
+    # create_event_entries(session)
+    # if verbose: print("Done!")
 
     # transform geojson files to database entries
-    if verbose: print("Getting API Metadata... ", end='')
+    if verbose: print("Getting API Metadata... ")
     api_to_db(session, refresh=False, verbose=verbose)
-    if verbose: print("Done!")
 
     # get the number of Datasets and Collections
     dataset_count = session.query(Dataset).count()
@@ -493,9 +493,8 @@ def build(verbose=False):
     if verbose: print(f"Saved {dataset_count} Datasets with {collection_count} Collections to the database")
 
     # reload all datasets
-    if verbose: print("Refreshing Features... ", end='')
+    if verbose: print("Refreshing Features... ")
     refresh(session, verbose=verbose)
-    if verbose: print("Done!")
 
     # get the number of Datasets and Collections
     feature_count = session.query(Feature).count()
