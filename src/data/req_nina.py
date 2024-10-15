@@ -1,4 +1,5 @@
-# Handling API requests to api.hamburg.de
+# Handling API requests to the NINA API
+# See here: https://nina.api.bund.dev/
 
 import requests
 from datetime import datetime, timedelta
@@ -60,8 +61,15 @@ def get_alerts(ars=ARS):
     # get all alerts from the nina api dashboard
     url = BASE_URL + "/dashboard/" + ars + ".json"
 
-    response = requests.get(url)
-    alerts_dashboard = response.json()
+    # get the alerts from the nina api
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        alerts_dashboard = response.json()
+    except Exception as e:
+        print(f"Error fetching alerts: {e}")
+        alerts_dashboard = []
 
     ids = [alert['id'] for alert in alerts_dashboard]
 

@@ -2,8 +2,10 @@ from os import getenv
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
+from sqlalchemy.engine.base import Engine
 
-def autoconnect_db(echo=False):
+def autoconnect_db(echo=False) -> tuple[Engine, Session]:
     """
     Connect to the database. The hostname is dynamically set depending based on whether the environment variable IN_DOCKER is set to true or false.
     - if IN_DOCKER = true, then hostname = postgis
