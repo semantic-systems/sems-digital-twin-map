@@ -153,6 +153,7 @@ def api_to_db(session, refresh=True, verbose=False):
         if refresh:
             refresh(session, verbose=verbose)
 
+
 def refresh(session, verbose=False):
     """
     Gets all Datasets in the database, requests their data and saves it into the database.
@@ -239,7 +240,7 @@ def feature_to_obj(geojson_feature: dict):
 
     # finally, create the feature
     feature = Feature(
-        feature_set=None,   # None for now, must be set later manually
+        feature_set=None,   # must be set later manually, i.e. with feature.feature_set = feature_set_object
         properties=properties,
         timestamp=timestamp,
         geometry_type=geometry_type,
@@ -399,6 +400,28 @@ def create_event_entries(session):
         session.add(db_style_predictions_selected)
         session.commit()
 
+def get_default_style():
+    style = Style(
+        name             = 'default',
+        popup_properties = {},
+        border_color     = '#3388ff',
+        area_color       = '#2277ee',
+        marker_icon      = 'circle',
+        marker_color     = 'black',
+        line_weight      = 3,
+        stroke           = True,
+        opacity          = 1.0,
+        line_cap         = 'round',
+        line_join        = 'round',
+        dash_array       = None,
+        dash_offset      = None,
+        fill             = True,
+        fill_opacity     = 0.2,
+        fill_rule        = 'evenodd',
+        colormap         = None
+    )
+    return style
+
 def build_if_uninitialized():
     """
     Check if the database is uninitialized and if it is, run `build()`.
@@ -445,7 +468,7 @@ def build(verbose=False):
     """
     Drops all tables and rebuilds the database.
     1. Connects to the database
-    2. Activates postgis with `CREATE EXTENSION IF NOT EXISTS postgis`
+    2. Activate the postgis extension
     3. Drops all tables
     4. Creates new empty tables for all database objects from database.py
     5. Requests all datasets and collections from the API and saves them to the database (Updates tables Dataset, Collection, FeatureSet, Style, Colormap)
@@ -462,9 +485,10 @@ def build(verbose=False):
     engine, session = autoconnect_db()
     if verbose: print("Done!")
 
-    # activate postGIS if its not already enabled
-    if verbose: print("Activating postgis... ", end='')
+    # activate postGIS if not already enabled
+    if verbose: print("Activating extensions... ", end='')
     session.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
+    session.commit()
     if verbose: print("Done!")
 
     # force drop all tables
