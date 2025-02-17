@@ -2,6 +2,7 @@
 from app.app import get_app
 from data.build import build, build_if_uninitialized
 import sys
+import os
 
 def main():
     """
@@ -13,10 +14,21 @@ def main():
 
     # launch parameter handling
     params = sys.argv[1:]
+    debug = False
 
     if len(params) > 0:
+        
+        # if launched with parameter -help, print the help message
+        if '--help' in params :
+            print("""Launch Parameters:
+                    -rebuild: rebuilds the database
+                    -verbose: prints status information when rebuilding the database. Must be used with -rebuild
+                    -help: prints this help message
+                    """)
+            return
+        
         # if launched with parameter -rebuild, rebuild the database
-        if '-rebuild' in params:
+        if '--rebuild' in params or '-r' in params:
 
             # if launched with parameter -verbose, print more information
             verbose = '-verbose' in params
@@ -24,14 +36,9 @@ def main():
             # rebuild the database
             build(verbose=verbose)
         
-        # if launched with parameter -help, print the help message
-        elif '-help' in params:
-            print("""Launch Parameters:
-                    -rebuild: rebuilds the database
-                    -verbose: prints status information when rebuilding the database. Must be used with -rebuild
-                    -help: prints this help message
-                    """)
-            return
+        debug = '--debug' in params  # True if called with -debug
+
+        print('--debug' in params)
 
     # inspect to see if the database has been built
     # if not, build it
@@ -42,8 +49,11 @@ def main():
 
     m.title = "Hamburg Data Map"
 
+    print(debug)
+
     # run the app
-    m.run(host='0.0.0.0')
+    m.run(host='0.0.0.0', debug=debug)
 
 if __name__ == '__main__':
     main()
+    

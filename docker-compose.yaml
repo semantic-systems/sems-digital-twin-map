@@ -12,6 +12,8 @@ services:
     networks:
       - rescuemate_map
     restart: always
+    volumes:
+      - post_data:/app/data
     
   python-server-events:
     build: 
@@ -35,15 +37,17 @@ services:
       - rescuemate_map
     restart: always
   
-  python-server-rss:
+  python-server-reports:
     build: 
       context: .
-      dockerfile: docker/Dockerfile_server_rss
+      dockerfile: docker/Dockerfile_server_reports
     depends_on:
       - postgis
     networks:
       - rescuemate_map
     restart: always
+    volumes:
+      - post_data:/app/data
     
   postgis:
     image: postgis/postgis
@@ -75,6 +79,7 @@ services:
 volumes:
   postgis_data:
   pgadmin_data:
+  post_data:
 
 networks:
   rescuemate_map:

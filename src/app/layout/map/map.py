@@ -13,6 +13,7 @@ from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, St
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
+from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_values
 
 def build_layer_checkboxes():
     """
@@ -169,6 +170,7 @@ def get_layout_map():
     # build the option checkboxes
     layer_checkboxes = build_layer_checkboxes()
     scenario_checkboxes = build_scenario_checkboxes()
+    report_dropdown = get_sidebar_dropdown_values()
 
     layout_map = [
         dl.Map(
@@ -424,7 +426,7 @@ def get_layout_map():
             }
         ),
         html.Button(
-            id='button_toggle_rss',
+            id='button_toggle_reports',
             children='-',
             style={
                 'position': 'absolute',
@@ -440,10 +442,10 @@ def get_layout_map():
             }
         ),
         html.Div(
-            id='rss_headlines',
+            id='div_reports',
             children=[
                 html.P(
-                    children='Headlines',
+                    children='Reports',
                     style={
                         'font-size': '14pt',
                         'font-weight': 'bold',
@@ -452,40 +454,20 @@ def get_layout_map():
                         'color': '#404040'
                     }
                 ),
-                html.Ul(
-                    id='rss_headlines_list',
-                    children=[
-                        html.Li(
-                            html.A(
-                                children='RSS Headline',
-                                href='https://example.com',
-                                target='_blank'
-                            ),
-                        ),
-                        html.Li( 
-                            html.A(
-                                children='Tiny',
-                                href='https://example.com',
-                                target='_blank'
-                            ),
-                        ),
-                        html.Li( 
-                            html.A(
-                                children='Looooong Headline',
-                                href='https://example.com',
-                                target='_blank'
-                            ),
-                        ),
-                        html.Li( 
-                            html.A(
-                                children='SUPER LONG HEADLINE THAT IS SO LONG IT WILL BREAK THE LAYOUT AND MAKE EVERYTHING LOOK UGLY',
-                                href='https://example.com',
-                                target='_blank'
-                            )
-                        )
-                    ],
+                dcc.Dropdown(
+                    options=report_dropdown,
+                    id='reports_dropdown',
+                    optionHeight=20,
                     style={
-                        # increase child seperator
+                        "margin-bottom": "10px",
+                        "font-size": "7.5pt"
+                    }
+                ),
+                html.Ul(
+                    id='reports_list',
+                    children=[],    # empty list, will be filled by the callback
+                    style={
+                        # increase child separator
                         'margin': '0',
                         'padding': '0',
                         'list-style-type': 'none'
@@ -511,7 +493,7 @@ def get_layout_map():
         ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
-        dcc.Interval(id='interval_refresh_rss', interval=3600000 , n_intervals=0),  # refresh the rss feed every hour
+        dcc.Interval(id='interval_refresh_reports', interval=3600000 , n_intervals=0),  # refresh the reports every hour
         html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ]
     
@@ -878,15 +860,12 @@ def callbacks_map(app: Dash):
         """
 
         if dbl_click_data is None:
-            print("s0")
             raise PreventUpdate
         
         if n_clicks is None:
-            print("s1")
             raise PreventUpdate
         
         if all([n is None for n in n_clicks]):
-            print("s2")
             raise PreventUpdate
 
         # get the callback content, to get the trigger id
@@ -895,14 +874,11 @@ def callbacks_map(app: Dash):
         ctx = callback_context
 
         if not ctx.triggered:
-            print("s3", ctx.triggered)
             raise PreventUpdate
         
         feature_hash = None
         
         for click_element in dbl_click_data:
-
-            print(click_element)
 
 
             if click_element is None:
@@ -912,7 +888,6 @@ def callbacks_map(app: Dash):
             break
 
         if feature_hash is None:
-            print("s4")
             raise PreventUpdate
 
         # hide all features with a different hash
@@ -920,60 +895,38 @@ def callbacks_map(app: Dash):
 
         return map_children
     
-    # update the rss headlines
+    # update the reports
     @app.callback(
-        Output('rss_headlines_list', 'children'),
-        [Input('interval_refresh_rss', 'n_intervals')],
+        Output('reports_list', 'children'),
+        [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown', 'value')],
     )
-    def update_rss_headlines(n_clicks):
+    def update_reports(n_clicks, platform):
         """
-        This callback is triggered when the refresh button is clicked.
-        It updates the RSS headlines list.
+        This callback is triggered every hour.
+        It updates the reports component with the newest posts and reports.
         """
-
-        def headline_to_li(headline, href):
-            """
-            Converts a headline string to a html list item.
-            """
-            return html.Li(
-                html.A(
-                    children=headline,
-                    href=href,
-                    target='_blank',
-                    rel='noopener noreferrer'
-                ),
-                style={
-                    'margin-bottom': '10px'
-                }
-            )
 
         # if the refresh button was not clicked, do nothing
         if n_clicks is None:
             raise PreventUpdate
         
-        # how many headlines we want to display
-        MAX_HEADLINES = 10
-        
-        # get the MAX_HEADLINES newest headlines
-        engine, session = autoconnect_db()
-        reports = session.query(Report).order_by(Report.timestamp.desc()).limit(MAX_HEADLINES).all()
+        sidebar_content = get_sidebar_content(platform=platform)
 
-        # build the headlines list
-        headlines = []
+        return sidebar_content
+    
+    @app.callback(
+        Output('reports_dropdown', 'options'),
+        [Input('interval_refresh_reports', 'n_intervals')],
+    )
+    def update_report_dropdown(n_clicks):
+        """
+        This callback is triggered every hour.
+        It updates the reports dropdown with all platforms of the current data.
+        """
 
-        for report in reports:
+        dropdown_values = get_sidebar_dropdown_values()
 
-            # get report properties
-            report_title = report.title
-            report_link = report.link
-            report_date = report.timestamp.strftime('%d.%m.%Y')
-
-            # add the date to the title
-            report_title += f' ({report_date})'
-
-            headlines.append(headline_to_li(report_title, report_link))            
-        
-        return headlines
+        return dropdown_values
     
     # toggle the layers widget
     @app.callback(
@@ -987,10 +940,6 @@ def callbacks_map(app: Dash):
         This callback is triggered when the toggle layers button is clicked.
         It toggles the visibility of the layers list.
         """
-
-        # if the toggle button was not clicked, do nothing
-        if n_clicks is None:
-            raise PreventUpdate
         
         # on  odd clicks, hide
         # on even clicks, show
@@ -1001,17 +950,17 @@ def callbacks_map(app: Dash):
             overlay_checklist_style['display'] = 'block'
             return [overlay_checklist_style, '-']
     
-    # toggle the rss headlines widget
+    # toggle the reports widget
     @app.callback(
-        [Output('rss_headlines', 'style'), Output('button_toggle_rss', 'children')],
-        [Input('button_toggle_rss', 'n_clicks')],
-        [State('rss_headlines', 'style')],
+        [Output('div_reports', 'style'), Output('button_toggle_reports', 'children')],
+        [Input('button_toggle_reports', 'n_clicks')],
+        [State('div_reports', 'style')],
         prevent_initial_call=True
     )
-    def toggle_visibility_rss(n_clicks, rss_headlines_style):
+    def toggle_visibility_reports(n_clicks, reports_headlines_style):
         """
-        This callback is triggered when the toggle rss button is clicked.
-        It toggles the visibility of the rss headlines list.
+        This callback is triggered when the toggle reports button is clicked.
+        It toggles the visibility of the reports widget.
         """
 
         # if the toggle button was not clicked, do nothing
@@ -1021,11 +970,11 @@ def callbacks_map(app: Dash):
         # on  odd clicks, hide
         # on even clicks, show
         if n_clicks % 2 == 1:
-            rss_headlines_style['display'] = 'none'
-            return [rss_headlines_style, '+']
+            reports_headlines_style['display'] = 'none'
+            return [reports_headlines_style, '+']
         else:
-            rss_headlines_style['display'] = 'block'
-            return [rss_headlines_style, '-']
+            reports_headlines_style['display'] = 'block'
+            return [reports_headlines_style, '-']
     
     # toggle the event range widget
     @app.callback(

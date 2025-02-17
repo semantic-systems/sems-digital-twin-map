@@ -1,0 +1,32 @@
+{
+    "bluesky": {
+        "name": "Bluesky",
+        "color": "#1185FE",
+        "text_field": "text"
+    },
+    "mastodon": {
+        "name": "Mastodon",
+        "color": "#633AE2",
+        "text_field": "text"
+    },
+    "reddit": {
+        "name": "Reddit",
+        "color": "#FF4500",
+        "text_field": "title"
+    },
+    "youtube": {
+        "name": "YouTube",
+        "color": "#FE0000",
+        "text_field": "title"
+    },
+    "twitter": {
+        "name": "Twitter",
+        "color": "#00ACEE",
+        "text_field": "text"
+    },
+    "rss": {
+        "name": "RSS",
+        "color": "#FA6400",
+        "text_field": "title"
+    }
+}

@@ -3,7 +3,7 @@ from dash.long_callback import DiskcacheLongCallbackManager
 import diskcache
 
 # map layout imports
-from app.layout.map import get_layout_map, callbacks_map
+from app.layout.map.map import get_layout_map, callbacks_map
 from app.layout.scenario_editor import get_layout_scenario_editor, callbacks_scenario_editor
 from app.layout.data_viewer import build_layout_data_viewer, callbacks_data_viewer
 from app.layout.nina_warnings import build_layout_nina_warnings, callbacks_nina_warnings

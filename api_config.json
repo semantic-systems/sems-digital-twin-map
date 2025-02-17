@@ -1,26 +1,6 @@
 {
     "datasets":[
         {
-            "name":"Perspektive Wohnen",
-            "id":"perspektive_wohnen",
-            "url":"https://api.hamburg.de/datasets/v1/perspektive_wohnen",
-            "collections":{
-                "perspektive_wohnen_bestehend":{
-                    "name":"Perspektive Wohnen",
-                    "layer":"Perspektive Wohnen",
-                    "popup_properties": {
-                        "Bezeichnung": "bezeichnung", 
-                        "Bezirk": "bezirk", 
-                        "Plätze": "platzzahl"
-                    },
-                    "style": {
-                        "marker_color": "beige",
-                        "marker_icon": "person-shelter"
-                    }
-                }
-            }
-        },
-        {
             "name":"Schulen",
             "id":"schulen",
             "url":"https://api.hamburg.de/datasets/v1/schulen",
