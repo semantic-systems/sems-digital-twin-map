@@ -35,7 +35,7 @@ TEXT_FIELD = {
 SEARCH_QUERY = 'hamburg sturm'
 SEARCH_LIMIT = 25
 SEARCH_SUBREDDITS = ['hamburg', 'de']
-SEARCH_PLATFORMS = ['rss'] # ['mastodon', 'bluesky', 'reddit', 'youtube', 'rss']
+SEARCH_PLATFORMS = ['mastodon', 'bluesky', 'reddit', 'youtube', 'rss']
 SEARCH_MANDATORY_KEYWORDS = ['hamburg']
 SEARCH_OPTIONAL_KEYWORDS = ['sturm', 'storm', 'flut', 'flood', 'unwetter', 'regen', 'rain']
 SEARCH_N_KEYWORDS = 1
@@ -152,12 +152,16 @@ def classify_posts(posts):
 
 if __name__ == '__main__':
 
+    # an initial sleep, because the api might not be ready yet
+    print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
+    time.sleep(30)
+
     while True:
 
-        if VERBOSE: print('Requesting... ', end='', flush=True)
+        if VERBOSE: print('Requesting... ', flush=True)
         posts = search_posts()
 
-        if VERBOSE: print('Classifying... ', end='', flush=True)
+        if VERBOSE: print('Classifying... ', flush=True)
         posts = classify_posts(posts)
 
         if VERBOSE: print('Saving... ', flush=True)
