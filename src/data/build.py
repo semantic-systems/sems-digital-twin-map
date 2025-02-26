@@ -30,7 +30,7 @@ def api_to_db(session, refresh=True, verbose=False):
     # iterate over all api configs
     for dataset_config in tqdm(dataset_configs, disable=not verbose, leave=False):
 
-        # split the line at the comma
+        # get the dataset url and collection identifiers
         url = dataset_config['url']
         collection_identifiers = dataset_config['collections'].keys()
 
@@ -42,6 +42,7 @@ def api_to_db(session, refresh=True, verbose=False):
         dataset_name = dataset_config.get('name', dataset_response['title'])
         dataset_description = dataset_response['description']
 
+        # create and save the dataset
         dataset = Dataset(
             name=dataset_name,
             description=dataset_description,
@@ -156,7 +157,7 @@ def api_to_db(session, refresh=True, verbose=False):
 
 def refresh(session, verbose=False):
     """
-    Gets all Datasets in the database, requests their data and saves it into the database.
+    Gets all Datasets in the database, requests their features and saves them in the database.
     This overwrites existing database entries for Feature only.
     """
 
@@ -282,8 +283,8 @@ def create_event_entries(session):
         session.commit()
     
     if db_style_events is None:
+
         # default style for events
-        # TODO: cleaner to read these from a config json file
         db_style_events = Style(
             name             = 'Events',
             popup_properties = {'Type': 'event_type', 'Time': 'time', 'Timestamp': 'timestamp'},
@@ -307,6 +308,7 @@ def create_event_entries(session):
         session.commit()
     
     if db_style_predictions is None:
+
         # default style for predictions
         db_style_predictions = Style(
             name             = 'Predictions',
@@ -425,7 +427,7 @@ def get_default_style():
 def build_if_uninitialized():
     """
     Check if the database is uninitialized and if it is, run `build()`.
-    Returns True if the database is uninitialized.
+    Returns True if the database is uninitialized, else False.
     """
 
     # connect to the database
@@ -462,8 +464,7 @@ def build_if_uninitialized():
 
     
 # build the database and populate it with data
-# only needs to be run once
-# but you should still refresh once in a while with database.refresh()
+# needs to be run when installing the project for the first time, OR when changing the database structure (i.e. adding tables to model.py)
 def build(verbose=False):
     """
     Drops all tables and rebuilds the database.
@@ -480,23 +481,23 @@ def build(verbose=False):
     if verbose: print(" Rebuilding the database")
     if verbose: print("=========================")
 
-    # connect to the database
+    # 1. connect to the database
     if verbose: print("Connecting to the database... ", end='')
     engine, session = autoconnect_db()
     if verbose: print("Done!")
 
-    # activate postGIS if not already enabled
+    # 2. activate postGIS if not already enabled
     if verbose: print("Activating extensions... ", end='')
     session.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
     session.commit()
     if verbose: print("Done!")
 
-    # force drop all tables
+    # 3. force drop all tables
     if verbose: print("Dropping existing tables... ", end='')
     Base.metadata.drop_all(engine)
     if verbose: print("Done!")
 
-    # create the tables
+    # 4. create the tables
     if verbose: print("Creating tables... ", end='')
     Base.metadata.create_all(engine)
     if verbose: print("Done!")
@@ -507,7 +508,7 @@ def build(verbose=False):
     # create_event_entries(session)
     # if verbose: print("Done!")
 
-    # transform geojson files to database entries
+    # 5. transform geojson files to database entries
     if verbose: print("Getting API Metadata... ")
     api_to_db(session, refresh=False, verbose=verbose)
 
@@ -516,7 +517,7 @@ def build(verbose=False):
     collection_count = session.query(Collection).count()
     if verbose: print(f"Saved {dataset_count} Datasets with {collection_count} Collections to the database")
 
-    # reload all datasets
+    # 6. refresh all features
     if verbose: print("Refreshing Features... ")
     refresh(session, verbose=verbose)
 
@@ -524,7 +525,7 @@ def build(verbose=False):
     feature_count = session.query(Feature).count()
     if verbose: print(f"Saved {feature_count} Features to the database")
 
-    # close the database connection
+    # 7. close the database connection
     session.close()
     engine.dispose()
 

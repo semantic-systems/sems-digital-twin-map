@@ -1,10 +1,12 @@
-# Handling API requests to api.hamburg.de
+# This file handles API requests to OGC API Features data sources
+# While it is specifically tailored to api.hamburg.de, it should work for other OGC API Features sources as well
 
 import requests
 import json
 
 from data.model import Collection, Feature
 
+# the accepted JSON types
 ACCEPTED_JSON_TYPES = ['application/json', 'application/geo+json']
 
 def get_api_collections(base_api: str):

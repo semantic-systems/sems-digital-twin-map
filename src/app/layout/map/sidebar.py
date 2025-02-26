@@ -5,131 +5,138 @@ from dash import Dash, html, dcc, Output, Input, State, callback_context, MATCH,
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 
-import subprocess
-
-# the path of the output file the social media extractor creates
-# posts are loaded from this file
-POST_SAVE_PATH = 'data/posts.json'
+from data.connect import autoconnect_db
+from data.model import Report
 
 # the path to the config file that contains the platform specific information
 SIDEBAR_CONFIG_PATH = 'src/app/layout/map/sidebar_config.json'
 
-# this class is used to load and order the data from the output file
-class PostLoader:
-    def __init__(self, path_posts, path_config):
-        self.data = self.load(path_posts)
-        self.config = self.load(path_config)
+def get_platform_config(platform):
+    """
+    Get the configuration for a specific platform.
+    """
+    with open(SIDEBAR_CONFIG_PATH, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+        return config[platform]
 
-    def load(self, path):
-        with open(path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    
-    def order_by_date(self, reverse=True, platform=None):
-        """Returns a copy of posts ordered by timestamp, latest first by default."""
+def format_report(report: Report) -> html.Li:
+    """
+    Format a single report into a html element that can be displayed in the sidebar.
+    """
 
-        # filter by platform
-        posts_platform = self.filter_by_platform(platform)
+    # get the platform and config
+    platform = report.platform                  # internal name, i.e. 'bluesky'
 
-        return sorted(posts_platform, key=lambda x: datetime.fromisoformat(x['timestamp']), reverse=reverse)
-    
-    def order_by_platform(self, reverse=False):
-        """Returns a copy of posts ordered alphabetically by platform."""
-        return sorted(self.data, key=lambda x: x['platform'].lower())
-    
-    def get_platforms(self):
-        """Returns a list of all platforms in the data."""
-        platforms = list(set(post['platform'] for post in self.data))
-        return platforms
-    
-    def filter_by_platform(self, platform):
-        """
-        Get all posts from a specific platform.
-        """
-        if platform is None:
-            # return all posts
-            posts_platform = self.data
-        else:
-            # iterate and keep only posts from the target platform
-            posts_platform = []
-            for post in self.data:
-                if post['platform'] == platform:
-                    posts_platform.append(post)
-        
-        return posts_platform
-    
-    def __len__(self):
-        return len(self.data)
-    
-    def format_post_html(self, post):
+    if platform.startswith('rss'):
+        platform = 'rss'
 
-        # get the platform and config
-        platform = post['platform']
-        platform_config = self.config[platform]
+    platform_config = get_platform_config(platform)
 
-        # get the headline and url
-        text_field = platform_config['text_field']
-        text  = post.get(text_field, 'Error: No text found')
-        url = post.get('url', '#')
+    # get the headline and url
+    text = report.text
+    url = report.url
 
-        # format the text and shorten it if it is too long
-        text = text.replace('\n', ' ')
-        if len(text) > 100:
-            text = text[:100] + '...'
+    # format the text and shorten it if it is too long
+    text = text.replace('\n', ' ')
+    if len(text) > 100:
+        text = text[:100] + '...'
 
-        # get the formatting of the platform
-        platform_name = platform_config['name']
-        color = platform_config['color']
-        timestamp = post['timestamp']
-        timestamp = datetime.fromisoformat(timestamp).strftime('%H:%M %d.%m.%Y')
+    platform_name = platform_config['name']     # display name, i.e. 'Bluesky'
+    color = platform_config['color']            # color of the platform, i.e. #1185FE
+    timestamp = report.timestamp.strftime('%H:%M %d.%m.%Y')
+    event_type = report.event_type
 
-        # build the desciptor
-        if platform == 'rss':
-            # if the platform is rss, we dont want to show 'rss', but the news feed name
-            feed_name = post.get('feed', 'Unknown Feed')
-            descriptor_text = f'{feed_name} - {timestamp}'
-        else:
-            descriptor_text = f'{platform_name} - {timestamp}'
+    # build the desciptor
+    if platform == 'rss':
+        # if the platform is rss, we dont want to show 'rss', but the news feed name
+        feed_name = report.platform.split('/')[1]
+        descriptor_text = f'{feed_name} - {event_type} - {timestamp}'
+    else:
+        descriptor_text = f'{platform_name} - {event_type} - {timestamp}'
 
-        return html.Li(
-                html.A(
-                    children=[
-                        text,
-                        html.P(
-                            descriptor_text,
-                            style={
-                                'font-size': '10px',
-                                'color': 'gray'
-                            }
-                        )
-                    ],
-                    href=url,
-                    target='_blank',
-                    rel='noopener noreferrer'
-                ),
+    return html.Li(
+            html.A(
+                children=[
+                    text,
+                    html.P(
+                        descriptor_text,
+                        style={
+                            'font-size': '10px',
+                            'color': 'gray'
+                        }
+                    )
+                ],
+                href=url,
+                target='_blank',
+                rel='noopener noreferrer'
+            ),
+            style={
+                'margin-bottom': '10px',
+                'border-left': f'5px solid {color}',
+                'border-radius': '3px',
+                'padding-left': '5px',
+            }
+        )
+
+def format_reports(reports: list, n=25) -> list:
+    """
+    Formats the reports into a list of html elements that can be displayed in the sidebar.
+    """
+
+    # if the list is empty, return a placeholder
+    if len(reports) == 0:
+        return [
+            html.Li(
+                html.I('No reports available.'),
                 style={
-                    'margin-bottom': '10px',
-                    'border-left': f'5px solid {color}',
-                    'border-radius': '3px',
-                    'padding-left': '5px',
+                    'color': 'gray',
+                    'min-height': '50px',
+                    'padding-top': '25px',
+                    'text-align': 'center'
                 }
             )
-    
-    def format_posts_html(self, posts, n=25):
-        return [self.format_post_html(post) for post in posts[:n]]
-    
-def get_sidebar_content(n=25, order_by='date', platform=None):
-    post_loader = PostLoader(POST_SAVE_PATH, SIDEBAR_CONFIG_PATH)
+        ]
 
-    if order_by == 'date':
-        posts = post_loader.order_by_date(platform=platform)
-    elif order_by == 'platform':
-        posts = post_loader.order_by_platform(platform=platform)
+    return [format_report(report) for report in reports[:n]]
+
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None):
+    """
+    Returns the n most recent posts from the reports server (posts.json).
+    You can also filter by platform and event type.
+    """
+
+    # get all Reports from the database where the platform==filter_platform and the event_type==filter_event_type
+    engine, session = autoconnect_db()
+
+    if filter_platform and filter_event_type:
+        reports = session.query(Report).filter(Report.platform.like(f'{filter_platform}%'), Report.event_type == filter_event_type).order_by(Report.timestamp.desc()).all()
+    elif filter_platform:
+        reports = session.query(Report).filter(Report.platform.like(f'{filter_platform}%')).order_by(Report.timestamp.desc()).all()
+    elif filter_event_type:
+        reports = session.query(Report).filter(Report.event_type == filter_event_type).order_by(Report.timestamp.desc()).all()
     else:
-        raise ValueError(f"Invalid order_by value: {order_by}. Can be 'date' or 'platform'.")
+        reports = session.query(Report).order_by(Report.timestamp.desc()).all()
 
-    return post_loader.format_posts_html(posts)
+    session.close()
 
-def get_sidebar_dropdown_values():
-    post_loader = PostLoader(POST_SAVE_PATH, SIDEBAR_CONFIG_PATH)
+    return format_reports(reports, n)
 
-    return post_loader.get_platforms()
+def get_sidebar_dropdown_platform_values():
+
+    # get all the platforms from the config
+    with open(SIDEBAR_CONFIG_PATH, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+        platforms = config.keys()
+
+    return list(platforms)
+
+def get_sidebar_dropdown_event_type_values():
+
+    # get the event_types of all Reports in the database
+    engine, session = autoconnect_db()
+    event_types = session.query(Report.event_type).distinct().all()
+    event_types = [event_type[0] for event_type in event_types]
+
+    session.close()
+
+    return event_types

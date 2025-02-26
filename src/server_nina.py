@@ -7,7 +7,7 @@ from data.req_nina import save_alerts
 if __name__ == '__main__':
 
     VERBOSE = True
-    REFRESH_RATE = 600   # in seconds
+    REFRESH_RATE = 3600   # in seconds
 
     if VERBOSE:
         print("=========================")

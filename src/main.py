@@ -18,8 +18,8 @@ def main():
 
     if len(params) > 0:
         
-        # if launched with parameter -help, print the help message
-        if '--help' in params :
+        # if launched with parameter --help, print the help message
+        if '--help' in params:
             print("""Launch Parameters:
                     -rebuild: rebuilds the database
                     -verbose: prints status information when rebuilding the database. Must be used with -rebuild
@@ -27,18 +27,17 @@ def main():
                     """)
             return
         
-        # if launched with parameter -rebuild, rebuild the database
+        # if launched with parameter --rebuild, rebuild the database
         if '--rebuild' in params or '-r' in params:
 
-            # if launched with parameter -verbose, print more information
-            verbose = '-verbose' in params
+            # if launched with parameter --verbose, print more information
+            verbose = '--verbose' in params or '-v' in params
 
             # rebuild the database
             build(verbose=verbose)
         
-        debug = '--debug' in params  # True if called with -debug
-
-        print('--debug' in params)
+        # if launched with parameter --debug, run the app in debug mode
+        debug = '--debug' in params or '-d' in params
 
     # inspect to see if the database has been built
     # if not, build it

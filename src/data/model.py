@@ -9,7 +9,7 @@ from geoalchemy2 import Geometry
 
 Base = declarative_base()
 
-# Association Table for many-to-many relationship between FeatureSets and Scenarios
+# association Table for many-to-many relationship between FeatureSets and Scenarios
 feature_set_scenario_association = Table(
     'feature_set_scenario_association',
     Base.metadata,
@@ -23,8 +23,8 @@ class Feature(Base):
     Table name: features
     - `properties` [JSON] Properties of the feature. You can control which properties are displayed in the popup by setting the `popup_properties` attribute of the style.
     - `timestamp` [DateTime] (Optional) Timestamp of the feature
-    - `geometry_type` [String] Type of the geometry
-    - `geometry` [Geometry] Geometry of the feature. Possible values: ```{Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon}```
+    - `geometry_type` [String] Type of the geometry Possible values: ```{Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon}```
+    - `geometry` [Geometry] Geometry of the feature.
     - `feature_set_id` [Integer] ID of the FeatureSet the feature belongs to
     - `feature_set` [FeatureSet] FeatureSet the feature belongs to
     """
@@ -60,8 +60,6 @@ class FeatureSet(Base):
 
     style_id = Column(Integer, ForeignKey('styles.id'), nullable=False)
     style = relationship('Style', back_populates='feature_sets')
-
-    features = relationship('Feature', back_populates='feature_set')
 
     collection_id = Column(Integer, ForeignKey('collections.id'), nullable=True)    # nullable, because the feature set might not be associated with a collection
     collection = relationship('Collection', back_populates='feature_sets')
@@ -138,32 +136,13 @@ class Scenario(Base):
     # Many-to-Many Relationship to FeatureSet
     feature_sets = relationship('FeatureSet', secondary=feature_set_scenario_association, back_populates='scenarios')
 
-class Colormap(Base):
-    """
-    Table name: colormaps
-    - `property` [String] Feature Property to be mapped
-    - `min_value` [Float] Minimum value of the property
-    - `max_value` [Float] Maximum value of the property
-    - `min_color` [String] Hex color for the minimum value
-    - `max_color` [String] Hex color for the maximum value
-    - `styles` [Style Array] List of styles that use the colormap
-    """
-    __tablename__ = 'colormaps'
-    id = Column(Integer, primary_key=True)
-    property = Column(String, nullable=False)
-    min_value = Column(Float, nullable=False)
-    max_value = Column(Float, nullable=False)
-    min_color = Column(String, nullable=False)
-    max_color = Column(String, nullable=False)
-    styles = relationship('Style', back_populates='colormap')
-
 class Style(Base):
     """
     Table name: styles
     For most styling attributes, check out the [Leaflet Path documentation](https://leafletjs.com/reference.html#path).
     - `name` [String] Name of the style
     - `popup_properties` [JSON] List of properties to be displayed in the popup, the value is the name of the property, the key is the label
-    - `marker_icon` [String] The icon to be used for the marker. Check out [fontawesome.com](https://fontawesome.com/search?o=r&m=free&s=solid) for a list of usable icons.
+    - `marker_icon` [String] The icon to be used for the marker. Check out [fontawesome.com](https://fontawesome.com/search?o=r&ic=free&s=solid) for a list of usable icons.
     - `marker_color` [String] Color of the marker. Possible values: ```{red, darkred, lightred, orange, beige, green, darkgreen,
     lightgreen, blue, darkblue, lightblue, purple, darkpurple, pink, cadetblue, white, gray, lightgray, black}```
     - `colormap_id` [Integer] ID of the colormap to be used for the style
@@ -191,6 +170,25 @@ class Style(Base):
     colormap_id = Column(Integer, ForeignKey('colormaps.id'), nullable=True)
     colormap = relationship('Colormap', back_populates='styles')
     feature_sets = relationship('FeatureSet', back_populates='style')
+
+class Colormap(Base):
+    """
+    Table name: colormaps
+    - `property` [String] Feature Property to be mapped
+    - `min_value` [Float] Minimum value of the property
+    - `max_value` [Float] Maximum value of the property
+    - `min_color` [String] Hex color for the minimum value
+    - `max_color` [String] Hex color for the maximum value
+    - `styles` [Style Array] List of styles that use the colormap
+    """
+    __tablename__ = 'colormaps'
+    id = Column(Integer, primary_key=True)
+    property = Column(String, nullable=False)
+    min_value = Column(Float, nullable=False)
+    max_value = Column(Float, nullable=False)
+    min_color = Column(String, nullable=False)
+    max_color = Column(String, nullable=False)
+    styles = relationship('Style', back_populates='colormap')
 
 class Alert(Base):
     """
@@ -253,11 +251,11 @@ class Report(Base):
     id = Column(Integer, primary_key=True)          # db internal id
     identifier = Column(String, nullable=False)     # unique identifier of the report as used by the source
 
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    link = Column(String, nullable=False)
-    source = Column(String, nullable=False)
+    text = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    platform = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
+    event_type = Column(String, nullable=False)
 
 # the following tables are defined in the database
 # UPDATE THIS IF YOU ADD NEW TABLES

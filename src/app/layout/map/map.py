@@ -13,7 +13,7 @@ from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, St
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
-from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_values
+from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
 
 def build_layer_checkboxes():
     """
@@ -159,18 +159,18 @@ def highlight_events_predictions(hash, map_children, hide_other=False):
     
     return map_children
 
-
-
 def get_layout_map():
     """
     Returns the layout for the map app. Callbacks need to be configured separately.
     This gets set as the child of a dcc.Tab in the main app.
     """
 
-    # build the option checkboxes
+    # pre-built the content of specific menu items
+    # like the checkboxes of the layers or the values of the dropdowns in the reports menu
     layer_checkboxes = build_layer_checkboxes()
     scenario_checkboxes = build_scenario_checkboxes()
-    report_dropdown = get_sidebar_dropdown_values()
+    reports_dropdown_platform = get_sidebar_dropdown_platform_values()
+    reports_dropdown_event_type = get_sidebar_dropdown_event_type_values()
 
     layout_map = [
         dl.Map(
@@ -323,8 +323,8 @@ def get_layout_map():
             style={
                 'position': 'absolute',
                 'float': 'left',
-                'top': '908px',
-                'left': '0',
+                'bottom': '0px',
+                'left': '0px',
                 'margin': '10px',
                 'z-index': '1001',
                 'padding': '10px',
@@ -455,9 +455,20 @@ def get_layout_map():
                     }
                 ),
                 dcc.Dropdown(
-                    options=report_dropdown,
-                    id='reports_dropdown',
+                    options=reports_dropdown_platform,
+                    id='reports_dropdown_platform',
                     optionHeight=20,
+                    placeholder='Platform',
+                    style={
+                        "margin-bottom": "10px",
+                        "font-size": "7.5pt"
+                    }
+                ),
+                dcc.Dropdown(
+                    options=reports_dropdown_event_type,
+                    id='reports_dropdown_event_type',
+                    optionHeight=20,
+                    placeholder='Event Type',
                     style={
                         "margin-bottom": "10px",
                         "font-size": "7.5pt"
@@ -487,6 +498,7 @@ def get_layout_map():
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
                 'z-index': '1000',
                 'max-height': '660px',
+                'min-height': '195px',
                 'overflow-y': 'auto',
                 'width': '250px'
             }
@@ -898,9 +910,9 @@ def callbacks_map(app: Dash):
     # update the reports
     @app.callback(
         Output('reports_list', 'children'),
-        [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown', 'value')],
+        [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value')],
     )
-    def update_reports(n_clicks, platform):
+    def update_reports(n_clicks, filter_platform, filter_event_type):
         """
         This callback is triggered every hour.
         It updates the reports component with the newest posts and reports.
@@ -910,23 +922,38 @@ def callbacks_map(app: Dash):
         if n_clicks is None:
             raise PreventUpdate
         
-        sidebar_content = get_sidebar_content(platform=platform)
+        sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type)
 
         return sidebar_content
     
     @app.callback(
-        Output('reports_dropdown', 'options'),
+        Output('reports_dropdown_platform', 'options'),
         [Input('interval_refresh_reports', 'n_intervals')],
     )
-    def update_report_dropdown(n_clicks):
+    def update_report_dropdown_platform(n_clicks):
         """
         This callback is triggered every hour.
         It updates the reports dropdown with all platforms of the current data.
         """
 
-        dropdown_values = get_sidebar_dropdown_values()
+        dropdown_platform_values = get_sidebar_dropdown_platform_values()
 
-        return dropdown_values
+        return dropdown_platform_values
+
+    @app.callback(
+        Output('reports_dropdown_event_type', 'options'),
+        [Input('interval_refresh_reports', 'n_intervals')],
+    )
+    def update_report_dropdown_event_type(n_clicks):
+        """
+        This callback is triggered every hour.
+        It updates the reports dropdown with all classes of the current data.
+        """
+
+        dropdown_class_values = get_sidebar_dropdown_event_type_values()
+
+        return dropdown_class_values
+
     
     # toggle the layers widget
     @app.callback(

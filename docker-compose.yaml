@@ -43,11 +43,18 @@ services:
       dockerfile: docker/Dockerfile_server_reports
     depends_on:
       - postgis
+      - python-social-media-requester-api
     networks:
       - rescuemate_map
     restart: always
     volumes:
       - post_data:/app/data
+  
+  python-social-media-requester-api:
+    image: sems-social-media-requester
+    networks:
+      - rescuemate_map
+    restart: always
     
   postgis:
     image: postgis/postgis
