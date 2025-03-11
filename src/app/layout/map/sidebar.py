@@ -122,6 +122,9 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None):
     return format_reports(reports, n)
 
 def get_sidebar_dropdown_platform_values():
+    """
+    Returns the list of names of platforms in the config
+    """
 
     # get all the platforms from the config
     with open(SIDEBAR_CONFIG_PATH, 'r', encoding='utf-8') as f:

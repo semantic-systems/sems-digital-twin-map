@@ -19,7 +19,7 @@ VERBOSE = True
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
 # the API URL
-API_URL = 'http://python-social-media-requester-api:5000/search'
+API_URL = 'http://python-social-media-retriever-api:5000/search'
 
 # what text to use from posts from each platform
 TEXT_FIELD = {
@@ -47,6 +47,9 @@ def save_posts(posts: list):
     """Save the posts to the database"""
 
     engine, session = autoconnect_db()
+
+    # count how many posts were saved
+    counter = 0
 
     for json_post in posts:
 
@@ -87,9 +90,13 @@ def save_posts(posts: list):
         # add the post to the session
         session.add(report)
 
+        counter += 1
+
     # commit and close the session
     session.commit()
     session.close()
+
+    return counter
 
 def search_posts() -> list:
     """Request posts from the previous week with the specified search parameters."""
@@ -165,7 +172,8 @@ if __name__ == '__main__':
         posts = classify_posts(posts)
 
         if VERBOSE: print('Saving... ', flush=True)
-        save_posts(posts)
+        saved_counter = save_posts(posts)
+        if VERBOSE: print(f'Saved {saved_counter} posts', flush=True)
 
-        if VERBOSE: print('Done! Waiting for', REQUEST_DELAY, 'seconds', flush=True)
+        if VERBOSE: print(f'Done! Waiting for {REQUEST_DELAY} seconds', flush=True)
         time.sleep(REQUEST_DELAY)

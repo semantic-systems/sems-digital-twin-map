@@ -81,3 +81,52 @@ To add features from other data sources to the map, you need to do the following
 - Create a `FeatureSet` object, which represents a logical group of features. Assign the `Layer` and `Style` objects to the `FeatureSet`.
 - Create Feature objects for all features in your data source, and assign the `FeatureSet` you just created. If you are handling GeoJSON data, you can use the `feature_to_obj` function in `build.py` to convert a GeoJSON feature to a Feature object.
 - Add all objects to the database, and commit.
+
+Here is a short example:
+
+```python
+from data.connect import autoconnect_db
+from data.model import Layer, Style, FeatureSet, Feature
+from data.build import feature_to_obj, get_default_style
+
+# connect to the database
+engine, session = autoconnect_db()
+
+# create a new layer
+layer = Layer(
+    name = "New Layer"
+)
+
+# get the default style
+style = get_default_style()
+
+# create a FeatureSet and assign the layer and style
+feature_set = FeatureSet(
+    name = "New FeatureSet",
+    layer = layer,
+    style = style
+)
+
+# if we want to add this geojson feature
+geojson_feature = {
+    "type": "Feature",
+    "geometry": {
+        "type": "Point",
+        "coordinates": [12.4924, 41.8902]
+    },
+    "properties": {
+        "name": "Colosseum"
+    }
+}
+
+# we can turn it into a Feature object like this
+feature = feature_to_obj(geojson_feature)
+feature.feature_set = feature_set   # assign the feature to the feature set
+
+# add the objects to the database and commit
+session.add_all([layer, style, feature_set, feature])
+session.commit()
+
+# close the database connection
+session.close()
+```

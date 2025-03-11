@@ -14,10 +14,10 @@ A web interface to interact with the PostgreSQL database. It is accessible under
 A simple Python server to request data from the NINA API. Every hour, this server requests the newest alerts from the NINA API, and saves them to the database. For more information, see `Alerts` in [datamodel.md](/docs/datamodel.md) and `server_nina.py`.
 
 ## python-server-reports
-A simple Python server that requests reports from the `python-social-media-requester-api`, classifies them according to event type (e.g., "fire", "flood"), and saves them to the database. For more information, see `server_reports.py`.
+A simple Python server that requests reports from the `python-social-media-retriever-api`, classifies them according to event type (e.g., "fire", "flood"), and saves them to the database. For more information, see `server_reports.py`.
 
-## python-social-media-requester-api
-A Python API that can be used to request social media data from specific social media platforms. This container is **not** contained in this project, but is from the [sems-social-media-requester](https://github.com/semantic-systems/sems-social-media-retriever) project. For more information on setting this up, see [setup.md](/docs/setup.md) and the README file of the `sems-social-media-retriever` project.
+## python-social-media-retriever-api
+A Python API that can be used to retriever social media data from specific social media platforms. This container is **not** contained in this project, but is from the [sems-social-media-retriever](https://github.com/semantic-systems/sems-social-media-retriever) project. For more information on setting this up, see [setup.md](/docs/setup.md) and the README file of the `sems-social-media-retriever` project.
 
 ## python-server-events
 A simple Python server that recieves POST requests with event data and saves them to the database. This server was used to recieve data about event propagation, which generated predictions of how one event (i.e. a fire, flood, etc) could spread. This server is currently unused, and it is unlikely that it will be used in the future. For more information, see `server_events.py`.
