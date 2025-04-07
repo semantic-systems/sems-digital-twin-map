@@ -14,6 +14,7 @@ from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
+from app.layout.map.geocoder import geolocate, get_coordinate_location
 
 def build_layer_checkboxes():
     """
@@ -313,7 +314,7 @@ def get_layout_map():
                 'z-index': '1000',
                 'right': '0',
                 'top': '60px',
-                'width:': '200px',
+                'width': '250px',
                 'color': '#333'
             }
         ),
@@ -503,6 +504,90 @@ def get_layout_map():
                 'width': '250px'
             }
         ),
+        html.Button(
+            id='button_toggle_geocoder',
+            children='-',
+            style={
+                'position': 'absolute',
+                'top': '500px',
+                'right': '0px',
+                'margin': '10px',
+                'z-index': '1001',
+                'padding': '10px',
+                'border': '1px solid #ccc',
+                'width': '35px',
+                'height': '35px'
+            }
+        ),
+        html.Div(
+            id='div_geocoder',
+            children=[
+                html.P(
+                    children='Geocoder',
+                    style={
+                        'font-size': '14pt',
+                        'font-weight': 'bold',
+                        'margin': '4px 2px 10px 2px',
+                        'text-align': 'center',
+                        'color': '#404040'
+                    }
+                ),
+                dcc.Textarea(
+                    id='geocoder_text_input',
+                    placeholder='Enter place name or description...',
+                    style={
+                        'width': '236px',
+                        'height': '60px',
+                        'padding': '6px',
+                        'font-size': '9pt',
+                        'margin-bottom': '10px',
+                        'border-radius': '4px',
+                        'border': '1px solid #ccc'
+                    }
+                ),
+                html.Button(
+                    'Geocode',
+                    id='geocoder_button',
+                    n_clicks=0,
+                    style={
+                        'width': '100%',
+                        'padding': '6px',
+                        'font-size': '9pt',
+                        'background-color': '#4CAF50',
+                        'color': 'white',
+                        'border': 'none',
+                        'border-radius': '4px',
+                        'cursor': 'pointer',
+                        'margin-bottom': '10px'
+                    }
+                ),
+                html.Hr(style={'margin': '5px 0'}),
+                html.Div(
+                    id='geocoder_output',
+                    children=[
+                        html.Div(id='geocoder_result_title', style={'font-weight': 'bold', 'font-size': '10pt', 'color': '#424242'}),
+                        html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px'}),
+                        html.Div(id='geocoder_result_lat', style={'font-size': '9pt'}),
+                        html.Div(id='geocoder_result_lon', style={'font-size': '9pt', 'margin-bottom': '5px'}),
+                        html.A(id='geocoder_result_url', href='#', target='_blank', style={'font-size': '9pt', 'display': 'block'})
+                    ]
+                )
+            ],
+            style={
+                'position': 'absolute',
+                'float': 'right',
+                'top': '500px',
+                'right': '0px',
+                'background-color': 'white',
+                'border': '1px solid #ccc',
+                'border-radius': '5px',
+                'margin': '10px',
+                'padding': '10px',
+                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                'z-index': '1000',
+                'width': '250px'
+            }
+        ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
         dcc.Interval(id='interval_refresh_reports', interval=3600000 , n_intervals=0),  # refresh the reports every hour
@@ -521,7 +606,7 @@ def callbacks_map(app: Dash):
     # meaning, we create/modify/delete markers and polygons on the map
     @app.callback(
         [
-            Output('map', 'children')
+            Output('map', 'children', allow_duplicate=True)
         ],
         [
             Input('overlay_checklist', 'value'),        # triggered when a layer is selected or deselected
@@ -532,7 +617,8 @@ def callbacks_map(app: Dash):
         ],
         [
             State('map', 'children'),
-        ]
+        ],
+        prevent_initial_call=True
     )
     def update_map(overlay_checklist_value, scenario_checklist_value, options_checklist_value, event_range_selected_data, map_tabs_value, map_children):
         """
@@ -906,6 +992,69 @@ def callbacks_map(app: Dash):
         map_children = highlight_events_predictions(feature_hash, map_children, hide_other=True)
 
         return map_children
+
+    @app.callback(
+        Output('geocoder_result_title', 'children'),
+        Output('geocoder_result_description', 'children'),
+        Output('geocoder_result_url', 'children'),
+        Output('geocoder_result_url', 'href'),
+        Output('geocoder_result_lat', 'children'),
+        Output('geocoder_result_lon', 'children'),
+        Output('map', 'viewport'),  # for zooming into the location
+        Output('map', 'children', allow_duplicate=True),  # for adding a marker to the map
+        Input('geocoder_button', 'n_clicks'),
+        State('geocoder_text_input', 'value'),
+        State('map', 'children'),   # for keeping previous markers
+        prevent_initial_call=True
+    )
+    def update_geocoder_result(n_clicks, text_value, map_children):
+        if not n_clicks or not text_value:
+            raise PreventUpdate
+
+        qid = text_value.strip()
+        title, description, lat, lon = get_coordinate_location(qid)
+
+        if lat is None or lon is None:
+            return 'Location not found', '', '', '#', '', '', {}, map_children
+
+        wikidata_link = f"https://www.wikidata.org/wiki/{qid}"
+        lat_str = f"Latitude: {lat}"
+        lon_str = f"Longitude: {lon}"
+
+        # add a marker to the map
+        marker = dl.DivMarker(
+            position=(lat, lon),
+            children=[dl.Popup(title)],
+            iconOptions=dict(
+                html=f'<i class="awesome-marker awesome-marker-icon-red leaflet-zoom-animated leaflet-interactive"></i>'
+                f'<i class="fa fa-map-pin icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
+                className='custom-div-icon',
+                iconSize=[20, 20],
+                iconAnchor=[10, 30],
+                tooltipAnchor=[10, -20],
+                popupAnchor=[-3, -31]
+            ),
+            id=f'tempmarker_{n_clicks}'
+        )
+
+        # remove all map children with id 'tempmarker_*'
+        surviving_children = []
+
+        for child in map_children:
+            if 'tempmarker_' in child['props']['id']:
+                continue
+            surviving_children.append(child)
+        
+        surviving_children.append(marker)
+
+        # this dict specifies the new map viewport
+        map_dict = {
+            'center': (lat, lon),
+            'zoom': 13,
+            'transition': 'flyTo'
+        }
+
+        return title, description, wikidata_link, wikidata_link, lat_str, lon_str, map_dict, surviving_children
     
     # update the reports
     @app.callback(
@@ -1028,6 +1177,24 @@ def callbacks_map(app: Dash):
         else:
             event_range_style['display'] = 'flex'
             return [event_range_style, '-']
+    
+    @app.callback(
+        [Output('div_geocoder', 'style'), Output('button_toggle_geocoder', 'children')],
+        [Input('button_toggle_geocoder', 'n_clicks')],
+        [State('div_geocoder', 'style')],
+        prevent_initial_call=True
+    )
+    def toggle_visibility_geocoder(n_clicks, geocoder_style):
+        """
+        This callback toggles the visibility of the Geocoder widget.
+        """
+        if n_clicks % 2 == 1:
+            geocoder_style['display'] = 'none'
+            return [geocoder_style, '+']
+        else:
+            geocoder_style['display'] = 'block'
+            return [geocoder_style, '-']
+
 
 
 
