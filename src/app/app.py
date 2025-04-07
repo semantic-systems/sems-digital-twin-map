@@ -8,6 +8,7 @@ from app.layout.scenario_editor import get_layout_scenario_editor, callbacks_sce
 from app.layout.data_viewer import build_layout_data_viewer, callbacks_data_viewer
 from app.layout.nina_warnings import build_layout_nina_warnings, callbacks_nina_warnings
 from app.layout.config import build_layout_config, callbacks_config
+from app.layout.text_geolocation import build_layout_text_geolocation, callbacks_text_geolocation
 
 def get_app():
 
@@ -40,21 +41,26 @@ def get_app():
                         label='Map',
                         children = html.Div(get_layout_map(), className='fullscreen-container') # these outer divs are here to force the tabs to fill the screen
                     ),
+                    # Tab 2: Text Geolocation
+                    dcc.Tab(
+                        label='Text Geolocation',
+                        children = html.Div(build_layout_text_geolocation(), className='fullscreen-container')
+                    ),
                     # Tab 2: The Scenario Editor
                     # dcc.Tab(
                     #     label='Scenario Editor',
                     #     children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
                     # ),
                     # Tab 3: The NINA Warnings
-                    dcc.Tab(
-                        label='NINA Warnings',
-                        children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
-                    ),
+                    # dcc.Tab(
+                    #     label='NINA Warnings',
+                    #     children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
+                    # ),
                     # Tab 4: Configuration
-                    dcc.Tab(
-                        label='Configuration',
-                        children = html.Div(build_layout_config(), className='fullscreen-container')
-                    )
+                    # dcc.Tab(
+                    #     label='Configuration',
+                    #     children = html.Div(build_layout_config(), className='fullscreen-container')
+                    # )
                     # Tab 5: The Data Viewer
                     # dcc.Tab(
                     #     label='Data Viewer',
@@ -73,5 +79,6 @@ def get_app():
     callbacks_data_viewer(app)
     callbacks_nina_warnings(app)
     callbacks_config(app)
+    callbacks_text_geolocation(app)
 
     return app
