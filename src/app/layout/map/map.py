@@ -520,7 +520,7 @@ def get_layout_map():
             children='-',
             style={
                 'position': 'absolute',
-                'top': '500px',
+                'top': '350px',
                 'right': '0px',
                 'margin': '10px',
                 'z-index': '1001',
@@ -599,7 +599,7 @@ def get_layout_map():
             style={
                 'position': 'absolute',
                 'float': 'right',
-                'top': '500px',
+                'top': '350px',
                 'right': '0px',
                 'background-color': 'white',
                 'border': '1px solid #ccc',
