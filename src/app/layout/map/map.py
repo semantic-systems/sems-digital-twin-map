@@ -14,7 +14,7 @@ from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
-from app.layout.map.geocoder import geolocate, get_coordinate_location
+from app.layout.map.geocoder import geolocate
 
 def build_layer_checkboxes():
     """
@@ -1020,12 +1020,12 @@ def callbacks_map(app: Dash):
         State('geocoder_text_input', 'value'),
         prevent_initial_call=True
     )
-    def geocode_text(n_clicks, txt):
+    def geocode_text(n_clicks, text):
 
-        if not n_clicks or not txt:
+        if not n_clicks or not text:
             raise PreventUpdate
         
-        result = geolocate(txt)
+        result = geolocate(text)
 
         entities = result.get('geo_linked_entities', [])
 
