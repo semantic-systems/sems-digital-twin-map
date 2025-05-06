@@ -38,6 +38,7 @@ def main():
         
         # if launched with parameter --debug, run the app in debug mode
         debug = '--debug' in params or '-d' in params
+        if debug: print("Running in debug mode")
 
     # inspect to see if the database has been built
     # if not, build it
@@ -47,9 +48,6 @@ def main():
     m = get_app()
 
     m.title = "Hamburg Data Map"
-
-    print(debug)
-
     # run the app
     m.run(host='0.0.0.0', debug=debug)
 

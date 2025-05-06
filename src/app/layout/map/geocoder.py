@@ -1,14 +1,16 @@
 import requests
+import json
 
 def geolocate(text: str):
     """
     In the future, this will hit the geolocation API and return the Wikidata ID.
     """
 
-    # for now, just assume the text is a valid QID
-    qid = text.strip()
+    # for now, just load and return output.json
+    with open('src/app/layout/map/output.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
 
-    return get_coordinate_location(qid)
+    return data
 
 def get_coordinate_location(qid, lang='en'):
     """
@@ -30,7 +32,7 @@ def get_coordinate_location(qid, lang='en'):
         response.raise_for_status()
         data = response.json()
 
-        title = data.get("labels", {}).get(lang, "Not found")
+        title = data.get("labels", {}).get(lang, "No title available")
         description = data.get("descriptions", {}).get(lang, "No description available")
 
         # capitalize the first letter of the description
@@ -47,4 +49,4 @@ def get_coordinate_location(qid, lang='en'):
         return title, description, lat, lon
 
     except (requests.RequestException, ValueError, KeyError):
-        return "Not found", "No description available", None, None
+        return None, None, None, None

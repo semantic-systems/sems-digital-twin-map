@@ -177,6 +177,11 @@ def get_layout_map():
         dl.Map(
             children = [
                 dl.TileLayer(
+                    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    id='tile_layer_osm'
+                ),
+                dl.TileLayer(
                     url='https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_farbe/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png',
                     attribution='&copy; <a href="https://basemap.de/">basemap.de</a>',
                     id='tile_layer'
@@ -191,7 +196,7 @@ def get_layout_map():
                 'z-index': '0'
             },
             id='map'
-            ),
+        ),
         html.Button(
             id='button_toggle_layers',
             children='-',
@@ -546,7 +551,7 @@ def get_layout_map():
                     }
                 ),
                 html.Button(
-                    'Geocode',
+                    'Find',
                     id='geocoder_button',
                     n_clicks=0,
                     style={
@@ -562,6 +567,18 @@ def get_layout_map():
                     }
                 ),
                 html.Hr(style={'margin': '5px 0'}),
+                dcc.Dropdown(
+                    id='geocoder_entity_dropdown',
+                    placeholder='Select location',
+                        optionHeight=24,
+                    style={
+                        'width': '236px',
+                        'height': '34px',
+                        'font-size': '9pt',
+                        'margin-bottom': '10px',
+                        'display': 'none'
+                    }
+                ),
                 html.Div(
                     id='geocoder_output',
                     children=[
@@ -590,6 +607,7 @@ def get_layout_map():
         ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
+        dcc.Store(id='geocoder_entities', data=[]),                # the geocoder entities, selected by geocoder_entity_dropdown
         dcc.Interval(id='interval_refresh_reports', interval=3600000 , n_intervals=0),  # refresh the reports every hour
         html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ]
@@ -992,6 +1010,33 @@ def callbacks_map(app: Dash):
         map_children = highlight_events_predictions(feature_hash, map_children, hide_other=True)
 
         return map_children
+    
+    @app.callback(
+        Output('geocoder_entity_dropdown', 'options'),
+        Output('geocoder_entity_dropdown', 'value'),
+        Output('geocoder_entity_dropdown', 'style'),
+        Output('geocoder_entities', 'data'),
+        Input('geocoder_button', 'n_clicks'),
+        State('geocoder_text_input', 'value'),
+        prevent_initial_call=True
+    )
+    def geocode_text(n_clicks, txt):
+
+        if not n_clicks or not txt:
+            raise PreventUpdate
+        
+        result = geolocate(txt)
+
+        entities = result.get('geo_linked_entities', [])
+
+        # no entities found
+        if not entities:
+            return [], None, {'display': 'none'}, []
+        
+        opts = [{'label': e['name'], 'value': i} for i, e in enumerate(entities)]
+        
+        return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, entities
+
 
     @app.callback(
         Output('geocoder_result_title', 'children'),
@@ -1000,61 +1045,81 @@ def callbacks_map(app: Dash):
         Output('geocoder_result_url', 'href'),
         Output('geocoder_result_lat', 'children'),
         Output('geocoder_result_lon', 'children'),
-        Output('map', 'viewport'),  # for zooming into the location
-        Output('map', 'children', allow_duplicate=True),  # for adding a marker to the map
-        Input('geocoder_button', 'n_clicks'),
-        State('geocoder_text_input', 'value'),
-        State('map', 'children'),   # for keeping previous markers
+        Output('map', 'viewport'),
+        Output('map', 'children', allow_duplicate=True),
+        Input('geocoder_entity_dropdown', 'value'),
+        State('geocoder_entities', 'data'),
+        State('map', 'children'),
         prevent_initial_call=True
     )
-    def update_geocoder_result(n_clicks, text_value, map_children):
-        if not n_clicks or not text_value:
+    def show_entities(sel, entities, children):
+
+        if sel is None or not entities:
             raise PreventUpdate
-
-        qid = text_value.strip()
-        title, description, lat, lon = get_coordinate_location(qid)
-
-        if lat is None or lon is None:
-            return 'Location not found', '', '', '#', '', '', {}, map_children
-
-        wikidata_link = f"https://www.wikidata.org/wiki/{qid}"
-        lat_str = f"Latitude: {lat}"
-        lon_str = f"Longitude: {lon}"
-
-        # add a marker to the map
-        marker = dl.DivMarker(
-            position=(lat, lon),
-            children=[dl.Popup(title)],
-            iconOptions=dict(
-                html=f'<i class="awesome-marker awesome-marker-icon-red leaflet-zoom-animated leaflet-interactive"></i>'
-                f'<i class="fa fa-map-pin icon-white" aria-hidden="true" style="position: relative; top: 33% !important; left: 37% !important; transform: translate(-50%, -50%) scale(1.2);"></i>',
-                className='custom-div-icon',
-                iconSize=[20, 20],
-                iconAnchor=[10, 30],
-                tooltipAnchor=[10, -20],
-                popupAnchor=[-3, -31]
-            ),
-            id=f'tempmarker_{n_clicks}'
-        )
-
-        # remove all map children with id 'tempmarker_*'
-        surviving_children = []
-
-        for child in map_children:
-            if 'tempmarker_' in child['props']['id']:
-                continue
-            surviving_children.append(child)
         
-        surviving_children.append(marker)
+        # sel holds the index of the selected entity in the dropdown
+        sel = int(sel)
 
-        # this dict specifies the new map viewport
-        map_dict = {
-            'center': (lat, lon),
+        # remove previous geocoder markers
+        children = [c for c in children if not (
+            isinstance(c['props']['id'], str) and c['props']['id'].startswith('tempmarker_'))
+        ]
+
+        # build markers for every entity
+        for i, e in enumerate(entities):
+            lat = float(e['lat'])
+            lon = float(e['lon'])
+            title = e.get('name', '')
+            desc = e.get('display_name', '')
+            lat_s = f'Latitude: {lat}'
+            lon_s = f'Longitude: {lon}'
+            url = f"https://www.openstreetmap.org/{e['osm_type']}/{e['osm_id']}"
+
+            popup = dl.Popup(
+                children=[
+                    html.H4(title, style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0', 'font-weight': 'bold'}),
+                    html.P(desc,   style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(lat_s,  style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(lon_s,  style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.A('Open in OSM', href=url, target='_blank', style={'font-size': '10pt', 'margin': '4px 0 0'})
+                ],
+                position=(lat, lon)
+            )
+
+            marker = dl.DivMarker(
+                position=(lat, lon),
+                children=[popup],
+                iconOptions=dict(
+                    html=f'<i class="awesome-marker awesome-marker-icon-darkred leaflet-zoom-animated leaflet-interactive"></i>'
+                        '<i class="fa fa-map-pin icon-white" aria-hidden="true" '
+                        'style="position: relative; top: 33% !important; left: 37% !important; '
+                        'transform: translate(-50%, -50%) scale(1.2);"></i>',
+                    className='custom-div-icon',
+                    iconSize=[20, 20], iconAnchor=[10, 30],
+                    tooltipAnchor=[10, -20], popupAnchor=[-3, -31]
+                ),
+                id=f'tempmarker_{i}_{sel}'
+            )
+
+            children.append(marker)
+
+        # selected entity for sidebar + viewport
+        sel_e = entities[sel]
+        sel_lat = float(sel_e['lat'])
+        sel_lon = float(sel_e['lon'])
+        sel_title = sel_e.get('name', '')
+        sel_desc = sel_e.get('display_name', '')
+        sel_url = f"https://www.openstreetmap.org/{sel_e['osm_type']}/{sel_e['osm_id']}"
+
+        viewport = {
+            'center': (sel_lat, sel_lon),
             'zoom': 13,
-            'transition': 'flyTo'
+            'transition': 'flyTo',
+            'options': {'duration': 0.5}
         }
 
-        return title, description, wikidata_link, wikidata_link, lat_str, lon_str, map_dict, surviving_children
+        return sel_title, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', viewport, children
+
     
     # update the reports
     @app.callback(
