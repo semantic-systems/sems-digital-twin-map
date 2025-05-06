@@ -6,13 +6,13 @@
             "url":"https://api.hamburg.de/datasets/v1/schulen",
             "collections":{
                 "staatliche_schulen": {
-                    "name": "Staatliche Schule",
-                    "layer": "Schulen",
+                    "name": "State School",
+                    "layer": "Schools",
                     "popup_properties": {
                         "Name": "schulname", 
-                        "Typ": "kapitelbezeichnung", 
-                        "Adresse": "adresse_strasse_hausnr",
-                        "Schüler": "anzahl_schueler",
+                        "Type": "kapitelbezeichnung", 
+                        "Adress": "adresse_strasse_hausnr",
+                        "Pupils": "anzahl_schueler",
                         "Tel.Nr.": "schul_telefonnr",
                         "Homepage": "schul_homepage"
                     },
@@ -22,13 +22,13 @@
                     }
                 },
                 "nicht_staatliche_schulen": {
-                    "name": "Nicht-Staatliche Schule",
-                    "layer": "Schulen",
+                    "name": "Private School",
+                    "layer": "Schools",
                     "popup_properties": {
                         "Name": "schulname", 
                         "Typ": "kapitelbezeichnung", 
                         "Adresse": "adresse_strasse_hausnr",
-                        "Schüler": "anzahl_schueler",
+                        "Pupils": "anzahl_schueler",
                         "Tel.Nr.": "schul_telefonnr",
                         "Homepage": "schul_homepage"
                     },
@@ -45,12 +45,12 @@
             "url":"https://api.hamburg.de/datasets/v1/pflegeeinrichtungen",
             "collections":{
                 "vollstationaere_pflegeeinrichtungen": {
-                    "name": "Pflegeeinrichtung",
-                    "layer":"Pflegeeinrichtungen",
+                    "name": "Nursing Home",
+                    "layer":"Nursing Homes",
                     "popup_properties": {
                         "Name": "pflegeeinrichtung", 
-                        "Adresse": "adresse",
-                        "Plätze": "plaetze",
+                        "Adress": "adresse",
+                        "Beds": "plaetze",
                         "Homepage": "homepage",
                         "Tel.Nr.": "telefonnummer",
                         "Email": "email"
@@ -68,14 +68,14 @@
             "url":"https://api.hamburg.de/datasets/v1/krankenhaeuser",
             "collections":{
                 "gesundheit_krankenhaeuser": {
-                    "name": "Krankenhaus",
-                    "layer":"Krankenhäuser",
+                    "name": "Hospital",
+                    "layer":"Hospitals",
                     "popup_properties": {
                         "Name": "name", 
-                        "Adresse": "adresse",
-                        "Ort": "ort",
+                        "Adress": "adresse",
+                        "Place": "ort",
                         "Homepage": "homepage",
-                        "Planbetten": "planbetten"
+                        "Capacity": "planbetten"
                     },
                     "style": {
                         "marker_color": "red",
@@ -90,15 +90,15 @@
             "url":"https://api.hamburg.de/datasets/v1/notunterkuenfte",
             "collections":{
                 "notunterkuenfte": {
-                    "name": "Notunterkunft",
-                    "layer":"Notunterkünfte",
+                    "name": "Emergency Shelter",
+                    "layer":"Emergency Shelters",
                     "popup_properties": {
-                        "Bezeichnung": "bezeichnung",
-                        "Adresse": "adresse",
-                        "Max. Kapazität": "maximale_kapazitaet",
-                        "Betreuungsbeuftrager": "betreuungsbeauftragter_hilfsorganisation",
-                        "Kernmannschaft": "kernmannschaften_hilfsorganisation",
-                        "Ansprechpartner": "kernmannschaften_ansprechpartner"
+                        "Name": "bezeichnung",
+                        "Adress": "adresse",
+                        "Max. Capacity": "maximale_kapazitaet",
+                        "Organization": "betreuungsbeauftragter_hilfsorganisation",
+                        "Team": "kernmannschaften_hilfsorganisation",
+                        "Representative": "kernmannschaften_ansprechpartner"
                     },
                     "style": {
                         "marker_color": "orange",
@@ -113,13 +113,13 @@
             "url":"https://api.hamburg.de/datasets/v1/feuerwehrstandorte",
             "collections":{
                 "berufsfeuerwehr": {
-                    "name": "Berufsfeuerwehr",
-                    "layer": "Feuerwehr",
+                    "name": "Professional Fire Department",
+                    "layer": "Fire Departments",
                     "popup_properties": {
                         "Name": "bezeichnung",
-                        "Strasse": "strasse",
-                        "Hausnummer": "hausnummer",
-                        "Ort": "ab_ort",
+                        "Street": "strasse",
+                        "House Number": "hausnummer",
+                        "Place": "ab_ort",
                         "PLZ": "postleitzahl"
                     },
                     "style": {
@@ -128,13 +128,13 @@
                     }
                 },
                 "freiwillige_feuerwehr": {
-                    "name": "Freiwillige Feuerwehr",
-                    "layer":"Feuerwehr",
+                    "name": "Voluntary Fire Department",
+                    "layer":"Fire Departments",
                     "popup_properties": {
                         "Name": "bezeichnung",
-                        "Strasse": "strasse",
-                        "Hausnummer": "hausnummer",
-                        "Ort": "ab_ort",
+                        "Street": "strasse",
+                        "House Number": "hausnummer",
+                        "Place": "ab_ort",
                         "PLZ": "postleitzahl"
                     },
                     "style": {
@@ -150,16 +150,15 @@
             "url":"https://api.hamburg.de/datasets/v1/deichinformationen",
             "collections":{
                 "hauptdeichlinie": {
-                    "name": "Hauptdeichlinie",
-                    "layer":"Hauptdeichlinie",
+                    "name": "Main Dike",
+                    "layer":"Main Dike",
                     "popup_properties": {
                         "Name": "anlagenname",
-                        "Typ": "anlagentyp",
-                        "Höhe (m)": "schutzhoehe_m",
-                        "Verteidigungsgebiet": "deichverteidigungsgebiet",
-                        "Aufsicht": "zustaendigkeit_aufsicht",
-                        "Unterhaltung": "zustaendigkeit_unterhaltung",
-                        "Deichwart": "deichwart"
+                        "Type": "anlagentyp",
+                        "Height (m)": "schutzhoehe_m",
+                        "Area": "deichverteidigungsgebiet",
+                        "Supervision": "zustaendigkeit_aufsicht",
+                        "Maintenance": "zustaendigkeit_unterhaltung"
                     },
                     "style": {
                         "line_weight": 20
@@ -180,12 +179,12 @@
             "url":"https://api.hamburg.de/datasets/v1/wasserrettungspunkte",
             "collections":{
                 "wasserrettungspunkte": {
-                    "name": "Wasserrettungspunkt",
-                    "layer":"Wasserrettungspunkte",
+                    "name": "Water Rescue Point",
+                    "layer":"Water Rescue Points",
                     "popup_properties": {
                         "Nr.": "wasserrettungspunkt",
-                        "Straße": "strasse",
-                        "Beschreibung": "beschreibung"
+                        "Street": "strasse",
+                        "Description": "beschreibung"
                     },
                     "style": {
                         "marker_color": "darkblue",
@@ -200,11 +199,11 @@
             "url":"https://api.hamburg.de/datasets/v1/uesg",
             "collections":{
                 "ueberschwemmungsgebiete":{
-                    "name":"Überschwemmungsgebiet",
-                    "layer":"Überschwemmungsgebiete",
+                    "name":"Flooding Area",
+                    "layer":"Flooding Areas",
                     "popup_properties": {
                         "Name": "name",
-                        "Verordnung": "verordnung"
+                        "Enactment": "verordnung"
                     }
                 }
             }
@@ -215,12 +214,12 @@
             "url":"https://api.hamburg.de/datasets/v1/hvv_einzugsbereiche",
             "collections":{
                 "haltestellenbereiche_bahn": {
-                    "name": "Bahnhaltestelle",
-                    "layer":"Bahnhaltestellen",
+                    "name": "Train Station",
+                    "layer":"Train Stations",
                     "popup_properties": {
                         "Name": "name",
-                        "Linien": "linien",
-                        "Art": "art"
+                        "Lines": "linien",
+                        "Type": "art"
                     },
                     "style": {
                         "marker_color": "lightblue",
@@ -228,12 +227,12 @@
                     }
                 },
                 "haltestellenbereiche_bus": {
-                    "name": "Bushaltestelle",
-                    "layer":"Bushaltestellen",
+                    "name": "Bus Stop",
+                    "layer":"Bus Stops",
                     "popup_properties": {
                         "Name": "name",
-                        "Linien": "linien",
-                        "Art": "art"
+                        "Lines": "linien",
+                        "Type": "art"
                     },
                     "style": {
                         "marker_color": "orange",
@@ -241,12 +240,12 @@
                     }
                 },
                 "haltestellenbereiche_faehre": {
-                    "name": "Fährenhaltestelle",
-                    "layer":"Fährenhaltestellen",
+                    "name": "Ferry Stop",
+                    "layer":"Ferry Stops",
                     "popup_properties": {
                         "Name": "name",
-                        "Linien": "linien",
-                        "Art": "art"
+                        "Lines": "linien",
+                        "Type": "art"
                     },
                     "style": {
                         "marker_color": "green",

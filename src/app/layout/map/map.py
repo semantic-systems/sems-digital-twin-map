@@ -16,6 +16,10 @@ from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, sty
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
 from app.layout.map.geocoder import geolocate
 
+# IMPORTANT NOTE
+# in this branch, some components have been disabled
+# you can reenable them by removing the 'display': 'none' from their style dictionary
+
 def build_layer_checkboxes():
     """
     Build the layer checkboxes for the layers control.
@@ -226,19 +230,14 @@ def get_layout_map():
                         'color': '#404040'
                     }
                 ),
+                dcc.Checklist(
+                    id='overlay_checklist',
+                    options=layer_checkboxes,
+                    value=[]
+                ),
                 dcc.Tabs(
                     id='map-tabs',
                     children=[
-                    dcc.Tab(
-                        label='Layers',
-                        children=[
-                            dcc.Checklist(
-                                id='overlay_checklist',
-                                options=layer_checkboxes,
-                                value=[]
-                            )
-                        ]
-                    ),
                     dcc.Tab(
                         label='Scenarios',
                         children=[
@@ -248,13 +247,15 @@ def get_layout_map():
                                 value=[]
                             )
                         ]
-                    )
-                ]),
+                    )],
+                    style={"display": "none"}
+                ),
                 html.Hr(
                     style={
                         'margin': '5px 4px 5px 4px',
                         'border': '0',
-                        'border-bottom': '1px solid #777'
+                        'border-bottom': '1px solid #777',
+                        "display": "none"
                     }
                 ),
                 dcc.Checklist(
@@ -264,7 +265,8 @@ def get_layout_map():
                         {'label': 'Hide Features without Timestamp', 'value': 'hide_without_timestamp'},
                         {'label': 'Filter by Timestamp', 'value': 'filter_by_timestamp'}
                         ],
-                    value=[]
+                    value=[],
+                    style={"display": "none"}
                 ),
                 # special buttons, hidden for now from the end user
                 # html.Div(
@@ -336,7 +338,8 @@ def get_layout_map():
                 'padding': '10px',
                 'border': '1px solid #ccc',
                 'width': '35px',
-                'height': '35px'
+                'height': '35px',
+                "display": "none"
             }
         ),
         html.Div(
@@ -428,7 +431,8 @@ def get_layout_map():
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
                 'border-radius': '5px',
                 'z-index': '1000',
-                'color': '#333'
+                'color': '#333',
+                "display": "none"
             }
         ),
         html.Button(
@@ -444,7 +448,8 @@ def get_layout_map():
                 'padding': '10px',
                 'border': '1px solid #ccc',
                 'width': '35px',
-                'height': '35px'
+                'height': '35px',
+                "display": "none"
             }
         ),
         html.Div(
@@ -506,7 +511,8 @@ def get_layout_map():
                 'max-height': '660px',
                 'min-height': '195px',
                 'overflow-y': 'auto',
-                'width': '250px'
+                'width': '250px',
+                "display": "none"
             }
         ),
         html.Button(
@@ -1026,6 +1032,10 @@ def callbacks_map(app: Dash):
             raise PreventUpdate
         
         result = geolocate(text)
+
+        if result is None:
+            # geolocation likely failed
+            return [], None, {'display': 'none'}, []
 
         entities = result.get('geo_linked_entities', [])
 
