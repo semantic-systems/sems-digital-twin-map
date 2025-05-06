@@ -837,7 +837,7 @@ def callbacks_map(app: Dash):
         return event_range_text, event_range_selected_data
 
     # call api to refresh the database
-    @app.long_callback(
+    @app.callback(
         [
             Output('dummy_output_1', 'children')
         ],
