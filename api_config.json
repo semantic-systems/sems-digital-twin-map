@@ -11,7 +11,7 @@
                     "popup_properties": {
                         "Name": "schulname", 
                         "Type": "kapitelbezeichnung", 
-                        "Adress": "adresse_strasse_hausnr",
+                        "Address": "Addresse_strasse_hausnr",
                         "Pupils": "anzahl_schueler",
                         "Tel.Nr.": "schul_telefonnr",
                         "Homepage": "schul_homepage"
@@ -26,8 +26,8 @@
                     "layer": "Schools",
                     "popup_properties": {
                         "Name": "schulname", 
-                        "Typ": "kapitelbezeichnung", 
-                        "Adresse": "adresse_strasse_hausnr",
+                        "Type": "kapitelbezeichnung", 
+                        "Addresse": "Addresse_strasse_hausnr",
                         "Pupils": "anzahl_schueler",
                         "Tel.Nr.": "schul_telefonnr",
                         "Homepage": "schul_homepage"
@@ -49,8 +49,8 @@
                     "layer":"Nursing Homes",
                     "popup_properties": {
                         "Name": "pflegeeinrichtung", 
-                        "Adress": "adresse",
-                        "Beds": "plaetze",
+                        "Address": "Addresse",
+                        "Capacity": "plaetze",
                         "Homepage": "homepage",
                         "Tel.Nr.": "telefonnummer",
                         "Email": "email"
@@ -72,7 +72,7 @@
                     "layer":"Hospitals",
                     "popup_properties": {
                         "Name": "name", 
-                        "Adress": "adresse",
+                        "Address": "Addresse",
                         "Place": "ort",
                         "Homepage": "homepage",
                         "Capacity": "planbetten"
@@ -94,7 +94,7 @@
                     "layer":"Emergency Shelters",
                     "popup_properties": {
                         "Name": "bezeichnung",
-                        "Adress": "adresse",
+                        "Address": "Addresse",
                         "Max. Capacity": "maximale_kapazitaet",
                         "Organization": "betreuungsbeauftragter_hilfsorganisation",
                         "Team": "kernmannschaften_hilfsorganisation",
