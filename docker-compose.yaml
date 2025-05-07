@@ -14,18 +14,6 @@ services:
     restart: always
     volumes:
       - post_data:/app/data
-    
-  python-server-events:
-    build: 
-      context: .
-      dockerfile: docker/Dockerfile_server_events
-    ports:
-      - "8051"
-    depends_on:
-      - postgis
-    networks:
-      - rescuemate_map
-    restart: always
   
   python-server-nina:
     build: 
@@ -33,25 +21,6 @@ services:
       dockerfile: docker/Dockerfile_server_nina
     depends_on:
       - postgis
-    networks:
-      - rescuemate_map
-    restart: always
-  
-  python-server-reports:
-    build: 
-      context: .
-      dockerfile: docker/Dockerfile_server_reports
-    depends_on:
-      - postgis
-      - python-social-media-retriever-api
-    networks:
-      - rescuemate_map
-    restart: always
-    volumes:
-      - post_data:/app/data
-  
-  python-social-media-retriever-api:
-    image: sems-social-media-retriever
     networks:
       - rescuemate_map
     restart: always

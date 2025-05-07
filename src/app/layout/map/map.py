@@ -14,7 +14,7 @@ from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
-from app.layout.map.geocoder import geolocate
+from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
 
 # IMPORTANT NOTE
 # in this branch, some components have been disabled
@@ -573,6 +573,8 @@ def get_layout_map():
                     }
                 ),
                 html.Hr(style={'margin': '5px 0'}),
+                html.Div(id='geocoder_result_types', style={'font-size': '10pt', 'color': '#424242'}),
+                html.Hr(style={'margin': '5px 0'}),
                 dcc.Dropdown(
                     id='geocoder_entity_dropdown',
                     placeholder='Select location',
@@ -588,8 +590,7 @@ def get_layout_map():
                 html.Div(
                     id='geocoder_output',
                     children=[
-                        html.Div(id='geocoder_result_title', style={'font-weight': 'bold', 'font-size': '10pt', 'color': '#424242'}),
-                        html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px'}),
+                        html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px', 'font-weight': 'bold', 'color': '#424242'}),
                         html.Div(id='geocoder_result_lat', style={'font-size': '9pt'}),
                         html.Div(id='geocoder_result_lon', style={'font-size': '9pt', 'margin-bottom': '5px'}),
                         html.A(id='geocoder_result_url', href='#', target='_blank', style={'font-size': '9pt', 'display': 'block'})
@@ -613,6 +614,7 @@ def get_layout_map():
         ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
+        dcc.Store(id='geocoder_types', data={}),                   # the types of events the geocoder found
         dcc.Store(id='geocoder_entities', data=[]),                # the geocoder entities, selected by geocoder_entity_dropdown
         dcc.Interval(id='interval_refresh_reports', interval=3600000 , n_intervals=0),  # refresh the reports every hour
         html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
@@ -1022,6 +1024,7 @@ def callbacks_map(app: Dash):
         Output('geocoder_entity_dropdown', 'value'),
         Output('geocoder_entity_dropdown', 'style'),
         Output('geocoder_entities', 'data'),
+        Output('geocoder_types', 'data'),
         Input('geocoder_button', 'n_clicks'),
         State('geocoder_text_input', 'value'),
         prevent_initial_call=True
@@ -1044,12 +1047,15 @@ def callbacks_map(app: Dash):
             return [], None, {'display': 'none'}, []
         
         opts = [{'label': e['name'], 'value': i} for i, e in enumerate(entities)]
+
+        # get the types of the events
+        types = result.get('predicted_labels', [])
         
-        return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, entities
+        return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, entities, types
 
 
     @app.callback(
-        Output('geocoder_result_title', 'children'),
+        Output('geocoder_result_types', 'children'),
         Output('geocoder_result_description', 'children'),
         Output('geocoder_result_url', 'children'),
         Output('geocoder_result_url', 'href'),
@@ -1059,10 +1065,11 @@ def callbacks_map(app: Dash):
         Output('map', 'children', allow_duplicate=True),
         Input('geocoder_entity_dropdown', 'value'),
         State('geocoder_entities', 'data'),
+        State('geocoder_types', 'data'),
         State('map', 'children'),
         prevent_initial_call=True
     )
-    def show_entities(sel, entities, children):
+    def show_entities(sel, entities, types, children):
 
         if sel is None or not entities:
             raise PreventUpdate
@@ -1071,11 +1078,13 @@ def callbacks_map(app: Dash):
         sel = int(sel)
 
         # remove previous geocoder markers
-        children = [c for c in children if not (
-            isinstance(c['props']['id'], str) and c['props']['id'].startswith('tempmarker_'))
+        base = [
+            c for c in children
+            if not (isinstance(c["props"]["id"], str) and c["props"]["id"].startswith("tempmarker_"))
         ]
 
         # build markers for every entity
+        markers = []
         for i, e in enumerate(entities):
             lat = float(e['lat'])
             lon = float(e['lon'])
@@ -1111,15 +1120,38 @@ def callbacks_map(app: Dash):
                 id=f'tempmarker_{i}_{sel}'
             )
 
-            children.append(marker)
+            markers.append(marker)
+
+        # set the event types in the widget
+        type_children = []
+        if len(types) == 0:
+            type_children.append(html.P("No Events found", style={'font-weight': 'bold', 'font-size': '10pt', 'color': '#424242'}))
+
+        else:
+            type_children.append(html.P("Events:", style={'font-weight': 'bold', 'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}))
+            for i, t in enumerate(types):
+
+                # get the display name of the event
+                display_name = PREDICTED_LABELS.get(t, '')
+
+                type_children.append(
+                    html.P(display_name,
+                        style={
+                            'font-size': '10pt',
+                            'color': '#424242',
+                            'margin': '2px 0'
+                        }
+                    )
+                )
 
         # selected entity for sidebar + viewport
         sel_e = entities[sel]
         sel_lat = float(sel_e['lat'])
         sel_lon = float(sel_e['lon'])
-        sel_title = sel_e.get('name', '')
         sel_desc = sel_e.get('display_name', '')
         sel_url = f"https://www.openstreetmap.org/{sel_e['osm_type']}/{sel_e['osm_id']}"
+
+        new_children = base + markers
 
         viewport = {
             'center': (sel_lat, sel_lon),
@@ -1128,7 +1160,7 @@ def callbacks_map(app: Dash):
             'options': {'duration': 0.5}
         }
 
-        return sel_title, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', viewport, children
+        return type_children, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', viewport, new_children
 
     
     # update the reports
