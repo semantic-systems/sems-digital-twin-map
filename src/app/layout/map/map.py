@@ -1117,7 +1117,7 @@ def callbacks_map(app: Dash):
                     iconSize=[20, 20], iconAnchor=[10, 30],
                     tooltipAnchor=[10, -20], popupAnchor=[-3, -31]
                 ),
-                id=f'tempmarker_{i}_{sel}'
+                id=f'tempmarker_{title}'
             )
 
             markers.append(marker)
