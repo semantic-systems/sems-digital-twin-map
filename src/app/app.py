@@ -27,44 +27,50 @@ def get_app():
     # create the map layout
     # for specific layouts see src/app/layout/*
     app.layout = html.Div(
-        children = [
-            dcc.Tabs(
-                children = [
-                    # Tab 1: The Map
-                    dcc.Tab(
-                        label='Map',
-                        children = html.Div(get_layout_map(), className='fullscreen-container') # these outer divs are here to force the tabs to fill the screen
-                    ),
-                    # Tab 2: Text Geolocation (tab disabled, has been moved to a map widget)
-                    # dcc.Tab(
-                    #     label='Text Geolocation',
-                    #     children = html.Div(build_layout_text_geolocation(), className='fullscreen-container')
-                    # ),
-                    # Tab 2: The Scenario Editor
-                    # dcc.Tab(
-                    #     label='Scenario Editor',
-                    #     children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
-                    # ),
-                    # Tab 3: The NINA Warnings
-                    dcc.Tab(
-                        label='NINA Warnings',
-                        children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
-                    ),
-                    # Tab 4: Configuration
-                    # dcc.Tab(
-                    #     label='Configuration',
-                    #     children = html.Div(build_layout_config(), className='fullscreen-container')
-                    # )
-                    # Tab 5: The Data Viewer
-                    # dcc.Tab(
-                    #     label='Data Viewer',
-                    #     children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
-                    # ),
-                    
-                ]
-            )
-        ],
-        style={'display': 'flex', 'flex-wrap': 'wrap'}
+
+        dcc.Tab(    # in this branch, we only show the map in fullscreen
+            label='Map',
+            children = html.Div(get_layout_map(), className='fullscreen-container')
+        ),
+
+        # children = [
+        #     dcc.Tabs(
+        #         children = [
+        #             # Tab 1: The Map
+        #             dcc.Tab(
+        #                 label='Map',
+        #                 children = html.Div(get_layout_map(), className='fullscreen-container') # these outer divs are here to force the tabs to fill the screen
+        #             ),
+        #             # Tab 2: Text Geolocation (tab disabled, has been moved to a map widget)
+        #             dcc.Tab(
+        #                 label='Text Geolocation',
+        #                 children = html.Div(build_layout_text_geolocation(), className='fullscreen-container')
+        #             ),
+        #             # Tab 2: The Scenario Editor
+        #             dcc.Tab(
+        #                 label='Scenario Editor',
+        #                 children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
+        #             ),
+        #             # Tab 3: The NINA Warnings
+        #             dcc.Tab(
+        #                 label='NINA Warnings',
+        #                 children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
+        #             ),
+        #             # Tab 4: Configuration
+        #             dcc.Tab(
+        #                 label='Configuration',
+        #                 children = html.Div(build_layout_config(), className='fullscreen-container')
+        #             )
+        #             # Tab 5: The Data Viewer
+        #             dcc.Tab(
+        #                 label='Data Viewer',
+        #                 children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
+        #             ),
+        #             
+        #         ]
+        #     )
+        # ],
+        # style={'display': 'flex', 'flex-wrap': 'wrap'}
     )
 
     # link the callbacks

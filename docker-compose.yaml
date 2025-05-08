@@ -14,17 +14,7 @@ services:
     restart: always
     volumes:
       - post_data:/app/data
-  
-  python-server-nina:
-    build: 
-      context: .
-      dockerfile: docker/Dockerfile_server_nina
-    depends_on:
-      - postgis
-    networks:
-      - rescuemate_map
-    restart: always
-    
+      
   postgis:
     image: postgis/postgis
     environment:

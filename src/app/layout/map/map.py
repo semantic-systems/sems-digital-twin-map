@@ -207,7 +207,7 @@ def get_layout_map():
             style={
                 'position': 'absolute',
                 'float': 'right',
-                'top': '60px',
+                'top': '0px',
                 'right': '0',
                 'margin': '10px',
                 'z-index': '1001',
@@ -320,7 +320,7 @@ def get_layout_map():
                 'overflow-y': 'auto',
                 'z-index': '1000',
                 'right': '0',
-                'top': '60px',
+                'top': '0px',
                 'width': '250px',
                 'color': '#333'
             }
@@ -520,7 +520,7 @@ def get_layout_map():
             children='-',
             style={
                 'position': 'absolute',
-                'top': '350px',
+                'top': '290px',
                 'right': '0px',
                 'margin': '10px',
                 'z-index': '1001',
@@ -600,7 +600,7 @@ def get_layout_map():
             style={
                 'position': 'absolute',
                 'float': 'right',
-                'top': '350px',
+                'top': '290px',
                 'right': '0px',
                 'background-color': 'white',
                 'border': '1px solid #ccc',
