@@ -1041,6 +1041,7 @@ def callbacks_map(app: Dash):
             return [], None, {'display': 'none'}, []
 
         entities = result.get('geo_linked_entities', [])
+        entities = [entity for entity in entities if isinstance(entity.get("location"), dict)]
 
         # no entities found
         if not entities:
