@@ -1,7 +1,7 @@
 import requests
 import json
 
-SERVER_URL = "http://sems-kg-1:8001/predict_text"
+SERVER_URL = "http://134.100.14.190:8001/predict_text"
 HEADERS = {"Content-Type": "application/json"}
 
 PREDICTED_LABELS = {
