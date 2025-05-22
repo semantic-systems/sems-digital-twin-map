@@ -41,39 +41,55 @@ def format_report(report: Report) -> html.Li:
 
     return html.Li(
         children=[
-            html.Span(
-                text,
-                style={'font-weight': 'bold', "margin-right": "8px"}
-            ),
-            html.A(
-                "[Link]",  # or [link] or ↗
-                href=report.url, target='_blank', rel='noopener noreferrer',
+            html.Button(
+                [
+                    html.Span(text, style={"font-weight": "bold"}),
+                    html.P(
+                        descriptor_text,
+                        style={
+                            'font-size': '10px',
+                            'color': 'gray',
+                            'margin': '0'
+                        }
+                    )
+                ],
+                id={'type': 'report-entry', 'index': report.id},
+                n_clicks=0,
+                # Remove button styling except for pointer & alignment—looks like a flat Div
                 style={
-                    'font-size': '16px',
-                    'margin-left': '2px',
-                    "color": "#666",
-                    "text-decoration": "none",
-                    "float": "right"
+                    "background": "none",
+                    "border": "none",
+                    "width": "calc(100% - 30px)",  # leaves space for the icon
+                    "textAlign": "left",
+                    "cursor": "pointer",
+                    "padding": "0",
+                    "display": "inline-block",
+                    "verticalAlign": "top"
                 }
             ),
-            html.P(
-                descriptor_text,
+            html.A(
+                "[Link]",
+                href=report.url,
+                target="_blank",
+                rel="noopener noreferrer",
+                title="Open original post",
                 style={
-                    'font-size': '10px',
-                    'color': 'gray',
-                    'margin': '0'
+                    'font-size': '18px',
+                    'color': '#666',
+                    'margin-left': '6px',
+                    'text-decoration': 'none',
+                    'verticalAlign': 'top',
+                    'display': 'inline-block'
                 }
             )
         ],
-        id={'type': 'report-entry', 'index': report.id},
-        n_clicks=0,
         style={
             'margin-bottom': '10px',
             'border-left': f'5px solid {color}',
             'border-radius': '3px',
             'padding-left': '5px',
-            'cursor': 'pointer',
-            "position": "relative"
+            'display': 'flex',
+            'alignItems': 'flex-start'
         }
     )
 

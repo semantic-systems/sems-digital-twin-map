@@ -2,7 +2,7 @@ from datetime import date, timedelta, datetime
 from datetime import datetime
 import json
 
-from dash import Dash, html, dcc, Output, Input, State, callback_context, MATCH, ALL
+from dash import Dash, html, dcc, Output, Input, State, callback_context, MATCH, ALL, ctx
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 
@@ -1065,21 +1065,19 @@ def callbacks_map(app: Dash):
         prevent_initial_call=True
     )
     def show_report_pins(report_nclicks, map_children, report_ids):
-        # Find the most recently clicked (n_clicks increments on every click)
-        if not report_nclicks or all((n is None or n == 0) for n in report_nclicks):
+        # Use callback context to find which element triggered
+        if not ctx.triggered:
             raise PreventUpdate
 
-        # Find index with the highest n_clicks
-        clicked_idx = None
-        max_clicks = -1
-        for idx, n in enumerate(report_nclicks):
-            if n is not None and n > max_clicks:
-                max_clicks = n
-                clicked_idx = idx
-        if clicked_idx is None:
+        # Parse triggered input id
+        triggered = ctx.triggered[0]['prop_id']  # Example: '{"type":"report-entry","index":123}.n_clicks'
+        triggered_id_str = triggered.split('.')[0]
+        if not triggered_id_str or triggered_id_str == '.':
             raise PreventUpdate
-
-        report_id = report_ids[clicked_idx]['index']
+        triggered_id = json.loads(triggered_id_str)
+        report_id = triggered_id.get('index')
+        if report_id is None:
+            raise PreventUpdate
 
         # Query DB for report and its coordinates
         engine, session = autoconnect_db()
@@ -1139,7 +1137,6 @@ def callbacks_map(app: Dash):
             raise PreventUpdate
         children += markers
 
-        # Center on first marker (or you could zoom to bounds of all)
         lat_first = locations[0].get('lat')
         lon_first = locations[0].get('lon')
 
