@@ -1065,12 +1065,10 @@ def callbacks_map(app: Dash):
         prevent_initial_call=True
     )
     def show_report_pins(report_nclicks, map_children, report_ids):
-        # Use callback context to find which element triggered
         if not ctx.triggered:
             raise PreventUpdate
 
-        # Parse triggered input id
-        triggered = ctx.triggered[0]['prop_id']  # Example: '{"type":"report-entry","index":123}.n_clicks'
+        triggered = ctx.triggered[0]['prop_id']  # e.g. '{"type":"report-entry","index":123}.n_clicks'
         triggered_id_str = triggered.split('.')[0]
         if not triggered_id_str or triggered_id_str == '.':
             raise PreventUpdate
@@ -1079,7 +1077,7 @@ def callbacks_map(app: Dash):
         if report_id is None:
             raise PreventUpdate
 
-        # Query DB for report and its coordinates
+        # Query the report
         engine, session = autoconnect_db()
         report = session.query(Report).filter(Report.id == report_id).first()
         session.close()
@@ -1088,25 +1086,33 @@ def callbacks_map(app: Dash):
         if not report:
             raise PreventUpdate
 
-        # Assume report.locations is a list of location dicts [{'lat': ..., 'lon': ..., 'desc': ...}, ...]
         locations = getattr(report, 'locations', None)
         if not locations or not isinstance(locations, list):
             raise PreventUpdate
 
-        # Remove previous temp report markers
+        # Remove previous temp markers and rectangles
         children = [
             c for c in map_children
-            if not (isinstance(c["props"]["id"], str) and c["props"]["id"].startswith("report_tmp_marker"))
+            if not (
+                (isinstance(c["props"]["id"], str) and (
+                        c["props"]["id"].startswith("report_tmp_marker") or
+                        c["props"]["id"].startswith("report_tmp_rect")
+                ))
+            )
         ]
 
         markers = []
+        rectangles = []
+
         for i, loc in enumerate(locations):
             lat = loc.get('lat')
             lon = loc.get('lon')
             desc = loc.get('name', loc.get("mention", "Unspecified"))
+            bbox = loc.get("boundingbox", None)
             if lat is None or lon is None:
                 continue
 
+            # MARKER
             popup = dl.Popup(
                 children=[
                     html.H4("Report", style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0',
@@ -1133,19 +1139,51 @@ def callbacks_map(app: Dash):
             )
             markers.append(marker)
 
+            # RECTANGLE (boundingbox)
+            if bbox and len(bbox) == 4:
+                try:
+                    min_lat, max_lat = float(bbox[0]), float(bbox[1])
+                    min_lon, max_lon = float(bbox[2]), float(bbox[3])
+                    rectangle = dl.Rectangle(
+                        bounds=[
+                            [min_lat, min_lon],  # SW
+                            [max_lat, max_lon],  # NE
+                        ],
+                        color="blue",
+                        fill=True,
+                        fillOpacity=0.15,
+                        weight=2,
+                        id=f'report_tmp_rect_{report_id}_{i}'
+                    )
+                    rectangles.append(rectangle)
+                except Exception as e:
+                    print(f"Bounding box parse error: {e}")
+                    continue
+
         if not markers:
             raise PreventUpdate
-        children += markers
 
+        children += rectangles + markers
+
+        # Center/zoom map
+        # Option 1: Center on first marker
         lat_first = locations[0].get('lat')
         lon_first = locations[0].get('lon')
-
         viewport = {
             'center': (lat_first, lon_first),
             'zoom': 13,
             'transition': 'flyTo',
             'options': {'duration': 0.5}
         }
+        # Option 2: Fit first boundingbox if it exists
+        # if rectangles and locations[0].get("boundingbox") and len(locations[0]["boundingbox"]) == 4:
+        #     min_lat, max_lat = float(locations[0]["boundingbox"][0]), float(locations[0]["boundingbox"][1])
+        #     min_lon, max_lon = float(locations[0]["boundingbox"][2]), float(locations[0]["boundingbox"][3])
+        #     viewport = {
+        #         'bounds': [[min_lat, min_lon], [max_lat, max_lon]],
+        #         'transition': 'flyTo',
+        #         'options': {'duration': 0.5}
+        #     }
 
         return children, viewport
 

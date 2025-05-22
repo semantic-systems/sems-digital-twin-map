@@ -82,6 +82,7 @@ def save_posts(posts: list):
             "lon": entity["location"]["lon"],
             "lat": entity["location"]["lat"],
             "name": entity["location"]["name"],
+            "boundingbox": entity["location"]["boundingbox"],
             "mention": entity["mention"]
         } for entity in entities if isinstance(entity.get("location"), dict)]
 
@@ -408,30 +409,9 @@ if __name__ == '__main__':
                     "platform": "mastodon",
                     "timestamp": "2025-05-22T09:20:00",
                     "event_type": "Schäden an Infrastruktur und Versorgung",
-                    "geo_linked_entities": [{
-                          "mention": "Hamm",
-                          "location": {
-                            "place_id": 3887163,
-                            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
-                            "osm_type": "relation",
-                            "osm_id": 62499,
-                            "lat": "51.681281",
-                            "lon": "7.8191185",
-                            "class": "boundary",
-                            "type": "administrative",
-                            "place_rank": 12,
-                            "importance": 0.5899067006388962,
-                            "addresstype": "city",
-                            "name": "Hamm",
-                            "display_name": "Hamm, Nordrhein-Westfalen, Deutschland",
-                            "boundingbox": ["51.5786372", "51.7445950", "7.6747699", "7.9974351"]
-                          },
-                          "candidates": [["relation", 453744], ["relation", 420585], ["relation", 62499], ["relation", 2063685],
-                                         ["relation", 58587], ["relation", 420578], ["node", 2146217850], ["relation", 6656785],
-                                         ["relation", 1248688], ["relation", 444949], ["way", 21808488], ["relation", 92378],
-                                         ["relation", 1455385], ["relation", 1152685], ["node", 8399472051], ["relation", 420573],
-                                         ["relation", 2399480], ["relation", 386414]]
-                        }]
+                    "geo_linked_entities": [
+                        {"mention":"Hamm","location":{"place_id":25682040,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"relation","osm_id":1455385,"lat":"53.5534434","lon":"10.0512944","class":"boundary","type":"administrative","place_rank":20,"importance":0.4315858803929854,"addresstype":"suburb","name":"Hamm","display_name":"Hamm, Hamburg-Mitte, Hamburg, Deutschland","boundingbox":["53.5377541","53.5661079","10.0376053","10.0707064"]},"candidates":[["relation",453744],["relation",420585],["relation",62499],["relation",2063685],["relation",58587],["relation",420578],["node",2146217850],["relation",6656785],["relation",1248688],["relation",444949],["way",21808488],["relation",92378],["relation",1455385],["relation",1152685],["node",8399472051],["relation",420573],["relation",2399480],["relation",386414]]},
+                        ]
 
 
                 },
