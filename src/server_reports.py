@@ -165,15 +165,100 @@ if __name__ == '__main__':
 
     while True:
 
-        if VERBOSE: print('Requesting... ', flush=True)
-        posts = search_posts()
+        # if VERBOSE: print('Requesting... ', flush=True)
+        # posts = search_posts()
+        #
+        # if VERBOSE: print('Classifying... ', flush=True)
+        # posts = classify_posts(posts)
+        #
+        # if VERBOSE: print('Saving... ', flush=True)
 
-        if VERBOSE: print('Classifying... ', flush=True)
-        posts = classify_posts(posts)
+        posts = [
+                {
+                    "id": "event001",
+                    "text": "Eine verletzte Person wurde heute Mittag in der Nähe der Reeperbahn gemeldet. Rettungskräfte sind bereits vor Ort.",
+                    "url": "https://mastodon.social/",
+                    "platform": "mastodon",
+                    "timestamp": "2025-05-22T12:15:00",
+                    "event_type": "Verletzte oder Tote"
+                },
+                {
+                    "id": "event002",
+                    "text": "Achtung in Altona: Polizei warnt vor starkem Wind und herabfallenden Ästen. Bitte meiden Sie Parks und Alleen!",
+                    "url": "https://bsky.app",
+                    "platform": "bluesky",
+                    "timestamp": "2025-05-22T10:42:00",
+                    "event_type": "Warnung und Hinweise"
+                },
+                {
+                    "id": "event003",
+                    "text": "In Wilhelmsburg wird derzeit dringend nach Helfer:innen für die Essensverteilung gesucht. Jede Unterstützung zählt!",
+                    "url": "https://mastodon.social/",
+                    "platform": "mastodon",
+                    "timestamp": "2025-05-22T13:30:00",
+                    "event_type": "Spenden und Freiwilligenarbeit"
+                },
+                {
+                    "id": "event004",
+                    "text": "Ein älterer Herr wird seit dem frühen Morgen im Bereich Eppendorf vermisst. Hinweise bitte an die Polizei Hamburg.",
+                    "url": "https://bsky.app/",
+                    "platform": "bluesky",
+                    "timestamp": "2025-05-22T08:55:00",
+                    "event_type": "Vermisste und gefundene Personen"
+                },
+                {
+                    "id": "event005",
+                    "text": "Wasserversorgung in Hamm unterbrochen. Ursache ist ein Rohrbruch, der derzeit repariert wird. Bitte Vorräte nutzen.",
+                    "url": "https://mastodon.social/",
+                    "platform": "mastodon",
+                    "timestamp": "2025-05-22T09:20:00",
+                    "event_type": "Schäden an Infrastruktur und Versorgung"
+                },
+                {
+                    "id": "event006",
+                    "text": "Viele Menschen mussten heute Morgen aufgrund eines Brandes in einem Wohnhaus in Barmbek ihre Wohnungen verlassen.",
+                    "url": "https://bsky.app/",
+                    "platform": "bluesky",
+                    "timestamp": "2025-05-22T07:45:00",
+                    "event_type": "Evakuierungen und Vertriebenenhilfe"
+                },
+                {
+                    "id": "event007",
+                    "text": "In Harburg wird weiterhin dringend nach Decken und warmer Kleidung für Geflüchtete gesucht.",
+                    "url": "https://mastodon.social/",
+                    "platform": "mastodon",
+                    "timestamp": "2025-05-22T11:00:00",
+                    "event_type": "Hilfsgesuche oder Bedürfnisse"
+                },
+                {
+                    "id": "event008",
+                    "text": "Feuerwehr und THW sind derzeit im Einsatz in Bergedorf, um die beschädigten Stromleitungen zu sichern.",
+                    "url": "https://bsky.app/",
+                    "platform": "bluesky",
+                    "timestamp": "2025-05-22T14:10:00",
+                    "event_type": "Hilfs- und Rettungsmaßnahmen"
+                },
+                {
+                    "id": "event009",
+                    "text": "Unsere Gedanken sind bei den Angehörigen der Betroffenen des gestrigen Unglücks in Winterhude. Viel Kraft in dieser Zeit.",
+                    "url": "https://mastodon.social/",
+                    "platform": "mastodon",
+                    "timestamp": "2025-05-22T15:45:00",
+                    "event_type": "Spenden und Freiwilligenarbeit"
+                },
+                {
+                    "id": "event011",
+                    "text": "Heute findet in der Hafencity eine Demonstration zum Thema Stadtentwicklung statt. Verkehrsbehinderungen möglich.",
+                    "url": "https://mastodon.social/",
+                    "platform": "mastodon",
+                    "timestamp": "2025-05-22T11:50:00",
+                    "event_type": "Nicht-humanitäres Ereignis"
+                }
+            ]
 
-        if VERBOSE: print('Saving... ', flush=True)
+
         saved_counter = save_posts(posts)
-        if VERBOSE: print(f'Saved {saved_counter} posts', flush=True)
-
-        if VERBOSE: print(f'Done! Waiting for {REQUEST_DELAY} seconds', flush=True)
+        # if VERBOSE: print(f'Saved {saved_counter} posts', flush=True)
+        #
+        # if VERBOSE: print(f'Done! Waiting for {REQUEST_DELAY} seconds', flush=True)
         time.sleep(REQUEST_DELAY)
