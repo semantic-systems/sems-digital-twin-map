@@ -1163,7 +1163,7 @@ def callbacks_map(app: Dash):
         if not markers:
             raise PreventUpdate
 
-        children += rectangles + markers
+        children += markers
 
         # Center/zoom map
         # Option 1: Center on first marker
