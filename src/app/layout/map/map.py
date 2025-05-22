@@ -14,6 +14,11 @@ from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
+from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
+
+# IMPORTANT NOTE
+# in this branch, some components have been disabled
+# you can reenable them by removing the 'display': 'none' from their style dictionary
 
 def build_layer_checkboxes():
     """
@@ -176,6 +181,11 @@ def get_layout_map():
         dl.Map(
             children = [
                 dl.TileLayer(
+                    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    id='tile_layer_osm'
+                ),
+                dl.TileLayer(
                     url='https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_farbe/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png',
                     attribution='&copy; <a href="https://basemap.de/">basemap.de</a>',
                     id='tile_layer'
@@ -190,14 +200,14 @@ def get_layout_map():
                 'z-index': '0'
             },
             id='map'
-            ),
+        ),
         html.Button(
             id='button_toggle_layers',
             children='-',
             style={
                 'position': 'absolute',
                 'float': 'right',
-                'top': '60px',
+                'top': '0px',
                 'right': '0',
                 'margin': '10px',
                 'z-index': '1001',
@@ -220,19 +230,14 @@ def get_layout_map():
                         'color': '#404040'
                     }
                 ),
+                dcc.Checklist(
+                    id='overlay_checklist',
+                    options=layer_checkboxes,
+                    value=[]
+                ),
                 dcc.Tabs(
                     id='map-tabs',
                     children=[
-                    dcc.Tab(
-                        label='Layers',
-                        children=[
-                            dcc.Checklist(
-                                id='overlay_checklist',
-                                options=layer_checkboxes,
-                                value=[]
-                            )
-                        ]
-                    ),
                     dcc.Tab(
                         label='Scenarios',
                         children=[
@@ -242,13 +247,15 @@ def get_layout_map():
                                 value=[]
                             )
                         ]
-                    )
-                ]),
+                    )],
+                    style={"display": "none"}
+                ),
                 html.Hr(
                     style={
                         'margin': '5px 4px 5px 4px',
                         'border': '0',
-                        'border-bottom': '1px solid #777'
+                        'border-bottom': '1px solid #777',
+                        "display": "none"
                     }
                 ),
                 dcc.Checklist(
@@ -258,7 +265,8 @@ def get_layout_map():
                         {'label': 'Hide Features without Timestamp', 'value': 'hide_without_timestamp'},
                         {'label': 'Filter by Timestamp', 'value': 'filter_by_timestamp'}
                         ],
-                    value=[]
+                    value=[],
+                    style={"display": "none"}
                 ),
                 # special buttons, hidden for now from the end user
                 # html.Div(
@@ -330,7 +338,8 @@ def get_layout_map():
                 'padding': '10px',
                 'border': '1px solid #ccc',
                 'width': '35px',
-                'height': '35px'
+                'height': '35px',
+                "display": "none"
             }
         ),
         html.Div(
@@ -408,7 +417,7 @@ def get_layout_map():
                 ),
             ],
             style={
-                'display': 'flex',
+                # 'display': 'flex',
                 'align-items': 'center',
                 'justify-content': 'space-between',
                 'position': 'absolute',
@@ -422,7 +431,8 @@ def get_layout_map():
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
                 'border-radius': '5px',
                 'z-index': '1000',
-                'color': '#333'
+                'color': '#333',
+                "display": "none"
             }
         ),
         html.Button(
@@ -438,7 +448,8 @@ def get_layout_map():
                 'padding': '10px',
                 'border': '1px solid #ccc',
                 'width': '35px',
-                'height': '35px'
+                'height': '35px',
+                "display": "none"
             }
         ),
         html.Div(
@@ -500,11 +511,111 @@ def get_layout_map():
                 'max-height': '660px',
                 'min-height': '195px',
                 'overflow-y': 'auto',
+                'width': '250px',
+                # "display": "none"
+            }
+        ),
+        html.Button(
+            id='button_toggle_geocoder',
+            children='-',
+            style={
+                'position': 'absolute',
+                'top': '290px',
+                'right': '0px',
+                'margin': '10px',
+                'z-index': '1001',
+                'padding': '10px',
+                'border': '1px solid #ccc',
+                'width': '35px',
+                'height': '35px'
+            }
+        ),
+        html.Div(
+            id='div_geocoder',
+            children=[
+                html.P(
+                    children='Geocoder',
+                    style={
+                        'font-size': '14pt',
+                        'font-weight': 'bold',
+                        'margin': '4px 2px 10px 2px',
+                        'text-align': 'center',
+                        'color': '#404040'
+                    }
+                ),
+                dcc.Textarea(
+                    id='geocoder_text_input',
+                    placeholder='Enter place name or description...',
+                    style={
+                        'width': '236px',
+                        'height': '60px',
+                        'padding': '6px',
+                        'font-size': '9pt',
+                        'margin-bottom': '10px',
+                        'border-radius': '4px',
+                        'border': '1px solid #ccc'
+                    }
+                ),
+                html.Button(
+                    'Find',
+                    id='geocoder_button',
+                    n_clicks=0,
+                    style={
+                        'width': '100%',
+                        'padding': '6px',
+                        'font-size': '9pt',
+                        'background-color': '#4CAF50',
+                        'color': 'white',
+                        'border': 'none',
+                        'border-radius': '4px',
+                        'cursor': 'pointer',
+                        'margin-bottom': '10px'
+                    }
+                ),
+                html.Hr(style={'margin': '5px 0'}),
+                html.Div(id='geocoder_result_types', style={'font-size': '10pt', 'color': '#424242'}),
+                html.Hr(style={'margin': '5px 0'}),
+                dcc.Dropdown(
+                    id='geocoder_entity_dropdown',
+                    placeholder='Select location',
+                        optionHeight=24,
+                    style={
+                        'width': '236px',
+                        'height': '34px',
+                        'font-size': '9pt',
+                        'margin-bottom': '10px',
+                        'display': 'none'
+                    }
+                ),
+                html.Div(
+                    id='geocoder_output',
+                    children=[
+                        html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px', 'font-weight': 'bold', 'color': '#424242'}),
+                        html.Div(id='geocoder_result_lat', style={'font-size': '9pt'}),
+                        html.Div(id='geocoder_result_lon', style={'font-size': '9pt', 'margin-bottom': '5px'}),
+                        html.A(id='geocoder_result_url', href='#', target='_blank', style={'font-size': '9pt', 'display': 'block'})
+                    ]
+                )
+            ],
+            style={
+                'position': 'absolute',
+                'float': 'right',
+                'top': '350px',
+                'right': '0px',
+                'background-color': 'white',
+                'border': '1px solid #ccc',
+                'border-radius': '5px',
+                'margin': '10px',
+                'padding': '10px',
+                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                'z-index': '1000',
                 'width': '250px'
             }
         ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
+        dcc.Store(id='geocoder_types', data={}),                   # the types of events the geocoder found
+        dcc.Store(id='geocoder_entities', data=[]),                # the geocoder entities, selected by geocoder_entity_dropdown
         dcc.Interval(id='interval_refresh_reports', interval=3600000 , n_intervals=0),  # refresh the reports every hour
         html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ]
@@ -521,7 +632,7 @@ def callbacks_map(app: Dash):
     # meaning, we create/modify/delete markers and polygons on the map
     @app.callback(
         [
-            Output('map', 'children')
+            Output('map', 'children', allow_duplicate=True)
         ],
         [
             Input('overlay_checklist', 'value'),        # triggered when a layer is selected or deselected
@@ -532,7 +643,8 @@ def callbacks_map(app: Dash):
         ],
         [
             State('map', 'children'),
-        ]
+        ],
+        prevent_initial_call=True
     )
     def update_map(overlay_checklist_value, scenario_checklist_value, options_checklist_value, event_range_selected_data, map_tabs_value, map_children):
         """
@@ -727,7 +839,7 @@ def callbacks_map(app: Dash):
         return event_range_text, event_range_selected_data
 
     # call api to refresh the database
-    @app.long_callback(
+    @app.callback(
         [
             Output('dummy_output_1', 'children')
         ],
@@ -907,6 +1019,151 @@ def callbacks_map(app: Dash):
 
         return map_children
     
+    @app.callback(
+        Output('geocoder_entity_dropdown', 'options'),
+        Output('geocoder_entity_dropdown', 'value'),
+        Output('geocoder_entity_dropdown', 'style'),
+        Output('geocoder_entities', 'data'),
+        Output('geocoder_types', 'data'),
+        Input('geocoder_button', 'n_clicks'),
+        State('geocoder_text_input', 'value'),
+        prevent_initial_call=True
+    )
+    def geocode_text(n_clicks, text):
+
+        if not n_clicks or not text:
+            raise PreventUpdate
+
+        result = geolocate(text)
+
+        if result is None:
+            # geolocation likely failed
+            return [], None, {'display': 'none'}, []
+
+        entities = result.get('geo_linked_entities', [])
+        entities = [entity["location"] for entity in entities if isinstance(entity.get("location"), dict)]
+
+        # no entities found
+        if not entities:
+            return [], None, {'display': 'none'}, []
+
+        opts = [{'label': e['name'], 'value': i} for i, e in enumerate(entities)]
+
+        # get the types of the events
+        types = result.get('predicted_labels', [])
+
+        return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, entities, types
+
+
+    @app.callback(
+        Output('geocoder_result_types', 'children'),
+        Output('geocoder_result_description', 'children'),
+        Output('geocoder_result_url', 'children'),
+        Output('geocoder_result_url', 'href'),
+        Output('geocoder_result_lat', 'children'),
+        Output('geocoder_result_lon', 'children'),
+        Output('map', 'viewport'),
+        Output('map', 'children', allow_duplicate=True),
+        Input('geocoder_entity_dropdown', 'value'),
+        State('geocoder_entities', 'data'),
+        State('geocoder_types', 'data'),
+        State('map', 'children'),
+        prevent_initial_call=True
+    )
+    def show_entities(sel, entities, types, children):
+
+        if sel is None or not entities:
+            raise PreventUpdate
+
+        # sel holds the index of the selected entity in the dropdown
+        sel = int(sel)
+
+        # remove previous geocoder markers
+        base = [
+            c for c in children
+            if not (isinstance(c["props"]["id"], str) and c["props"]["id"].startswith("tempmarker_"))
+        ]
+
+        # build markers for every entity
+        markers = []
+        for i, e in enumerate(entities):
+            lat = float(e['lat'])
+            lon = float(e['lon'])
+            title = e.get('name', '')
+            desc = e.get('display_name', '')
+            lat_s = f'Latitude: {lat}'
+            lon_s = f'Longitude: {lon}'
+            url = f"https://www.openstreetmap.org/{e['osm_type']}/{e['osm_id']}"
+
+            popup = dl.Popup(
+                children=[
+                    html.H4(title, style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0', 'font-weight': 'bold'}),
+                    html.P(desc,   style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(lat_s,  style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(lon_s,  style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.A('Open in OSM', href=url, target='_blank', style={'font-size': '10pt', 'margin': '4px 0 0'})
+                ],
+                position=(lat, lon)
+            )
+
+            marker = dl.DivMarker(
+                position=(lat, lon),
+                children=[popup],
+                iconOptions=dict(
+                    html=f'<i class="awesome-marker awesome-marker-icon-darkred leaflet-zoom-animated leaflet-interactive"></i>'
+                        '<i class="fa fa-map-pin icon-white" aria-hidden="true" '
+                        'style="position: relative; top: 33% !important; left: 37% !important; '
+                        'transform: translate(-50%, -50%) scale(1.2);"></i>',
+                    className='custom-div-icon',
+                    iconSize=[20, 20], iconAnchor=[10, 30],
+                    tooltipAnchor=[10, -20], popupAnchor=[-3, -31]
+                ),
+                id=f'tempmarker_{title}'
+            )
+
+            markers.append(marker)
+
+        # set the event types in the widget
+        type_children = []
+        if len(types) == 0:
+            type_children.append(html.P("No Events found", style={'font-weight': 'bold', 'font-size': '10pt', 'color': '#424242'}))
+
+        else:
+            type_children.append(html.P("Events:", style={'font-weight': 'bold', 'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}))
+            for i, t in enumerate(types):
+
+                # get the display name of the event
+                display_name = PREDICTED_LABELS.get(t, '')
+
+                type_children.append(
+                    html.P(display_name,
+                        style={
+                            'font-size': '10pt',
+                            'color': '#424242',
+                            'margin': '2px 0'
+                        }
+                    )
+                )
+
+        # selected entity for sidebar + viewport
+        sel_e = entities[sel]
+        sel_lat = float(sel_e['lat'])
+        sel_lon = float(sel_e['lon'])
+        sel_desc = sel_e.get('display_name', '')
+        sel_url = f"https://www.openstreetmap.org/{sel_e['osm_type']}/{sel_e['osm_id']}"
+
+        new_children = base + markers
+
+        viewport = {
+            'center': (sel_lat, sel_lon),
+            'zoom': 13,
+            'transition': 'flyTo',
+            'options': {'duration': 0.5}
+        }
+
+        return type_children, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', viewport, new_children
+
+
     # update the reports
     @app.callback(
         Output('reports_list', 'children'),
@@ -1028,6 +1285,24 @@ def callbacks_map(app: Dash):
         else:
             event_range_style['display'] = 'flex'
             return [event_range_style, '-']
+
+    @app.callback(
+        [Output('div_geocoder', 'style'), Output('button_toggle_geocoder', 'children')],
+        [Input('button_toggle_geocoder', 'n_clicks')],
+        [State('div_geocoder', 'style')],
+        prevent_initial_call=True
+    )
+    def toggle_visibility_geocoder(n_clicks, geocoder_style):
+        """
+        This callback toggles the visibility of the Geocoder widget.
+        """
+        if n_clicks % 2 == 1:
+            geocoder_style['display'] = 'none'
+            return [geocoder_style, '+']
+        else:
+            geocoder_style['display'] = 'block'
+            return [geocoder_style, '-']
+
 
 
 

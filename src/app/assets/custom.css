@@ -3,7 +3,7 @@
 /* === General Rules === */
 .fullscreen-container {
     width: 100vw;
-    height: calc(100vh - 60px);   /* 60px is the height of the navbar */
+    height: 100vh;
 }
 
 /* === Map Rules === */

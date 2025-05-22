@@ -8,6 +8,7 @@ from app.layout.scenario_editor import get_layout_scenario_editor, callbacks_sce
 from app.layout.data_viewer import build_layout_data_viewer, callbacks_data_viewer
 from app.layout.nina_warnings import build_layout_nina_warnings, callbacks_nina_warnings
 from app.layout.config import build_layout_config, callbacks_config
+from app.layout.text_geolocation import build_layout_text_geolocation, callbacks_text_geolocation
 
 def get_app():
 
@@ -73,5 +74,6 @@ def get_app():
     callbacks_data_viewer(app)
     callbacks_nina_warnings(app)
     callbacks_config(app)
+    callbacks_text_geolocation(app)
 
     return app
