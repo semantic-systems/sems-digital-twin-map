@@ -43,21 +43,16 @@ services:
       dockerfile: docker/Dockerfile_server_reports
     depends_on:
       - postgis
-      - python-social-media-retriever-api
     networks:
       - rescuemate_map
     restart: always
     volumes:
       - post_data:/app/data
   
-  python-social-media-retriever-api:
-    image: sems-social-media-retriever
-    networks:
-      - rescuemate_map
-    restart: always
-    
+
   postgis:
     image: postgis/postgis
+    platform: linux/amd64
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -72,6 +67,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
+    platform: linux/amd64
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -90,4 +86,3 @@ volumes:
 
 networks:
   rescuemate_map:
-    external: true
