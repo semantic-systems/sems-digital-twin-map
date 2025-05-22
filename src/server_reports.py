@@ -77,6 +77,15 @@ def save_posts(posts: list):
         if platform == 'rss':
             platform = f'rss/{json_post["feed"]}'
 
+        entities = json_post.get('geo_linked_entities', [])
+        locations = [{
+            "lon": entity["location"]["lon"],
+            "lat": entity["location"]["lat"],
+            "name": entity["location"]["name"],
+            "mention": entity["mention"]
+        } for entity in entities if isinstance(entity.get("location"), dict)]
+
+
         # create a new post object
         report = Report(
             identifier=identifier,
@@ -84,8 +93,8 @@ def save_posts(posts: list):
             url=json_post['url'],
             platform=platform,
             timestamp=timestamp,
-            event_type=json_post['event_type']
-        )
+            event_type=json_post['event_type'],
+            locations=locations)
 
         # add the post to the session
         session.add(report)

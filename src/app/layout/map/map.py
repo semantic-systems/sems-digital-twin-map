@@ -1054,6 +1054,104 @@ def callbacks_map(app: Dash):
 
         return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, entities, types
 
+    @app.callback(
+        [
+            Output('map', 'children', allow_duplicate=True),
+            Output('map', 'viewport', allow_duplicate=True)
+        ],
+        [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
+        State('map', 'children'),
+        State({'type': 'report-entry', 'index': ALL}, 'id'),
+        prevent_initial_call=True
+    )
+    def show_report_pins(report_nclicks, map_children, report_ids):
+        # Find the most recently clicked (n_clicks increments on every click)
+        if not report_nclicks or all((n is None or n == 0) for n in report_nclicks):
+            raise PreventUpdate
+
+        # Find index with the highest n_clicks
+        clicked_idx = None
+        max_clicks = -1
+        for idx, n in enumerate(report_nclicks):
+            if n is not None and n > max_clicks:
+                max_clicks = n
+                clicked_idx = idx
+        if clicked_idx is None:
+            raise PreventUpdate
+
+        report_id = report_ids[clicked_idx]['index']
+
+        # Query DB for report and its coordinates
+        engine, session = autoconnect_db()
+        report = session.query(Report).filter(Report.id == report_id).first()
+        session.close()
+        engine.dispose()
+
+        if not report:
+            raise PreventUpdate
+
+        # Assume report.locations is a list of location dicts [{'lat': ..., 'lon': ..., 'desc': ...}, ...]
+        locations = getattr(report, 'locations', None)
+        if not locations or not isinstance(locations, list):
+            raise PreventUpdate
+
+        # Remove previous temp report markers
+        children = [
+            c for c in map_children
+            if not (isinstance(c["props"]["id"], str) and c["props"]["id"].startswith("report_tmp_marker"))
+        ]
+
+        markers = []
+        for i, loc in enumerate(locations):
+            lat = loc.get('lat')
+            lon = loc.get('lon')
+            desc = loc.get('name', loc.get("mention", "Unspecified"))
+            if lat is None or lon is None:
+                continue
+
+            popup = dl.Popup(
+                children=[
+                    html.H4("Report", style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0',
+                                             'font-weight': 'bold'}),
+                    html.P(desc, style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(f'Latitude: {lat}', style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(f'Longitude: {lon}', style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                ],
+                position=(lat, lon)
+            )
+
+            marker = dl.DivMarker(
+                position=(lat, lon),
+                children=[popup],
+                iconOptions=dict(
+                    html='<i class="awesome-marker awesome-marker-icon-blue leaflet-zoom-animated leaflet-interactive"></i>'
+                         '<i class="fa fa-thumb-tack icon-white" aria-hidden="true" '
+                         'style="position: relative; top: 33% !important; left: 37% !important; '
+                         'transform: translate(-50%, -50%) scale(1.2);"></i>',
+                    className='custom-div-icon',
+                    iconSize=[20, 20], iconAnchor=[10, 30], tooltipAnchor=[10, -20], popupAnchor=[-3, -31]
+                ),
+                id=f'report_tmp_marker_{report_id}_{i}'
+            )
+            markers.append(marker)
+
+        if not markers:
+            raise PreventUpdate
+        children += markers
+
+        # Center on first marker (or you could zoom to bounds of all)
+        lat_first = locations[0].get('lat')
+        lon_first = locations[0].get('lon')
+
+        viewport = {
+            'center': (lat_first, lon_first),
+            'zoom': 13,
+            'transition': 'flyTo',
+            'options': {'duration': 0.5}
+        }
+
+        return children, viewport
+
 
     @app.callback(
         Output('geocoder_result_types', 'children'),

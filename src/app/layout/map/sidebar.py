@@ -20,63 +20,62 @@ def get_platform_config(platform):
         return config[platform]
 
 def format_report(report: Report) -> html.Li:
-    """
-    Format a single report into a html element that can be displayed in the sidebar.
-    """
-
-    # get the platform and config
-    platform = report.platform                  # internal name, i.e. 'bluesky'
-
+    platform = report.platform
     if platform.startswith('rss'):
         platform = 'rss'
-
     platform_config = get_platform_config(platform)
-
-    # get the headline and url
-    text = report.text
-    url = report.url
-
-    # format the text and shorten it if it is too long
-    text = text.replace('\n', ' ')
+    text = report.text.replace('\n', ' ')
     if len(text) > 100:
         text = text[:100] + '...'
 
-    platform_name = platform_config['name']     # display name, i.e. 'Bluesky'
-    color = platform_config['color']            # color of the platform, i.e. #1185FE
+    platform_name = platform_config['name']
+    color = platform_config['color']
     timestamp = report.timestamp.strftime('%H:%M %d.%m.%Y')
     event_type = report.event_type
 
-    # build the desciptor
     if platform == 'rss':
-        # if the platform is rss, we dont want to show 'rss', but the news feed name
         feed_name = report.platform.split('/')[1]
         descriptor_text = f'{feed_name} - {event_type} - {timestamp}'
     else:
         descriptor_text = f'{platform_name} - {event_type} - {timestamp}'
 
     return html.Li(
-            html.A(
-                children=[
-                    text,
-                    html.P(
-                        descriptor_text,
-                        style={
-                            'font-size': '10px',
-                            'color': 'gray'
-                        }
-                    )
-                ],
-                href=url,
-                target='_blank',
-                rel='noopener noreferrer'
+        children=[
+            html.Span(
+                text,
+                style={'font-weight': 'bold', "margin-right": "8px"}
             ),
-            style={
-                'margin-bottom': '10px',
-                'border-left': f'5px solid {color}',
-                'border-radius': '3px',
-                'padding-left': '5px',
-            }
-        )
+            html.A(
+                "[Link]",  # or [link] or ↗
+                href=report.url, target='_blank', rel='noopener noreferrer',
+                style={
+                    'font-size': '16px',
+                    'margin-left': '2px',
+                    "color": "#666",
+                    "text-decoration": "none",
+                    "float": "right"
+                }
+            ),
+            html.P(
+                descriptor_text,
+                style={
+                    'font-size': '10px',
+                    'color': 'gray',
+                    'margin': '0'
+                }
+            )
+        ],
+        id={'type': 'report-entry', 'index': report.id},
+        n_clicks=0,
+        style={
+            'margin-bottom': '10px',
+            'border-left': f'5px solid {color}',
+            'border-radius': '3px',
+            'padding-left': '5px',
+            'cursor': 'pointer',
+            "position": "relative"
+        }
+    )
 
 def format_reports(reports: list, n=25) -> list:
     """
