@@ -1050,7 +1050,8 @@ def callbacks_map(app: Dash):
                 osm_type = entity["location"]["osm_type"]
                 polygon = fetch_osm_polygon(osm_type, osm_id)
                 entity["location"]["polygon"] = polygon
-                processed_entities.append(entity)
+                processed_entities.append(entity["location"])
+
 
 
         # no entities found
