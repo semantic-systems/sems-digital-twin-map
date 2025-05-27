@@ -1161,7 +1161,7 @@ def callbacks_map(app: Dash):
             # POLYGON (preferred) or RECTANGLE (fallback)
             polygon_data = loc.get("polygon")
 
-            if polygon_data and "coordinates" in polygon_data:
+            if polygon_data and "coordinates" in polygon_data and len(polygon_data["coordinates"]) > 0:
                 try:
                     polygons = []
                     if polygon_data["type"] == "Polygon":
@@ -1310,7 +1310,7 @@ def callbacks_map(app: Dash):
             # POLYGON (preferred) or RECTANGLE (fallback)
             polygon_data = e.get("polygon")
 
-            if polygon_data and "coordinates" in polygon_data:
+            if polygon_data and "coordinates" in polygon_data and len(polygon_data["coordinates"]) > 0:
                 try:
                     polygons = []
                     if polygon_data["type"] == "Polygon":
