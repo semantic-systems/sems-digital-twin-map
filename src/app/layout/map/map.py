@@ -1096,7 +1096,8 @@ def callbacks_map(app: Dash):
             if not (
                 (isinstance(c["props"]["id"], str) and (
                         c["props"]["id"].startswith("report_tmp_marker") or
-                        c["props"]["id"].startswith("report_tmp_rect")
+                        c["props"]["id"].startswith("report_tmp_rect") or
+                        c["props"]["id"].startswith("report_tmp_polygon")
                 ))
             )
         ]
@@ -1139,31 +1140,55 @@ def callbacks_map(app: Dash):
             )
             markers.append(marker)
 
-            # RECTANGLE (boundingbox)
-            if bbox and len(bbox) == 4:
+            # POLYGON (preferred) or RECTANGLE (fallback)
+            polygon_data = loc.get("polygon")
+
+            if polygon_data and "coordinates" in polygon_data:
                 try:
-                    min_lat, max_lat = float(bbox[0]), float(bbox[1])
-                    min_lon, max_lon = float(bbox[2]), float(bbox[3])
-                    rectangle = dl.Rectangle(
-                        bounds=[
-                            [min_lat, min_lon],  # SW
-                            [max_lat, max_lon],  # NE
-                        ],
-                        color="blue",
-                        fill=True,
-                        fillOpacity=0.15,
-                        weight=2,
-                        id=f'report_tmp_rect_{report_id}_{i}'
-                    )
-                    rectangles.append(rectangle)
+                    polygons = []
+                    if polygon_data["type"] == "Polygon":
+                        polygons = polygon_data["coordinates"]
+                    elif polygon_data["type"] == "MultiPolygon":
+                        polygons = polygon_data["coordinates"]
+
+                    for part in polygons:
+                        for ring in part:
+                            polygon = dl.Polygon(
+                                positions=[[lat, lon] for lon, lat in ring],
+                                color="blue",
+                                fill=True,
+                                fillOpacity=0.15,
+                                weight=2,
+                                id=f'report_tmp_polygon_{report_id}_{i}'
+                            )
+                            print()
+                            rectangles.append(polygon)
                 except Exception as e:
-                    print(f"Bounding box parse error: {e}")
-                    continue
+                    print(f"Polygon parse error: {e}")
+            else:
+                if bbox and len(bbox) == 4:
+                    try:
+                        min_lat, max_lat = float(bbox[0]), float(bbox[1])
+                        min_lon, max_lon = float(bbox[2]), float(bbox[3])
+                        rectangle = dl.Rectangle(
+                            bounds=[
+                                [min_lat, min_lon],  # SW
+                                [max_lat, max_lon],  # NE
+                            ],
+                            color="blue",
+                            fill=True,
+                            fillOpacity=0.15,
+                            weight=2,
+                            id=f'report_tmp_rect_{report_id}_{i}'
+                        )
+                        rectangles.append(rectangle)
+                    except Exception as e:
+                        print(f"Bounding box parse error: {e}")
 
         if not markers:
             raise PreventUpdate
 
-        children += markers
+        children += rectangles + markers
 
         # Center/zoom map
         # Option 1: Center on first marker

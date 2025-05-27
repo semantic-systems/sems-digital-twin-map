@@ -1,6 +1,10 @@
 import requests
 import time
 from datetime import datetime, timedelta
+
+from shapely import polygonize, GeometryCollection, LineString
+from shapely.geometry import mapping
+
 from data.connect import autoconnect_db
 from data.model import Report
 
@@ -83,6 +87,7 @@ def save_posts(posts: list):
             "lat": entity["location"]["lat"],
             "name": entity["location"]["name"],
             "boundingbox": entity["location"]["boundingbox"],
+            "polygon": entity["location"]["polygon"],
             "mention": entity["mention"]
         } for entity in entities if isinstance(entity.get("location"), dict)]
 
@@ -166,6 +171,65 @@ def classify_posts(posts):
         classified_posts.append(post)
     
     return classified_posts
+
+
+def fetch_osm_polygon(osm_type: str, osm_id: int):
+    """
+    Fetch polygon geometry for a given OSM object from Overpass API.
+    :param osm_type: 'relation', 'way', or 'node'
+    :param osm_id: integer OSM ID
+    :return: GeoJSON-like dict with polygon geometry, or None
+    """
+    query = f"""
+    [out:json];
+    {osm_type}({osm_id});
+    (._;>;);
+    out body;
+    """
+    url = "https://overpass-api.de/api/interpreter"
+    response = requests.post(url, data={"data": query})
+    if response.status_code != 200:
+        print(f"Error fetching OSM data: {response.status_code}")
+        return None
+
+    data = response.json()
+    nodes = {el["id"]: (el["lon"], el["lat"]) for el in data["elements"] if el["type"] == "node"}
+    ways = [el for el in data["elements"] if el["type"] == "way"]
+
+    lines = []
+    for way in ways:
+        try:
+            coords = [nodes[nid] for nid in way["nodes"] if nid in nodes]
+            if len(coords) >= 2:
+                lines.append(coords)
+        except Exception as e:
+            continue
+
+    safe_lines = []
+    for line in lines:
+        try:
+            # Only convert if it's not already a LineString
+            if isinstance(line, LineString):
+                safe_lines.append(line)
+            elif isinstance(line, list) and all(isinstance(p, (list, tuple)) and len(p) == 2 for p in line):
+                safe_lines.append(LineString(line))
+            else:
+                print(f"Skipping invalid line: {line}")
+        except Exception as e:
+            print(f"Line conversion failed: {line} -> {e}")
+
+    # polygonize returns a generator; wrap in list
+    geom_collection = GeometryCollection(polygonize(safe_lines))
+
+    # Extract valid polygons
+    polygons = [geom for geom in geom_collection.geoms if geom.geom_type == 'Polygon']
+
+    geojson_polygons = [mapping(p) for p in polygons]
+    return {
+        "type": "MultiPolygon" if len(geojson_polygons) > 1 else "Polygon",
+        "coordinates": [p["coordinates"] for p in geojson_polygons]
+    }
+
 
 if __name__ == '__main__':
 
@@ -596,6 +660,13 @@ if __name__ == '__main__':
                 }
             ]
 
+        for post in posts:
+            for location in post["geo_linked_entities"]:
+                if location["location"] is not None:
+                    osm_id = location["location"]["osm_id"]
+                    osm_type = location["location"]["osm_type"]
+                    polygon = fetch_osm_polygon(osm_type, osm_id)
+                    location["location"]["polygon"] = polygon
 
         saved_counter = save_posts(posts)
         # if VERBOSE: print(f'Saved {saved_counter} posts', flush=True)
