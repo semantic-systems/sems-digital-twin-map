@@ -1106,6 +1106,9 @@ def callbacks_map(app: Dash):
             c for c in map_children
             if not (
                 (isinstance(c["props"]["id"], str) and (
+                        c["props"]["id"].startswith("tempmarker_") or
+                        c["props"]["id"].startswith("temprectangle_") or
+                        c["props"]["id"].startswith("temppolygon_") or
                         c["props"]["id"].startswith("report_tmp_marker") or
                         c["props"]["id"].startswith("report_tmp_rect") or
                         c["props"]["id"].startswith("report_tmp_polygon")
@@ -1252,7 +1255,11 @@ def callbacks_map(app: Dash):
             c for c in children
             if not (isinstance(c["props"]["id"], str) and (c["props"]["id"].startswith("tempmarker_") or
                                                            c["props"]["id"].startswith("temprectangle_") or
-                                                           c["props"]["id"].startswith("temppolygon_")))
+                                                           c["props"]["id"].startswith("temppolygon_") or
+                                                           c["props"]["id"].startswith("report_tmp_marker") or
+                                                            c["props"]["id"].startswith("report_tmp_rect") or
+                                                            c["props"]["id"].startswith("report_tmp_polygon")
+                                                            ))
         ]
 
         # build markers for every entity
