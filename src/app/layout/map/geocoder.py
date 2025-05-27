@@ -5,17 +5,17 @@ SERVER_URL = "http://134.100.14.190:8001/predict_text"
 HEADERS = {"Content-Type": "application/json"}
 
 PREDICTED_LABELS = {
-    'affected_individual': 'Affected Individual',
-    'caution_and_advice': 'Caution and Advice',
-    'displaced_and_evacuations': 'Displaced and Evacuations',
-    'donation_and_volunteering': 'Donation and Volunteering',
-    'infrastructure_and_utilities_damage': 'Infrastructure and Utilities Damage',
-    'injured_or_dead_people': 'Injured or Dead People',
-    'missing_and_found_people': 'Missing and Found People',
-    'not_humanitarian': 'Not Humanitarian',
-    'requests_or_needs': 'Requests or Needs',
-    'response_efforts': 'Response Efforts',
-    'sympathy_and_support': 'Sympathy and Support'
+    'affected_individual': 'Betroffene Personen',
+    'caution_and_advice': 'Warnung und Hinweise',
+    'displaced_and_evacuations': 'Evakuierungen und Vertriebenenhilfe',
+    'donation_and_volunteering': 'Spenden und Freiwilligenarbeit',
+    'infrastructure_and_utilities_damage': 'Schäden an Infrastruktur und Versorgung',
+    'injured_or_dead_people': 'Verletzte oder Tote',
+    'missing_and_found_people': 'Vermisste und gefundene Personen',
+    'not_humanitarian': 'Nicht-humanitäres Ereignis',
+    'requests_or_needs': 'Hilfsgesuche oder Bedürfnisse',
+    'response_efforts': 'Hilfs- und Rettungsmaßnahmen',
+    'sympathy_and_support': 'Anteilnahme und Unterstützung'
 }
 
 def geolocate(text: str):
