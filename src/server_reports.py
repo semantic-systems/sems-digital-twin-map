@@ -227,11 +227,33 @@ def fetch_osm_polygon(osm_type: str, osm_id: int):
     # Extract valid polygons
     polygons = [geom for geom in geom_collection.geoms if geom.geom_type == 'Polygon']
 
-    geojson_polygons = [mapping(p) for p in polygons]
-    return {
-        "type": "MultiPolygon" if len(geojson_polygons) > 1 else "Polygon",
-        "coordinates": [p["coordinates"] for p in geojson_polygons]
-    }
+    if polygons:
+        # We have polygons, return as GeoJSON polygons or multipolygons
+        geojson_polygons = [mapping(p) for p in polygons]
+        return {
+            "type": "MultiPolygon" if len(geojson_polygons) > 1 else "Polygon",
+            "coordinates": [p["coordinates"] for p in geojson_polygons]
+        }
+    else:
+        # No polygons found, treat safe_lines as open paths and return LineStrings
+        geojson_lines = []
+        for line in safe_lines:
+            if isinstance(line, LineString):
+                geojson_lines.append(mapping(line))
+            else:
+                geojson_lines.append(mapping(LineString(line)))
+
+        # If there's just one line, return a LineString, else MultiLineString
+        if len(geojson_lines) == 1:
+            return {
+                "type": "LineString",
+                "coordinates": geojson_lines[0]["coordinates"]
+            }
+        else:
+            return {
+                "type": "MultiLineString",
+                "coordinates": [line["coordinates"] for line in geojson_lines]
+            }
 
 
 if __name__ == '__main__':

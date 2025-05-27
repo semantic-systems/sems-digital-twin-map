@@ -1065,6 +1065,92 @@ def callbacks_map(app: Dash):
 
         return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, processed_entities, types
 
+
+    def create_elements(loc, identifier: str):
+        elements = []
+        # POLYGON (preferred) or RECTANGLE (fallback)
+        polygon_data = loc.get("polygon")
+        bbox = loc.get("boundingbox", None)
+
+        print(loc)
+
+        if polygon_data and "coordinates" in polygon_data and len(polygon_data["coordinates"]) > 0:
+            try:
+                if polygon_data["type"] in {"Polygon", "MultiPolygon"}:
+                    polygons = []
+                    if polygon_data["type"] == "Polygon":
+                        polygons = polygon_data["coordinates"]
+                    elif polygon_data["type"] == "MultiPolygon":
+                        polygons = polygon_data["coordinates"]
+
+                    for part in polygons:
+                        for ring in part:
+                            polygon = dl.Polygon(
+                                positions=[[lat, lon] for lon, lat in ring],
+                                color="blue",
+                                fill=True,
+                                fillOpacity=0.15,
+                                weight=2,
+                                id=f'tmp_polygon_{identifier}'
+                            )
+                            elements.append(polygon)
+                elif polygon_data["type"] in {"LineString", "MultiLineString"}:
+                    lines = []
+                    if polygon_data["type"] == "LineString":
+                        lines = [polygon_data["coordinates"]]
+                    elif polygon_data["type"] == "MultiLineString":
+                        lines = polygon_data["coordinates"]
+
+                    for line in lines:
+                        polyline = dl.Polyline(
+                            positions=[[lat, lon] for lon, lat in line],
+                            color="#00008B",  # DarkBlue hex color
+                            weight=6,  # Thicker line, default is usually 3
+                            dashArray=None,  # solid line (remove dashes if you want solid)
+                            id=f'tmp_line_{identifier}'
+                        )
+                        elements.append(polyline)
+            except Exception as e:
+                print(f"Polygon parse error: {e}")
+        if not elements:
+            if bbox and len(bbox) == 4:
+                try:
+                    min_lat, max_lat = float(bbox[0]), float(bbox[1])
+                    min_lon, max_lon = float(bbox[2]), float(bbox[3])
+                    rectangle = dl.Rectangle(
+                        bounds=[
+                            [min_lat, min_lon],  # SW
+                            [max_lat, max_lon],  # NE
+                        ],
+                        color="blue",
+                        fill=True,
+                        fillOpacity=0.15,
+                        weight=2,
+                        id=f'tmp_rect_{identifier}'
+                    )
+                    elements.append(rectangle)
+                except Exception as e:
+                    print(f"Bounding box parse error: {e}")
+        return elements
+
+    def get_children(map_children):
+        # Remove previous temp markers and rectangles
+        children = [
+            c for c in map_children
+            if not (
+                (isinstance(c["props"]["id"], str) and (
+                        c["props"]["id"].startswith("tempmarker_") or
+                        c["props"]["id"].startswith("tmp_rect_") or
+                        c["props"]["id"].startswith("tmp_polygon_") or
+                        c["props"]["id"].startswith("report_tmp_marker") or
+                        c["props"]["id"].startswith("report_tmp_rect") or
+                        c["props"]["id"].startswith("report_tmp_polygon") or
+                        c["props"]["id"].startswith("tmp_line")
+                ))
+            )
+        ]
+        return children
+
     @app.callback(
         [
             Output('map', 'children', allow_duplicate=True),
@@ -1101,20 +1187,7 @@ def callbacks_map(app: Dash):
         if not locations or not isinstance(locations, list):
             raise PreventUpdate
 
-        # Remove previous temp markers and rectangles
-        children = [
-            c for c in map_children
-            if not (
-                (isinstance(c["props"]["id"], str) and (
-                        c["props"]["id"].startswith("tempmarker_") or
-                        c["props"]["id"].startswith("temprectangle_") or
-                        c["props"]["id"].startswith("temppolygon_") or
-                        c["props"]["id"].startswith("report_tmp_marker") or
-                        c["props"]["id"].startswith("report_tmp_rect") or
-                        c["props"]["id"].startswith("report_tmp_polygon")
-                ))
-            )
-        ]
+        children = get_children(map_children)
 
         markers = []
         rectangles = []
@@ -1127,7 +1200,6 @@ def callbacks_map(app: Dash):
             lat_s = f'Latitude: {lat}'
             lon_s = f'Longitude: {lon}'
             url = f"https://www.openstreetmap.org/{loc['osm_type']}/{loc['osm_id']}"
-            bbox = loc.get("boundingbox", None)
             if lat is None or lon is None:
                 continue
 
@@ -1158,50 +1230,8 @@ def callbacks_map(app: Dash):
             )
             markers.append(marker)
 
-            # POLYGON (preferred) or RECTANGLE (fallback)
-            polygon_data = loc.get("polygon")
+            rectangles += create_elements(loc, identifier=title)
 
-            if polygon_data and "coordinates" in polygon_data and len(polygon_data["coordinates"]) > 0:
-                try:
-                    polygons = []
-                    if polygon_data["type"] == "Polygon":
-                        polygons = polygon_data["coordinates"]
-                    elif polygon_data["type"] == "MultiPolygon":
-                        polygons = polygon_data["coordinates"]
-
-                    for part in polygons:
-                        for ring in part:
-                            polygon = dl.Polygon(
-                                positions=[[lat, lon] for lon, lat in ring],
-                                color="blue",
-                                fill=True,
-                                fillOpacity=0.15,
-                                weight=2,
-                                id=f'report_tmp_polygon_{report_id}_{i}'
-                            )
-                            print()
-                            rectangles.append(polygon)
-                except Exception as e:
-                    print(f"Polygon parse error: {e}")
-            else:
-                if bbox and len(bbox) == 4:
-                    try:
-                        min_lat, max_lat = float(bbox[0]), float(bbox[1])
-                        min_lon, max_lon = float(bbox[2]), float(bbox[3])
-                        rectangle = dl.Rectangle(
-                            bounds=[
-                                [min_lat, min_lon],  # SW
-                                [max_lat, max_lon],  # NE
-                            ],
-                            color="blue",
-                            fill=True,
-                            fillOpacity=0.15,
-                            weight=2,
-                            id=f'report_tmp_rect_{report_id}_{i}'
-                        )
-                        rectangles.append(rectangle)
-                    except Exception as e:
-                        print(f"Bounding box parse error: {e}")
 
         if not markers:
             raise PreventUpdate
@@ -1218,15 +1248,6 @@ def callbacks_map(app: Dash):
             'transition': 'flyTo',
             'options': {'duration': 0.5}
         }
-        # Option 2: Fit first boundingbox if it exists
-        # if rectangles and locations[0].get("boundingbox") and len(locations[0]["boundingbox"]) == 4:
-        #     min_lat, max_lat = float(locations[0]["boundingbox"][0]), float(locations[0]["boundingbox"][1])
-        #     min_lon, max_lon = float(locations[0]["boundingbox"][2]), float(locations[0]["boundingbox"][3])
-        #     viewport = {
-        #         'bounds': [[min_lat, min_lon], [max_lat, max_lon]],
-        #         'transition': 'flyTo',
-        #         'options': {'duration': 0.5}
-        #     }
 
         return children, viewport
 
@@ -1255,16 +1276,7 @@ def callbacks_map(app: Dash):
         sel = int(sel)
 
         # remove previous geocoder markers
-        base = [
-            c for c in children
-            if not (isinstance(c["props"]["id"], str) and (c["props"]["id"].startswith("tempmarker_") or
-                                                           c["props"]["id"].startswith("temprectangle_") or
-                                                           c["props"]["id"].startswith("temppolygon_") or
-                                                           c["props"]["id"].startswith("report_tmp_marker") or
-                                                            c["props"]["id"].startswith("report_tmp_rect") or
-                                                            c["props"]["id"].startswith("report_tmp_polygon")
-                                                            ))
-        ]
+        get_children(children)
 
         # build markers for every entity
         markers = []
@@ -1277,7 +1289,6 @@ def callbacks_map(app: Dash):
             lat_s = f'Latitude: {lat}'
             lon_s = f'Longitude: {lon}'
             url = f"https://www.openstreetmap.org/{e['osm_type']}/{e['osm_id']}"
-            bbox = e.get("boundingbox", None)
 
             popup = dl.Popup(
                 children=[
@@ -1307,50 +1318,7 @@ def callbacks_map(app: Dash):
 
             markers.append(marker)
 
-            # POLYGON (preferred) or RECTANGLE (fallback)
-            polygon_data = e.get("polygon")
-
-            if polygon_data and "coordinates" in polygon_data and len(polygon_data["coordinates"]) > 0:
-                try:
-                    polygons = []
-                    if polygon_data["type"] == "Polygon":
-                        polygons = polygon_data["coordinates"]
-                    elif polygon_data["type"] == "MultiPolygon":
-                        polygons = polygon_data["coordinates"]
-
-                    for part in polygons:
-                        for ring in part:
-                            polygon = dl.Polygon(
-                                positions=[[lat, lon] for lon, lat in ring],
-                                color="blue",
-                                fill=True,
-                                fillOpacity=0.15,
-                                weight=2,
-                                id=f'temppolygon_{title}'
-                            )
-                            print()
-                            rectangles.append(polygon)
-                except Exception as e:
-                    print(f"Polygon parse error: {e}")
-            else:
-                if bbox and len(bbox) == 4:
-                    try:
-                        min_lat, max_lat = float(bbox[0]), float(bbox[1])
-                        min_lon, max_lon = float(bbox[2]), float(bbox[3])
-                        rectangle = dl.Rectangle(
-                            bounds=[
-                                [min_lat, min_lon],  # SW
-                                [max_lat, max_lon],  # NE
-                            ],
-                            color="blue",
-                            fill=True,
-                            fillOpacity=0.15,
-                            weight=2,
-                            id=f'temprectangle_{title}'
-                        )
-                        rectangles.append(rectangle)
-                    except Exception as e:
-                        print(f"Bounding box parse error: {e}")
+            rectangles += create_elements(e, identifier=title)
 
         # set the event types in the widget
         type_children = []
