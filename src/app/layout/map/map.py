@@ -1122,7 +1122,11 @@ def callbacks_map(app: Dash):
         for i, loc in enumerate(locations):
             lat = loc.get('lat')
             lon = loc.get('lon')
-            desc = loc.get('name', loc.get("mention", "Unspecified"))
+            title = loc.get('name', loc.get("mention", "Unspecified"))
+            desc = loc.get('display_name', '')
+            lat_s = f'Latitude: {lat}'
+            lon_s = f'Longitude: {lon}'
+            url = f"https://www.openstreetmap.org/{loc['osm_type']}/{loc['osm_id']}"
             bbox = loc.get("boundingbox", None)
             if lat is None or lon is None:
                 continue
@@ -1130,15 +1134,15 @@ def callbacks_map(app: Dash):
             # MARKER
             popup = dl.Popup(
                 children=[
-                    html.H4("Report", style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0',
-                                             'font-weight': 'bold'}),
+                    html.H4(title, style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0',
+                                          'font-weight': 'bold'}),
                     html.P(desc, style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
-                    html.P(f'Latitude: {lat}', style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
-                    html.P(f'Longitude: {lon}', style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(lat_s, style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.P(lon_s, style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
+                    html.A('Open in OSM', href=url, target='_blank', style={'font-size': '10pt', 'margin': '4px 0 0'})
                 ],
                 position=(lat, lon)
             )
-
             marker = dl.DivMarker(
                 position=(lat, lon),
                 children=[popup],
