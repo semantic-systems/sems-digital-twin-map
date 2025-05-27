@@ -1326,7 +1326,7 @@ def callbacks_map(app: Dash):
                                 fill=True,
                                 fillOpacity=0.15,
                                 weight=2,
-                                id=f'temppolygoon_{title}'
+                                id=f'temppolygon_{title}'
                             )
                             print()
                             rectangles.append(polygon)
