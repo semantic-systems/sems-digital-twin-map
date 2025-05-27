@@ -1276,7 +1276,7 @@ def callbacks_map(app: Dash):
         sel = int(sel)
 
         # remove previous geocoder markers
-        get_children(children)
+        base = get_children(children)
 
         # build markers for every entity
         markers = []
