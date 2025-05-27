@@ -15,6 +15,8 @@ from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
 from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
+from server_reports import fetch_osm_polygon
+
 
 # IMPORTANT NOTE
 # in this branch, some components have been disabled
@@ -1041,18 +1043,26 @@ def callbacks_map(app: Dash):
             return [], None, {'display': 'none'}, []
 
         entities = result.get('geo_linked_entities', [])
-        entities = [entity["location"] for entity in entities if isinstance(entity.get("location"), dict)]
+        processed_entities = []
+        for entity in entities:
+            if isinstance(entity.get("location"), dict):
+                osm_id = entity["location"]["osm_id"]
+                osm_type = entity["location"]["osm_type"]
+                polygon = fetch_osm_polygon(osm_type, osm_id)
+                entity["location"]["polygon"] = polygon
+                processed_entities.append(entity)
+
 
         # no entities found
-        if not entities:
+        if not processed_entities:
             return [], None, {'display': 'none'}, []
 
-        opts = [{'label': e['name'], 'value': i} for i, e in enumerate(entities)]
+        opts = [{'label': e['name'], 'value': i} for i, e in enumerate(processed_entities)]
 
         # get the types of the events
         types = result.get('predicted_labels', [])
 
-        return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, entities, types
+        return opts, 0, {'width': '250px', 'height': '34px', 'font-size': '9pt', 'margin-bottom': '10px', 'display': 'block'}, processed_entities, types
 
     @app.callback(
         [
@@ -1239,11 +1249,14 @@ def callbacks_map(app: Dash):
         # remove previous geocoder markers
         base = [
             c for c in children
-            if not (isinstance(c["props"]["id"], str) and c["props"]["id"].startswith("tempmarker_"))
+            if not (isinstance(c["props"]["id"], str) and (c["props"]["id"].startswith("tempmarker_") or
+                                                           c["props"]["id"].startswith("temprectangle_") or
+                                                           c["props"]["id"].startswith("temppolygon_")))
         ]
 
         # build markers for every entity
         markers = []
+        rectangles = []
         for i, e in enumerate(entities):
             lat = float(e['lat'])
             lon = float(e['lon'])
@@ -1252,6 +1265,7 @@ def callbacks_map(app: Dash):
             lat_s = f'Latitude: {lat}'
             lon_s = f'Longitude: {lon}'
             url = f"https://www.openstreetmap.org/{e['osm_type']}/{e['osm_id']}"
+            bbox = e.get("boundingbox", None)
 
             popup = dl.Popup(
                 children=[
@@ -1280,6 +1294,51 @@ def callbacks_map(app: Dash):
             )
 
             markers.append(marker)
+
+            # POLYGON (preferred) or RECTANGLE (fallback)
+            polygon_data = e.get("polygon")
+
+            if polygon_data and "coordinates" in polygon_data:
+                try:
+                    polygons = []
+                    if polygon_data["type"] == "Polygon":
+                        polygons = polygon_data["coordinates"]
+                    elif polygon_data["type"] == "MultiPolygon":
+                        polygons = polygon_data["coordinates"]
+
+                    for part in polygons:
+                        for ring in part:
+                            polygon = dl.Polygon(
+                                positions=[[lat, lon] for lon, lat in ring],
+                                color="blue",
+                                fill=True,
+                                fillOpacity=0.15,
+                                weight=2,
+                                id=f'temppolygoon_{title}'
+                            )
+                            print()
+                            rectangles.append(polygon)
+                except Exception as e:
+                    print(f"Polygon parse error: {e}")
+            else:
+                if bbox and len(bbox) == 4:
+                    try:
+                        min_lat, max_lat = float(bbox[0]), float(bbox[1])
+                        min_lon, max_lon = float(bbox[2]), float(bbox[3])
+                        rectangle = dl.Rectangle(
+                            bounds=[
+                                [min_lat, min_lon],  # SW
+                                [max_lat, max_lon],  # NE
+                            ],
+                            color="blue",
+                            fill=True,
+                            fillOpacity=0.15,
+                            weight=2,
+                            id=f'temprectangle_{title}'
+                        )
+                        rectangles.append(rectangle)
+                    except Exception as e:
+                        print(f"Bounding box parse error: {e}")
 
         # set the event types in the widget
         type_children = []
@@ -1310,7 +1369,7 @@ def callbacks_map(app: Dash):
         sel_desc = sel_e.get('display_name', '')
         sel_url = f"https://www.openstreetmap.org/{sel_e['osm_type']}/{sel_e['osm_id']}"
 
-        new_children = base + markers
+        new_children = base + markers + rectangles
 
         viewport = {
             'center': (sel_lat, sel_lon),
