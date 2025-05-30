@@ -279,7 +279,7 @@ if __name__ == '__main__':
                     "url": "https://mastodon.social/",
                     "platform": "mastodon",
                     "timestamp": "2025-05-22T12:15:00",
-                    "event_type": "Verletzte oder Tote",
+                    "event_type": "Injured or Dead People",
                     "geo_linked_entities":[{"mention":"Reeperbahn","location":{"place_id":25262600,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"way","osm_id":40152904,"lat":"53.549892489110256","lon":"9.965817687449384","class":"highway","type":"secondary","place_rank":26,"importance":0.0533433333333333,"addresstype":"road","name":"Reeperbahn","display_name":"Reeperbahn, St. Pauli, Hamburg-Mitte, Hamburg, 20359, Deutschland","boundingbox":["53.5495582","53.5501073","9.9624143","9.9692292"]},"candidates":[["node",11471109383],["node",437328900],["way",136183490],["node",6611773066],["node",11367144307],["way",1197213768],["way",33848569],["way",26988299],["node",3376281840],["node",338228518],["node",12629385333],["way",40230851],["way",154188993],["node",288518841],["way",659767909],["node",3480061011],["way",43114783],["way",180152459],["way",40152904],["node",6611773067],["node",4417819561],["node",4794813789],["node",5580503412],["node",12308283870],["way",194677527],["node",300814266]]}]
                 },
                 {
@@ -288,7 +288,7 @@ if __name__ == '__main__':
                     "url": "https://bsky.app",
                     "platform": "bluesky",
                     "timestamp": "2025-05-22T10:42:00",
-                    "event_type": "Warnung und Hinweise",
+                    "event_type": "Caution and Advice",
                     "geo_linked_entities": [{"mention": "Altona", "location": {"place_id": 25190270,
                                                                                "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
                                                                                "osm_type": "relation", "osm_id": 30223,
@@ -382,7 +382,7 @@ if __name__ == '__main__':
                     "url": "https://mastodon.social/",
                     "platform": "mastodon",
                     "timestamp": "2025-05-22T13:30:00",
-                    "event_type": "Spenden und Freiwilligenarbeit",
+                    "event_type": "Donation and Volunteering",
                     "geo_linked_entities": [{"mention": "Wilhelmsburg", "location": {"place_id": 25771995,
                                                                                      "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
                                                                                      "osm_type": "relation",
@@ -435,7 +435,7 @@ if __name__ == '__main__':
                     "url": "https://bsky.app/",
                     "platform": "bluesky",
                     "timestamp": "2025-05-22T08:55:00",
-                    "event_type": "Vermisste und gefundene Personen",
+                    "event_type": "Missing and Found People",
                     "geo_linked_entities": [{"mention": "Eppendorf", "location": {"place_id": 25432199,
                                                                                   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
                                                                                   "osm_type": "relation",
@@ -470,7 +470,7 @@ if __name__ == '__main__':
                     "url": "https://mastodon.social/",
                     "platform": "mastodon",
                     "timestamp": "2025-05-22T09:20:00",
-                    "event_type": "Schäden an Infrastruktur und Versorgung",
+                    "event_type": "Infrastructure and Utilities Damage",
                     "geo_linked_entities": [
                         {"mention":"Hamm","location":{"place_id":25682040,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"relation","osm_id":1455385,"lat":"53.5534434","lon":"10.0512944","class":"boundary","type":"administrative","place_rank":20,"importance":0.4315858803929854,"addresstype":"suburb","name":"Hamm","display_name":"Hamm, Hamburg-Mitte, Hamburg, Deutschland","boundingbox":["53.5377541","53.5661079","10.0376053","10.0707064"]},"candidates":[["relation",453744],["relation",420585],["relation",62499],["relation",2063685],["relation",58587],["relation",420578],["node",2146217850],["relation",6656785],["relation",1248688],["relation",444949],["way",21808488],["relation",92378],["relation",1455385],["relation",1152685],["node",8399472051],["relation",420573],["relation",2399480],["relation",386414]]},
                         ]
@@ -483,7 +483,7 @@ if __name__ == '__main__':
                     "url": "https://bsky.app/",
                     "platform": "bluesky",
                     "timestamp": "2025-05-22T07:45:00",
-                    "event_type": "Evakuierungen und Vertriebenenhilfe",
+                    "event_type": "Displaced and Evacuations",
                     "geo_linked_entities": [{
                           "mention": "Barmbek",
                           "location": {
@@ -520,7 +520,7 @@ if __name__ == '__main__':
                     "url": "https://mastodon.social/",
                     "platform": "mastodon",
                     "timestamp": "2025-05-22T11:00:00",
-                    "event_type": "Hilfsgesuche oder Bedürfnisse",
+                    "event_type": "Requests or Needs",
                     "geo_linked_entities": [{
                           "mention": "Harburg",
                           "location": {
@@ -557,7 +557,7 @@ if __name__ == '__main__':
                     "url": "https://bsky.app/",
                     "platform": "bluesky",
                     "timestamp": "2025-05-22T14:10:00",
-                    "event_type": "Hilfs- und Rettungsmaßnahmen",
+                    "event_type": "Response Efforts",
                     "geo_linked_entities": [{
                           "mention": "Bergedorf",
                           "location": {
@@ -590,7 +590,7 @@ if __name__ == '__main__':
                     "url": "https://mastodon.social/",
                     "platform": "mastodon",
                     "timestamp": "2025-05-22T15:45:00",
-                    "event_type": "Spenden und Freiwilligenarbeit",
+                    "event_type": "Sympathy and Support",
                     "geo_linked_entities": [{
                       "mention": "Winterhude",
                       "location": {
@@ -626,7 +626,7 @@ if __name__ == '__main__':
                     "url": "https://mastodon.social/",
                     "platform": "mastodon",
                     "timestamp": "2025-05-22T11:50:00",
-                    "event_type": "Nicht-humanitäres Ereignis",
+                    "event_type": "Not Humanitarian",
                     "geo_linked_entities": [{
                           "mention": "Hafencity",
                           "location": {
