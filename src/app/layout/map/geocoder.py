@@ -15,7 +15,9 @@ PREDICTED_LABELS = {
     'not_humanitarian': 'Not Humanitarian',
     'requests_or_needs': 'Requests or Needs',
     'response_efforts': 'Response Efforts',
-    'sympathy_and_support': 'Sympathy and Support'
+    'sympathy_and_support': 'Sympathy and Support',
+    'other_emergency': 'Other Emergency',
+
 }
 
 def geolocate(text: str):
