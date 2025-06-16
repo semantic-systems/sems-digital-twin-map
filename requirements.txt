@@ -2,7 +2,7 @@ numpy
 sqlalchemy
 tqdm
 branca
-dash[diskcache]
+dash[diskcache]<=2.18.0
 dash-leaflet
 shapely
 geoalchemy2
