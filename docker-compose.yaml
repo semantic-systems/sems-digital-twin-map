@@ -2,6 +2,7 @@ version: '3'
 
 services:
   python-map:
+    image: rescuemate_map
     build: 
       context: .
       dockerfile: docker/Dockerfile_map
@@ -16,6 +17,7 @@ services:
       - post_data:/app/data
     
   python-server-events:
+    image: rescuemate_server_events
     build: 
       context: .
       dockerfile: docker/Dockerfile_server_events
@@ -28,6 +30,7 @@ services:
     restart: always
   
   python-server-nina:
+    image: rescuemate_server_nina
     build: 
       context: .
       dockerfile: docker/Dockerfile_server_nina
@@ -38,6 +41,7 @@ services:
     restart: always
   
   python-server-reports:
+    image: rescuemate_server_reports
     build: 
       context: .
       dockerfile: docker/Dockerfile_server_reports
