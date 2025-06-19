@@ -181,6 +181,7 @@ def get_layout_map():
 
     layout_map = [
         dl.Map(
+            preferCanvas=True,
             children = [
                 dl.TileLayer(
                     url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -323,7 +324,7 @@ def get_layout_map():
                 'z-index': '1000',
                 'right': '0',
                 'top': '60px',
-                'width:': '200px',
+                'width': '200px',
                 'color': '#333'
             }
         ),
@@ -619,7 +620,28 @@ def get_layout_map():
         dcc.Store(id='geocoder_types', data={}),                   # the types of events the geocoder found
         dcc.Store(id='geocoder_entities', data=[]),                # the geocoder entities, selected by geocoder_entity_dropdown
         dcc.Interval(id='interval_refresh_reports', interval=3600000 , n_intervals=0),  # refresh the reports every hour
-        html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
+        html.Div(
+            children=html.Img(
+                src='/assets/images/logo.png',  # Make sure your logo is placed in the `assets/` folder of your Dash app
+                style={
+                    'height': '120px',
+                    'width': 'auto',
+                    'opacity': '0.9',
+                }
+            ),
+            style={
+                'position': 'absolute',
+                'bottom': '10px',
+                'right': '10px',
+                'padding': '5px 10px',
+                'background': 'rgba(255, 255, 255, 0.6)',
+                'backdrop-filter': 'blur(6px)',
+                '-webkit-backdrop-filter': 'blur(6px)',
+                'border-radius': '8px',
+                'z-index': '999'
+            }
+        ),
+        html.Div(id='dummy_output_1', style={'display': 'none'}),  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ]
     
     return layout_map

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import branca.colormap as cm
 import dash_leaflet as dl
 from datetime import datetime
@@ -246,7 +248,7 @@ def feature_to_map_object(feature: Feature, popup=None):
 
     return map_object
 
-def feature_set_to_map_objects(feature_set: FeatureSet, event_range: dict | None = None, hide_with_timestamp: bool = False, hide_without_timestamp: bool = False) -> list:
+def feature_set_to_map_objects(feature_set: FeatureSet, event_range: Optional[dict] = None, hide_with_timestamp: bool = False, hide_without_timestamp: bool = False) -> list:
     """
     Takes in a FeatureSet from the database and returns a list of dash-leaflet objects.
     that contains all AwesomeMarkers or GeoJSON objects of the FeatureSet
@@ -306,7 +308,7 @@ def feature_set_to_map_objects(feature_set: FeatureSet, event_range: dict | None
 
     return map_objects
 
-def layer_id_to_layer_group(layer_id, event_range: dict | None = None, hide_with_timestamp: bool = False, hide_without_timestamp: bool = False) -> dl.LayerGroup:
+def layer_id_to_layer_group(layer_id, event_range: Optional[dict] = None, hide_with_timestamp: bool = False, hide_without_timestamp: bool = False) -> dl.LayerGroup:
     """
     Takes in an overlay_id and returns the corresponding layer group.
     This is a wrapper for collection_to_map_objects()
@@ -344,7 +346,7 @@ def layer_id_to_layer_group(layer_id, event_range: dict | None = None, hide_with
 
     return layer_group
 
-def scenario_id_to_layer_group(scenario_id, event_range: dict | None = None, hide_with_timestamp: bool = False, hide_without_timestamp: bool = False) -> dl.LayerGroup:
+def scenario_id_to_layer_group(scenario_id, event_range: Optional[dict] = None, hide_with_timestamp: bool = False, hide_without_timestamp: bool = False) -> dl.LayerGroup:
     """
     Takes in a scenario_id and returns the corresponding layer group.
     This is a wrapper for collection_to_map_objects()
