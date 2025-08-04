@@ -80,7 +80,7 @@ def fetch_social_media_posts(search_since: datetime):
         ?location sm:longitude ?lon ;
         ?location sm:name ?name ;
         ?location sm:display_name ?display_name ;
-        ?location_mention sm:mention ?mention .
+        ?location_mention sm:text ?mention .
         
         FILTER (?date > "{search_since_str}"^^xsd:dateTime)
         }}
