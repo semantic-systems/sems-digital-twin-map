@@ -182,7 +182,7 @@ def save_posts(posts: list):
             "lat": entity["location"]["lat"],
             "name": entity["location"]["name"],
             "display_name": entity["location"]["display_name"],
-            "boundingbox": entity["location"]["boundingbox"],
+            "boundingbox": None,
             "osm_type": entity["location"]["osm_type"],
             "osm_id": entity["location"]["osm_id"],
             "polygon": entity["location"]["polygon"],
