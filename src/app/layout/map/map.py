@@ -1285,7 +1285,6 @@ def callbacks_map(app: Dash):
             lat = float(e['lat'])
             lon = float(e['lon'])
             title = e.get('name', '')
-            desc = e.get('display_name', '')
             lat_s = f'Latitude: {lat}'
             lon_s = f'Longitude: {lon}'
             url = f"https://www.openstreetmap.org/{e['osm_type']}/{e['osm_id']}"
@@ -1293,7 +1292,6 @@ def callbacks_map(app: Dash):
             popup = dl.Popup(
                 children=[
                     html.H4(title, style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0', 'font-weight': 'bold'}),
-                    html.P(desc,   style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
                     html.P(lat_s,  style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
                     html.P(lon_s,  style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
                     html.A('Open in OSM', href=url, target='_blank', style={'font-size': '10pt', 'margin': '4px 0 0'})
@@ -1346,7 +1344,7 @@ def callbacks_map(app: Dash):
         sel_e = entities[sel]
         sel_lat = float(sel_e['lat'])
         sel_lon = float(sel_e['lon'])
-        sel_desc = sel_e.get('display_name', '')
+        sel_desc = sel_e.get('name', '')
         sel_url = f"https://www.openstreetmap.org/{sel_e['osm_type']}/{sel_e['osm_id']}"
 
         new_children = base + markers + rectangles
