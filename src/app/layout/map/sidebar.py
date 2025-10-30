@@ -32,12 +32,22 @@ def format_report(report: Report) -> html.Li:
     color = platform_config['color']
     timestamp = report.timestamp.strftime('%H:%M %d.%m.%Y')
     event_type = report.event_type
+    relevance = report.relevance
 
     if platform == 'rss':
         feed_name = report.platform.split('/')[1]
-        descriptor_text = f'{feed_name} - {event_type} - {timestamp}'
+        descriptor_text = f'{feed_name} - {event_type} - {relevance} - {timestamp}'
     else:
-        descriptor_text = f'{platform_name} - {event_type} - {timestamp}'
+        descriptor_text = f'{platform_name} - {event_type} - {relevance} - {timestamp}'
+
+    color_map = {
+        "none": "#ffffff",  # white
+        "low": "#ffcccc",  # light red
+        "medium": "#ff6666",  # medium red
+        "high": "#cc0000"  # dark red
+    }
+
+    bg_color = color_map.get(relevance, "#ffffff")
 
     return html.Li(
         children=[
@@ -89,7 +99,8 @@ def format_report(report: Report) -> html.Li:
             'border-radius': '3px',
             'padding-left': '5px',
             'display': 'flex',
-            'alignItems': 'flex-start'
+            'alignItems': 'flex-start',
+            'background-color': bg_color  # this adds the background color
         }
     )
 
@@ -114,7 +125,7 @@ def format_reports(reports: list, n=25) -> list:
 
     return [format_report(report) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform and event type.
@@ -122,13 +133,15 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None):
 
     # get all Reports from the database where the platform==filter_platform and the event_type==filter_event_type
     engine, session = autoconnect_db()
-
-    if filter_platform and filter_event_type:
-        reports = session.query(Report).filter(Report.platform.like(f'{filter_platform}%'), Report.event_type == filter_event_type).order_by(Report.timestamp.desc()).all()
-    elif filter_platform:
-        reports = session.query(Report).filter(Report.platform.like(f'{filter_platform}%')).order_by(Report.timestamp.desc()).all()
-    elif filter_event_type:
-        reports = session.query(Report).filter(Report.event_type == filter_event_type).order_by(Report.timestamp.desc()).all()
+    filter_arguments = []
+    if filter_platform:
+        filter_arguments.append(Report.platform.like(f'{filter_platform}%'))
+    if filter_event_type:
+        filter_arguments.append(Report.event_type == filter_event_type)
+    if filter_relevance_type:
+        filter_arguments.append(Report.relevance == filter_relevance_type)
+    if filter_arguments:
+        reports = session.query(Report).filter(*filter_arguments).order_by(Report.timestamp.desc()).all()
     else:
         reports = session.query(Report).order_by(Report.timestamp.desc()).all()
 
@@ -153,6 +166,17 @@ def get_sidebar_dropdown_event_type_values():
     # get the event_types of all Reports in the database
     engine, session = autoconnect_db()
     event_types = session.query(Report.event_type).distinct().all()
+    event_types = [event_type[0] for event_type in event_types]
+
+    session.close()
+
+    return event_types
+
+def get_sidebar_dropdown_relevance_type_values():
+
+    # get the event_types of all Reports in the database
+    engine, session = autoconnect_db()
+    event_types = session.query(Report.relevance).distinct().all()
     event_types = [event_type[0] for event_type in event_types]
 
     session.close()

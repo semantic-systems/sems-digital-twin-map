@@ -13,7 +13,7 @@ from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, St
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
-from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values
+from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values, get_sidebar_dropdown_relevance_type_values
 from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
 from server_reports import fetch_osm_polygon
 
@@ -178,6 +178,7 @@ def get_layout_map():
     scenario_checkboxes = build_scenario_checkboxes()
     reports_dropdown_platform = get_sidebar_dropdown_platform_values()
     reports_dropdown_event_type = get_sidebar_dropdown_event_type_values()
+    reports_dropdown_relevance_type = get_sidebar_dropdown_relevance_type_values()
 
     layout_map = [
         dl.Map(
@@ -482,6 +483,16 @@ def get_layout_map():
                     id='reports_dropdown_event_type',
                     optionHeight=20,
                     placeholder='Event Type',
+                    style={
+                        "margin-bottom": "10px",
+                        "font-size": "7.5pt"
+                    }
+                ),
+                dcc.Dropdown(
+                    options=reports_dropdown_relevance_type,
+                    id='reports_dropdown_relevance_type',
+                    optionHeight=20,
+                    placeholder='Relevance',
                     style={
                         "margin-bottom": "10px",
                         "font-size": "7.5pt"
@@ -1079,7 +1090,7 @@ def callbacks_map(app: Dash):
                 if polygon_data["type"] in {"Polygon", "MultiPolygon"}:
                     polygons = []
                     if polygon_data["type"] == "Polygon":
-                        polygons = polygon_data["coordinates"]
+                        polygons = [polygon_data["coordinates"]]
                     elif polygon_data["type"] == "MultiPolygon":
                         polygons = polygon_data["coordinates"]
 
@@ -1362,9 +1373,10 @@ def callbacks_map(app: Dash):
     # update the reports
     @app.callback(
         Output('reports_list', 'children'),
-        [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value')],
+        [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value'),
+         Input('reports_dropdown_relevance_type', 'value')],
     )
-    def update_reports(n_clicks, filter_platform, filter_event_type):
+    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type):
         """
         This callback is triggered every hour.
         It updates the reports component with the newest posts and reports.
@@ -1374,7 +1386,8 @@ def callbacks_map(app: Dash):
         if n_clicks is None:
             raise PreventUpdate
         
-        sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type)
+        sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type,
+                                              filter_relevance_type=filter_relevance_type)
 
         return sidebar_content
     
@@ -1403,6 +1416,20 @@ def callbacks_map(app: Dash):
         """
 
         dropdown_class_values = get_sidebar_dropdown_event_type_values()
+
+        return dropdown_class_values
+
+    @app.callback(
+        Output('reports_dropdown_relevance_type', 'options'),
+        [Input('interval_refresh_reports', 'n_intervals')],
+    )
+    def update_report_dropdown_relevance_type(n_clicks):
+        """
+        This callback is triggered every hour.
+        It updates the reports dropdown with all classes of the current data.
+        """
+
+        dropdown_class_values = get_sidebar_dropdown_relevance_type_values()
 
         return dropdown_class_values
 

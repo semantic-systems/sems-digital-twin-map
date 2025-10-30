@@ -5,7 +5,7 @@ import requests
 import time
 from datetime import datetime, timedelta
 
-from shapely import polygonize, GeometryCollection, LineString
+from shapely import polygonize, GeometryCollection, LineString, wkt
 from shapely.geometry import mapping
 from SPARQLWrapper import SPARQLWrapper
 from data.connect import autoconnect_db
@@ -17,6 +17,9 @@ import random   # can be removed later
 SPARQL_ENDPOINT = os.getenv('SPARQL_ENDPOINT', '')
 if not SPARQL_ENDPOINT:
     raise ValueError("SPARQL_ENDPOINT environment variable is not set.")
+
+
+BOUNDING_BOX = os.getenv('BOUNDING_BOX', '')
 
 # how long to wait between requests (in seconds)
 REQUEST_DELAY = 10
@@ -82,6 +85,13 @@ def get_keycloak_token():
 
     return token
 
+def wkt_to_geojson(wkt_str: str):
+    # Parse WKT
+    geom = wkt.loads(wkt_str)
+
+    # Convert to GeoJSON dictionary
+    geojson_dict = mapping(geom)
+    return geojson_dict
 
 def fetch_social_media_posts(search_since: datetime):
     """Fetch posts from RescueMate KG."""
@@ -93,12 +103,16 @@ def fetch_social_media_posts(search_since: datetime):
     query = f"""
     PREFIX rm: <http://rescue-mate.de/resource/>
     PREFIX schema: <http://schema.org/>
+    PREFIX geo: <http://www.opengis.net/ont/geosparql#> 
+
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         SELECT * {{
         ?post a rm:SocialMediaPost ;
         schema:text ?text ;
         schema:dateCreated ?date ;
         rm:hasDetectedCategory ?category ;
+        rm:predictedRelevance ?predictedRelevance ;
+        schema:url ?url ;
         rm:hasMentionedLocation ?location_mention ;
         schema:author ?user .
         OPTIONAL {{ ?post rm:predictedRelevance ?relevance .}}
@@ -106,10 +120,12 @@ def fetch_social_media_posts(search_since: datetime):
         ?location_mention rm:location ?location ;
         schema:text ?location_mention_surface_form .
         ?location rm:osm_type ?osm_type ;
+        geo:hasGeometry ?geom ;
         rm:osm_id ?osm_id ;
         rm:latitude ?lat ;
         rm:longitude ?lon ;
         rdfs:label ?name .
+        ?geom geo:asWKT ?wkt .
         FILTER (?date > "{search_since_str}"^^xsd:dateTime)
         }}
     """
@@ -129,7 +145,12 @@ def fetch_social_media_posts(search_since: datetime):
     posts = {}
     for result in results['results']['bindings']:
         post_id = result['post']['value'].split('/')[-1]
-
+        lat = float(result['lat']['value'])
+        lon = float(result['lon']['value'])
+        if BOUNDING_BOX:
+            min_lon, min_lat, max_lon, max_lat = map(float, BOUNDING_BOX.split(','))
+            if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
+                continue
         if post_id not in posts:
             posts[post_id] = {
                 'id': result['post']['value'].split('/')[-1],
@@ -144,9 +165,10 @@ def fetch_social_media_posts(search_since: datetime):
                     'location': {
                         'osm_type': result['osm_type']['value'],
                         'osm_id': int(result['osm_id']['value']),
-                        'lat': float(result['lat']['value']),
-                        'lon': float(result['lon']['value']),
+                        'lat': lat,
+                        'lon': lon,
                         'name': result['name']['value'],
+                        'geojson': wkt_to_geojson(result["wkt"]['value']),
                     }
                 }]}
         else:
@@ -159,16 +181,32 @@ def fetch_social_media_posts(search_since: datetime):
                         'lat': float(result['lat']['value']),
                         'lon': float(result['lon']['value']),
                         'name': result['name']['value'],
+                        'geojson': wkt_to_geojson(result["wkt"]['value']),
                     }
                 }
             )
+    return [post for post in posts.values() if len(post['geo_linked_entities']) > 0]
 
-    return list(posts.values())
+event_mapping = {
+    'http://rescue-mate.de/resource/not_humanitarian': 'Irrelevant',
+    'http://rescue-mate.de/resource/affected_individual': 'Menschen betroffen',
+    'http://rescue-mate.de/resource/caution_and_advice': 'Warnungen & Hinweise',
+    'http://rescue-mate.de/resource/displaced_and_evacuations': 'Evakuierungen & Umsiedlungen',
+    'http://rescue-mate.de/resource/donation_and_volunteering': 'Spenden & Freiwillige',
+    'http://rescue-mate.de/resource/infrastructure_and_utilities_damage': 'Infrastruktur-Schäden',
+    'http://rescue-mate.de/resource/injured_or_dead_people': 'Verletzte & Tote',
+    'http://rescue-mate.de/resource/missing_and_found_people': 'Vermisste & Gefundene',
+    'http://rescue-mate.de/resource/requests_or_needs': 'Bedarfe & Anfragen',
+    'http://rescue-mate.de/resource/response_efforts': 'Einsatzmaßnahmen',
+    'http://rescue-mate.de/resource/sympathy_and_support': 'Mitgefühl & Unterstützung',
+}
 
-
-
-
-
+relevance_mapping = {
+    'http://rescue-mate.de/resource/high': 'high',
+    'http://rescue-mate.de/resource/medium': 'medium',
+    'http://rescue-mate.de/resource/low': 'low',
+    'http://rescue-mate.de/resource/none': 'none',
+}
 
 def save_posts(posts: list):
     """Save the posts to the database"""
@@ -224,7 +262,8 @@ def save_posts(posts: list):
             url=json_post['url'],
             platform=platform,
             timestamp=timestamp,
-            event_type=json_post['event_type'],
+            relevance=relevance_mapping[json_post['relevance']],
+            event_type=event_mapping[json_post['event_type']],
             locations=locations)
 
         # add the post to the session
@@ -333,14 +372,14 @@ if __name__ == '__main__':
     # an initial sleep, because the api might not be ready yet
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)
-    start_date = datetime.now()
+    start_date = datetime.now() - timedelta(days=3)
     search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
     while True:
         new_search_since = datetime.now()
         try:
             posts = fetch_social_media_posts(search_since)
-        except:
-            print("Error fetching posts, retrying in next cycle")
+        except Exception as e:
+            print(f"Error fetching posts, retrying in next cycle: {e}")
             posts = []
             time.sleep(10)
         search_since = new_search_since
@@ -350,8 +389,8 @@ if __name__ == '__main__':
                 if location["location"] is not None:
                     osm_id = location["location"]["osm_id"]
                     osm_type = location["location"]["osm_type"]
-                    polygon = fetch_osm_polygon(osm_type, osm_id)
-                    location["location"]["polygon"] = polygon
+                    # polygon = fetch_osm_polygon(osm_type, osm_id)
+                    location["location"]["polygon"] = location["location"]["geojson"]
 
         saved_counter = save_posts(posts)
         # if VERBOSE: print(f'Saved {saved_counter} posts', flush=True)

@@ -11,6 +11,8 @@ services:
       - postgis
     networks:
       - rescuemate_map
+    environment:
+      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
     restart: always
     volumes:
       - post_data:/app/data
@@ -21,6 +23,8 @@ services:
       dockerfile: docker/Dockerfile_server_events
     ports:
       - "8051"
+    environment:
+      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
     depends_on:
       - postgis
     networks:
@@ -33,6 +37,8 @@ services:
       dockerfile: docker/Dockerfile_server_nina
     depends_on:
       - postgis
+    environment:
+      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
     networks:
       - rescuemate_map
     restart: always
@@ -41,6 +47,10 @@ services:
     build: 
       context: .
       dockerfile: docker/Dockerfile_server_reports
+    environment:
+      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}
     depends_on:
       - postgis
     networks:

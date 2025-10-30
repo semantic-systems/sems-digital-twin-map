@@ -256,6 +256,7 @@ class Report(Base):
     platform = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     event_type = Column(String, nullable=False)
+    relevance = Column(String, nullable=False)
     locations = Column(JSON, nullable=True)
 
 # the following tables are defined in the database
