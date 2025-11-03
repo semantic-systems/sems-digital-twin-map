@@ -96,11 +96,11 @@ def format_report(report: Report) -> html.Li:
         style={
             'margin-bottom': '10px',
             'border-left': f'5px solid {color}',
+            'border-right': f'5px solid {bg_color}',
             'border-radius': '3px',
             'padding-left': '5px',
             'display': 'flex',
             'alignItems': 'flex-start',
-            'background-color': bg_color  # this adds the background color
         }
     )
 
