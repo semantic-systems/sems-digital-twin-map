@@ -25,8 +25,6 @@ def format_report(report: Report) -> html.Li:
         platform = 'rss'
     platform_config = get_platform_config(platform)
     text = report.text.replace('\n', ' ')
-    if len(text) > 100:
-        text = text[:100] + '...'
 
     platform_name = platform_config['name']
     color = platform_config['color']
@@ -53,7 +51,23 @@ def format_report(report: Report) -> html.Li:
         children=[
             html.Button(
                 [
-                    html.Span(text, style={"font-weight": "bold"}),
+                    html.Span(
+                        text,
+                        style={
+                            "font-weight": "bold",
+                            "font-size": "10px",
+                            "line-height": "1.4",
+                            "display": "-webkit-box",  # enables flex-like box model
+                            "-webkit-box-orient": "vertical",  # sets vertical stacking
+                            "-webkit-line-clamp": "5",  # limits to 5 lines
+                            "margin-bottom": "4px",
+                            "white-space": "normal",     # <-- allow line breaks
+                            "word-wrap": "break-word",   # <-- break long words if needed
+                            "overflow": "hidden",
+                            "text-overflow": "ellipsis",
+                            "max-width": "100%",  # or a fixed width, e.g. "600px"
+                        }
+                    ),
                     html.P(
                         descriptor_text,
                         style={
