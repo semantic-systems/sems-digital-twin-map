@@ -57,15 +57,15 @@ def format_report(report: Report) -> html.Li:
                             "font-weight": "bold",
                             "font-size": "10px",
                             "line-height": "1.4",
-                            "display": "-webkit-box",  # enables flex-like box model
-                            "-webkit-box-orient": "vertical",  # sets vertical stacking
-                            "-webkit-line-clamp": "5",  # limits to 5 lines
+                            "display": "-webkit-box",
+                            "-webkit-box-orient": "vertical",
+                            "-webkit-line-clamp": "5",
                             "margin-bottom": "4px",
-                            "white-space": "normal",     # <-- allow line breaks
-                            "word-wrap": "break-word",   # <-- break long words if needed
+                            "white-space": "normal",
+                            "word-wrap": "break-word",
                             "overflow": "hidden",
                             "text-overflow": "ellipsis",
-                            "max-width": "100%",  # or a fixed width, e.g. "600px"
+                            "max-width": "100%",
                         }
                     ),
                     html.P(
@@ -79,11 +79,10 @@ def format_report(report: Report) -> html.Li:
                 ],
                 id={'type': 'report-entry', 'index': report.id},
                 n_clicks=0,
-                # Remove button styling except for pointer & alignment—looks like a flat Div
                 style={
                     "background": "none",
                     "border": "none",
-                    "width": "calc(100% - 30px)",  # leaves space for the icon
+                    "width": "100%",
                     "textAlign": "left",
                     "cursor": "pointer",
                     "padding": "0",
@@ -98,12 +97,11 @@ def format_report(report: Report) -> html.Li:
                 rel="noopener noreferrer",
                 title="Open original post",
                 style={
-                    'font-size': '18px',
+                    'font-size': '10px',
                     'color': '#666',
-                    'margin-left': '6px',
-                    'text-decoration': 'none',
-                    'verticalAlign': 'top',
-                    'display': 'inline-block'
+                    'text-decoration': 'underline',
+                    'display': 'block',
+                    'margin-top': '4px'
                 }
             )
         ],
@@ -114,6 +112,7 @@ def format_report(report: Report) -> html.Li:
             'border-radius': '3px',
             'padding-left': '5px',
             'display': 'flex',
+            'flex-direction': 'column',
             'alignItems': 'flex-start',
         }
     )
