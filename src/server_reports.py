@@ -115,7 +115,6 @@ def fetch_social_media_posts(search_since: datetime):
         schema:url ?url ;
         rm:hasMentionedLocation ?location_mention ;
         schema:author ?user .
-        OPTIONAL {{ ?post rm:predictedRelevance ?relevance .}}
         ?user rm:socialMediaServiceName ?platform .
         ?location_mention rm:location ?location ;
         schema:text ?location_mention_surface_form .
