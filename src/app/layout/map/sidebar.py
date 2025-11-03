@@ -128,23 +128,29 @@ def format_reports(reports: list, n=25) -> list:
 def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None):
     """
     Returns the n most recent posts from the reports server (posts.json).
-    You can also filter by platform and event type.
+    You can also filter by platform, event type, and relevance type(s).
     """
-
-    # get all Reports from the database where the platform==filter_platform and the event_type==filter_event_type
     engine, session = autoconnect_db()
     filter_arguments = []
+
     if filter_platform:
         filter_arguments.append(Report.platform.like(f'{filter_platform}%'))
+
     if filter_event_type:
         filter_arguments.append(Report.event_type == filter_event_type)
-    if filter_relevance_type:
-        filter_arguments.append(Report.relevance == filter_relevance_type)
-    if filter_arguments:
-        reports = session.query(Report).filter(*filter_arguments).order_by(Report.timestamp.desc()).all()
-    else:
-        reports = session.query(Report).order_by(Report.timestamp.desc()).all()
 
+    if filter_relevance_type:
+        # Handle multiple relevance types
+        if isinstance(filter_relevance_type, list):
+            filter_arguments.append(Report.relevance.in_(filter_relevance_type))
+        else:
+            filter_arguments.append(Report.relevance == filter_relevance_type)
+
+    query = session.query(Report)
+    if filter_arguments:
+        query = query.filter(*filter_arguments)
+
+    reports = query.order_by(Report.timestamp.desc()).all()
     session.close()
 
     return format_reports(reports, n)

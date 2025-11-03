@@ -492,7 +492,8 @@ def get_layout_map():
                     options=reports_dropdown_relevance_type,
                     id='reports_dropdown_relevance_type',
                     optionHeight=20,
-                    placeholder='Relevance',
+                    placeholder='Relevance(s)',
+                    multi=True,  # <-- enable multiple selections
                     style={
                         "margin-bottom": "10px",
                         "font-size": "7.5pt"
@@ -1385,6 +1386,12 @@ def callbacks_map(app: Dash):
         # if the refresh button was not clicked, do nothing
         if n_clicks is None:
             raise PreventUpdate
+
+        # Normalize relevance type (handle both single and multi-select cases)
+        if isinstance(filter_relevance_type, str):
+            filter_relevance_type = [filter_relevance_type]
+        elif filter_relevance_type is None:
+            filter_relevance_type = []
         
         sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type,
                                               filter_relevance_type=filter_relevance_type)
