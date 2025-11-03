@@ -8,14 +8,18 @@ import dash_leaflet as dl
 
 from sqlalchemy import inspect
 
+from app.layout.map.chats import get_chat_sidebar, fetch_chats
 # internal imports
-from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario, Report
+from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario, Report, Chat
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values, get_sidebar_dropdown_relevance_type_values
 from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
 from server_reports import fetch_osm_polygon
+
+
+
 
 
 # IMPORTANT NOTE
@@ -544,88 +548,123 @@ def get_layout_map():
                 'height': '35px'
             }
         ),
+    #     html.Div(
+    #         id='div_geocoder',
+    #         children=[
+    #             html.P(
+    #                 children='Geocoder',
+    #                 style={
+    #                     'font-size': '14pt',
+    #                     'font-weight': 'bold',
+    #                     'margin': '4px 2px 10px 2px',
+    #                     'text-align': 'center',
+    #                     'color': '#404040'
+    #                 }
+    #             ),
+    #             dcc.Textarea(
+    #                 id='geocoder_text_input',
+    #                 placeholder='Enter place name or description...',
+    #                 style={
+    #                     'width': '236px',
+    #                     'height': '60px',
+    #                     'padding': '6px',
+    #                     'font-size': '9pt',
+    #                     'margin-bottom': '10px',
+    #                     'border-radius': '4px',
+    #                     'border': '1px solid #ccc'
+    #                 }
+    #             ),
+    #             html.Button(
+    #                 'Find',
+    #                 id='geocoder_button',
+    #                 n_clicks=0,
+    #                 style={
+    #                     'width': '100%',
+    #                     'padding': '6px',
+    #                     'font-size': '9pt',
+    #                     'background-color': '#4CAF50',
+    #                     'color': 'white',
+    #                     'border': 'none',
+    #                     'border-radius': '4px',
+    #                     'cursor': 'pointer',
+    #                     'margin-bottom': '10px'
+    #                 }
+    #             ),
+    #             html.Hr(style={'margin': '5px 0'}),
+    #             html.Div(id='geocoder_result_types', style={'font-size': '10pt', 'color': '#424242'}),
+    #             html.Hr(style={'margin': '5px 0'}),
+    #             dcc.Dropdown(
+    #                 id='geocoder_entity_dropdown',
+    #                 placeholder='Select location',
+    #                     optionHeight=24,
+    #                 style={
+    #                     'width': '236px',
+    #                     'height': '34px',
+    #                     'font-size': '9pt',
+    #                     'margin-bottom': '10px',
+    #                     'display': 'none'
+    #                 }
+    #             ),
+    #             html.Div(
+    #                 id='geocoder_output',
+    #                 children=[
+    #                     html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px', 'font-weight': 'bold', 'color': '#424242'}),
+    #                     html.Div(id='geocoder_result_lat', style={'font-size': '9pt'}),
+    #                     html.Div(id='geocoder_result_lon', style={'font-size': '9pt', 'margin-bottom': '5px'}),
+    #                     html.A(id='geocoder_result_url', href='#', target='_blank', style={'font-size': '9pt', 'display': 'block'})
+    #                 ]
+    #             ),
+    # ],
+    #         style={
+    #             'position': 'absolute',
+    #             'float': 'right',
+    #             'top': '350px',
+    #             'right': '0px',
+    #             'background-color': 'white',
+    #             'border': '1px solid #ccc',
+    #             'border-radius': '5px',
+    #             'margin': '10px',
+    #             'padding': '10px',
+    #             'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+    #             'z-index': '1000',
+    #             'width': '250px'
+    #         }
+    #     ),
         html.Div(
-            id='div_geocoder',
-            children=[
-                html.P(
-                    children='Geocoder',
-                    style={
-                        'font-size': '14pt',
-                        'font-weight': 'bold',
-                        'margin': '4px 2px 10px 2px',
-                        'text-align': 'center',
-                        'color': '#404040'
-                    }
-                ),
-                dcc.Textarea(
-                    id='geocoder_text_input',
-                    placeholder='Enter place name or description...',
-                    style={
-                        'width': '236px',
-                        'height': '60px',
-                        'padding': '6px',
-                        'font-size': '9pt',
-                        'margin-bottom': '10px',
-                        'border-radius': '4px',
-                        'border': '1px solid #ccc'
-                    }
-                ),
-                html.Button(
-                    'Find',
-                    id='geocoder_button',
-                    n_clicks=0,
-                    style={
-                        'width': '100%',
-                        'padding': '6px',
-                        'font-size': '9pt',
-                        'background-color': '#4CAF50',
-                        'color': 'white',
-                        'border': 'none',
-                        'border-radius': '4px',
-                        'cursor': 'pointer',
-                        'margin-bottom': '10px'
-                    }
-                ),
-                html.Hr(style={'margin': '5px 0'}),
-                html.Div(id='geocoder_result_types', style={'font-size': '10pt', 'color': '#424242'}),
-                html.Hr(style={'margin': '5px 0'}),
-                dcc.Dropdown(
-                    id='geocoder_entity_dropdown',
-                    placeholder='Select location',
-                        optionHeight=24,
-                    style={
-                        'width': '236px',
-                        'height': '34px',
-                        'font-size': '9pt',
-                        'margin-bottom': '10px',
-                        'display': 'none'
-                    }
-                ),
-                html.Div(
-                    id='geocoder_output',
-                    children=[
-                        html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px', 'font-weight': 'bold', 'color': '#424242'}),
-                        html.Div(id='geocoder_result_lat', style={'font-size': '9pt'}),
-                        html.Div(id='geocoder_result_lon', style={'font-size': '9pt', 'margin-bottom': '5px'}),
-                        html.A(id='geocoder_result_url', href='#', target='_blank', style={'font-size': '9pt', 'display': 'block'})
-                    ]
-                )
-            ],
+        id='chat_sidebar',
+        children=get_chat_sidebar(fetch_chats()),
             style={
                 'position': 'absolute',
-                'float': 'right',
                 'top': '350px',
-                'right': '0px',
-                'background-color': 'white',
+                'right': '10px',
+                'width': '220px',
+                'background': 'white',
                 'border': '1px solid #ccc',
-                'border-radius': '5px',
-                'margin': '10px',
                 'padding': '10px',
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                'z-index': '1000',
-                'width': '250px'
+                'z-index': '1002',
+                'max-height': '120px',
+                # REMOVE 'overflow-y': 'auto' FROM HERE
             }
-        ),
+    ),
+     html.Div(
+        id='chat-content',
+        children=[],
+        style={
+            'position': 'absolute',
+            'top': '600px',
+            'right': '10px',  # to the right of chat sidebar, adjust width/placement as needed
+            'width': '320px',
+            'background': 'white',
+            'border': '1px solid #ccc',
+            'padding': '10px',
+            'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'z-index': '1002',
+            'max-height': '700px',
+            'overflow-y': 'auto',
+            "display": "none"  # initially hidden, shown when chat selected
+        }
+    ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
         dcc.Store(id='geocoder_types', data={}),                   # the types of events the geocoder found
@@ -642,18 +681,87 @@ def callbacks_map(app: Dash):
     Pass the Dash app as an argument.
     """
 
-    # this big function is a callback that updates the map children
-    # meaning, we create/modify/delete markers and polygons on the map
+    @app.callback(
+        Output('chat-content', 'children'),
+        Output('chat-content', 'style'),
+        Input({'type': 'chat-selector', 'index': ALL}, 'n_clicks_timestamp'),
+        State({'type': 'chat-selector', 'index': ALL}, 'id'),
+        prevent_initial_call=True
+    )
+    def show_chat_content(n_clicks_ts_list, chat_ids):
+        # If no buttons have ever been clicked, do nothing
+        if not n_clicks_ts_list or all(ts is None for ts in n_clicks_ts_list):
+            raise PreventUpdate
+        # Find the chat button with the highest timestamp (most recently clicked)
+        latest_idx = max(
+            [
+                (i, ts)
+                for i, ts in enumerate(n_clicks_ts_list)
+                if ts is not None
+            ],
+            key=lambda x: x[1]  # pick max timestamp
+        )[0]
+        chat_id = chat_ids[latest_idx]['index']
+
+        # Demo chat logic: handle negative IDs for dummies
+        if chat_id < 0:
+            messages = [
+                {"sender": "System", "content": "Demo message 1", "timestamp": "2025-01-01 12:00"},
+                {"sender": "User", "content": "Demo message 2", "timestamp": "2025-01-01 12:01"},
+            ]
+        else:
+            # DB lookup for real chats
+            engine, session = autoconnect_db()
+            try:
+                chat = session.query(Chat).filter_by(id=chat_id).first()
+                if not chat:
+                    messages = []
+                else:
+                    messages = [{"sender": m.sender, "content": m.content, "timestamp": str(m.timestamp)} for m in
+                                chat.messages]
+            finally:
+                session.close()
+                engine.dispose()
+
+        # Build display
+        if not messages:
+            content_div = html.Div("No messages in this chat.",
+                                   style={"color": "#777", "font-size": "12pt", "text-align": "center"})
+        else:
+            content_div = html.Div([
+                html.Ul([
+                    html.Li(f"[{msg['timestamp']}] {msg['sender']}: {msg['content']}")
+                    for msg in messages
+                ], style={"list-style-type": "none", "padding": "0"})
+            ])
+
+        # Show the content panel (set display to block)
+        show_style = {
+            'position': 'absolute',
+            'top': '600px',
+            'right': '10px',  # to the right of chat sidebar, adjust width/placement as needed
+            'width': '320px',
+            'background': 'white',
+            'border': '1px solid #ccc',
+            'padding': '10px',
+            'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'z-index': '1002',
+            'max-height': '700px',
+            'overflow-y': 'auto',
+            "display": "block"  # initially hidden, shown when chat selected
+        }
+        return content_div, show_style
+
     @app.callback(
         [
             Output('map', 'children', allow_duplicate=True)
         ],
         [
-            Input('overlay_checklist', 'value'),        # triggered when a layer is selected or deselected
-            Input('scenario_checklist', 'value'),       # triggered when a scenario is selected or deselected
-            Input('options_checklist', 'value'),        # triggered when the options checklist changes
-            Input('event_range_selected', 'data'),      # triggered when a different event range is selected
-            Input('map-tabs', 'value')                  # triggered when the tab value changes
+            Input('overlay_checklist', 'value'),  # triggered when a layer is selected or deselected
+            Input('scenario_checklist', 'value'),  # triggered when a scenario is selected or deselected
+            Input('options_checklist', 'value'),  # triggered when the options checklist changes
+            Input('event_range_selected', 'data'),  # triggered when a different event range is selected
+            Input('map-tabs', 'value')  # triggered when the tab value changes
         ],
         [
             State('map', 'children'),
@@ -1144,6 +1252,30 @@ def callbacks_map(app: Dash):
                 except Exception as e:
                     print(f"Bounding box parse error: {e}")
         return elements
+
+
+    # @app.callback(
+    #     Output('chat-content', 'children'),
+    #     Input({'type': 'chat-selector', 'index': ALL}, 'n_clicks'),
+    #     State({'type': 'chat-selector', 'index': ALL}, 'id'),
+    # )
+    # def show_chat_content(n_clicks_list, chat_ids):
+    #     # Find which chat was clicked
+    #     triggered = [i for i, n in enumerate(n_clicks_list) if n]
+    #     if not triggered:
+    #         raise PreventUpdate
+    #     chat_id = chat_ids[triggered[0]]['index']
+    #
+    #     engine, session = autoconnectdb()
+    #     messages = session.query(Message).filter_by(chat_id=chat_id).order_by(Message.timestamp.asc()).all()
+    #     session.close()
+    #     engine.dispose()
+    #
+    #     return html.Div([
+    #         html.H4(f"Chat {chat_id}"),
+    #         html.Ul([html.Li(f"{m.timestamp}: {m.sender}: {m.content}") for m in messages])
+    #     ])
+
 
     def get_children(map_children):
         # Remove previous temp markers and rectangles

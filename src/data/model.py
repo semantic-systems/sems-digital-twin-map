@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table, Text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -17,6 +17,26 @@ feature_set_scenario_association = Table(
     Column('feature_set_id', Integer, ForeignKey('feature_sets.id'), nullable=False),
     Column('scenario_id', Integer, ForeignKey('scenarios.id'), nullable=False)
 )
+
+class Chat(Base):
+    __tablename__ = 'chats'
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
+    is_open = Column(Boolean, default=True)
+    created_at = Column(DateTime)
+    last_message_at = Column(DateTime)
+
+    messages = relationship("Message", back_populates="chat")
+
+class Message(Base):
+    __tablename__ = 'messages'
+    id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer, ForeignKey('chats.id'))
+    sender = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime)
+    chat = relationship("Chat", back_populates="messages")
+
 
 class Feature(Base):
     """
