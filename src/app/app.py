@@ -30,39 +30,50 @@ def get_app():
         suppress_callback_exceptions=True
     )
 
+    # # create the map layout
+    # # for specific layouts see src/app/layout/*
+    # app.layout = html.Div(
+    #     children = [
+    #         dcc.Tabs(
+    #             children = [
+    #                 # Tab 1: The Map
+    #                 dcc.Tab(
+    #                     label='Map',
+    #                     children = html.Div(get_layout_map(), className='fullscreen-container') # these outer divs are here to force the tabs to fill the screen
+    #                 ),
+    #                 # Tab 2: The Scenario Editor
+    #                 # dcc.Tab(
+    #                 #     label='Scenario Editor',
+    #                 #     children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
+    #                 # ),
+    #                 # Tab 3: The NINA Warnings
+    #                 dcc.Tab(
+    #                     label='NINA Warnings',
+    #                     children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
+    #                 ),
+    #                 # Tab 4: Configuration
+    #                 dcc.Tab(
+    #                     label='Configuration',
+    #                     children = html.Div(build_layout_config(), className='fullscreen-container')
+    #                 )
+    #                 # Tab 5: The Data Viewer
+    #                 # dcc.Tab(
+    #                 #     label='Data Viewer',
+    #                 #     children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
+    #                 # ),
+    #
+    #             ]
+    #         )
+    #     ],
+    #     style={'display': 'flex', 'flex-wrap': 'wrap'}
+    # )
+
     # create the map layout
-    # for specific layouts see src/app/layout/*
     app.layout = html.Div(
-        children = [
-            dcc.Tabs(
-                children = [
-                    # Tab 1: The Map
-                    dcc.Tab(
-                        label='Map',
-                        children = html.Div(get_layout_map(), className='fullscreen-container') # these outer divs are here to force the tabs to fill the screen
-                    ),
-                    # Tab 2: The Scenario Editor
-                    # dcc.Tab(
-                    #     label='Scenario Editor',
-                    #     children = html.Div(get_layout_scenario_editor(), className='fullscreen-container')
-                    # ),
-                    # Tab 3: The NINA Warnings
-                    dcc.Tab(
-                        label='NINA Warnings',
-                        children = html.Div(build_layout_nina_warnings(), className='fullscreen-container')
-                    ),
-                    # Tab 4: Configuration
-                    dcc.Tab(
-                        label='Configuration',
-                        children = html.Div(build_layout_config(), className='fullscreen-container')
-                    )
-                    # Tab 5: The Data Viewer
-                    # dcc.Tab(
-                    #     label='Data Viewer',
-                    #     children = html.Div(build_layout_data_viewer(), className='fullscreen-container')
-                    # ),
-                    
-                ]
+        children=[
+            html.Div(
+                get_layout_map(),
+                className='fullscreen-container'  # keep this if you want the map to fill the screen
             )
         ],
         style={'display': 'flex', 'flex-wrap': 'wrap'}
