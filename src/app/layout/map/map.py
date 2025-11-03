@@ -1203,10 +1203,12 @@ def callbacks_map(app: Dash):
 
         markers = []
         rectangles = []
+        coords = []
 
         for i, loc in enumerate(locations):
             lat = loc.get('lat')
             lon = loc.get('lon')
+            coords.append((lat, lon))
             title = loc.get('name', loc.get("mention", "Unspecified"))
             desc = loc.get('display_name', '')
             lat_s = f'Latitude: {lat}'
@@ -1250,14 +1252,22 @@ def callbacks_map(app: Dash):
 
         children += rectangles + markers
 
-        # Center/zoom map
-        # Option 1: Center on first marker
-        lat_first = locations[0].get('lat')
-        lon_first = locations[0].get('lon')
+        # Compute bounds to show all markers
+        lats, lons = zip(*coords)
+        lat_min, lat_max = min(lats), max(lats)
+        lon_min, lon_max = min(lons), max(lons)
+
+        # Add padding (e.g., 5% in each direction)
+        padding_factor = 0.05
+        lat_padding = (lat_max - lat_min) * padding_factor
+        lon_padding = (lon_max - lon_min) * padding_factor
+        south_west = (lat_min - lat_padding, lon_min - lon_padding)
+        north_east = (lat_max + lat_padding, lon_max + lon_padding)
+        bounds = [south_west, north_east]
+
         viewport = {
-            'center': (lat_first, lon_first),
-            'zoom': 13,
-            'transition': 'flyTo',
+            'bounds': bounds,
+            'transition': 'flyToBounds',
             'options': {'duration': 0.5}
         }
 
