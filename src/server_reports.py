@@ -253,6 +253,9 @@ def save_posts(posts: list):
             "mention": entity["mention"]
         } for entity in entities if isinstance(entity.get("location"), dict)]
 
+        if json_post['event_type'] == 'http://rescue-mate.de/resource/not_humanitarian':
+            json_post['relevance'] = 'http://rescue-mate.de/resource/none'
+
 
         # create a new post object
         report = Report(
