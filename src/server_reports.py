@@ -157,8 +157,8 @@ def fetch_social_media_posts(search_since: datetime):
                 'timestamp': result['date']['value'],
                 'platform': result['platform']['value'].split('/')[-1],
                 'url': result.get('url', {"value": ""})['value'],
-                'event_type': result.get('category', {}).get('value', 'other'),
-                'relevance': result.get('relevance', {}).get('value', 'unknown'),
+                'event_type': result.get('category', {}).get('value', 'http://rescue-mate.de/resource/not_humanitarian'),
+                'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
                 'geo_linked_entities': [{
                     'mention': result['location_mention_surface_form']['value'],
                     'location': {
