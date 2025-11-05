@@ -1177,6 +1177,9 @@ def callbacks_map(app: Dash):
         if not ctx.triggered:
             raise PreventUpdate
 
+        if not report_nclicks or all((x is None or x == 0) for x in report_nclicks):
+            raise PreventUpdate
+
         triggered = ctx.triggered[0]['prop_id']  # e.g. '{"type":"report-entry","index":123}.n_clicks'
         triggered_id_str = triggered.split('.')[0]
         if not triggered_id_str or triggered_id_str == '.':
