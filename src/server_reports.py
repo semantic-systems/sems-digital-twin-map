@@ -377,16 +377,14 @@ if __name__ == '__main__':
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)
     start_date = datetime.now()
-    search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
+    search_since = start_date
     while True:
-        new_search_since = datetime.now()
         try:
             posts = fetch_social_media_posts(search_since)
         except Exception as e:
             print(f"Error fetching posts, retrying in next cycle: {e}")
             posts = []
             time.sleep(10)
-        search_since = new_search_since
 
         for post in posts:
             for location in post["geo_linked_entities"]:
