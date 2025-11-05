@@ -374,7 +374,7 @@ if __name__ == '__main__':
     # an initial sleep, because the api might not be ready yet
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)
-    start_date = datetime.now() - timedelta(days=3)
+    start_date = datetime.now()
     search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
     while True:
         new_search_since = datetime.now()
