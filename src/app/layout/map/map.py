@@ -630,7 +630,7 @@ def get_layout_map():
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
         dcc.Store(id='geocoder_types', data={}),                   # the types of events the geocoder found
         dcc.Store(id='geocoder_entities', data=[]),                # the geocoder entities, selected by geocoder_entity_dropdown
-        dcc.Interval(id='interval_refresh_reports', interval=3600000 , n_intervals=0),  # refresh the reports every hour
+        dcc.Interval(id='interval_refresh_reports', interval=10000 , n_intervals=0),  # refresh the reports every hour
         html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
     ]
     
