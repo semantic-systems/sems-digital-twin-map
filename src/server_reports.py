@@ -139,8 +139,6 @@ def fetch_social_media_posts(search_since: datetime):
     except Exception as e:
         print(f"Error fetching data from SPARQL endpoint: {e}")
         return []
-    if VERBOSE:
-        print(f"Fetched {len(results['results']['bindings'])} posts from SPARQL endpoint", flush=True)
     posts = {}
     for result in results['results']['bindings']:
         post_id = result['post']['value'].split('/')[-1]
@@ -184,6 +182,10 @@ def fetch_social_media_posts(search_since: datetime):
                     }
                 }
             )
+
+    if VERBOSE:
+        print(f"Fetched {len(posts)} posts from SPARQL endpoint", flush=True)
+
     return [post for post in posts.values() if len(post['geo_linked_entities']) > 0]
 
 event_mapping = {
