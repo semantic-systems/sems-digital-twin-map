@@ -529,103 +529,103 @@ def get_layout_map():
                 # "display": "none"
             }
         ),
-        html.Button(
-            id='button_toggle_geocoder',
-            children='-',
-            style={
-                'position': 'absolute',
-                'top': '290px',
-                'right': '0px',
-                'margin': '10px',
-                'z-index': '1001',
-                'padding': '10px',
-                'border': '1px solid #ccc',
-                'width': '35px',
-                'height': '35px'
-            }
-        ),
-        html.Div(
-            id='div_geocoder',
-            children=[
-                html.P(
-                    children='Geocoder',
-                    style={
-                        'font-size': '14pt',
-                        'font-weight': 'bold',
-                        'margin': '4px 2px 10px 2px',
-                        'text-align': 'center',
-                        'color': '#404040'
-                    }
-                ),
-                dcc.Textarea(
-                    id='geocoder_text_input',
-                    placeholder='Enter place name or description...',
-                    style={
-                        'width': '236px',
-                        'height': '60px',
-                        'padding': '6px',
-                        'font-size': '9pt',
-                        'margin-bottom': '10px',
-                        'border-radius': '4px',
-                        'border': '1px solid #ccc'
-                    }
-                ),
-                html.Button(
-                    'Find',
-                    id='geocoder_button',
-                    n_clicks=0,
-                    style={
-                        'width': '100%',
-                        'padding': '6px',
-                        'font-size': '9pt',
-                        'background-color': '#4CAF50',
-                        'color': 'white',
-                        'border': 'none',
-                        'border-radius': '4px',
-                        'cursor': 'pointer',
-                        'margin-bottom': '10px'
-                    }
-                ),
-                html.Hr(style={'margin': '5px 0'}),
-                html.Div(id='geocoder_result_types', style={'font-size': '10pt', 'color': '#424242'}),
-                html.Hr(style={'margin': '5px 0'}),
-                dcc.Dropdown(
-                    id='geocoder_entity_dropdown',
-                    placeholder='Select location',
-                        optionHeight=24,
-                    style={
-                        'width': '236px',
-                        'height': '34px',
-                        'font-size': '9pt',
-                        'margin-bottom': '10px',
-                        'display': 'none'
-                    }
-                ),
-                html.Div(
-                    id='geocoder_output',
-                    children=[
-                        html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px', 'font-weight': 'bold', 'color': '#424242'}),
-                        html.Div(id='geocoder_result_lat', style={'font-size': '9pt'}),
-                        html.Div(id='geocoder_result_lon', style={'font-size': '9pt', 'margin-bottom': '5px'}),
-                        html.A(id='geocoder_result_url', href='#', target='_blank', style={'font-size': '9pt', 'display': 'block'})
-                    ]
-                )
-            ],
-            style={
-                'position': 'absolute',
-                'float': 'right',
-                'top': '350px',
-                'right': '0px',
-                'background-color': 'white',
-                'border': '1px solid #ccc',
-                'border-radius': '5px',
-                'margin': '10px',
-                'padding': '10px',
-                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                'z-index': '1000',
-                'width': '250px'
-            }
-        ),
+        # html.Button(
+        #     id='button_toggle_geocoder',
+        #     children='-',
+        #     style={
+        #         'position': 'absolute',
+        #         'top': '290px',
+        #         'right': '0px',
+        #         'margin': '10px',
+        #         'z-index': '1001',
+        #         'padding': '10px',
+        #         'border': '1px solid #ccc',
+        #         'width': '35px',
+        #         'height': '35px'
+        #     }
+        # ),
+        # html.Div(
+        #     id='div_geocoder',
+        #     children=[
+        #         html.P(
+        #             children='Geocoder',
+        #             style={
+        #                 'font-size': '14pt',
+        #                 'font-weight': 'bold',
+        #                 'margin': '4px 2px 10px 2px',
+        #                 'text-align': 'center',
+        #                 'color': '#404040'
+        #             }
+        #         ),
+        #         dcc.Textarea(
+        #             id='geocoder_text_input',
+        #             placeholder='Enter place name or description...',
+        #             style={
+        #                 'width': '236px',
+        #                 'height': '60px',
+        #                 'padding': '6px',
+        #                 'font-size': '9pt',
+        #                 'margin-bottom': '10px',
+        #                 'border-radius': '4px',
+        #                 'border': '1px solid #ccc'
+        #             }
+        #         ),
+        #         html.Button(
+        #             'Find',
+        #             id='geocoder_button',
+        #             n_clicks=0,
+        #             style={
+        #                 'width': '100%',
+        #                 'padding': '6px',
+        #                 'font-size': '9pt',
+        #                 'background-color': '#4CAF50',
+        #                 'color': 'white',
+        #                 'border': 'none',
+        #                 'border-radius': '4px',
+        #                 'cursor': 'pointer',
+        #                 'margin-bottom': '10px'
+        #             }
+        #         ),
+        #         html.Hr(style={'margin': '5px 0'}),
+        #         html.Div(id='geocoder_result_types', style={'font-size': '10pt', 'color': '#424242'}),
+        #         html.Hr(style={'margin': '5px 0'}),
+        #         dcc.Dropdown(
+        #             id='geocoder_entity_dropdown',
+        #             placeholder='Select location',
+        #                 optionHeight=24,
+        #             style={
+        #                 'width': '236px',
+        #                 'height': '34px',
+        #                 'font-size': '9pt',
+        #                 'margin-bottom': '10px',
+        #                 'display': 'none'
+        #             }
+        #         ),
+        #         html.Div(
+        #             id='geocoder_output',
+        #             children=[
+        #                 html.Div(id='geocoder_result_description', style={'font-size': '9pt', 'margin-bottom': '5px', 'font-weight': 'bold', 'color': '#424242'}),
+        #                 html.Div(id='geocoder_result_lat', style={'font-size': '9pt'}),
+        #                 html.Div(id='geocoder_result_lon', style={'font-size': '9pt', 'margin-bottom': '5px'}),
+        #                 html.A(id='geocoder_result_url', href='#', target='_blank', style={'font-size': '9pt', 'display': 'block'})
+        #             ]
+        #         )
+        #     ],
+        #     style={
+        #         'position': 'absolute',
+        #         'float': 'right',
+        #         'top': '350px',
+        #         'right': '0px',
+        #         'background-color': 'white',
+        #         'border': '1px solid #ccc',
+        #         'border-radius': '5px',
+        #         'margin': '10px',
+        #         'padding': '10px',
+        #         'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+        #         'z-index': '1000',
+        #         'width': '250px'
+        #     }
+        # ),
         dcc.Store(id='event_range_full', data=[]),                 # the full event range, selected by event_range_picker
         dcc.Store(id='event_range_selected', data=[]),             # the selected event range, selected by slider_events
         dcc.Store(id='geocoder_types', data={}),                   # the types of events the geocoder found
@@ -1095,15 +1095,15 @@ def callbacks_map(app: Dash):
                     elif polygon_data["type"] == "MultiPolygon":
                         polygons = polygon_data["coordinates"]
 
-                    for part in polygons:
-                        for ring in part:
+                    for idx_part, part in enumerate(polygons):
+                        for idx_ring, ring in enumerate(part):
                             polygon = dl.Polygon(
                                 positions=[[lat, lon] for lon, lat in ring],
                                 color="blue",
                                 fill=True,
                                 fillOpacity=0.15,
                                 weight=2,
-                                id=f'tmp_polygon_{identifier}'
+                                id=f'tmp_polygon_{identifier}_{idx_part}_{idx_ring}'
                             )
                             elements.append(polygon)
                 elif polygon_data["type"] in {"LineString", "MultiLineString"}:
@@ -1113,13 +1113,13 @@ def callbacks_map(app: Dash):
                     elif polygon_data["type"] == "MultiLineString":
                         lines = polygon_data["coordinates"]
 
-                    for line in lines:
+                    for idx, line in enumerate(lines):
                         polyline = dl.Polyline(
                             positions=[[lat, lon] for lon, lat in line],
                             color="#00008B",  # DarkBlue hex color
                             weight=6,  # Thicker line, default is usually 3
                             dashArray=None,  # solid line (remove dashes if you want solid)
-                            id=f'tmp_line_{identifier}'
+                            id=f'tmp_line_{identifier}_{idx}'
                         )
                         elements.append(polyline)
             except Exception as e:
@@ -1165,7 +1165,7 @@ def callbacks_map(app: Dash):
 
     @app.callback(
         [
-            Output('map', 'children', allow_duplicate=True),
+            Output('map', 'children', allow_duplicate=False),
             Output('map', 'viewport', allow_duplicate=True)
         ],
         [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
