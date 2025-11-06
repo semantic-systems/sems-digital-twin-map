@@ -1,3 +1,4 @@
+import math
 import time
 from datetime import date, timedelta, datetime
 from datetime import datetime
@@ -1086,7 +1087,10 @@ def callbacks_map(app: Dash):
         bbox = loc.get("boundingbox", None)
 
         print(loc)
-
+        max_lat = -math.inf
+        min_lat = math.inf
+        max_lon = -math.inf
+        min_lon = math.inf
         if polygon_data and "coordinates" in polygon_data and len(polygon_data["coordinates"]) > 0:
             try:
                 if polygon_data["type"] in {"Polygon", "MultiPolygon"}:
@@ -1098,6 +1102,15 @@ def callbacks_map(app: Dash):
 
                     for idx_part, part in enumerate(polygons):
                         for idx_ring, ring in enumerate(part):
+                            for lon, lat in ring:
+                                if lat > max_lat:
+                                    max_lat = lat
+                                if lat < min_lat:
+                                    min_lat = lat
+                                if lon > max_lon:
+                                    max_lon = lon
+                                if lon < min_lon:
+                                    min_lon = lon
                             polygon = dl.Polygon(
                                 positions=[[lat, lon] for lon, lat in ring],
                                 color="blue",
@@ -1111,8 +1124,27 @@ def callbacks_map(app: Dash):
                     lines = []
                     if polygon_data["type"] == "LineString":
                         lines = [polygon_data["coordinates"]]
+                        for lon, lat in polygon_data["coordinates"]:
+                            if lat > max_lat:
+                                max_lat = lat
+                            if lat < min_lat:
+                                min_lat = lat
+                            if lon > max_lon:
+                                max_lon = lon
+                            if lon < min_lon:
+                                min_lon = lon
                     elif polygon_data["type"] == "MultiLineString":
                         lines = polygon_data["coordinates"]
+                        for line in polygon_data["coordinates"]:
+                            for lon, lat in line:
+                                if lat > max_lat:
+                                    max_lat = lat
+                                if lat < min_lat:
+                                    min_lat = lat
+                                if lon > max_lon:
+                                    max_lon = lon
+                                if lon < min_lon:
+                                    min_lon = lon
 
                     for idx, line in enumerate(lines):
                         polyline = dl.Polyline(
@@ -1122,6 +1154,15 @@ def callbacks_map(app: Dash):
                             dashArray=None,  # solid line (remove dashes if you want solid)
                             id=f'tmp_line_{identifier}_{idx}'
                         )
+                        for lon, lat in line:
+                            if lat > max_lat:
+                                max_lat = lat
+                            if lat < min_lat:
+                                min_lat = lat
+                            if lon > max_lon:
+                                max_lon = lon
+                            if lon < min_lon:
+                                min_lon = lon
                         elements.append(polyline)
             except Exception as e:
                 print(f"Polygon parse error: {e}")
@@ -1130,6 +1171,9 @@ def callbacks_map(app: Dash):
                 try:
                     min_lat, max_lat = float(bbox[0]), float(bbox[1])
                     min_lon, max_lon = float(bbox[2]), float(bbox[3])
+
+
+
                     rectangle = dl.Rectangle(
                         bounds=[
                             [min_lat, min_lon],  # SW
@@ -1144,7 +1188,7 @@ def callbacks_map(app: Dash):
                     elements.append(rectangle)
                 except Exception as e:
                     print(f"Bounding box parse error: {e}")
-        return elements
+        return elements, (max_lat, min_lat, max_lon, min_lon)
 
     def get_children(map_children):
         # Remove previous temp markers and rectangles
@@ -1209,6 +1253,10 @@ def callbacks_map(app: Dash):
         markers = []
         rectangles = []
         coords = []
+        overall_max_lat = -math.inf
+        overall_min_lat = math.inf
+        overall_max_lon = -math.inf
+        overall_min_lon = math.inf
 
         for i, loc in enumerate(locations):
             lat = loc.get('lat')
@@ -1249,19 +1297,28 @@ def callbacks_map(app: Dash):
             )
             markers.append(marker)
 
-            rectangles += create_elements(loc, identifier=title)
+            new_rectangles, (max_lat, min_lat, max_lon, min_lon) = create_elements(loc, identifier=title)
+            if max_lat > overall_max_lat:
+                overall_max_lat = max_lat
+            if min_lat < overall_min_lat:
+                overall_min_lat = min_lat
+            if max_lon > overall_max_lon:
+                overall_max_lon = max_lon
+            if min_lon < overall_min_lon:
+                overall_min_lon = min_lon
+
+            rectangles += new_rectangles
 
 
         if not markers:
             raise PreventUpdate
-
-        # Compute bounds to show all markers
-        lats, lons = zip(*coords)
-        lat_min, lat_max = min(lats), max(lats)
-        lon_min, lon_max = min(lons), max(lons)
+        lat_max = overall_max_lat
+        lat_min = overall_min_lat
+        lon_max = overall_max_lon
+        lon_min = overall_min_lon
 
         # Add padding (e.g., 5% in each direction)
-        padding_factor = 0.05
+        padding_factor = 0.1
         lat_padding = (lat_max - lat_min) * padding_factor
         lon_padding = (lon_max - lon_min) * padding_factor
         south_west = (lat_min - lat_padding, lon_min - lon_padding)
@@ -1346,7 +1403,8 @@ def callbacks_map(app: Dash):
 
             markers.append(marker)
 
-            rectangles += create_elements(e, identifier=title)
+            new_rectangles, (max_lat, min_lat, max_lon, min_lon) = create_elements(e, identifier=title)
+            rectangles += new_rectangles
 
         # set the event types in the widget
         type_children = []
