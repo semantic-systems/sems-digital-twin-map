@@ -1,3 +1,4 @@
+import time
 from datetime import date, timedelta, datetime
 from datetime import datetime
 import json
@@ -1157,7 +1158,8 @@ def callbacks_map(app: Dash):
                         c["props"]["id"].startswith("report_tmp_marker") or
                         c["props"]["id"].startswith("report_tmp_rect") or
                         c["props"]["id"].startswith("report_tmp_polygon") or
-                        c["props"]["id"].startswith("tmp_line")
+                        c["props"]["id"].startswith("tmp_line") or
+                        c["props"]["id"].startswith("tmp_layer")
                 ))
             )
         ]
@@ -1253,8 +1255,6 @@ def callbacks_map(app: Dash):
         if not markers:
             raise PreventUpdate
 
-        children += rectangles + markers
-
         # Compute bounds to show all markers
         lats, lons = zip(*coords)
         lat_min, lat_max = min(lats), max(lats)
@@ -1274,7 +1274,12 @@ def callbacks_map(app: Dash):
             'options': {'duration': 0.5}
         }
 
-        return children, viewport
+        tmp_layer = dl.LayerGroup(
+            children=rectangles + markers,
+            id=f'tmp_layer_{time.time()}'  # guarantees a new React element
+        )
+
+        return [tmp_layer] + children, viewport
 
 
     @app.callback(
