@@ -4,6 +4,7 @@ from datetime import date, timedelta, datetime
 from datetime import datetime
 import json
 
+import dash
 from dash import Dash, html, dcc, Output, Input, State, callback_context, MATCH, ALL, ctx
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
@@ -485,6 +486,7 @@ def get_layout_map():
                     id='reports_dropdown_event_type',
                     optionHeight=20,
                     placeholder='Event Type',
+                    multi=True,  # <-- enable multiple selections
                     style={
                         "margin-bottom": "10px",
                         "font-size": "7.5pt"
@@ -499,6 +501,16 @@ def get_layout_map():
                     style={
                         "margin-bottom": "10px",
                         "font-size": "7.5pt"
+                    }
+                ),
+                dcc.Checklist(
+                    id='event_type_toggle',
+                    options=["Lokalisiert"],  # same options as your dropdown
+                    value=['Lokalisiert'],  # default checked options
+                    inline=True,  # makes them appear side-by-side
+                    style={
+                        "font-size": "7.5pt",
+                        "margin-bottom": "10px"
                     }
                 ),
                 html.Ul(
@@ -524,7 +536,7 @@ def get_layout_map():
                 'padding': '10px',
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
                 'z-index': '1000',
-                'max-height': '660px',
+                'max-height': '500px',
                 'min-height': '195px',
                 'overflow-y': 'auto',
                 'width': '250px',
@@ -1259,6 +1271,8 @@ def callbacks_map(app: Dash):
         overall_min_lon = math.inf
 
         for i, loc in enumerate(locations):
+            if "osm_id" not in loc or "osm_type" not in loc:
+                continue
             lat = loc.get('lat')
             lon = loc.get('lon')
             coords.append((lat, lon))
@@ -1309,9 +1323,8 @@ def callbacks_map(app: Dash):
 
             rectangles += new_rectangles
 
-
         if not markers:
-            raise PreventUpdate
+            return children, dash.no_update
         lat_max = overall_max_lat
         lat_min = overall_min_lat
         lon_max = overall_max_lon
@@ -1451,9 +1464,9 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('reports_list', 'children'),
         [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value'),
-         Input('reports_dropdown_relevance_type', 'value')],
+         Input('reports_dropdown_relevance_type', 'value'), Input('event_type_toggle', 'value')],
     )
-    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type):
+    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
         """
         This callback is triggered every hour.
         It updates the reports component with the newest posts and reports.
@@ -1468,9 +1481,15 @@ def callbacks_map(app: Dash):
             filter_relevance_type = [filter_relevance_type]
         elif filter_relevance_type is None:
             filter_relevance_type = []
+
+        # Normalize relevance type (handle both single and multi-select cases)
+        if isinstance(filter_event_type, str):
+            filter_event_type = [filter_event_type]
+        elif filter_event_type is None:
+            filter_event_type = []
         
         sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type,
-                                              filter_relevance_type=filter_relevance_type)
+                                              filter_relevance_type=filter_relevance_type, localized='Lokalisiert' in event_type_toggle)
 
         return sidebar_content
     

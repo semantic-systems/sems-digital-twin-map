@@ -138,7 +138,7 @@ def format_reports(reports: list, n=25) -> list:
 
     return [format_report(report) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, localized=True):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
@@ -150,7 +150,11 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
         filter_arguments.append(Report.platform.like(f'{filter_platform}%'))
 
     if filter_event_type:
-        filter_arguments.append(Report.event_type == filter_event_type)
+        # Handle multiple event types
+        if isinstance(filter_relevance_type, list):
+            filter_arguments.append(Report.event_type.in_(filter_event_type))
+        else:
+            filter_arguments.append(Report.event_type == filter_event_type)
 
     if filter_relevance_type:
         # Handle multiple relevance types
@@ -166,7 +170,17 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
     reports = query.order_by(Report.timestamp.desc()).all()
     session.close()
 
-    return format_reports(reports, n)
+    filtered_reports = []
+    for report in reports:
+        geolinked_entities = report.locations
+        geolinked_entities = [entity for entity in geolinked_entities if "osm_id" in entity]
+        if localized and len(geolinked_entities) == 0:
+            continue
+        elif not localized and len(geolinked_entities) > 0:
+            continue
+        filtered_reports.append(report)
+
+    return format_reports(filtered_reports, n)
 
 def get_sidebar_dropdown_platform_values():
     """

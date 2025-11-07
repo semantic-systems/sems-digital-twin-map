@@ -113,18 +113,20 @@ def fetch_social_media_posts(search_since: datetime):
         rm:hasDetectedCategory ?category ;
         rm:predictedRelevance ?predictedRelevance ;
         schema:url ?url ;
-        rm:hasMentionedLocation ?location_mention ;
         schema:author ?user .
         ?user rm:socialMediaServiceName ?platform .
-        ?location_mention rm:location ?location ;
-        schema:text ?location_mention_surface_form .
+        OPTIONAL {{
+        ?post rm:hasMentionedLocation ?location_mention .
+        ?location_mention schema:text ?location_mention_surface_form .
+        OPTIONAL {{
+        ?location_mention rm:location ?location .
         ?location rm:osm_type ?osm_type ;
         geo:hasGeometry ?geom ;
         rm:osm_id ?osm_id ;
         rm:latitude ?lat ;
         rm:longitude ?lon ;
         rdfs:label ?name .
-        ?geom geo:asWKT ?wkt .
+        ?geom geo:asWKT ?wkt .}} }}
         FILTER (?date > "{search_since_str}"^^xsd:dateTime)
         }}
     """
@@ -142,13 +144,35 @@ def fetch_social_media_posts(search_since: datetime):
     posts = {}
     for result in results['results']['bindings']:
         post_id = result['post']['value'].split('/')[-1]
-        lat = float(result['lat']['value'])
-        lon = float(result['lon']['value'])
-        if BOUNDING_BOX:
-            min_lon, min_lat, max_lon, max_lat = map(float, BOUNDING_BOX.split(','))
-            if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
-                continue
         if post_id not in posts:
+            geo_linked_entities = []
+            geo_linked_entity = {}
+            if 'location_mention_surface_form' in result:
+                geo_linked_entity['mention'] = result['location_mention_surface_form']['value']
+
+            if 'osm_type' in result and 'osm_id' in result:
+                lat = float(result['lat']['value'])
+                lon = float(result['lon']['value'])
+                insert = True
+                if BOUNDING_BOX:
+                    min_lon, min_lat, max_lon, max_lat = map(float, BOUNDING_BOX.split(','))
+                    if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
+                        insert = False
+                if insert:
+                    geo_linked_entity['location'] = {
+                        'osm_type': result['osm_type']['value'],
+                        'osm_id': int(result['osm_id']['value']),
+                        'lat': lat,
+                        'lon': lon,
+                        'name': result['name']['value'],
+                        'geojson': wkt_to_geojson(result["wkt"]['value']),
+                    }
+            if geo_linked_entity:
+                if 'location' not in geo_linked_entity:
+                    geo_linked_entity['location'] = None
+                geo_linked_entities.append(geo_linked_entity)
+
+
             posts[post_id] = {
                 'id': result['post']['value'].split('/')[-1],
                 'text': result['text']['value'],
@@ -157,9 +181,21 @@ def fetch_social_media_posts(search_since: datetime):
                 'url': result.get('url', {"value": ""})['value'],
                 'event_type': result.get('category', {}).get('value', 'http://rescue-mate.de/resource/not_humanitarian'),
                 'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
-                'geo_linked_entities': [{
-                    'mention': result['location_mention_surface_form']['value'],
-                    'location': {
+                'geo_linked_entities': geo_linked_entities}
+        else:
+            geo_linked_entity = {}
+            if 'location_mention_surface_form' in result:
+                geo_linked_entity['mention'] = result['location_mention_surface_form']['value']
+            if 'osm_type' in result and 'osm_id' in result:
+                lat = float(result['lat']['value'])
+                lon = float(result['lon']['value'])
+                insert = True
+                if BOUNDING_BOX:
+                    min_lon, min_lat, max_lon, max_lat = map(float, BOUNDING_BOX.split(','))
+                    if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
+                        insert = False
+                if insert:
+                    geo_linked_entity['location'] = {
                         'osm_type': result['osm_type']['value'],
                         'osm_id': int(result['osm_id']['value']),
                         'lat': lat,
@@ -167,26 +203,15 @@ def fetch_social_media_posts(search_since: datetime):
                         'name': result['name']['value'],
                         'geojson': wkt_to_geojson(result["wkt"]['value']),
                     }
-                }]}
-        else:
-            posts[post_id]['geo_linked_entities'].append(
-                {
-                    'mention': result['location_mention_surface_form']['value'],
-                    'location': {
-                        'osm_type': result['osm_type']['value'],
-                        'osm_id': int(result['osm_id']['value']),
-                        'lat': float(result['lat']['value']),
-                        'lon': float(result['lon']['value']),
-                        'name': result['name']['value'],
-                        'geojson': wkt_to_geojson(result["wkt"]['value']),
-                    }
-                }
-            )
+            if geo_linked_entity:
+                if 'location' not in geo_linked_entity:
+                    geo_linked_entity['location'] = None
+                posts[post_id]['geo_linked_entities'].append(geo_linked_entity)
 
     if VERBOSE:
         print(f"Fetched {len(posts)} posts from SPARQL endpoint", flush=True)
 
-    return [post for post in posts.values() if len(post['geo_linked_entities']) > 0]
+    return posts.values()
 
 event_mapping = {
     'http://rescue-mate.de/resource/not_humanitarian': 'Irrelevant',
@@ -223,6 +248,18 @@ def save_posts(posts: list):
         # this is the id the respective platform uses to identify the post
         identifier = json_post['id']
 
+        entities = json_post.get('geo_linked_entities', [])
+        locations = [{
+            "lon": entity["location"]["lon"],
+            "lat": entity["location"]["lat"],
+            "name": entity["location"]["name"],
+            "boundingbox": None,
+            "osm_type": entity["location"]["osm_type"],
+            "osm_id": entity["location"]["osm_id"],
+            "polygon": entity["location"]["polygon"],
+            "mention": entity["mention"]
+        } if "osm_id" in entity else {"mention": entity["mention"]} for entity in entities ]
+
         # check if the post already exists
         existing_post = session.query(Report).filter(Report.identifier == identifier).first()
 
@@ -243,17 +280,6 @@ def save_posts(posts: list):
         if platform == 'rss':
             platform = f'rss/{json_post["feed"]}'
 
-        entities = json_post.get('geo_linked_entities', [])
-        locations = [{
-            "lon": entity["location"]["lon"],
-            "lat": entity["location"]["lat"],
-            "name": entity["location"]["name"],
-            "boundingbox": None,
-            "osm_type": entity["location"]["osm_type"],
-            "osm_id": entity["location"]["osm_id"],
-            "polygon": entity["location"]["polygon"],
-            "mention": entity["mention"]
-        } for entity in entities if isinstance(entity.get("location"), dict)]
 
         if json_post['event_type'] == 'http://rescue-mate.de/resource/not_humanitarian':
             json_post['relevance'] = 'http://rescue-mate.de/resource/none'
