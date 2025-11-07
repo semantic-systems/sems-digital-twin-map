@@ -258,7 +258,7 @@ def save_posts(posts: list):
             "osm_id": entity["location"]["osm_id"],
             "polygon": entity["location"]["polygon"],
             "mention": entity["mention"]
-        } if "osm_id" in entity else {"mention": entity["mention"]} for entity in entities ]
+        } if (entity["location"] is not None and "osm_id" in entity["location"]) else {"mention": entity["mention"]} for entity in entities ]
 
         # check if the post already exists
         existing_post = session.query(Report).filter(Report.identifier == identifier).first()
@@ -403,7 +403,7 @@ if __name__ == '__main__':
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)
     start_date = datetime.now()
-    search_since = start_date
+    search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
     while True:
         try:
             posts = fetch_social_media_posts(search_since)
