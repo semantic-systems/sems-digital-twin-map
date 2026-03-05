@@ -56,7 +56,7 @@ SEARCH_OPTIONAL_KEYWORDS = ['sturm', 'storm', 'flut', 'flood', 'unwetter', 'rege
 SEARCH_N_KEYWORDS = 1
 SEARCH_W_REGEX = '.*(hamburg).*'
 SEARCH_B_REGEX = '.*(berlin).*'
-SEARCH_LOOK_BACK = 10    # how many minutes to look back
+SEARCH_LOOK_BACK = 30    # how many minutes to look back
 
 sparql = SPARQLWrapper(SPARQL_ENDPOINT)
 
@@ -101,39 +101,42 @@ def fetch_social_media_posts(search_since: datetime):
     search_since_str = search_since.isoformat()
 
     query = f"""
-    PREFIX rm: <http://rescue-mate.de/resource/>
-    PREFIX schema: <http://schema.org/>
-    PREFIX geo: <http://www.opengis.net/ont/geosparql#> 
-
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX rm: <http://rescue-mate.de/resource/>
+        PREFIX rmo: <http://rescue-mate.de/ontology/>
+        PREFIX obo: <http://purl.obolibrary.org/obo/>
+        PREFIX schema: <http://schema.org/>
+        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         SELECT * {{
-        ?post a rm:SocialMediaPost ;
-        schema:text ?text ;
-        schema:dateCreated ?date ;
-        rm:hasDetectedCategory ?category ;
-        rm:predictedRelevance ?predictedRelevance ;
-        schema:url ?url ;
-        schema:author ?user .
-        ?user rm:socialMediaServiceName ?platform .
-        OPTIONAL {{
-        ?post rm:hasMentionedLocation ?location_mention .
-        ?location_mention schema:text ?location_mention_surface_form .
-        OPTIONAL {{
-        ?location_mention rm:location ?location .
-        ?location rm:osm_type ?osm_type ;
-        geo:hasGeometry ?geom ;
-        rm:osm_id ?osm_id ;
-        rm:latitude ?lat ;
-        rm:longitude ?lon ;
-        rdfs:label ?name .
-        ?geom geo:asWKT ?wkt .}} }}
-        FILTER (?date > "{search_since_str}"^^xsd:dateTime)
+            ?post a rmo:SocialMediaPost ;
+                schema:text ?text ;
+                schema:dateCreated ?date ;
+                rmo:hasDetectedCategory ?category ;
+                rm:predictedRelevance ?predictedRelevance ;
+                schema:url ?url ;
+                schema:author ?user .
+            ?user rm:socialMediaServiceName ?platform .
+            OPTIONAL {{
+                ?post rm:hasMentionedLocation ?location_mention .
+                ?location_mention schema:text ?location_mention_surface_form .
+                OPTIONAL {{
+                    ?location_mention obo:IAO_0000136 ?location .
+                    ?location rm:osm_type ?osm_type ;
+                        geo:hasGeometry ?geom ;
+                        rm:osm_id ?osm_id ;
+                        rm:latitude ?lat ;
+                        rm:longitude ?lon ;
+                        rdfs:label ?name .
+                    ?geom geo:asWKT ?wkt .
+                }}
+            }}
+            FILTER (?date > "{search_since_str}"^^xsd:dateTime)
         }}
     """
 
     sparql.setQuery(query)
     sparql.setReturnFormat('json')
-    sparql.setMethod('GET')
+    sparql.setMethod('POST')
     sparql.addCustomHttpHeader("User-Agent", USER_AGENT)
     sparql.addCustomHttpHeader("Authorization", authorization_headers["Authorization"])
     try:
