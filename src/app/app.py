@@ -23,7 +23,6 @@ def get_app():
             'https://getbootstrap.com/1.0.0/assets/css/bootstrap-1.0.0.min.css',
         ],
         external_scripts=[
-            'http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js',
             'https://kit.fontawesome.com/5ae05e6c33.js'
         ],
         long_callback_manager=long_callback_manager,
