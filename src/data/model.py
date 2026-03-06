@@ -258,6 +258,9 @@ class Report(Base):
     event_type = Column(String, nullable=False)
     relevance = Column(String, nullable=False)
     locations = Column(JSON, nullable=True)
+    author = Column(String, nullable=True, default='')          # username / handle of the post author
+    seen = Column(Boolean, nullable=False, server_default='false')          # whether this post has been marked as seen
+    author_flagged = Column(Boolean, nullable=False, server_default='false')  # whether the author has been flagged
 
 # the following tables are defined in the database
 # UPDATE THIS IF YOU ADD NEW TABLES
