@@ -116,6 +116,8 @@ def fetch_social_media_posts(search_since: datetime):
                 schema:url ?url ;
                 schema:author ?user .
             ?user rm:socialMediaServiceName ?platform .
+            OPTIONAL {{ ?user schema:name ?username }}
+            OPTIONAL {{ ?user schema:identifier ?user_identifier }}
             OPTIONAL {{
                 ?post rm:hasMentionedLocation ?location_mention .
                 ?location_mention schema:text ?location_mention_surface_form .
@@ -184,7 +186,12 @@ def fetch_social_media_posts(search_since: datetime):
                 'url': result.get('url', {"value": ""})['value'],
                 'event_type': result.get('category', {}).get('value', 'http://rescue-mate.de/resource/not_humanitarian'),
                 'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
-                'geo_linked_entities': geo_linked_entities}
+                'geo_linked_entities': geo_linked_entities,
+                'author': (
+                    result.get('username', {}).get('value') or
+                    result.get('user_identifier', {}).get('value') or
+                    result.get('user', {}).get('value', '').split('/')[-1]
+                )}
         else:
             geo_linked_entity = {}
             if 'location_mention_surface_form' in result:
@@ -297,7 +304,10 @@ def save_posts(posts: list):
             timestamp=timestamp,
             relevance=relevance_mapping[json_post['relevance']],
             event_type=event_mapping[json_post['event_type']],
-            locations=locations)
+            locations=locations,
+            author=json_post.get('author', ''),
+            seen=False,
+            author_flagged=False)
 
         # add the post to the session
         session.add(report)
