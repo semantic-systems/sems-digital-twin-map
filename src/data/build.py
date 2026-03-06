@@ -424,10 +424,32 @@ def get_default_style():
     )
     return style
 
+def migrate_columns():
+    """
+    Adds new columns to existing tables if they don't exist yet.
+    Safe to call on an already-initialized database – uses IF NOT EXISTS.
+    """
+    engine, session = autoconnect_db()
+    migrations = [
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author VARCHAR DEFAULT ''",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS seen BOOLEAN NOT NULL DEFAULT FALSE",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author_flagged BOOLEAN NOT NULL DEFAULT FALSE",
+    ]
+    for sql in migrations:
+        try:
+            session.execute(text(sql))
+        except Exception as e:
+            print(f"Migration skipped ({sql}): {e}")
+    session.commit()
+    session.close()
+    engine.dispose()
+
+
 def build_if_uninitialized():
     """
     Check if the database is uninitialized and if it is, run `build()`.
-    Returns True if the database is uninitialized, else False.
+    Also runs column migrations for already-initialized databases.
+    Returns True if the database was uninitialized, else False.
     """
 
     # connect to the database
@@ -443,7 +465,7 @@ def build_if_uninitialized():
     for table in TABLES:
         if table.__tablename__ not in existing_tables:
             missing_tables.append(table.__tablename__)
-    
+
     # close the database connection
     session.close()
     engine.dispose()
@@ -458,8 +480,9 @@ def build_if_uninitialized():
 
         return True
 
-    # if we get this point, the database is initialized
+    # Tables exist – apply any pending column migrations
     print("Database is initialized")
+    migrate_columns()
     return False
 
     
