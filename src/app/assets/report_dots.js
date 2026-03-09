@@ -163,8 +163,12 @@
     // ─── Main render ──────────────────────────────────────────────────────────
 
     window.updateReportDots = function () {
-        var dots = window._reportDotsData || [];
+        var allDots = window._reportDotsData || [];
         var activeId = window._activeReportId || null;
+        // Show unseen dots always; show seen dots only when they are the active report
+        var dots = allDots.filter(function (d) {
+            return !d.seen || d.report_id === activeId;
+        });
         ensureLayer();
         if (!_layer) return;
         _layer.clearLayers();

@@ -1570,9 +1570,7 @@ def callbacks_map(app: Dash):
     def fetch_report_dots(_n):
         engine, session = autoconnect_db()
         try:
-            reports = session.query(Report).filter(
-                Report.seen == False  # noqa: E712
-            ).all()
+            reports = session.query(Report).all()
             dots = []
             for r in reports:
                 locs = r.locations or []
@@ -1586,6 +1584,7 @@ def callbacks_map(app: Dash):
                         'report_id': r.id,
                         'lat': lat,
                         'lon': lon,
+                        'seen': bool(r.seen),
                         'location_name': loc.get('name') or loc.get('mention') or '',
                         'location_display': loc.get('display_name') or '',
                         'text': (r.text or '')[:300],
@@ -1631,7 +1630,7 @@ def callbacks_map(app: Dash):
                 session.commit()
 
             # Re-fetch dots (only unseen)
-            reports_all = session.query(Report).filter(Report.seen == False).all()  # noqa: E712
+            reports_all = session.query(Report).filter(Report.seen == False).all()
             dots = []
             for rep in reports_all:
                 for loc in (rep.locations or []):
