@@ -1586,6 +1586,8 @@ def callbacks_map(app: Dash):
                         'report_id': r.id,
                         'lat': lat,
                         'lon': lon,
+                        'location_name': loc.get('name') or loc.get('mention') or '',
+                        'location_display': loc.get('display_name') or '',
                         'text': (r.text or '')[:300],
                         'author': r.author or '',
                         'platform': r.platform or '',
