@@ -200,17 +200,24 @@ table{
 }
 
 /* === Off-screen pin indicators === */
+@keyframes arrow-pulse {
+    0%   { filter: drop-shadow(0 0 2px rgba(250,100,0,0.3)) drop-shadow(0 0 0px rgba(250,100,0,0)); opacity: 0.75; }
+    50%  { filter: drop-shadow(0 0 6px rgba(250,100,0,1))   drop-shadow(0 0 12px rgba(250,100,0,0.5)); opacity: 1; }
+    100% { filter: drop-shadow(0 0 2px rgba(250,100,0,0.3)) drop-shadow(0 0 0px rgba(250,100,0,0)); opacity: 0.75; }
+}
+
 .offscreen-arrow {
     position: absolute;
     width: 0;
     height: 0;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    border-left: 18px solid #fa6400;
-    filter: drop-shadow(0 0 3px rgba(0,0,0,0.5));
+    border-top: 13px solid transparent;
+    border-bottom: 13px solid transparent;
+    border-left: 22px solid #fa6400;
     cursor: pointer;
-    transition: filter 0.15s;
+    animation: arrow-pulse 1.4s ease-in-out infinite;
 }
 .offscreen-arrow:hover {
-    filter: drop-shadow(0 0 5px rgba(250,100,0,0.8));
+    animation: none;
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(250,100,0,1)) drop-shadow(0 0 14px rgba(250,100,0,0.6));
 }
