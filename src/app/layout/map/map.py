@@ -1615,83 +1615,14 @@ def callbacks_map(app: Dash):
     # Off-screen pin indicator: renders orange arrow divs at viewport edges pointing toward
     # any active-report pin outside the current map view. Clicking flies the Leaflet map
     # directly via window._leafletMap (captured by assets/leaflet_capture.js).
+    # Pass locations to JS and trigger repositionArrows. Arrow DOM is managed entirely by
+    # assets/leaflet_capture.js so we return no_update to prevent React from wiping JS nodes.
     app.clientside_callback(
         """
         function(locations, _interval) {
-            // One-time delegated click handler — uses window._leafletMap captured by leaflet_capture.js
-            if (!window._offscreenClickAdded) {
-                document.addEventListener('click', function(e) {
-                    var el = e.target.closest('.offscreen-arrow');
-                    if (!el) return;
-                    var idx = parseInt(el.dataset.idx);
-                    var locs = window._offscreenLocations;
-                    if (!locs || idx >= locs.length) return;
-                    var loc = locs[idx];
-                    if (window._leafletMap) {
-                        window._leafletMap.flyTo([loc.lat, loc.lon], 14, {duration: 0.8});
-                    }
-                });
-                window._offscreenClickAdded = true;
-            }
-
             window._offscreenLocations = locations;
-
-            if (!locations || locations.length === 0) return [];
-            if (!window._leafletMap) return [];
-
-            var mapEl = document.getElementById('map');
-            if (!mapEl) return [];
-            var W = mapEl.offsetWidth, H = mapEl.offsetHeight;
-            var rect = mapEl.getBoundingClientRect();
-
-            var center = window._leafletMap.getCenter();
-            var centerLat = center.lat, centerLon = center.lng;
-            var zoom = window._leafletMap.getZoom();
-
-            function latLonToPixel(lat, lon, centerLat, centerLon, zoom, W, H) {
-                var scale = Math.pow(2, zoom) * 256;
-                var tileX = (lon + 180) / 360 * scale;
-                var lat_rad = lat * Math.PI / 180;
-                var tileY = (1 - Math.log(Math.tan(lat_rad) + 1 / Math.cos(lat_rad)) / Math.PI) / 2 * scale;
-                var cLat_rad = centerLat * Math.PI / 180;
-                var centerTileX = (centerLon + 180) / 360 * scale;
-                var centerTileY = (1 - Math.log(Math.tan(cLat_rad) + 1 / Math.cos(cLat_rad)) / Math.PI) / 2 * scale;
-                return {x: tileX - centerTileX + W / 2, y: tileY - centerTileY + H / 2};
-            }
-
-            var PAD = 28;
-            var arrows = [];
-
-            locations.forEach(function(loc, i) {
-                var px = latLonToPixel(loc.lat, loc.lon, centerLat, centerLon, zoom, W, H);
-                var x = px.x, y = px.y;
-                if (x >= PAD && x <= W - PAD && y >= PAD && y <= H - PAD) return; // on-screen
-
-                var dx = x - W / 2, dy = y - H / 2;
-                var sx = dx !== 0 ? (W / 2 - PAD) / Math.abs(dx) : Infinity;
-                var sy = dy !== 0 ? (H / 2 - PAD) / Math.abs(dy) : Infinity;
-                var s = Math.min(sx, sy);
-                var ex = rect.left + W / 2 + dx * s;
-                var ey = rect.top + H / 2 + dy * s;
-                var angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-                arrows.push({
-                    type: 'Div',
-                    namespace: 'dash_html_components',
-                    props: {
-                        className: 'offscreen-arrow',
-                        'data-idx': String(i),
-                        style: {
-                            left: ex + 'px',
-                            top: ey + 'px',
-                            transform: 'translate(-50%, -50%) rotate(' + angle + 'deg)',
-                            pointerEvents: 'auto',
-                        },
-                    }
-                });
-            });
-
-            return arrows;
+            if (window.repositionArrows) window.repositionArrows();
+            return window.dash_clientside.no_update;
         }
         """,
         Output('offscreen-indicators', 'children'),
