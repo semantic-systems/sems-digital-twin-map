@@ -645,7 +645,15 @@ def get_layout_map():
         dcc.Store(id='geocoder_types', data={}),                   # the types of events the geocoder found
         dcc.Store(id='geocoder_entities', data=[]),                # the geocoder entities, selected by geocoder_entity_dropdown
         dcc.Interval(id='interval_refresh_reports', interval=10000 , n_intervals=0),  # refresh the reports every hour
-        html.Div(id='dummy_output_1', style={'display': 'none'})  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
+        html.Div(id='dummy_output_1', style={'display': 'none'}),  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
+        dcc.Store(id='active-report-locations'),   # list of {lat, lon} for active report's pins
+        html.Div(
+            id='offscreen-indicators',
+            style={
+                'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+                'zIndex': 499, 'pointerEvents': 'none',
+            }
+        ),
     ]
     
     return layout_map
@@ -1224,7 +1232,7 @@ def callbacks_map(app: Dash):
     @app.callback(
         [
             Output('map', 'children', allow_duplicate=False),
-            Output('map', 'viewport', allow_duplicate=True)
+            Output('active-report-locations', 'data'),
         ],
         [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
         State('map', 'children'),
@@ -1265,6 +1273,7 @@ def callbacks_map(app: Dash):
         markers = []
         rectangles = []
         coords = []
+        collected_positions = []
         overall_max_lat = -math.inf
         overall_min_lat = math.inf
         overall_max_lon = -math.inf
@@ -1276,6 +1285,7 @@ def callbacks_map(app: Dash):
             lat = loc.get('lat')
             lon = loc.get('lon')
             coords.append((lat, lon))
+            collected_positions.append((lat, lon))
             title = loc.get('name', loc.get("mention", "Unspecified"))
             desc = loc.get('display_name', '')
             lat_s = f'Latitude: {lat}'
@@ -1324,32 +1334,15 @@ def callbacks_map(app: Dash):
             rectangles += new_rectangles
 
         if not markers:
-            return children, dash.no_update
-        lat_max = overall_max_lat
-        lat_min = overall_min_lat
-        lon_max = overall_max_lon
-        lon_min = overall_min_lon
-
-        # Add padding (e.g., 5% in each direction)
-        padding_factor = 0.1
-        lat_padding = (lat_max - lat_min) * padding_factor
-        lon_padding = (lon_max - lon_min) * padding_factor
-        south_west = (lat_min - lat_padding, lon_min - lon_padding)
-        north_east = (lat_max + lat_padding, lon_max + lon_padding)
-        bounds = [south_west, north_east]
-
-        viewport = {
-            'bounds': bounds,
-            'transition': 'flyToBounds',
-            'options': {'duration': 0.5}
-        }
+            return [children, dash.no_update]
 
         tmp_layer = dl.LayerGroup(
             children=rectangles + markers,
             id=f'tmp_layer_{time.time()}'  # guarantees a new React element
         )
 
-        return [tmp_layer] + children, viewport
+        pin_locations = [{'lat': lat, 'lon': lon} for (lat, lon) in collected_positions]
+        return [[tmp_layer] + children, pin_locations]
 
 
     @app.callback(
@@ -1359,7 +1352,6 @@ def callbacks_map(app: Dash):
         Output('geocoder_result_url', 'href'),
         Output('geocoder_result_lat', 'children'),
         Output('geocoder_result_lon', 'children'),
-        Output('map', 'viewport'),
         Output('map', 'children', allow_duplicate=True),
         Input('geocoder_entity_dropdown', 'value'),
         State('geocoder_entities', 'data'),
@@ -1441,7 +1433,7 @@ def callbacks_map(app: Dash):
                     )
                 )
 
-        # selected entity for sidebar + viewport
+        # selected entity for sidebar
         sel_e = entities[sel]
         sel_lat = float(sel_e['lat'])
         sel_lon = float(sel_e['lon'])
@@ -1450,14 +1442,7 @@ def callbacks_map(app: Dash):
 
         new_children = base + markers + rectangles
 
-        viewport = {
-            'center': (sel_lat, sel_lon),
-            'zoom': 13,
-            'transition': 'flyTo',
-            'options': {'duration': 0.5}
-        }
-
-        return type_children, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', viewport, new_children
+        return type_children, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', new_children
 
 
     # update the reports
@@ -1626,6 +1611,93 @@ def callbacks_map(app: Dash):
         else:
             geocoder_style['display'] = 'block'
             return [geocoder_style, '-']
+
+    # Off-screen pin indicator: renders orange arrow divs at viewport edges pointing toward
+    # any active-report pin outside the current map view. Clicking flies the Leaflet map
+    # directly via window._leafletMap (captured by assets/leaflet_capture.js).
+    app.clientside_callback(
+        """
+        function(locations, _interval) {
+            // One-time delegated click handler — uses window._leafletMap captured by leaflet_capture.js
+            if (!window._offscreenClickAdded) {
+                document.addEventListener('click', function(e) {
+                    var el = e.target.closest('.offscreen-arrow');
+                    if (!el) return;
+                    var idx = parseInt(el.dataset.idx);
+                    var locs = window._offscreenLocations;
+                    if (!locs || idx >= locs.length) return;
+                    var loc = locs[idx];
+                    if (window._leafletMap) {
+                        window._leafletMap.flyTo([loc.lat, loc.lon], 14, {duration: 0.8});
+                    }
+                });
+                window._offscreenClickAdded = true;
+            }
+
+            window._offscreenLocations = locations;
+
+            if (!locations || locations.length === 0) return [];
+            if (!window._leafletMap) return [];
+
+            var mapEl = document.getElementById('map');
+            if (!mapEl) return [];
+            var W = mapEl.offsetWidth, H = mapEl.offsetHeight;
+            var rect = mapEl.getBoundingClientRect();
+
+            var center = window._leafletMap.getCenter();
+            var centerLat = center.lat, centerLon = center.lng;
+            var zoom = window._leafletMap.getZoom();
+
+            function latLonToPixel(lat, lon, centerLat, centerLon, zoom, W, H) {
+                var scale = Math.pow(2, zoom) * 256;
+                var tileX = (lon + 180) / 360 * scale;
+                var lat_rad = lat * Math.PI / 180;
+                var tileY = (1 - Math.log(Math.tan(lat_rad) + 1 / Math.cos(lat_rad)) / Math.PI) / 2 * scale;
+                var cLat_rad = centerLat * Math.PI / 180;
+                var centerTileX = (centerLon + 180) / 360 * scale;
+                var centerTileY = (1 - Math.log(Math.tan(cLat_rad) + 1 / Math.cos(cLat_rad)) / Math.PI) / 2 * scale;
+                return {x: tileX - centerTileX + W / 2, y: tileY - centerTileY + H / 2};
+            }
+
+            var PAD = 28;
+            var arrows = [];
+
+            locations.forEach(function(loc, i) {
+                var px = latLonToPixel(loc.lat, loc.lon, centerLat, centerLon, zoom, W, H);
+                var x = px.x, y = px.y;
+                if (x >= PAD && x <= W - PAD && y >= PAD && y <= H - PAD) return; // on-screen
+
+                var dx = x - W / 2, dy = y - H / 2;
+                var sx = dx !== 0 ? (W / 2 - PAD) / Math.abs(dx) : Infinity;
+                var sy = dy !== 0 ? (H / 2 - PAD) / Math.abs(dy) : Infinity;
+                var s = Math.min(sx, sy);
+                var ex = rect.left + W / 2 + dx * s;
+                var ey = rect.top + H / 2 + dy * s;
+                var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                arrows.push({
+                    type: 'Div',
+                    namespace: 'dash_html_components',
+                    props: {
+                        className: 'offscreen-arrow',
+                        'data-idx': String(i),
+                        style: {
+                            left: ex + 'px',
+                            top: ey + 'px',
+                            transform: 'translate(-50%, -50%) rotate(' + angle + 'deg)',
+                            pointerEvents: 'auto',
+                        },
+                    }
+                });
+            });
+
+            return arrows;
+        }
+        """,
+        Output('offscreen-indicators', 'children'),
+        Input('active-report-locations', 'data'),
+        Input('interval_refresh_reports', 'n_intervals'),
+    )
 
 
 
