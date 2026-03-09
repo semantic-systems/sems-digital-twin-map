@@ -503,11 +503,15 @@ def get_layout_map():
                         "font-size": "7.5pt"
                     }
                 ),
-                dcc.Checklist(
+                dcc.RadioItems(
                     id='event_type_toggle',
-                    options=["Lokalisiert"],  # same options as your dropdown
-                    value=['Lokalisiert'],  # default checked options
-                    inline=True,  # makes them appear side-by-side
+                    options=[
+                        {'label': 'All', 'value': 'all'},
+                        {'label': '📍 Localized', 'value': 'localized'},
+                        {'label': '∅ Unlocalized', 'value': 'unlocalized'},
+                    ],
+                    value='all',
+                    inline=True,
                     style={
                         "font-size": "7.5pt",
                         "margin-bottom": "10px"
@@ -1390,35 +1394,40 @@ def callbacks_map(app: Dash):
     # update the reports
     @app.callback(
         Output('reports_list', 'children'),
+        Output('active-report-id', 'data', allow_duplicate=True),
+        Output('map', 'children', allow_duplicate=True),
         [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value'),
          Input('reports_dropdown_relevance_type', 'value'), Input('event_type_toggle', 'value')],
+        State('map', 'children'),
+        prevent_initial_call='initial_duplicate',
     )
-    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, map_children):
         """
-        This callback is triggered every hour.
-        It updates the reports component with the newest posts and reports.
+        Fires on interval and whenever any filter changes.
+        Resets the active selection (dots + polygons) when the localization toggle changes.
         """
 
-        # if the refresh button was not clicked, do nothing
         if n_clicks is None:
             raise PreventUpdate
 
-        # Normalize relevance type (handle both single and multi-select cases)
         if isinstance(filter_relevance_type, str):
             filter_relevance_type = [filter_relevance_type]
         elif filter_relevance_type is None:
             filter_relevance_type = []
 
-        # Normalize relevance type (handle both single and multi-select cases)
         if isinstance(filter_event_type, str):
             filter_event_type = [filter_event_type]
         elif filter_event_type is None:
             filter_event_type = []
-        
-        sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type,
-                                              filter_relevance_type=filter_relevance_type, localized='Lokalisiert' in event_type_toggle)
 
-        return sidebar_content
+        sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type,
+                                              filter_relevance_type=filter_relevance_type, loc_filter=event_type_toggle or 'all')
+
+        triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
+        if 'event_type_toggle' in triggered:
+            return sidebar_content, None, get_children(map_children)
+
+        return sidebar_content, dash.no_update, dash.no_update
     
     @app.callback(
         Output('reports_dropdown_platform', 'options'),
@@ -1677,7 +1686,7 @@ def callbacks_map(app: Dash):
                 filter_platform=filter_platform,
                 filter_event_type=filter_event_type,
                 filter_relevance_type=filter_relevance_type,
-                localized='Lokalisiert' in (event_type_toggle or []),
+                loc_filter=event_type_toggle or 'all',
             )
             return dots, sidebar
         finally:

@@ -35,6 +35,8 @@ def format_report(report: Report) -> html.Li:
 
     author = getattr(report, 'author', '') or ''
 
+    is_localized = any('osm_id' in loc for loc in (report.locations or []))
+
     if platform == 'rss':
         feed_name = report.platform.split('/')[1]
         descriptor_text = f'{feed_name} · {event_type} · {relevance} · {timestamp}'
@@ -88,7 +90,18 @@ def format_report(report: Report) -> html.Li:
                         }
                     ),
                     html.P(
-                        (f'@{author} · ' if author else '') + descriptor_text,
+                        [
+                            html.Span(
+                                '📍 ' if is_localized else '· ',
+                                title='Localized' if is_localized else 'No location',
+                                style={
+                                    'color': '#43a047' if is_localized else '#bdbdbd',
+                                    'font-size': '9px',
+                                    'margin-right': '2px',
+                                }
+                            ),
+                            (f'@{author} · ' if author else '') + descriptor_text,
+                        ],
                         style={
                             'font-size': '9px',
                             'color': '#888',
@@ -146,6 +159,7 @@ def format_report(report: Report) -> html.Li:
             'background': '#fafafa' if not is_seen else '#f5f5f5',
             'opacity': str(entry_opacity),
             'transition': 'opacity 0.2s',
+            'outline': '1px dashed #bdbdbd' if not is_localized else 'none',
         }
     )
 
@@ -170,10 +184,11 @@ def format_reports(reports: list, n=25) -> list:
 
     return [format_report(report) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, localized=True):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all'):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
+    loc_filter: 'all' | 'localized' | 'unlocalized'
     """
     engine, session = autoconnect_db()
     filter_arguments = []
@@ -202,13 +217,15 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
     reports = query.order_by(Report.timestamp.desc()).all()
     session.close()
 
+    if loc_filter == 'all':
+        return format_reports(reports, n)
+
     filtered_reports = []
     for report in reports:
-        geolinked_entities = report.locations
-        geolinked_entities = [entity for entity in geolinked_entities if "osm_id" in entity]
-        if localized and len(geolinked_entities) == 0:
+        has_location = any('osm_id' in e for e in (report.locations or []))
+        if loc_filter == 'localized' and not has_location:
             continue
-        elif not localized and len(geolinked_entities) > 0:
+        if loc_filter == 'unlocalized' and has_location:
             continue
         filtered_reports.append(report)
 
