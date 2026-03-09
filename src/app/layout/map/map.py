@@ -1237,31 +1237,35 @@ def callbacks_map(app: Dash):
         return children
 
     @app.callback(
-        [
-            Output('map', 'children', allow_duplicate=False),
-            Output('active-report-id', 'data'),
-            Output('active-report-locations', 'data'),
-        ],
+        Output('active-report-id', 'data'),
         [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
-        State('map', 'children'),
         State({'type': 'report-entry', 'index': ALL}, 'id'),
         prevent_initial_call=True
     )
-    def select_report(report_nclicks, map_children, report_ids):
+    def select_report(report_nclicks, report_ids):
         if not ctx.triggered:
             raise PreventUpdate
         if not report_nclicks or all((x is None or x == 0) for x in report_nclicks):
             raise PreventUpdate
-
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
         if not triggered_id_str or triggered_id_str == '.':
             raise PreventUpdate
         report_id = json.loads(triggered_id_str).get('index')
         if report_id is None:
             raise PreventUpdate
+        return report_id
 
-        # Clean old temp markers from map
+    @app.callback(
+        Output('map', 'children', allow_duplicate=False),
+        Output('active-report-locations', 'data'),
+        Input('active-report-id', 'data'),
+        State('map', 'children'),
+        prevent_initial_call=True
+    )
+    def render_report_polygons(report_id, map_children):
         children = get_children(map_children)
+        if not report_id:
+            return children, []
 
         engine, session = autoconnect_db()
         report = session.query(Report).filter(Report.id == report_id).first()
@@ -1269,7 +1273,7 @@ def callbacks_map(app: Dash):
         engine.dispose()
 
         if not report or not report.locations:
-            return [children, report_id, dash.no_update]
+            return children, []
 
         polygons = []
         dot_locations = []
@@ -1288,7 +1292,7 @@ def callbacks_map(app: Dash):
             tmp_layer = dl.LayerGroup(children=polygons, id=f'tmp_layer_{time.time()}')
             children = [tmp_layer] + children
 
-        return [children, report_id, dot_locations or dash.no_update]
+        return children, dot_locations or []
 
 
     @app.callback(
@@ -1395,16 +1399,15 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('reports_list', 'children'),
         Output('active-report-id', 'data', allow_duplicate=True),
-        Output('map', 'children', allow_duplicate=True),
         [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value'),
          Input('reports_dropdown_relevance_type', 'value'), Input('event_type_toggle', 'value')],
-        State('map', 'children'),
         prevent_initial_call='initial_duplicate',
     )
-    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, map_children):
+    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
         """
         Fires on interval and whenever any filter changes.
-        Resets the active selection (dots + polygons) when the localization toggle changes.
+        Resets the active selection when the localization toggle changes
+        (which in turn triggers render_report_polygons to clear polygons).
         """
 
         if n_clicks is None:
@@ -1424,10 +1427,9 @@ def callbacks_map(app: Dash):
                                               filter_relevance_type=filter_relevance_type, loc_filter=event_type_toggle or 'all')
 
         triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
-        if 'event_type_toggle' in triggered:
-            return sidebar_content, None, get_children(map_children)
+        reset_selection = None if 'event_type_toggle' in triggered else dash.no_update
 
-        return sidebar_content, dash.no_update, dash.no_update
+        return sidebar_content, reset_selection
     
     @app.callback(
         Output('reports_dropdown_platform', 'options'),
