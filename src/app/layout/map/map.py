@@ -1259,7 +1259,6 @@ def callbacks_map(app: Dash):
         # Clean old temp markers from map
         children = get_children(map_children)
 
-        # Get this report's dot locations for offscreen arrows
         engine, session = autoconnect_db()
         report = session.query(Report).filter(Report.id == report_id).first()
         session.close()
@@ -1268,11 +1267,23 @@ def callbacks_map(app: Dash):
         if not report or not report.locations:
             return [children, report_id, dash.no_update]
 
-        dot_locations = [
-            {'lat': loc['lat'], 'lon': loc['lon']}
-            for loc in report.locations
-            if 'osm_id' in loc and loc.get('lat') is not None and loc.get('lon') is not None
-        ]
+        polygons = []
+        dot_locations = []
+        for loc in report.locations:
+            if 'osm_id' not in loc:
+                continue
+            lat, lon = loc.get('lat'), loc.get('lon')
+            if lat is None or lon is None:
+                continue
+            dot_locations.append({'lat': lat, 'lon': lon})
+            title = loc.get('name') or loc.get('mention') or str(loc.get('osm_id', ''))
+            new_elements, _ = create_elements(loc, identifier=title)
+            polygons.extend(new_elements)
+
+        if polygons:
+            tmp_layer = dl.LayerGroup(children=polygons, id=f'tmp_layer_{time.time()}')
+            children = [tmp_layer] + children
+
         return [children, report_id, dot_locations or dash.no_update]
 
 
