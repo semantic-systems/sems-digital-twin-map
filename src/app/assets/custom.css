@@ -28,6 +28,13 @@
     animation: report-pulse 1.6s ease-out infinite;
 }
 
+/* Active report highlight in sidebar */
+li.report-entry-active {
+    outline: 2px solid #1976d2 !important;
+    outline-offset: -2px;
+    background: #e3f2fd !important;
+}
+
 .report-dot-count {
     color: white;
     font-size: 10px;

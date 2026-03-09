@@ -1681,6 +1681,21 @@ def callbacks_map(app: Dash):
             window._reportDotsData = dots || [];
             window._activeReportId = activeId;
             if (window.updateReportDots) window.updateReportDots();
+
+            // Highlight active report entry in sidebar
+            document.querySelectorAll('.report-entry-active').forEach(function(el) {
+                el.classList.remove('report-entry-active');
+            });
+            if (activeId !== null && activeId !== undefined) {
+                var el = document.getElementById('{"index":' + activeId + ',"type":"report-entry"}');
+                if (el) {
+                    var li = el.closest('li');
+                    if (li) {
+                        li.classList.add('report-entry-active');
+                        li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            }
             return window.dash_clientside.no_update;
         }
         """,
