@@ -646,7 +646,10 @@ def get_layout_map():
         dcc.Store(id='geocoder_entities', data=[]),                # the geocoder entities, selected by geocoder_entity_dropdown
         dcc.Interval(id='interval_refresh_reports', interval=10000 , n_intervals=0),  # refresh the reports every hour
         html.Div(id='dummy_output_1', style={'display': 'none'}),  # for some reason callback functions always need an output, so we create a dummy output for functions that dont return anything
-        dcc.Store(id='active-report-locations'),   # list of {lat, lon} for active report's pins
+        dcc.Store(id='active-report-locations'),   # list of {lat, lon} for active report's dots (offscreen arrows)
+        dcc.Store(id='report-dots-data', data=[]), # all non-seen report dots: [{report_id, lat, lon, text, ...}]
+        dcc.Store(id='active-report-id', data=None),  # id of selected report (its dots turn blue)
+        dcc.Store(id='report-dots-tick', data=None),  # dummy store for clientside callback output
         html.Div(
             id='offscreen-indicators',
             style={
@@ -1232,6 +1235,7 @@ def callbacks_map(app: Dash):
     @app.callback(
         [
             Output('map', 'children', allow_duplicate=False),
+            Output('active-report-id', 'data'),
             Output('active-report-locations', 'data'),
         ],
         [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
@@ -1239,110 +1243,37 @@ def callbacks_map(app: Dash):
         State({'type': 'report-entry', 'index': ALL}, 'id'),
         prevent_initial_call=True
     )
-    def show_report_pins(report_nclicks, map_children, report_ids):
+    def select_report(report_nclicks, map_children, report_ids):
         if not ctx.triggered:
             raise PreventUpdate
-
         if not report_nclicks or all((x is None or x == 0) for x in report_nclicks):
             raise PreventUpdate
 
-        triggered = ctx.triggered[0]['prop_id']  # e.g. '{"type":"report-entry","index":123}.n_clicks'
-        triggered_id_str = triggered.split('.')[0]
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
         if not triggered_id_str or triggered_id_str == '.':
             raise PreventUpdate
-        triggered_id = json.loads(triggered_id_str)
-        report_id = triggered_id.get('index')
+        report_id = json.loads(triggered_id_str).get('index')
         if report_id is None:
             raise PreventUpdate
 
-        # Query the report
+        # Clean old temp markers from map
+        children = get_children(map_children)
+
+        # Get this report's dot locations for offscreen arrows
         engine, session = autoconnect_db()
         report = session.query(Report).filter(Report.id == report_id).first()
         session.close()
         engine.dispose()
 
-        if not report:
-            raise PreventUpdate
+        if not report or not report.locations:
+            return [children, report_id, dash.no_update]
 
-        locations = getattr(report, 'locations', None)
-        if not locations or not isinstance(locations, list):
-            raise PreventUpdate
-
-        children = get_children(map_children)
-
-        markers = []
-        rectangles = []
-        coords = []
-        collected_positions = []
-        overall_max_lat = -math.inf
-        overall_min_lat = math.inf
-        overall_max_lon = -math.inf
-        overall_min_lon = math.inf
-
-        for i, loc in enumerate(locations):
-            if "osm_id" not in loc or "osm_type" not in loc:
-                continue
-            lat = loc.get('lat')
-            lon = loc.get('lon')
-            coords.append((lat, lon))
-            collected_positions.append((lat, lon))
-            title = loc.get('name', loc.get("mention", "Unspecified"))
-            desc = loc.get('display_name', '')
-            lat_s = f'Latitude: {lat}'
-            lon_s = f'Longitude: {lon}'
-            url = f"https://www.openstreetmap.org/{loc['osm_type']}/{loc['osm_id']}"
-            if lat is None or lon is None:
-                continue
-
-            # MARKER
-            popup = dl.Popup(
-                children=[
-                    html.H4(title, style={'font-size': '12pt', 'color': '#424242', 'margin': '0 0 4px 0',
-                                          'font-weight': 'bold'}),
-                    html.P(desc, style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
-                    html.P(lat_s, style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
-                    html.P(lon_s, style={'font-size': '10pt', 'color': '#424242', 'margin': '2px 0'}),
-                    html.A('Open in OSM', href=url, target='_blank', style={'font-size': '10pt', 'margin': '4px 0 0'})
-                ],
-                position=(lat, lon)
-            )
-            marker = dl.DivMarker(
-                position=(lat, lon),
-                children=[popup],
-                iconOptions=dict(
-                    html='<i class="awesome-marker awesome-marker-icon-blue leaflet-zoom-animated leaflet-interactive"></i>'
-                         '<i class="fa fa-thumb-tack icon-white" aria-hidden="true" '
-                         'style="position: relative; top: 33% !important; left: 37% !important; '
-                         'transform: translate(-50%, -50%) scale(1.2);"></i>',
-                    className='custom-div-icon',
-                    iconSize=[20, 20], iconAnchor=[10, 30], tooltipAnchor=[10, -20], popupAnchor=[-3, -31]
-                ),
-                id=f'report_tmp_marker_{report_id}_{i}'
-            )
-            markers.append(marker)
-
-            new_rectangles, (max_lat, min_lat, max_lon, min_lon) = create_elements(loc, identifier=title)
-            if max_lat > overall_max_lat:
-                overall_max_lat = max_lat
-            if min_lat < overall_min_lat:
-                overall_min_lat = min_lat
-            if max_lon > overall_max_lon:
-                overall_max_lon = max_lon
-            if min_lon < overall_min_lon:
-                overall_min_lon = min_lon
-
-            rectangles += new_rectangles
-
-        if not markers:
-            return [children, dash.no_update]
-
-        tmp_layer = dl.LayerGroup(
-            children=rectangles + markers,
-            id=f'tmp_layer_{time.time()}'  # guarantees a new React element
-        )
-
-        pin_locations = [{'lat': lat, 'lon': lon} for (lat, lon) in collected_positions]
-        return [[tmp_layer] + children, pin_locations]
+        dot_locations = [
+            {'lat': loc['lat'], 'lon': loc['lon']}
+            for loc in report.locations
+            if 'osm_id' in loc and loc.get('lat') is not None and loc.get('lon') is not None
+        ]
+        return [children, report_id, dot_locations or dash.no_update]
 
 
     @app.callback(
@@ -1628,6 +1559,132 @@ def callbacks_map(app: Dash):
         Output('offscreen-indicators', 'children'),
         Input('active-report-locations', 'data'),
         Input('interval_refresh_reports', 'n_intervals'),
+    )
+
+    # Fetch all non-seen report dots on every interval tick
+    @app.callback(
+        Output('report-dots-data', 'data', allow_duplicate=True),
+        Input('interval_refresh_reports', 'n_intervals'),
+        prevent_initial_call='initial_duplicate'
+    )
+    def fetch_report_dots(_n):
+        engine, session = autoconnect_db()
+        try:
+            reports = session.query(Report).filter(
+                Report.seen == False  # noqa: E712
+            ).all()
+            dots = []
+            for r in reports:
+                locs = r.locations or []
+                for loc in locs:
+                    if 'osm_id' not in loc:
+                        continue
+                    lat, lon = loc.get('lat'), loc.get('lon')
+                    if lat is None or lon is None:
+                        continue
+                    dots.append({
+                        'report_id': r.id,
+                        'lat': lat,
+                        'lon': lon,
+                        'text': (r.text or '')[:300],
+                        'author': r.author or '',
+                        'platform': r.platform or '',
+                        'timestamp': r.timestamp.strftime('%H:%M %d.%m.%Y') if r.timestamp else '',
+                        'event_type': r.event_type or '',
+                        'relevance': r.relevance or '',
+                        'url': r.url or '',
+                    })
+            return dots
+        finally:
+            session.close()
+            engine.dispose()
+
+    # Mark a report as seen; immediately re-fetch dots so they vanish without waiting for interval
+    @app.callback(
+        Output('report-dots-data', 'data', allow_duplicate=True),
+        Output('reports_list', 'children', allow_duplicate=True),
+        Input({'type': 'seen-button', 'index': ALL}, 'n_clicks'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        prevent_initial_call=True
+    )
+    def toggle_report_seen(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+        if not ctx.triggered:
+            raise PreventUpdate
+        if all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
+
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        report_id = json.loads(triggered_id_str).get('index')
+        if report_id is None:
+            raise PreventUpdate
+
+        engine, session = autoconnect_db()
+        try:
+            r = session.query(Report).filter(Report.id == report_id).first()
+            if r:
+                r.seen = not bool(r.seen)
+                session.commit()
+
+            # Re-fetch dots (only unseen)
+            reports_all = session.query(Report).filter(Report.seen == False).all()  # noqa: E712
+            dots = []
+            for rep in reports_all:
+                for loc in (rep.locations or []):
+                    if 'osm_id' not in loc:
+                        continue
+                    lat, lon = loc.get('lat'), loc.get('lon')
+                    if lat is None or lon is None:
+                        continue
+                    dots.append({
+                        'report_id': rep.id,
+                        'lat': lat,
+                        'lon': lon,
+                        'text': (rep.text or '')[:300],
+                        'author': rep.author or '',
+                        'platform': rep.platform or '',
+                        'timestamp': rep.timestamp.strftime('%H:%M %d.%m.%Y') if rep.timestamp else '',
+                        'event_type': rep.event_type or '',
+                        'relevance': rep.relevance or '',
+                        'url': rep.url or '',
+                    })
+
+            # Re-render sidebar so the button reflects new state immediately
+            from app.layout.map.sidebar import get_sidebar_content
+            if isinstance(filter_relevance_type, str):
+                filter_relevance_type = [filter_relevance_type]
+            elif filter_relevance_type is None:
+                filter_relevance_type = []
+            if isinstance(filter_event_type, str):
+                filter_event_type = [filter_event_type]
+            elif filter_event_type is None:
+                filter_event_type = []
+            sidebar = get_sidebar_content(
+                filter_platform=filter_platform,
+                filter_event_type=filter_event_type,
+                filter_relevance_type=filter_relevance_type,
+                localized='Lokalisiert' in (event_type_toggle or []),
+            )
+            return dots, sidebar
+        finally:
+            session.close()
+            engine.dispose()
+
+    # Clientside: push new dot data + active report id to JS, trigger re-render
+    app.clientside_callback(
+        """
+        function(dots, activeId) {
+            window._reportDotsData = dots || [];
+            window._activeReportId = activeId;
+            if (window.updateReportDots) window.updateReportDots();
+            return window.dash_clientside.no_update;
+        }
+        """,
+        Output('report-dots-tick', 'data'),
+        Input('report-dots-data', 'data'),
+        Input('active-report-id', 'data'),
     )
 
 

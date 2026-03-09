@@ -31,21 +31,40 @@ def format_report(report: Report) -> html.Li:
     timestamp = report.timestamp.strftime('%H:%M %d.%m.%Y')
     event_type = report.event_type
     relevance = report.relevance
+    is_seen = bool(getattr(report, 'seen', False))
+
+    author = getattr(report, 'author', '') or ''
 
     if platform == 'rss':
         feed_name = report.platform.split('/')[1]
-        descriptor_text = f'{feed_name} - {event_type} - {relevance} - {timestamp}'
+        descriptor_text = f'{feed_name} · {event_type} · {relevance} · {timestamp}'
     else:
-        descriptor_text = f'{platform_name} - {event_type} - {relevance} - {timestamp}'
+        descriptor_text = f'{platform_name} · {event_type} · {relevance} · {timestamp}'
 
-    color_map = {
-        "none": "#ffffff",  # white
-        "low": "#ffcccc",  # light red
-        "medium": "#ff6666",  # medium red
-        "high": "#cc0000"  # dark red
+    relevance_color_map = {
+        "none": "#e0e0e0",
+        "low": "#ffcccc",
+        "medium": "#ff8a80",
+        "high": "#cc0000",
+    }
+    bg_color = relevance_color_map.get(relevance, "#e0e0e0")
+
+    seen_btn_label = "👁 Seen" if is_seen else "👁"
+    seen_btn_title = "Mark as unseen" if is_seen else "Mark as seen"
+    seen_btn_style = {
+        'font-size': '11px',
+        'padding': '2px 7px',
+        'cursor': 'pointer',
+        'border-radius': '4px',
+        'transition': 'all 0.15s',
+        'white-space': 'nowrap',
+        'border': '1px solid #a5d6a7' if is_seen else '1px solid #ddd',
+        'background': '#e8f5e9' if is_seen else '#fafafa',
+        'color': '#2e7d32' if is_seen else '#888',
+        'font-weight': 'bold' if is_seen else 'normal',
     }
 
-    bg_color = color_map.get(relevance, "#ffffff")
+    entry_opacity = 0.5 if is_seen else 1.0
 
     return html.Li(
         children=[
@@ -60,7 +79,7 @@ def format_report(report: Report) -> html.Li:
                             "display": "-webkit-box",
                             "-webkit-box-orient": "vertical",
                             "-webkit-line-clamp": "5",
-                            "margin-bottom": "4px",
+                            "margin-bottom": "2px",
                             "white-space": "normal",
                             "word-wrap": "break-word",
                             "overflow": "hidden",
@@ -69,11 +88,11 @@ def format_report(report: Report) -> html.Li:
                         }
                     ),
                     html.P(
-                        descriptor_text,
+                        (f'@{author} · ' if author else '') + descriptor_text,
                         style={
-                            'font-size': '10px',
-                            'color': 'gray',
-                            'margin': '0'
+                            'font-size': '9px',
+                            'color': '#888',
+                            'margin': '0',
                         }
                     )
                 ],
@@ -87,33 +106,46 @@ def format_report(report: Report) -> html.Li:
                     "cursor": "pointer",
                     "padding": "0",
                     "display": "inline-block",
-                    "verticalAlign": "top"
+                    "verticalAlign": "top",
                 }
             ),
-            html.A(
-                "[Link]",
-                href=report.url,
-                target="_blank",
-                rel="noopener noreferrer",
-                title="Open original post",
-                style={
-                    'font-size': '10px',
-                    'color': '#666',
-                    'text-decoration': 'underline',
-                    'display': 'block',
-                    'margin-top': '4px'
-                }
+            html.Div(
+                children=[
+                    html.A(
+                        "↗ Open",
+                        href=report.url,
+                        target="_blank",
+                        rel="noopener noreferrer",
+                        title="Open original post",
+                        style={
+                            'font-size': '9px',
+                            'color': '#1976d2',
+                            'text-decoration': 'none',
+                        }
+                    ),
+                    html.Button(
+                        seen_btn_label,
+                        id={'type': 'seen-button', 'index': report.id},
+                        title=seen_btn_title,
+                        n_clicks=0,
+                        style=seen_btn_style,
+                    ),
+                ],
+                style={'display': 'flex', 'gap': '8px', 'align-items': 'center', 'margin-top': '4px'}
             )
         ],
         style={
-            'margin-bottom': '10px',
-            'border-left': f'5px solid {color}',
-            'border-right': f'5px solid {bg_color}',
-            'border-radius': '3px',
-            'padding-left': '5px',
+            'margin-bottom': '8px',
+            'border-left': f'4px solid {color}',
+            'border-right': f'4px solid {bg_color}',
+            'border-radius': '4px',
+            'padding': '6px 6px 4px 8px',
             'display': 'flex',
             'flex-direction': 'column',
             'alignItems': 'flex-start',
+            'background': '#fafafa' if not is_seen else '#f5f5f5',
+            'opacity': str(entry_opacity),
+            'transition': 'opacity 0.2s',
         }
     )
 
