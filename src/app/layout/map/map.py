@@ -461,70 +461,72 @@ def get_layout_map():
         html.Div(
             id='div_reports',
             children=[
-                html.P(
-                    children='Reports',
-                    style={
-                        'font-size': '14pt',
-                        'font-weight': 'bold',
-                        'margin': '4px 2px 4 2px',
-                        'text-align': 'center',
-                        'color': '#404040'
-                    }
-                ),
-                dcc.Dropdown(
-                    options=reports_dropdown_platform,
-                    id='reports_dropdown_platform',
-                    optionHeight=20,
-                    placeholder='Platform',
-                    style={
-                        "margin-bottom": "10px",
-                        "font-size": "7.5pt"
-                    }
-                ),
-                dcc.Dropdown(
-                    options=reports_dropdown_event_type,
-                    id='reports_dropdown_event_type',
-                    optionHeight=20,
-                    placeholder='Event Type',
-                    multi=True,  # <-- enable multiple selections
-                    style={
-                        "margin-bottom": "10px",
-                        "font-size": "7.5pt"
-                    }
-                ),
-                dcc.Dropdown(
-                    options=reports_dropdown_relevance_type,
-                    id='reports_dropdown_relevance_type',
-                    optionHeight=20,
-                    placeholder='Relevance(s)',
-                    multi=True,  # <-- enable multiple selections
-                    style={
-                        "margin-bottom": "10px",
-                        "font-size": "7.5pt"
-                    }
-                ),
-                dcc.RadioItems(
-                    id='event_type_toggle',
-                    options=[
-                        {'label': 'All', 'value': 'all'},
-                        {'label': '📍 Localized', 'value': 'localized'},
-                        {'label': '∅ Unlocalized', 'value': 'unlocalized'},
+                # ---- sticky filter header ----
+                html.Div(
+                    children=[
+                        html.P(
+                            children='Reports',
+                            style={
+                                'font-size': '14pt',
+                                'font-weight': 'bold',
+                                'margin': '0 0 6px 0',
+                                'text-align': 'center',
+                                'color': '#404040'
+                            }
+                        ),
+                        dcc.Dropdown(
+                            options=reports_dropdown_platform,
+                            id='reports_dropdown_platform',
+                            optionHeight=20,
+                            placeholder='Platform',
+                            style={"margin-bottom": "6px", "font-size": "7.5pt"}
+                        ),
+                        dcc.Dropdown(
+                            options=reports_dropdown_event_type,
+                            id='reports_dropdown_event_type',
+                            optionHeight=20,
+                            placeholder='Event Type',
+                            multi=True,
+                            style={"margin-bottom": "6px", "font-size": "7.5pt"}
+                        ),
+                        dcc.Dropdown(
+                            options=reports_dropdown_relevance_type,
+                            id='reports_dropdown_relevance_type',
+                            optionHeight=20,
+                            placeholder='Relevance(s)',
+                            multi=True,
+                            style={"margin-bottom": "6px", "font-size": "7.5pt"}
+                        ),
+                        dcc.RadioItems(
+                            id='event_type_toggle',
+                            options=[
+                                {'label': 'All', 'value': 'all'},
+                                {'label': '📍 Localized', 'value': 'localized'},
+                                {'label': '∅ Unlocalized', 'value': 'unlocalized'},
+                            ],
+                            value='all',
+                            inline=True,
+                            style={"font-size": "7.5pt"}
+                        ),
                     ],
-                    value='all',
-                    inline=True,
                     style={
-                        "font-size": "7.5pt",
-                        "margin-bottom": "10px"
+                        'flex-shrink': '0',
+                        'padding-bottom': '6px',
+                        'border-bottom': '1px solid #e0e0e0',
+                        'margin-bottom': '6px',
                     }
                 ),
+                # ---- scrollable report list ----
                 html.Ul(
                     id='reports_list',
-                    children=[],    # empty list, will be filled by the callback
+                    children=[],
                     style={
-                        # increase child separator
                         'margin': '0',
                         'padding': '0',
-                        'list-style-type': 'none'
+                        'list-style-type': 'none',
+                        'overflow-y': 'auto',
+                        'flex-shrink': '1',
+                        'min-height': '0',
                     }
                 )
             ],
@@ -532,7 +534,8 @@ def get_layout_map():
                 'position': 'absolute',
                 'top': '150px',
                 'left': '0',
-                'float': 'left',
+                'display': 'flex',
+                'flex-direction': 'column',
                 'background-color': 'white',
                 'border': '1px solid #ccc',
                 'border-radius': '5px',
@@ -540,11 +543,9 @@ def get_layout_map():
                 'padding': '10px',
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
                 'z-index': '1000',
-                'max-height': '500px',
-                'min-height': '195px',
-                'overflow-y': 'auto',
+                'max-height': 'calc(100vh - 200px)',
+                'overflow': 'hidden',
                 'width': '250px',
-                # "display": "none"
             }
         ),
         # html.Button(
