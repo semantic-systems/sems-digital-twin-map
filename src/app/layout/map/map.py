@@ -1925,14 +1925,14 @@ def callbacks_map(app: Dash):
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
             effective_locs = (locs_dict or {}).get(str(report_id), r.locations if r else None) or []
-            label = ''
+            mention = ''
             if 0 <= loc_index < len(effective_locs):
                 loc = effective_locs[loc_index]
-                label = loc.get('mention') or loc.get('name') or ''
+                mention = loc.get('mention') or ''  # only the original surface form, never the resolved name
         finally:
             session.close()
             engine.dispose()
-        return {'report_id': report_id, 'loc_index': loc_index, 'mention': label}
+        return {'report_id': report_id, 'loc_index': loc_index, 'mention': mention}
 
     # ---- Location picking: cancel pick mode ----
     @app.callback(
