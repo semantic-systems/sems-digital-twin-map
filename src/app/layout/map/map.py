@@ -1240,9 +1240,10 @@ def callbacks_map(app: Dash):
         Output('active-report-id', 'data'),
         [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
         State({'type': 'report-entry', 'index': ALL}, 'id'),
+        State('active-report-id', 'data'),
         prevent_initial_call=True
     )
-    def select_report(report_nclicks, report_ids):
+    def select_report(report_nclicks, report_ids, current_active_id):
         if not ctx.triggered:
             raise PreventUpdate
         if not report_nclicks or all((x is None or x == 0) for x in report_nclicks):
@@ -1253,7 +1254,7 @@ def callbacks_map(app: Dash):
         report_id = json.loads(triggered_id_str).get('index')
         if report_id is None:
             raise PreventUpdate
-        return report_id
+        return None if report_id == current_active_id else report_id
 
     @app.callback(
         Output('map', 'children', allow_duplicate=False),
