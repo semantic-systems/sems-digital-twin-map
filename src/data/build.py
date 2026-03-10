@@ -431,6 +431,7 @@ def migrate_columns():
     """
     engine, session = autoconnect_db()
     migrations = [
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS original_locations JSON",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author VARCHAR DEFAULT ''",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS seen BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author_flagged BOOLEAN NOT NULL DEFAULT FALSE",

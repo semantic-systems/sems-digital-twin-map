@@ -35,6 +35,7 @@ def format_report(report: Report) -> html.Li:
     is_flagged = bool(getattr(report, 'author_flagged', False))
 
     author = getattr(report, 'author', '') or ''
+    original_locations = getattr(report, 'original_locations', None)
 
     is_localized = any('osm_id' in loc for loc in (report.locations or []))
 
@@ -164,7 +165,61 @@ def format_report(report: Report) -> html.Li:
                     ),
                 ],
                 style={'display': 'flex', 'gap': '8px', 'align-items': 'center', 'margin-top': '4px'}
-            )
+            ),
+            html.Div(
+                children=[
+                    *[
+                        html.Span(
+                            [
+                                loc.get('name') or loc.get('mention') or f"{loc.get('lat', 0):.4f}, {loc.get('lon', 0):.4f}",
+                                html.Button(
+                                    '✕',
+                                    id={'type': 'remove-location-button', 'report': report.id, 'loc': i},
+                                    n_clicks=0,
+                                    title='Remove location',
+                                    style={
+                                        'font-size': '9px', 'padding': '0 3px', 'margin-left': '3px',
+                                        'cursor': 'pointer', 'border': 'none', 'background': 'transparent',
+                                        'color': '#888', 'line-height': '1',
+                                    },
+                                ),
+                            ],
+                            style={
+                                'font-size': '9px', 'background': '#e3f2fd', 'border-radius': '3px',
+                                'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
+                                'display': 'inline-flex', 'align-items': 'center',
+                            },
+                        )
+                        for i, loc in enumerate(report.locations or [])
+                    ],
+                    html.Button(
+                        '📍 Add',
+                        id={'type': 'pick-location-button', 'index': report.id},
+                        n_clicks=0,
+                        title='Click to place a location on the map',
+                        style={
+                            'font-size': '9px', 'padding': '1px 6px', 'cursor': 'pointer',
+                            'border-radius': '3px', 'border': '1px solid #90caf9',
+                            'background': '#e3f2fd', 'color': '#1565c0',
+                        },
+                    ),
+                    *(
+                        [html.Button(
+                            '↩ Restore',
+                            id={'type': 'restore-locations-button', 'index': report.id},
+                            n_clicks=0,
+                            title='Restore originally detected locations',
+                            style={
+                                'font-size': '9px', 'padding': '1px 6px', 'cursor': 'pointer',
+                                'border-radius': '3px', 'border': '1px solid #ce93d8',
+                                'background': '#f3e5f5', 'color': '#6a1b9a',
+                            },
+                        )]
+                        if original_locations is not None else []
+                    ),
+                ],
+                style={'display': 'flex', 'flex-wrap': 'wrap', 'gap': '3px', 'align-items': 'center', 'margin-top': '5px'},
+            ),
         ],
         style={
             'margin-bottom': '8px',

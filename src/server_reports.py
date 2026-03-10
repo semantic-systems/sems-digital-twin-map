@@ -305,6 +305,7 @@ def save_posts(posts: list):
             relevance=relevance_mapping[json_post['relevance']],
             event_type=event_mapping[json_post['event_type']],
             locations=locations,
+            original_locations=locations,
             author=json_post.get('author', ''),
             seen=False,
             author_flagged=False)

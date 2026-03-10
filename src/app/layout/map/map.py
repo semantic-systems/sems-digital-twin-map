@@ -654,12 +654,37 @@ def get_layout_map():
         dcc.Store(id='report-dots-data', data=[]), # all non-seen report dots: [{report_id, lat, lon, text, ...}]
         dcc.Store(id='active-report-id', data=None),  # id of selected report (its dots turn blue)
         dcc.Store(id='report-dots-tick', data=None),  # dummy store for clientside callback output
+        dcc.Store(id='location-pick-mode', data=None),  # None = off, int = report_id being picked for
+        dcc.Store(id='pick-overlay-tick', data=None),   # dummy output for pick-mode display clientside callback
         html.Div(
             id='offscreen-indicators',
             style={
                 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
                 'zIndex': 499, 'pointerEvents': 'none',
             }
+        ),
+        html.Div(
+            id='location-pick-overlay',
+            children=[
+                html.Span('📍 Click on the map to place a location', style={'font-size': '13px'}),
+                html.Button(
+                    'Cancel',
+                    id='location-pick-cancel',
+                    n_clicks=0,
+                    style={
+                        'margin-left': '12px', 'font-size': '12px', 'padding': '3px 10px',
+                        'border-radius': '4px', 'border': '1px solid #fff', 'background': 'rgba(255,255,255,0.2)',
+                        'color': '#fff', 'cursor': 'pointer',
+                    },
+                ),
+            ],
+            style={
+                'display': 'none',  # shown via clientside callback
+                'position': 'fixed', 'top': '12px', 'left': '50%', 'transform': 'translateX(-50%)',
+                'zIndex': 1000, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
+                'padding': '8px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
+                'align-items': 'center', 'gap': '8px', 'white-space': 'nowrap',
+            },
         ),
     ]
     
@@ -1783,3 +1808,207 @@ def callbacks_map(app: Dash):
             loc_filter=event_type_toggle or 'all',
         )
 
+
+    # ---- Shared helpers for location callbacks ----
+    def _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+        from app.layout.map.sidebar import get_sidebar_content
+        if isinstance(filter_relevance_type, str):
+            filter_relevance_type = [filter_relevance_type]
+        elif filter_relevance_type is None:
+            filter_relevance_type = []
+        if isinstance(filter_event_type, str):
+            filter_event_type = [filter_event_type]
+        elif filter_event_type is None:
+            filter_event_type = []
+        return get_sidebar_content(
+            filter_platform=filter_platform,
+            filter_event_type=filter_event_type,
+            filter_relevance_type=filter_relevance_type,
+            loc_filter=event_type_toggle or 'all',
+        )
+
+    def _build_dots(session):
+        reports = session.query(Report).all()
+        dots = []
+        for r in reports:
+            for loc in (r.locations or []):
+                if 'osm_id' not in loc:
+                    continue
+                lat, lon = loc.get('lat'), loc.get('lon')
+                if lat is None or lon is None:
+                    continue
+                dots.append({
+                    'report_id': r.id,
+                    'lat': lat,
+                    'lon': lon,
+                    'seen': bool(r.seen),
+                    'location_name': loc.get('name') or loc.get('mention') or '',
+                    'location_display': loc.get('display_name') or '',
+                    'text': (r.text or '')[:300],
+                    'author': r.author or '',
+                    'platform': r.platform or '',
+                    'timestamp': r.timestamp.strftime('%H:%M %d.%m.%Y') if r.timestamp else '',
+                    'event_type': r.event_type or '',
+                    'relevance': r.relevance or '',
+                    'url': r.url or '',
+                })
+        return dots
+
+    # ---- Location picking: enter pick mode ----
+    @app.callback(
+        Output('location-pick-mode', 'data'),
+        Input({'type': 'pick-location-button', 'index': ALL}, 'n_clicks'),
+        prevent_initial_call=True,
+    )
+    def enter_pick_mode(n_clicks_list):
+        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        try:
+            report_id = json.loads(triggered_id_str).get('index')
+        except Exception:
+            raise PreventUpdate
+        return report_id
+
+    # ---- Location picking: cancel pick mode ----
+    @app.callback(
+        Output('location-pick-mode', 'data', allow_duplicate=True),
+        Input('location-pick-cancel', 'n_clicks'),
+        prevent_initial_call=True,
+    )
+    def cancel_pick_mode(_n):
+        return None
+
+    # ---- Location picking: show/hide overlay + crosshair cursor (clientside) ----
+    app.clientside_callback(
+        """
+        function(pick_mode) {
+            var overlay = document.getElementById('location-pick-overlay');
+            var mapEl = document.getElementById('map');
+            if (overlay) overlay.style.display = (pick_mode !== null && pick_mode !== undefined) ? 'flex' : 'none';
+            if (mapEl) mapEl.style.cursor = (pick_mode !== null && pick_mode !== undefined) ? 'crosshair' : '';
+            return null;
+        }
+        """,
+        Output('pick-overlay-tick', 'data'),
+        Input('location-pick-mode', 'data'),
+    )
+
+    # ---- Location picking: map click → save location ----
+    @app.callback(
+        Output('location-pick-mode', 'data', allow_duplicate=True),
+        Output('reports_list', 'children', allow_duplicate=True),
+        Output('report-dots-data', 'data', allow_duplicate=True),
+        Input('map', 'clickData'),
+        State('location-pick-mode', 'data'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        prevent_initial_call=True,
+    )
+    def place_location(click_data, pick_mode, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+        if pick_mode is None or not click_data:
+            raise PreventUpdate
+        latlng = click_data.get('latlng', {})
+        lat, lon = latlng.get('lat'), latlng.get('lng')
+        if lat is None or lon is None:
+            raise PreventUpdate
+
+        engine, session = autoconnect_db()
+        try:
+            r = session.query(Report).filter(Report.id == pick_mode).first()
+            if r is None:
+                raise PreventUpdate
+            locs = list(r.locations or [])
+            locs.append({
+                'osm_id': f'manual_{lat:.6f}_{lon:.6f}',
+                'lat': lat,
+                'lon': lon,
+                'name': f'{lat:.4f}, {lon:.4f}',
+            })
+            r.locations = locs
+            session.commit()
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
+            dots = _build_dots(session)
+            return None, sidebar, dots
+        finally:
+            session.close()
+            engine.dispose()
+
+    # ---- Location removal ----
+    @app.callback(
+        Output('reports_list', 'children', allow_duplicate=True),
+        Output('report-dots-data', 'data', allow_duplicate=True),
+        Input({'type': 'remove-location-button', 'report': ALL, 'loc': ALL}, 'n_clicks'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        prevent_initial_call=True,
+    )
+    def remove_location(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        try:
+            id_dict = json.loads(triggered_id_str)
+            report_id = id_dict.get('report')
+            loc_index = id_dict.get('loc')
+        except Exception:
+            raise PreventUpdate
+        if report_id is None or loc_index is None:
+            raise PreventUpdate
+
+        engine, session = autoconnect_db()
+        try:
+            r = session.query(Report).filter(Report.id == report_id).first()
+            if r is None:
+                raise PreventUpdate
+            locs = list(r.locations or [])
+            if 0 <= loc_index < len(locs):
+                locs.pop(loc_index)
+                r.locations = locs
+                session.commit()
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
+            dots = _build_dots(session)
+            return sidebar, dots
+        finally:
+            session.close()
+            engine.dispose()
+
+    # ---- Restore original locations ----
+    @app.callback(
+        Output('reports_list', 'children', allow_duplicate=True),
+        Output('report-dots-data', 'data', allow_duplicate=True),
+        Input({'type': 'restore-locations-button', 'index': ALL}, 'n_clicks'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        prevent_initial_call=True,
+    )
+    def restore_original_locations(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        try:
+            report_id = json.loads(triggered_id_str).get('index')
+        except Exception:
+            raise PreventUpdate
+        if report_id is None:
+            raise PreventUpdate
+
+        engine, session = autoconnect_db()
+        try:
+            r = session.query(Report).filter(Report.id == report_id).first()
+            if r is None or r.original_locations is None:
+                raise PreventUpdate
+            r.locations = list(r.original_locations)
+            session.commit()
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
+            dots = _build_dots(session)
+            return sidebar, dots
+        finally:
+            session.close()
+            engine.dispose()
