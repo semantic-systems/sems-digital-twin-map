@@ -1,4 +1,5 @@
 import math
+import os
 import time
 import requests
 from datetime import date, timedelta, datetime
@@ -1957,8 +1958,9 @@ def callbacks_map(app: Dash):
         if not pick_mode or not query or not query.strip():
             raise PreventUpdate
         try:
+            nominatim_url = os.environ.get('NOMINATIM_URL', 'https://nominatim.openstreetmap.org').rstrip('/')
             resp = requests.get(
-                'https://nominatim.openstreetmap.org/search',
+                f'{nominatim_url}/search',
                 params={'q': query.strip(), 'format': 'json', 'limit': 7, 'polygon_geojson': 1},
                 headers={'User-Agent': 'sems-digital-twin-map/1.0'},
                 timeout=5,
