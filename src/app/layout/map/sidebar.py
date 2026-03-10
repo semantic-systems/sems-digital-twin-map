@@ -8,6 +8,8 @@ import dash_leaflet as dl
 from data.connect import autoconnect_db
 from data.model import Report
 
+
+
 # the path to the config file that contains the platform specific information
 SIDEBAR_CONFIG_PATH = 'src/app/layout/map/sidebar_config.json'
 
@@ -361,24 +363,25 @@ def get_sidebar_dropdown_platform_values():
 
     return list(platforms)
 
+ALL_EVENT_TYPES = [
+    'Irrelevant',
+    'Menschen betroffen',
+    'Warnungen & Hinweise',
+    'Evakuierungen & Umsiedlungen',
+    'Spenden & Freiwillige',
+    'Infrastruktur-Schäden',
+    'Verletzte & Tote',
+    'Vermisste & Gefundene',
+    'Bedarfe & Anfragen',
+    'Einsatzmaßnahmen',
+    'Mitgefühl & Unterstützung',
+    'Sonstiges',
+]
+
+ALL_RELEVANCE_TYPES = ['high', 'medium', 'low', 'none']
+
 def get_sidebar_dropdown_event_type_values():
-
-    # get the event_types of all Reports in the database
-    engine, session = autoconnect_db()
-    event_types = session.query(Report.event_type).distinct().all()
-    event_types = [event_type[0] for event_type in event_types]
-
-    session.close()
-
-    return event_types
+    return ALL_EVENT_TYPES
 
 def get_sidebar_dropdown_relevance_type_values():
-
-    # get the event_types of all Reports in the database
-    engine, session = autoconnect_db()
-    event_types = session.query(Report.relevance).distinct().all()
-    event_types = [event_type[0] for event_type in event_types]
-
-    session.close()
-
-    return event_types
+    return ALL_RELEVANCE_TYPES
