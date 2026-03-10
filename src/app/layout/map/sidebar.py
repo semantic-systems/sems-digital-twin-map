@@ -171,7 +171,15 @@ def format_report(report: Report) -> html.Li:
                     *[
                         html.Span(
                             [
-                                loc.get('name') or loc.get('mention') or f"{loc.get('lat', 0):.4f}, {loc.get('lon', 0):.4f}",
+                                html.Span(
+                                    '◌ ' if 'osm_id' not in loc else '',
+                                    title='Surface form only — not georeferenced',
+                                    style={'opacity': '0.6'},
+                                ) if 'osm_id' not in loc else None,
+                                html.Span(
+                                    loc.get('name') or loc.get('mention') or f"{loc.get('lat', 0):.4f}, {loc.get('lon', 0):.4f}",
+                                    style={'font-style': 'italic' if 'osm_id' not in loc else 'normal'},
+                                ),
                                 html.Button(
                                     '✕',
                                     id={'type': 'remove-location-button', 'report': report.id, 'loc': i},
@@ -184,10 +192,14 @@ def format_report(report: Report) -> html.Li:
                                     },
                                 ),
                             ],
+                            title='Surface form only — not georeferenced' if 'osm_id' not in loc else loc.get('display_name') or loc.get('name') or '',
                             style={
-                                'font-size': '9px', 'background': '#e3f2fd', 'border-radius': '3px',
+                                'font-size': '9px', 'border-radius': '3px',
                                 'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
                                 'display': 'inline-flex', 'align-items': 'center',
+                                'background': '#f5f5f5' if 'osm_id' not in loc else '#e3f2fd',
+                                'border': '1px dashed #bdbdbd' if 'osm_id' not in loc else 'none',
+                                'color': '#757575' if 'osm_id' not in loc else 'inherit',
                             },
                         )
                         for i, loc in enumerate(report.locations or [])
