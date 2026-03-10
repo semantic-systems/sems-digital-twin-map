@@ -1928,7 +1928,7 @@ def callbacks_map(app: Dash):
             label = ''
             if 0 <= loc_index < len(effective_locs):
                 loc = effective_locs[loc_index]
-                label = loc.get('name') or loc.get('mention') or ''
+                label = loc.get('mention') or loc.get('name') or ''
         finally:
             session.close()
             engine.dispose()
