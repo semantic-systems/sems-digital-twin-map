@@ -656,6 +656,7 @@ def get_layout_map():
         dcc.Store(id='report-dots-tick', data=None),  # dummy store for clientside callback output
         dcc.Store(id='location-pick-mode', data=None),  # None = off, int = report_id being picked for
         dcc.Store(id='pick-overlay-tick', data=None),   # dummy output for pick-mode display clientside callback
+        dcc.Store(id='locations-changed', data=0),      # incremented whenever a report's locations are edited
         html.Div(
             id='offscreen-indicators',
             style={
@@ -1285,10 +1286,11 @@ def callbacks_map(app: Dash):
         Output('map', 'children', allow_duplicate=False),
         Output('active-report-locations', 'data'),
         Input('active-report-id', 'data'),
+        Input('locations-changed', 'data'),
         State('map', 'children'),
         prevent_initial_call=True
     )
-    def render_report_polygons(report_id, map_children):
+    def render_report_polygons(report_id, _locations_changed, map_children):
         children = get_children(map_children)
         if not report_id:
             return children, []
@@ -1899,15 +1901,17 @@ def callbacks_map(app: Dash):
         Output('location-pick-mode', 'data', allow_duplicate=True),
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
+        Output('locations-changed', 'data', allow_duplicate=True),
         Input('map', 'clickData'),
         State('location-pick-mode', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
+        State('locations-changed', 'data'),
         prevent_initial_call=True,
     )
-    def place_location(click_data, pick_mode, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def place_location(click_data, pick_mode, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
         if pick_mode is None or not click_data:
             raise PreventUpdate
         latlng = click_data.get('latlng', {})
@@ -1931,7 +1935,7 @@ def callbacks_map(app: Dash):
             session.commit()
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
             dots = _build_dots(session)
-            return None, sidebar, dots
+            return None, sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
             engine.dispose()
@@ -1940,14 +1944,16 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
+        Output('locations-changed', 'data', allow_duplicate=True),
         Input({'type': 'remove-location-button', 'report': ALL, 'loc': ALL}, 'n_clicks'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
+        State('locations-changed', 'data'),
         prevent_initial_call=True,
     )
-    def remove_location(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def remove_location(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -1972,7 +1978,7 @@ def callbacks_map(app: Dash):
                 session.commit()
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
             dots = _build_dots(session)
-            return sidebar, dots
+            return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
             engine.dispose()
@@ -1981,14 +1987,16 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
+        Output('locations-changed', 'data', allow_duplicate=True),
         Input({'type': 'restore-locations-button', 'index': ALL}, 'n_clicks'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
+        State('locations-changed', 'data'),
         prevent_initial_call=True,
     )
-    def restore_original_locations(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def restore_original_locations(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -2008,7 +2016,7 @@ def callbacks_map(app: Dash):
             session.commit()
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
             dots = _build_dots(session)
-            return sidebar, dots
+            return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
             engine.dispose()
