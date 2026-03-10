@@ -657,6 +657,9 @@ def get_layout_map():
         dcc.Store(id='report-dots-tick', data=None),  # dummy store for clientside callback output
         dcc.Store(id='location-pick-mode', data=None),  # None = off, dict = {report_id, loc_index, mention}
         dcc.Store(id='locations-changed', data=0),      # incremented whenever a report's locations are edited
+        dcc.Store(id='user-seen',      storage_type='local', data=[]),       # [report_id, ...]
+        dcc.Store(id='user-flagged',   storage_type='local', data=[]),       # [author, ...]
+        dcc.Store(id='user-locations', storage_type='local', data={}),       # {"report_id": [loc, ...]}
         html.Div(
             id='offscreen-indicators',
             style={
@@ -1288,9 +1291,10 @@ def callbacks_map(app: Dash):
         Input('active-report-id', 'data'),
         Input('locations-changed', 'data'),
         State('map', 'children'),
+        State('user-locations', 'data'),
         prevent_initial_call=True
     )
-    def render_report_polygons(report_id, _locations_changed, map_children):
+    def render_report_polygons(report_id, _locations_changed, map_children, locs_dict):
         children = get_children(map_children)
         if not report_id:
             return children, []
@@ -1300,12 +1304,16 @@ def callbacks_map(app: Dash):
         session.close()
         engine.dispose()
 
-        if not report or not report.locations:
+        if not report:
+            return children, []
+
+        effective_locations = (locs_dict or {}).get(str(report_id), report.locations) or []
+        if not effective_locations:
             return children, []
 
         polygons = []
         dot_locations = []
-        for loc in report.locations:
+        for loc in effective_locations:
             if 'osm_id' not in loc:
                 continue
             lat, lon = loc.get('lat'), loc.get('lon')
@@ -1429,9 +1437,13 @@ def callbacks_map(app: Dash):
         Output('active-report-id', 'data', allow_duplicate=True),
         [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value'),
          Input('reports_dropdown_relevance_type', 'value'), Input('event_type_toggle', 'value')],
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
         prevent_initial_call='initial_duplicate',
     )
-    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                       seen_list, flagged_list, locs_dict):
         """
         Fires on interval and whenever any filter changes.
         Resets the active selection when the localization toggle changes
@@ -1451,8 +1463,17 @@ def callbacks_map(app: Dash):
         elif filter_event_type is None:
             filter_event_type = []
 
-        sidebar_content = get_sidebar_content(filter_platform=filter_platform, filter_event_type=filter_event_type,
-                                              filter_relevance_type=filter_relevance_type, loc_filter=event_type_toggle or 'all')
+        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+
+        sidebar_content = get_sidebar_content(
+            filter_platform=filter_platform,
+            filter_event_type=filter_event_type,
+            filter_relevance_type=filter_relevance_type,
+            loc_filter=event_type_toggle or 'all',
+            seen_ids=seen_ids,
+            flagged_authors=flagged_authors,
+            user_locs_map=user_locs_map,
+        )
 
         triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
         reset_selection = None if 'event_type_toggle' in triggered else dash.no_update
@@ -1615,53 +1636,36 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('report-dots-data', 'data', allow_duplicate=True),
         Input('interval_refresh_reports', 'n_intervals'),
+        State('user-seen', 'data'),
+        State('user-locations', 'data'),
         prevent_initial_call='initial_duplicate'
     )
-    def fetch_report_dots(_n):
+    def fetch_report_dots(_n, seen_list, locs_dict):
+        seen_ids, _, user_locs_map = _parse_stores(seen_list, None, locs_dict)
         engine, session = autoconnect_db()
         try:
-            reports = session.query(Report).all()
-            dots = []
-            for r in reports:
-                locs = r.locations or []
-                for loc in locs:
-                    if 'osm_id' not in loc:
-                        continue
-                    lat, lon = loc.get('lat'), loc.get('lon')
-                    if lat is None or lon is None:
-                        continue
-                    dots.append({
-                        'report_id': r.id,
-                        'lat': lat,
-                        'lon': lon,
-                        'seen': bool(r.seen),
-                        'location_name': loc.get('name') or loc.get('mention') or '',
-                        'location_display': loc.get('display_name') or '',
-                        'text': (r.text or '')[:300],
-                        'author': r.author or '',
-                        'platform': r.platform or '',
-                        'timestamp': r.timestamp.strftime('%H:%M %d.%m.%Y') if r.timestamp else '',
-                        'event_type': r.event_type or '',
-                        'relevance': r.relevance or '',
-                        'url': r.url or '',
-                    })
-            return dots
+            return _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
         finally:
             session.close()
             engine.dispose()
 
     # Mark a report as seen; immediately re-fetch dots so they vanish without waiting for interval
     @app.callback(
+        Output('user-seen', 'data'),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('reports_list', 'children', allow_duplicate=True),
         Input({'type': 'seen-button', 'index': ALL}, 'n_clicks'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         prevent_initial_call=True
     )
-    def toggle_report_seen(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def toggle_report_seen(n_clicks_list, seen_list, flagged_list, locs_dict,
+                           filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
         if not ctx.triggered:
             raise PreventUpdate
         if all(n is None or n == 0 for n in n_clicks_list):
@@ -1672,54 +1676,20 @@ def callbacks_map(app: Dash):
         if report_id is None:
             raise PreventUpdate
 
+        seen_list = list(seen_list or [])
+        if report_id in seen_list:
+            seen_list.remove(report_id)
+        else:
+            seen_list.append(report_id)
+
+        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+
         engine, session = autoconnect_db()
         try:
-            r = session.query(Report).filter(Report.id == report_id).first()
-            if r:
-                r.seen = not bool(r.seen)
-                session.commit()
-
-            # Re-fetch dots (all reports, seen flag included so JS can filter)
-            reports_all = session.query(Report).all()
-            dots = []
-            for rep in reports_all:
-                for loc in (rep.locations or []):
-                    if 'osm_id' not in loc:
-                        continue
-                    lat, lon = loc.get('lat'), loc.get('lon')
-                    if lat is None or lon is None:
-                        continue
-                    dots.append({
-                        'report_id': rep.id,
-                        'lat': lat,
-                        'lon': lon,
-                        'seen': bool(rep.seen),
-                        'text': (rep.text or '')[:300],
-                        'author': rep.author or '',
-                        'platform': rep.platform or '',
-                        'timestamp': rep.timestamp.strftime('%H:%M %d.%m.%Y') if rep.timestamp else '',
-                        'event_type': rep.event_type or '',
-                        'relevance': rep.relevance or '',
-                        'url': rep.url or '',
-                    })
-
-            # Re-render sidebar so the button reflects new state immediately
-            from app.layout.map.sidebar import get_sidebar_content
-            if isinstance(filter_relevance_type, str):
-                filter_relevance_type = [filter_relevance_type]
-            elif filter_relevance_type is None:
-                filter_relevance_type = []
-            if isinstance(filter_event_type, str):
-                filter_event_type = [filter_event_type]
-            elif filter_event_type is None:
-                filter_event_type = []
-            sidebar = get_sidebar_content(
-                filter_platform=filter_platform,
-                filter_event_type=filter_event_type,
-                filter_relevance_type=filter_relevance_type,
-                loc_filter=event_type_toggle or 'all',
-            )
-            return dots, sidebar
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+            return seen_list, dots, sidebar
         finally:
             session.close()
             engine.dispose()
@@ -1754,17 +1724,22 @@ def callbacks_map(app: Dash):
         Input('active-report-id', 'data'),
     )
 
-    # ---- Flag: toggle author_flagged for all posts by that author ----
+    # ---- Flag: toggle author flagging per user ----
     @app.callback(
+        Output('user-flagged', 'data'),
         Output('reports_list', 'children', allow_duplicate=True),
         Input({'type': 'flag-button', 'index': ALL}, 'n_clicks'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         prevent_initial_call=True,
     )
-    def toggle_author_flag(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def toggle_author_flag(n_clicks_list, seen_list, flagged_list, locs_dict,
+                           filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
         if not ctx.triggered:
             raise PreventUpdate
         if all(n is None or n == 0 for n in n_clicks_list):
@@ -1783,37 +1758,38 @@ def callbacks_map(app: Dash):
             r = session.query(Report).filter(Report.id == report_id).first()
             if r is None:
                 raise PreventUpdate
-            new_flagged = not bool(r.author_flagged)
-            author = r.author
-            if author:
-                session.query(Report).filter(Report.author == author).update({'author_flagged': new_flagged})
-            else:
-                r.author_flagged = new_flagged
-            session.commit()
+            author = r.author or ''
         finally:
             session.close()
             engine.dispose()
 
-        if isinstance(filter_relevance_type, str):
-            filter_relevance_type = [filter_relevance_type]
-        elif filter_relevance_type is None:
-            filter_relevance_type = []
-        if isinstance(filter_event_type, str):
-            filter_event_type = [filter_event_type]
-        elif filter_event_type is None:
-            filter_event_type = []
+        flagged_list = list(flagged_list or [])
+        if author:
+            if author in flagged_list:
+                flagged_list.remove(author)
+            else:
+                flagged_list.append(author)
 
-        from app.layout.map.sidebar import get_sidebar_content
-        return get_sidebar_content(
-            filter_platform=filter_platform,
-            filter_event_type=filter_event_type,
-            filter_relevance_type=filter_relevance_type,
-            loc_filter=event_type_toggle or 'all',
-        )
+        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+
+        engine, session = autoconnect_db()
+        try:
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+            return flagged_list, sidebar
+        finally:
+            session.close()
+            engine.dispose()
 
 
     # ---- Shared helpers for location callbacks ----
-    def _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+    def _parse_stores(seen_list, flagged_list, locs_dict):
+        seen_ids = set(seen_list or [])
+        flagged_authors = set(flagged_list or [])
+        user_locs_map = {int(k): v for k, v in (locs_dict or {}).items()}
+        return seen_ids, flagged_authors, user_locs_map
+
+    def _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, seen_ids=None, flagged_authors=None, user_locs_map=None):
         from app.layout.map.sidebar import get_sidebar_content
         if isinstance(filter_relevance_type, str):
             filter_relevance_type = [filter_relevance_type]
@@ -1828,13 +1804,17 @@ def callbacks_map(app: Dash):
             filter_event_type=filter_event_type,
             filter_relevance_type=filter_relevance_type,
             loc_filter=event_type_toggle or 'all',
+            seen_ids=seen_ids,
+            flagged_authors=flagged_authors,
+            user_locs_map=user_locs_map,
         )
 
-    def _build_dots(session):
+    def _build_dots(session, seen_ids=None, user_locs_map=None):
         reports = session.query(Report).all()
         dots = []
         for r in reports:
-            for loc in (r.locations or []):
+            effective_locs = (user_locs_map or {}).get(r.id, r.locations) or []
+            for loc in effective_locs:
                 if 'osm_id' not in loc:
                     continue
                 lat, lon = loc.get('lat'), loc.get('lon')
@@ -1844,7 +1824,7 @@ def callbacks_map(app: Dash):
                     'report_id': r.id,
                     'lat': lat,
                     'lon': lon,
-                    'seen': bool(r.seen),
+                    'seen': r.id in (seen_ids or set()),
                     'location_name': loc.get('name') or loc.get('mention') or '',
                     'location_display': loc.get('display_name') or '',
                     'text': (r.text or '')[:300],
@@ -1877,9 +1857,10 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('location-pick-mode', 'data', allow_duplicate=True),
         Input({'type': 'georeference-location-button', 'report': ALL, 'loc': ALL}, 'n_clicks'),
+        State('user-locations', 'data'),
         prevent_initial_call=True,
     )
-    def enter_georeference_mode(n_clicks_list):
+    def enter_georeference_mode(n_clicks_list, locs_dict):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -1889,13 +1870,13 @@ def callbacks_map(app: Dash):
             loc_index = id_dict.get('loc')
         except Exception:
             raise PreventUpdate
-        # fetch the label text to show in overlay
         engine, session = autoconnect_db()
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
+            effective_locs = (locs_dict or {}).get(str(report_id), r.locations if r else None) or []
             label = ''
-            if r and r.locations and 0 <= loc_index < len(r.locations):
-                loc = r.locations[loc_index]
+            if 0 <= loc_index < len(effective_locs):
+                loc = effective_locs[loc_index]
                 label = loc.get('name') or loc.get('mention') or ''
         finally:
             session.close()
@@ -1937,8 +1918,12 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('locations-changed', 'data', allow_duplicate=True),
+        Output('user-locations', 'data', allow_duplicate=True),
         Input('map', 'clickData'),
         State('location-pick-mode', 'data'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -1946,7 +1931,8 @@ def callbacks_map(app: Dash):
         State('locations-changed', 'data'),
         prevent_initial_call=True,
     )
-    def place_location(click_data, pick_mode, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+    def place_location(click_data, pick_mode, seen_list, flagged_list, locs_dict,
+                       filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
         if pick_mode is None or not click_data:
             raise PreventUpdate
         latlng = click_data.get('latlng', {})
@@ -1957,12 +1943,15 @@ def callbacks_map(app: Dash):
         report_id = pick_mode.get('report_id') if isinstance(pick_mode, dict) else pick_mode
         loc_index = pick_mode.get('loc_index') if isinstance(pick_mode, dict) else None
 
+        # Build user locations map, fall back to DB locations if no override exists
+        locs_dict = dict(locs_dict or {})
         engine, session = autoconnect_db()
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
             if r is None:
                 raise PreventUpdate
-            locs = list(r.locations or [])
+            current_locs = locs_dict.get(str(report_id), r.locations) or []
+            locs = list(current_locs)
             new_coords = {
                 'osm_id': f'manual_{lat:.6f}_{lon:.6f}',
                 'lat': lat,
@@ -1970,15 +1959,16 @@ def callbacks_map(app: Dash):
                 'name': f'{lat:.4f}, {lon:.4f}',
             }
             if loc_index is not None and 0 <= loc_index < len(locs):
-                # update existing slot, preserve mention
                 locs[loc_index] = {**locs[loc_index], **new_coords}
             else:
                 locs.append(new_coords)
-            r.locations = locs
-            session.commit()
-            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
-            dots = _build_dots(session)
-            return None, sidebar, dots, (loc_rev or 0) + 1
+            locs_dict[str(report_id)] = locs
+
+            seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
             engine.dispose()
@@ -1988,7 +1978,11 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('locations-changed', 'data', allow_duplicate=True),
+        Output('user-locations', 'data', allow_duplicate=True),
         Input({'type': 'remove-location-button', 'report': ALL, 'loc': ALL}, 'n_clicks'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -1996,7 +1990,8 @@ def callbacks_map(app: Dash):
         State('locations-changed', 'data'),
         prevent_initial_call=True,
     )
-    def remove_location(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+    def remove_location(n_clicks_list, seen_list, flagged_list, locs_dict,
+                        filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -2009,19 +2004,23 @@ def callbacks_map(app: Dash):
         if report_id is None or loc_index is None:
             raise PreventUpdate
 
+        locs_dict = dict(locs_dict or {})
         engine, session = autoconnect_db()
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
             if r is None:
                 raise PreventUpdate
-            locs = list(r.locations or [])
+            current_locs = locs_dict.get(str(report_id), r.locations) or []
+            locs = list(current_locs)
             if 0 <= loc_index < len(locs):
                 locs.pop(loc_index)
-                r.locations = locs
-                session.commit()
-            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
-            dots = _build_dots(session)
-            return sidebar, dots, (loc_rev or 0) + 1
+            locs_dict[str(report_id)] = locs
+
+            seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
             engine.dispose()
@@ -2031,7 +2030,11 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('locations-changed', 'data', allow_duplicate=True),
+        Output('user-locations', 'data', allow_duplicate=True),
         Input({'type': 'restore-locations-button', 'index': ALL}, 'n_clicks'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -2039,7 +2042,8 @@ def callbacks_map(app: Dash):
         State('locations-changed', 'data'),
         prevent_initial_call=True,
     )
-    def restore_original_locations(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+    def restore_original_locations(n_clicks_list, seen_list, flagged_list, locs_dict,
+                                   filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -2050,16 +2054,17 @@ def callbacks_map(app: Dash):
         if report_id is None:
             raise PreventUpdate
 
+        locs_dict = dict(locs_dict or {})
+        locs_dict.pop(str(report_id), None)
+
+        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+
         engine, session = autoconnect_db()
         try:
-            r = session.query(Report).filter(Report.id == report_id).first()
-            if r is None or r.original_locations is None:
-                raise PreventUpdate
-            r.locations = list(r.original_locations)
-            session.commit()
-            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)
-            dots = _build_dots(session)
-            return sidebar, dots, (loc_rev or 0) + 1
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
             engine.dispose()

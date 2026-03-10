@@ -277,5 +277,5 @@ TABLES = [
     Colormap,
     Style,
     Alert,
-    Report
+    Report,
 ]

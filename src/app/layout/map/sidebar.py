@@ -21,7 +21,7 @@ def get_platform_config(platform):
         config = json.load(f)
         return config[platform]
 
-def format_report(report: Report) -> html.Li:
+def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs_map=None) -> html.Li:
     platform = report.platform
     if platform.startswith('rss'):
         platform = 'rss'
@@ -33,13 +33,14 @@ def format_report(report: Report) -> html.Li:
     timestamp = report.timestamp.strftime('%H:%M %d.%m.%Y')
     event_type = report.event_type
     relevance = report.relevance
-    is_seen = bool(getattr(report, 'seen', False))
-    is_flagged = bool(getattr(report, 'author_flagged', False))
+    is_seen    = (report.id in seen_ids) if seen_ids else False
+    is_flagged = ((report.author or '') in flagged_authors) if flagged_authors else False
 
     author = getattr(report, 'author', '') or ''
-    original_locations = getattr(report, 'original_locations', None)
+    effective_locations = (user_locs_map or {}).get(report.id, report.locations)
+    has_user_override = user_locs_map is not None and report.id in user_locs_map
 
-    is_localized = any('osm_id' in loc for loc in (report.locations or []))
+    is_localized = any('osm_id' in loc for loc in (effective_locations or []))
 
     if platform == 'rss':
         feed_name = report.platform.split('/')[1]
@@ -236,7 +237,7 @@ def format_report(report: Report) -> html.Li:
                                 'background': '#e3f2fd',
                             },
                         )
-                        for i, loc in enumerate(report.locations or [])
+                        for i, loc in enumerate(effective_locations or [])
                     ],
                     html.Button(
                         '📍 Add',
@@ -261,7 +262,7 @@ def format_report(report: Report) -> html.Li:
                                 'background': '#f3e5f5', 'color': '#6a1b9a',
                             },
                         )]
-                        if original_locations is not None else []
+                        if has_user_override else []
                     ),
                 ],
                 style={'display': 'flex', 'flex-wrap': 'wrap', 'gap': '3px', 'align-items': 'center', 'margin-top': '5px'},
@@ -283,7 +284,7 @@ def format_report(report: Report) -> html.Li:
         }
     )
 
-def format_reports(reports: list, n=25) -> list:
+def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, user_locs_map=None) -> list:
     """
     Formats the reports into a list of html elements that can be displayed in the sidebar.
     """
@@ -302,13 +303,16 @@ def format_reports(reports: list, n=25) -> list:
             )
         ]
 
-    return [format_report(report) for report in reports[:n]]
+    return [format_report(report, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all'):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
     loc_filter: 'all' | 'localized' | 'unlocalized'
+    seen_ids: set of report ids marked as seen (from browser localStorage)
+    flagged_authors: set of author strings flagged (from browser localStorage)
+    user_locs_map: dict mapping report_id -> [loc, ...] (from browser localStorage)
     """
     engine, session = autoconnect_db()
     filter_arguments = []
@@ -335,21 +339,27 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
         query = query.filter(*filter_arguments)
 
     reports = query.order_by(Report.timestamp.desc()).all()
+
     session.close()
 
+    seen_ids = seen_ids or set()
+    flagged_authors = flagged_authors or set()
+    user_locs_map = user_locs_map or {}
+
     if loc_filter == 'all':
-        return format_reports(reports, n)
+        return format_reports(reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
 
     filtered_reports = []
     for report in reports:
-        has_location = any('osm_id' in e for e in (report.locations or []))
+        effective_locs = user_locs_map.get(report.id, report.locations)
+        has_location = any('osm_id' in e for e in (effective_locs or []))
         if loc_filter == 'localized' and not has_location:
             continue
         if loc_filter == 'unlocalized' and has_location:
             continue
         filtered_reports.append(report)
 
-    return format_reports(filtered_reports, n)
+    return format_reports(filtered_reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
 
 def get_sidebar_dropdown_platform_values():
     """
