@@ -655,8 +655,7 @@ def get_layout_map():
         dcc.Store(id='report-dots-data', data=[]), # all non-seen report dots: [{report_id, lat, lon, text, ...}]
         dcc.Store(id='active-report-id', data=None),  # id of selected report (its dots turn blue)
         dcc.Store(id='report-dots-tick', data=None),  # dummy store for clientside callback output
-        dcc.Store(id='location-pick-mode', data=None),  # None = off, int = report_id being picked for
-        dcc.Store(id='pick-overlay-tick', data=None),   # dummy output for pick-mode display clientside callback
+        dcc.Store(id='location-pick-mode', data=None),  # None = off, dict = {report_id, loc_index, mention}
         dcc.Store(id='locations-changed', data=0),      # incremented whenever a report's locations are edited
         html.Div(
             id='offscreen-indicators',
@@ -668,7 +667,7 @@ def get_layout_map():
         html.Div(
             id='location-pick-overlay',
             children=[
-                html.Span('📍 Click on the map to place a location', style={'font-size': '13px'}),
+                html.Span('📍 Click on the map to place a location', id='location-pick-overlay-text', style={'font-size': '13px'}),
                 html.Button(
                     'Cancel',
                     id='location-pick-cancel',
@@ -1857,7 +1856,7 @@ def callbacks_map(app: Dash):
                 })
         return dots
 
-    # ---- Location picking: enter pick mode ----
+    # ---- Location picking: enter pick mode (add new) ----
     @app.callback(
         Output('location-pick-mode', 'data'),
         Input({'type': 'pick-location-button', 'index': ALL}, 'n_clicks'),
@@ -1871,7 +1870,36 @@ def callbacks_map(app: Dash):
             report_id = json.loads(triggered_id_str).get('index')
         except Exception:
             raise PreventUpdate
-        return report_id
+        return {'report_id': report_id, 'loc_index': None, 'mention': None}
+
+    # ---- Location picking: enter pick mode (georeference existing) ----
+    @app.callback(
+        Output('location-pick-mode', 'data', allow_duplicate=True),
+        Input({'type': 'georeference-location-button', 'report': ALL, 'loc': ALL}, 'n_clicks'),
+        prevent_initial_call=True,
+    )
+    def enter_georeference_mode(n_clicks_list):
+        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        try:
+            id_dict = json.loads(triggered_id_str)
+            report_id = id_dict.get('report')
+            loc_index = id_dict.get('loc')
+        except Exception:
+            raise PreventUpdate
+        # fetch the label text to show in overlay
+        engine, session = autoconnect_db()
+        try:
+            r = session.query(Report).filter(Report.id == report_id).first()
+            label = ''
+            if r and r.locations and 0 <= loc_index < len(r.locations):
+                loc = r.locations[loc_index]
+                label = loc.get('name') or loc.get('mention') or ''
+        finally:
+            session.close()
+            engine.dispose()
+        return {'report_id': report_id, 'loc_index': loc_index, 'mention': label}
 
     # ---- Location picking: cancel pick mode ----
     @app.callback(
@@ -1882,20 +1910,25 @@ def callbacks_map(app: Dash):
     def cancel_pick_mode(_n):
         return None
 
-    # ---- Location picking: show/hide overlay + crosshair cursor (clientside) ----
-    app.clientside_callback(
-        """
-        function(pick_mode) {
-            var overlay = document.getElementById('location-pick-overlay');
-            var mapEl = document.getElementById('map');
-            if (overlay) overlay.style.display = (pick_mode !== null && pick_mode !== undefined) ? 'flex' : 'none';
-            if (mapEl) mapEl.style.cursor = (pick_mode !== null && pick_mode !== undefined) ? 'crosshair' : '';
-            return null;
-        }
-        """,
-        Output('pick-overlay-tick', 'data'),
+    # ---- Location picking: show/hide overlay (server-side) ----
+    _overlay_base_style = {
+        'position': 'fixed', 'top': '12px', 'left': '50%', 'transform': 'translateX(-50%)',
+        'zIndex': 1000, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
+        'padding': '8px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
+        'align-items': 'center', 'gap': '8px', 'white-space': 'nowrap',
+    }
+
+    @app.callback(
+        Output('location-pick-overlay', 'style'),
+        Output('location-pick-overlay-text', 'children'),
         Input('location-pick-mode', 'data'),
     )
+    def update_pick_overlay(pick_mode):
+        if not pick_mode:
+            return {**_overlay_base_style, 'display': 'none'}, dash.no_update
+        mention = pick_mode.get('mention') if isinstance(pick_mode, dict) else None
+        text = f'Click on the map to georeference "{mention}"' if mention else 'Click on the map to place a location'
+        return {**_overlay_base_style, 'display': 'flex'}, text
 
     # ---- Location picking: map click → save location ----
     @app.callback(
@@ -1920,18 +1953,26 @@ def callbacks_map(app: Dash):
         if lat is None or lon is None:
             raise PreventUpdate
 
+        report_id = pick_mode.get('report_id') if isinstance(pick_mode, dict) else pick_mode
+        loc_index = pick_mode.get('loc_index') if isinstance(pick_mode, dict) else None
+
         engine, session = autoconnect_db()
         try:
-            r = session.query(Report).filter(Report.id == pick_mode).first()
+            r = session.query(Report).filter(Report.id == report_id).first()
             if r is None:
                 raise PreventUpdate
             locs = list(r.locations or [])
-            locs.append({
+            new_coords = {
                 'osm_id': f'manual_{lat:.6f}_{lon:.6f}',
                 'lat': lat,
                 'lon': lon,
                 'name': f'{lat:.4f}, {lon:.4f}',
-            })
+            }
+            if loc_index is not None and 0 <= loc_index < len(locs):
+                # update existing slot, preserve mention
+                locs[loc_index] = {**locs[loc_index], **new_coords}
+            else:
+                locs.append(new_coords)
             r.locations = locs
             session.commit()
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle)

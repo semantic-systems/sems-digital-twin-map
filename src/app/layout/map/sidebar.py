@@ -171,14 +171,17 @@ def format_report(report: Report) -> html.Li:
                     *[
                         html.Span(
                             [
-                                html.Span(
-                                    '◌ ' if 'osm_id' not in loc else '',
-                                    title='Surface form only — not georeferenced',
-                                    style={'opacity': '0.6'},
-                                ) if 'osm_id' not in loc else None,
-                                html.Span(
-                                    loc.get('name') or loc.get('mention') or f"{loc.get('lat', 0):.4f}, {loc.get('lon', 0):.4f}",
-                                    style={'font-style': 'italic' if 'osm_id' not in loc else 'normal'},
+                                html.Button(
+                                    ['◌ ', html.I(loc.get('mention') or loc.get('name') or '')],
+                                    id={'type': 'georeference-location-button', 'report': report.id, 'loc': i},
+                                    n_clicks=0,
+                                    title='Click to georeference this location on the map',
+                                    style={
+                                        'font-size': '9px', 'padding': '0', 'border': 'none',
+                                        'background': 'transparent', 'cursor': 'pointer',
+                                        'color': '#757575', 'font-style': 'italic',
+                                        'text-decoration': 'underline dotted',
+                                    },
                                 ),
                                 html.Button(
                                     '✕',
@@ -192,14 +195,43 @@ def format_report(report: Report) -> html.Li:
                                     },
                                 ),
                             ],
-                            title='Surface form only — not georeferenced' if 'osm_id' not in loc else loc.get('display_name') or loc.get('name') or '',
                             style={
                                 'font-size': '9px', 'border-radius': '3px',
                                 'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
                                 'display': 'inline-flex', 'align-items': 'center',
-                                'background': '#f5f5f5' if 'osm_id' not in loc else '#e3f2fd',
-                                'border': '1px dashed #bdbdbd' if 'osm_id' not in loc else 'none',
-                                'color': '#757575' if 'osm_id' not in loc else 'inherit',
+                                'background': '#f5f5f5', 'border': '1px dashed #bdbdbd', 'color': '#757575',
+                            },
+                        ) if 'osm_id' not in loc else html.Span(
+                            [
+                                html.Button(
+                                    loc.get('mention') or loc.get('name') or f"{loc.get('lat', 0):.4f}, {loc.get('lon', 0):.4f}",
+                                    id={'type': 'georeference-location-button', 'report': report.id, 'loc': i},
+                                    n_clicks=0,
+                                    title='Click to reassign location on the map',
+                                    style={
+                                        'font-size': '9px', 'padding': '0', 'border': 'none',
+                                        'background': 'transparent', 'cursor': 'pointer',
+                                        'color': 'inherit', 'text-decoration': 'underline dotted',
+                                    },
+                                ),
+                                html.Button(
+                                    '✕',
+                                    id={'type': 'remove-location-button', 'report': report.id, 'loc': i},
+                                    n_clicks=0,
+                                    title='Remove location',
+                                    style={
+                                        'font-size': '9px', 'padding': '0 3px', 'margin-left': '3px',
+                                        'cursor': 'pointer', 'border': 'none', 'background': 'transparent',
+                                        'color': '#888', 'line-height': '1',
+                                    },
+                                ),
+                            ],
+                            title=loc.get('display_name') or loc.get('name') or '',
+                            style={
+                                'font-size': '9px', 'border-radius': '3px',
+                                'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
+                                'display': 'inline-flex', 'align-items': 'center',
+                                'background': '#e3f2fd',
                             },
                         )
                         for i, loc in enumerate(report.locations or [])
