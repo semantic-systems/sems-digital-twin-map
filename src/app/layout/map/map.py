@@ -1679,8 +1679,8 @@ def callbacks_map(app: Dash):
                 r.seen = not bool(r.seen)
                 session.commit()
 
-            # Re-fetch dots (only unseen)
-            reports_all = session.query(Report).filter(Report.seen == False).all()
+            # Re-fetch dots (all reports, seen flag included so JS can filter)
+            reports_all = session.query(Report).all()
             dots = []
             for rep in reports_all:
                 for loc in (rep.locations or []):
@@ -1693,6 +1693,7 @@ def callbacks_map(app: Dash):
                         'report_id': rep.id,
                         'lat': lat,
                         'lon': lon,
+                        'seen': bool(rep.seen),
                         'text': (rep.text or '')[:300],
                         'author': rep.author or '',
                         'platform': rep.platform or '',
