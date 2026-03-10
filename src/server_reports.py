@@ -235,6 +235,7 @@ event_mapping = {
     'http://rescue-mate.de/resource/requests_or_needs': 'Bedarfe & Anfragen',
     'http://rescue-mate.de/resource/response_efforts': 'Einsatzmaßnahmen',
     'http://rescue-mate.de/resource/sympathy_and_support': 'Mitgefühl & Unterstützung',
+    'http://rescue-mate.de/resource/other_emergency': 'Sonstiges',
 }
 
 relevance_mapping = {
