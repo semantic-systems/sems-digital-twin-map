@@ -32,6 +32,7 @@ def format_report(report: Report) -> html.Li:
     event_type = report.event_type
     relevance = report.relevance
     is_seen = bool(getattr(report, 'seen', False))
+    is_flagged = bool(getattr(report, 'author_flagged', False))
 
     author = getattr(report, 'author', '') or ''
 
@@ -143,6 +144,24 @@ def format_report(report: Report) -> html.Li:
                         n_clicks=0,
                         style=seen_btn_style,
                     ),
+                    html.Button(
+                        '🚩' if is_flagged else '🏳',
+                        id={'type': 'flag-button', 'index': report.id},
+                        title='Unflag author' if is_flagged else 'Flag author',
+                        n_clicks=0,
+                        style={
+                            'font-size': '11px',
+                            'padding': '2px 7px',
+                            'cursor': 'pointer',
+                            'border-radius': '4px',
+                            'transition': 'all 0.15s',
+                            'white-space': 'nowrap',
+                            'border': '1px solid #e65100' if is_flagged else '1px solid #ddd',
+                            'background': '#fff3e0' if is_flagged else '#fafafa',
+                            'color': '#e65100' if is_flagged else '#888',
+                            'font-weight': 'bold' if is_flagged else 'normal',
+                        },
+                    ),
                 ],
                 style={'display': 'flex', 'gap': '8px', 'align-items': 'center', 'margin-top': '4px'}
             )
@@ -159,7 +178,7 @@ def format_report(report: Report) -> html.Li:
             'background': '#fafafa' if not is_seen else '#f5f5f5',
             'opacity': str(entry_opacity),
             'transition': 'opacity 0.2s',
-            'outline': '1px dashed #bdbdbd' if not is_localized else 'none',
+            'outline': '2px solid #e65100' if is_flagged else ('1px dashed #bdbdbd' if not is_localized else 'none'),
         }
     )
 

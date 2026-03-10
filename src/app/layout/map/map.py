@@ -1726,6 +1726,60 @@ def callbacks_map(app: Dash):
         Input('active-report-id', 'data'),
     )
 
+    # ---- Flag: toggle author_flagged for all posts by that author ----
+    @app.callback(
+        Output('reports_list', 'children', allow_duplicate=True),
+        Input({'type': 'flag-button', 'index': ALL}, 'n_clicks'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        prevent_initial_call=True,
+    )
+    def toggle_author_flag(n_clicks_list, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+        if not ctx.triggered:
+            raise PreventUpdate
+        if all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
 
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        try:
+            report_id = json.loads(triggered_id_str).get('index')
+        except Exception:
+            raise PreventUpdate
+        if report_id is None:
+            raise PreventUpdate
 
+        engine, session = autoconnect_db()
+        try:
+            r = session.query(Report).filter(Report.id == report_id).first()
+            if r is None:
+                raise PreventUpdate
+            new_flagged = not bool(r.author_flagged)
+            author = r.author
+            if author:
+                session.query(Report).filter(Report.author == author).update({'author_flagged': new_flagged})
+            else:
+                r.author_flagged = new_flagged
+            session.commit()
+        finally:
+            session.close()
+            engine.dispose()
+
+        if isinstance(filter_relevance_type, str):
+            filter_relevance_type = [filter_relevance_type]
+        elif filter_relevance_type is None:
+            filter_relevance_type = []
+        if isinstance(filter_event_type, str):
+            filter_event_type = [filter_event_type]
+        elif filter_event_type is None:
+            filter_event_type = []
+
+        from app.layout.map.sidebar import get_sidebar_content
+        return get_sidebar_content(
+            filter_platform=filter_platform,
+            filter_event_type=filter_event_type,
+            filter_relevance_type=filter_relevance_type,
+            loc_filter=event_type_toggle or 'all',
+        )
 
