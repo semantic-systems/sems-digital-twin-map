@@ -1,5 +1,6 @@
 import math
 import time
+import requests
 from datetime import date, timedelta, datetime
 from datetime import datetime
 import json
@@ -670,26 +671,71 @@ def get_layout_map():
         html.Div(
             id='location-pick-overlay',
             children=[
-                html.Span('📍 Click on the map to place a location', id='location-pick-overlay-text', style={'font-size': '13px'}),
-                html.Button(
-                    'Cancel',
-                    id='location-pick-cancel',
-                    n_clicks=0,
-                    style={
-                        'margin-left': '12px', 'font-size': '12px', 'padding': '3px 10px',
-                        'border-radius': '4px', 'border': '1px solid #fff', 'background': 'rgba(255,255,255,0.2)',
-                        'color': '#fff', 'cursor': 'pointer',
-                    },
+                html.Div(
+                    children=[
+                        html.Span('📍 Click on the map to place a location', id='location-pick-overlay-text', style={'font-size': '13px'}),
+                        html.Button(
+                            'Cancel',
+                            id='location-pick-cancel',
+                            n_clicks=0,
+                            style={
+                                'font-size': '12px', 'padding': '3px 10px',
+                                'border-radius': '4px', 'border': '1px solid rgba(255,255,255,0.5)',
+                                'background': 'rgba(255,255,255,0.15)', 'color': '#fff', 'cursor': 'pointer',
+                            },
+                        ),
+                    ],
+                    style={'display': 'flex', 'align-items': 'center', 'gap': '10px'},
+                ),
+                html.Div(
+                    children=[
+                        html.Span('or', style={'font-size': '11px', 'opacity': '0.75'}),
+                        dcc.Input(
+                            id='location-search-input',
+                            type='text',
+                            placeholder='Search OpenStreetMap…',
+                            n_submit=0,
+                            value='',
+                            debounce=False,
+                            style={
+                                'font-size': '11px', 'padding': '3px 8px', 'border-radius': '4px',
+                                'border': 'none', 'outline': 'none', 'width': '210px', 'color': '#333',
+                            },
+                        ),
+                        html.Button(
+                            '🔍',
+                            id='location-search-button',
+                            n_clicks=0,
+                            style={
+                                'font-size': '12px', 'padding': '3px 8px', 'border-radius': '4px',
+                                'border': '1px solid rgba(255,255,255,0.4)', 'background': 'rgba(255,255,255,0.15)',
+                                'color': '#fff', 'cursor': 'pointer',
+                            },
+                        ),
+                    ],
+                    style={'display': 'flex', 'align-items': 'center', 'gap': '6px', 'margin-top': '7px'},
                 ),
             ],
             style={
-                'display': 'none',  # shown via clientside callback
+                'display': 'none',
                 'position': 'fixed', 'top': '12px', 'left': '50%', 'transform': 'translateX(-50%)',
                 'zIndex': 1000, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
-                'padding': '8px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
-                'align-items': 'center', 'gap': '8px', 'white-space': 'nowrap',
+                'padding': '10px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
+                'flex-direction': 'column', 'align-items': 'flex-start', 'gap': '0',
             },
         ),
+        html.Div(
+            id='location-search-results',
+            children=[],
+            style={
+                'display': 'none',
+                'position': 'fixed', 'top': '94px', 'left': '50%', 'transform': 'translateX(-50%)',
+                'zIndex': 1001, 'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
+                'box-shadow': '0 4px 16px rgba(0,0,0,0.15)', 'width': '400px', 'max-width': '90vw',
+                'max-height': '240px', 'overflow-y': 'auto', 'pointer-events': 'auto',
+            },
+        ),
+        dcc.Store(id='location-search-data', data=[]),
     ]
     
     return layout_map
@@ -1158,7 +1204,8 @@ def callbacks_map(app: Dash):
 
                     for idx_part, part in enumerate(polygons):
                         for idx_ring, ring in enumerate(part):
-                            for lon, lat in ring:
+                            for coord in ring:
+                                lon, lat = coord[0], coord[1]
                                 if lat > max_lat:
                                     max_lat = lat
                                 if lat < min_lat:
@@ -1168,7 +1215,7 @@ def callbacks_map(app: Dash):
                                 if lon < min_lon:
                                     min_lon = lon
                             polygon = dl.Polygon(
-                                positions=[[lat, lon] for lon, lat in ring],
+                                positions=[[coord[1], coord[0]] for coord in ring],
                                 color="blue",
                                 fill=True,
                                 fillOpacity=0.15,
@@ -1180,7 +1227,8 @@ def callbacks_map(app: Dash):
                     lines = []
                     if polygon_data["type"] == "LineString":
                         lines = [polygon_data["coordinates"]]
-                        for lon, lat in polygon_data["coordinates"]:
+                        for coord in polygon_data["coordinates"]:
+                            lon, lat = coord[0], coord[1]
                             if lat > max_lat:
                                 max_lat = lat
                             if lat < min_lat:
@@ -1192,7 +1240,8 @@ def callbacks_map(app: Dash):
                     elif polygon_data["type"] == "MultiLineString":
                         lines = polygon_data["coordinates"]
                         for line in polygon_data["coordinates"]:
-                            for lon, lat in line:
+                            for coord in line:
+                                lon, lat = coord[0], coord[1]
                                 if lat > max_lat:
                                     max_lat = lat
                                 if lat < min_lat:
@@ -1204,13 +1253,14 @@ def callbacks_map(app: Dash):
 
                     for idx, line in enumerate(lines):
                         polyline = dl.Polyline(
-                            positions=[[lat, lon] for lon, lat in line],
+                            positions=[[coord[1], coord[0]] for coord in line],
                             color="#00008B",  # DarkBlue hex color
                             weight=6,  # Thicker line, default is usually 3
                             dashArray=None,  # solid line (remove dashes if you want solid)
                             id=f'tmp_line_{identifier}_{idx}'
                         )
-                        for lon, lat in line:
+                        for coord in line:
+                            lon, lat = coord[0], coord[1]
                             if lat > max_lat:
                                 max_lat = lat
                             if lat < min_lat:
@@ -1892,25 +1942,155 @@ def callbacks_map(app: Dash):
     def cancel_pick_mode(_n):
         return None
 
+    # ---- OSM search while in pick mode ----
+    @app.callback(
+        Output('location-search-data', 'data', allow_duplicate=True),
+        Output('location-search-results', 'children'),
+        Output('location-search-results', 'style', allow_duplicate=True),
+        Input('location-search-button', 'n_clicks'),
+        Input('location-search-input', 'n_submit'),
+        State('location-search-input', 'value'),
+        State('location-pick-mode', 'data'),
+        prevent_initial_call=True,
+    )
+    def search_osm_location(_btn, _submit, query, pick_mode):
+        if not pick_mode or not query or not query.strip():
+            raise PreventUpdate
+        try:
+            resp = requests.get(
+                'https://nominatim.openstreetmap.org/search',
+                params={'q': query.strip(), 'format': 'json', 'limit': 7, 'polygon_geojson': 1},
+                headers={'User-Agent': 'sems-digital-twin-map/1.0'},
+                timeout=5,
+            )
+            results = resp.json()
+        except Exception:
+            results = []
+        if not results:
+            items = [html.Div('No results found.', style={'padding': '8px 12px', 'font-size': '11px', 'color': '#888'})]
+            show_style = {**_results_hidden_style, 'display': 'block'}
+            return [], items, show_style
+        items = [
+            html.Button(
+                r.get('display_name', '')[:90],
+                id={'type': 'osm-result-button', 'index': i},
+                n_clicks=0,
+                style={
+                    'display': 'block', 'width': '100%', 'text-align': 'left',
+                    'padding': '7px 12px', 'border': 'none', 'border-bottom': '1px solid #f0f0f0',
+                    'background': 'none', 'cursor': 'pointer', 'font-size': '11px', 'color': '#333',
+                },
+            )
+            for i, r in enumerate(results)
+        ]
+        show_style = {**_results_hidden_style, 'display': 'block'}
+        return results, items, show_style
+
+    # ---- Place location from OSM search result ----
+    @app.callback(
+        Output('location-pick-mode', 'data', allow_duplicate=True),
+        Output('reports_list', 'children', allow_duplicate=True),
+        Output('report-dots-data', 'data', allow_duplicate=True),
+        Output('locations-changed', 'data', allow_duplicate=True),
+        Output('user-locations', 'data', allow_duplicate=True),
+        Input({'type': 'osm-result-button', 'index': ALL}, 'n_clicks'),
+        State('location-search-data', 'data'),
+        State('location-pick-mode', 'data'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        State('locations-changed', 'data'),
+        prevent_initial_call=True,
+    )
+    def place_location_from_search(n_clicks_list, search_data, pick_mode, seen_list, flagged_list, locs_dict,
+                                   filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
+        if not pick_mode or not search_data:
+            raise PreventUpdate
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        try:
+            result_index = json.loads(triggered_id_str).get('index')
+        except Exception:
+            raise PreventUpdate
+        if result_index is None or result_index >= len(search_data):
+            raise PreventUpdate
+
+        selected = search_data[result_index]
+        report_id = pick_mode.get('report_id') if isinstance(pick_mode, dict) else pick_mode
+        loc_index = pick_mode.get('loc_index') if isinstance(pick_mode, dict) else None
+
+        osm_type = selected.get('osm_type', 'node')
+        osm_id = selected.get('osm_id')
+        polygon = selected.get('geojson') or None
+        new_loc = {
+            'osm_id': f"{osm_type[0]}{osm_id}",
+            'lat': float(selected['lat']),
+            'lon': float(selected['lon']),
+            'name': selected.get('display_name', '').split(',')[0].strip(),
+            'display_name': selected.get('display_name', ''),
+            'polygon': polygon,
+        }
+        if isinstance(pick_mode, dict) and pick_mode.get('mention'):
+            new_loc['mention'] = pick_mode['mention']
+
+        locs_dict = dict(locs_dict or {})
+        engine, session = autoconnect_db()
+        try:
+            r = session.query(Report).filter(Report.id == report_id).first()
+            if r is None:
+                raise PreventUpdate
+            current_locs = locs_dict.get(str(report_id), r.locations) or []
+            locs = list(current_locs)
+            if loc_index is not None and 0 <= loc_index < len(locs):
+                locs[loc_index] = {**locs[loc_index], **new_loc}
+            else:
+                locs.append(new_loc)
+            locs_dict[str(report_id)] = locs
+
+            seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
+        finally:
+            session.close()
+            engine.dispose()
+
     # ---- Location picking: show/hide overlay (server-side) ----
     _overlay_base_style = {
         'position': 'fixed', 'top': '12px', 'left': '50%', 'transform': 'translateX(-50%)',
         'zIndex': 1000, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
-        'padding': '8px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
-        'align-items': 'center', 'gap': '8px', 'white-space': 'nowrap',
+        'padding': '10px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
+        'flex-direction': 'column', 'align-items': 'flex-start', 'gap': '0',
+    }
+    _results_hidden_style = {
+        'display': 'none',
+        'position': 'fixed', 'top': '94px', 'left': '50%', 'transform': 'translateX(-50%)',
+        'zIndex': 1001, 'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
+        'box-shadow': '0 4px 16px rgba(0,0,0,0.15)', 'width': '400px', 'max-width': '90vw',
+        'max-height': '240px', 'overflow-y': 'auto', 'pointer-events': 'auto',
     }
 
     @app.callback(
         Output('location-pick-overlay', 'style'),
         Output('location-pick-overlay-text', 'children'),
+        Output('location-search-input', 'value'),
+        Output('location-search-results', 'style', allow_duplicate=True),
+        Output('location-search-data', 'data', allow_duplicate=True),
         Input('location-pick-mode', 'data'),
+        prevent_initial_call=True,
     )
     def update_pick_overlay(pick_mode):
         if not pick_mode:
-            return {**_overlay_base_style, 'display': 'none'}, dash.no_update
+            return {**_overlay_base_style, 'display': 'none'}, dash.no_update, '', _results_hidden_style, []
         mention = pick_mode.get('mention') if isinstance(pick_mode, dict) else None
         text = f'Click on the map to georeference "{mention}"' if mention else 'Click on the map to place a location'
-        return {**_overlay_base_style, 'display': 'flex'}, text
+        return {**_overlay_base_style, 'display': 'flex'}, text, dash.no_update, dash.no_update, dash.no_update
 
     # ---- Location picking: map click → save location ----
     @app.callback(
