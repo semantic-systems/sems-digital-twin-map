@@ -30,7 +30,6 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     text = report.text.replace('\n', ' ')
 
     platform_name = platform_config['name']
-    color = platform_config['color']
     timestamp = report.timestamp.strftime('%H:%M %d.%m.%Y')
     event_type = report.event_type
     relevance = report.relevance
@@ -272,17 +271,17 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
         ],
         style={
             'margin-bottom': '8px',
-            'border-left': f'4px solid {color}',
+            'border-left': '4px solid ' + ('#43a047' if is_localized else ('#e65100' if has_pending else '#bdbdbd')),
             'border-right': f'4px solid {bg_color}',
             'border-radius': '4px',
             'padding': '6px 6px 4px 8px',
             'display': 'flex',
             'flex-direction': 'column',
             'alignItems': 'flex-start',
-            'background': '#f5f5f5' if is_seen else ('#e8f5e9' if is_localized else ('#fff3e0' if has_pending else '#fafafa')),
+            'background': '#fafafa',
             'opacity': str(entry_opacity),
             'transition': 'opacity 0.2s',
-            'outline': '2px solid #e65100' if is_flagged else ('1px dashed #ef6c00' if has_pending else ('1px dashed #bdbdbd' if not is_localized else 'none')),
+            'outline': '2px solid #e65100' if is_flagged else 'none',
         }
     )
 
