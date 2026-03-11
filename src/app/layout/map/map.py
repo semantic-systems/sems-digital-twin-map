@@ -1706,15 +1706,24 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('report-dots-data', 'data', allow_duplicate=True),
         Input('interval_refresh_reports', 'n_intervals'),
+        Input('reports_dropdown_platform', 'value'),
+        Input('reports_dropdown_event_type', 'value'),
+        Input('reports_dropdown_relevance_type', 'value'),
+        Input('event_type_toggle', 'value'),
         State('user-seen', 'data'),
         State('user-locations', 'data'),
         prevent_initial_call='initial_duplicate'
     )
-    def fetch_report_dots(_n, seen_list, locs_dict):
+    def fetch_report_dots(_n, filter_platform, filter_event_type, filter_relevance_type, loc_filter,
+                          seen_list, locs_dict):
         seen_ids, _, user_locs_map = _parse_stores(seen_list, None, locs_dict)
         engine, session = autoconnect_db()
         try:
-            return _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            return _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+                                filter_platform=filter_platform,
+                                filter_event_type=filter_event_type or [],
+                                filter_relevance_type=filter_relevance_type or [],
+                                loc_filter=loc_filter or 'all')
         finally:
             session.close()
             engine.dispose()
@@ -1756,7 +1765,11 @@ def callbacks_map(app: Dash):
 
         engine, session = autoconnect_db()
         try:
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+                                filter_platform=filter_platform,
+                                filter_event_type=filter_event_type or [],
+                                filter_relevance_type=filter_relevance_type or [],
+                                loc_filter=event_type_toggle or 'all')
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
             return seen_list, dots, sidebar
@@ -1883,13 +1896,32 @@ def callbacks_map(app: Dash):
             user_locs_map=user_locs_map,
         )
 
-    def _build_dots(session, seen_ids=None, user_locs_map=None):
+    def _build_dots(session, seen_ids=None, user_locs_map=None,
+                    filter_platform=None, filter_event_type=None,
+                    filter_relevance_type=None, loc_filter='all'):
         q = session.query(Report).filter(Report.timestamp <= datetime.utcnow())
         if os.environ.get('DEMO_MODE') == '1':
             q = q.filter(Report.identifier.like('demo-%'))
+        if filter_platform:
+            q = q.filter(Report.platform.like(f'{filter_platform}%'))
+        if filter_event_type:
+            q = q.filter(Report.event_type.in_(filter_event_type))
+        if filter_relevance_type:
+            q = q.filter(Report.relevance.in_(filter_relevance_type))
         reports = q.all()
         dots = []
         for r in reports:
+            # location filter
+            if loc_filter != 'all':
+                effective = (user_locs_map or {}).get(r.id, r.locations) or []
+                is_localized = any('osm_id' in l for l in effective)
+                has_pending  = not is_localized and bool(effective)
+                if loc_filter == 'localized' and not is_localized:
+                    continue
+                if loc_filter == 'pending' and not has_pending:
+                    continue
+                if loc_filter == 'unlocalized' and (is_localized or has_pending):
+                    continue
             effective_locs = (user_locs_map or {}).get(r.id, r.locations) or []
             for loc in effective_locs:
                 if 'osm_id' not in loc:
@@ -2083,7 +2115,11 @@ def callbacks_map(app: Dash):
             seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+                                filter_platform=filter_platform,
+                                filter_event_type=filter_event_type or [],
+                                filter_relevance_type=filter_relevance_type or [],
+                                loc_filter=event_type_toggle or 'all')
             return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
@@ -2175,7 +2211,11 @@ def callbacks_map(app: Dash):
             seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+                                filter_platform=filter_platform,
+                                filter_event_type=filter_event_type or [],
+                                filter_relevance_type=filter_relevance_type or [],
+                                loc_filter=event_type_toggle or 'all')
             return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
@@ -2227,7 +2267,11 @@ def callbacks_map(app: Dash):
             seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+                                filter_platform=filter_platform,
+                                filter_event_type=filter_event_type or [],
+                                filter_relevance_type=filter_relevance_type or [],
+                                loc_filter=event_type_toggle or 'all')
             return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
@@ -2271,7 +2315,11 @@ def callbacks_map(app: Dash):
         try:
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map)
+            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+                                filter_platform=filter_platform,
+                                filter_event_type=filter_event_type or [],
+                                filter_relevance_type=filter_relevance_type or [],
+                                loc_filter=event_type_toggle or 'all')
             return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()

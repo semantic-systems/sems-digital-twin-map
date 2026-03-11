@@ -50,10 +50,10 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
         descriptor_text = f'{platform_name} · {event_type} · {relevance} · {timestamp}'
 
     relevance_color_map = {
-        "none": "#e0e0e0",
-        "low": "#ffcccc",
-        "medium": "#ff8a80",
-        "high": "#cc0000",
+        "none": "#bdbdbd",
+        "low": "#ffd54f",
+        "medium": "#ff7043",
+        "high": "#b71c1c",
     }
     bg_color = relevance_color_map.get(relevance, "#e0e0e0")
 
