@@ -143,6 +143,22 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         }
                     ),
                     html.Button(
+                        '⊙',
+                        id={'type': 'center-button', 'index': report.id},
+                        title='Center map on this report',
+                        n_clicks=0,
+                        disabled=not is_localized,
+                        style={
+                            'font-size': '11px',
+                            'padding': '2px 7px',
+                            'cursor': 'pointer' if is_localized else 'default',
+                            'border-radius': '4px',
+                            'border': '1px solid #90caf9' if is_localized else '1px solid #eee',
+                            'background': '#e3f2fd' if is_localized else '#f5f5f5',
+                            'color': '#1565c0' if is_localized else '#bdbdbd',
+                        },
+                    ),
+                    html.Button(
                         seen_btn_label,
                         id={'type': 'seen-button', 'index': report.id},
                         title=seen_btn_title,

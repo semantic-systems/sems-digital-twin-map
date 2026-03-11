@@ -1742,6 +1742,39 @@ def callbacks_map(app: Dash):
             session.close()
             engine.dispose()
 
+    # Fit the map to all georeferenced locations of the clicked report
+    @app.callback(
+        Output('map', 'bounds', allow_duplicate=True),
+        Input({'type': 'center-button', 'index': ALL}, 'n_clicks'),
+        State('user-locations', 'data'),
+        prevent_initial_call=True,
+    )
+    def center_map_on_report(n_clicks_list, locs_dict):
+        if not any(n for n in (n_clicks_list or []) if n):
+            raise PreventUpdate
+        triggered = ctx.triggered_id
+        if not triggered:
+            raise PreventUpdate
+        report_id = triggered['index']
+        user_locs_map = (locs_dict or {})
+        # look up locations: user override first, then DB
+        locs = user_locs_map.get(str(report_id)) or user_locs_map.get(report_id)
+        if locs is None:
+            engine, session = autoconnect_db()
+            try:
+                report = session.query(Report).filter(Report.id == report_id).first()
+                locs = report.locations if report else []
+            finally:
+                session.close()
+                engine.dispose()
+        georef = [loc for loc in (locs or []) if 'osm_id' in loc and loc.get('lat') and loc.get('lon')]
+        if not georef:
+            raise PreventUpdate
+        lats = [loc['lat'] for loc in georef]
+        lons = [loc['lon'] for loc in georef]
+        pad = 0.01  # ~1 km padding so a single point doesn't zoom to maximum
+        return [[min(lats) - pad, min(lons) - pad], [max(lats) + pad, max(lons) + pad]]
+
     # Mark a report as seen; immediately re-fetch dots so they vanish without waiting for interval
     @app.callback(
         Output('user-seen', 'data'),
