@@ -512,9 +512,9 @@ def get_layout_map():
                             id='event_type_toggle',
                             options=[
                                 {'label': 'All', 'value': 'all'},
-                                {'label': '📍', 'value': 'localized', 'title': 'Localized'},
-                                {'label': '◎', 'value': 'pending', 'title': 'Pending'},
-                                {'label': '∅', 'value': 'unlocalized', 'title': 'No location'},
+                                {'label': '📍 Located', 'value': 'localized'},
+                                {'label': '◎ Pending', 'value': 'pending'},
+                                {'label': '∅ None', 'value': 'unlocalized'},
                             ],
                             value='all',
                             inline=True,
