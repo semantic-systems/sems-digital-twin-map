@@ -1762,12 +1762,14 @@ def callbacks_map(app: Dash):
             session.close()
             engine.dispose()
 
-    # Clientside: push new dot data + active report id to JS, trigger re-render
+    # Clientside: push new dot data + active report id + seen/flagged stores to JS, trigger re-render
     app.clientside_callback(
         """
-        function(dots, activeId) {
+        function(dots, activeId, seenList, flaggedList) {
             window._reportDotsData = dots || [];
             window._activeReportId = activeId;
+            window._seenIds = seenList || [];
+            window._flaggedAuthors = flaggedList || [];
             if (window.updateReportDots) window.updateReportDots();
 
             // Highlight active report entry in sidebar
@@ -1790,6 +1792,8 @@ def callbacks_map(app: Dash):
         Output('report-dots-tick', 'data'),
         Input('report-dots-data', 'data'),
         Input('active-report-id', 'data'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
     )
 
     # ---- Flag: toggle author flagging per user ----
