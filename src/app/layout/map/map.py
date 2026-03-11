@@ -552,21 +552,16 @@ def get_layout_map():
                 )
             ],
             style={
-                'position': 'absolute',
-                'top': '50px',
-                'left': '0',
                 'display': 'flex',
                 'flex-direction': 'column',
                 'background-color': 'white',
-                'border': '1px solid #ccc',
-                'border-radius': '5px',
-                'margin': '10px',
+                'border-right': '1px solid #ccc',
                 'padding': '10px',
-                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                'z-index': '1000',
-                'max-height': 'calc(100vh - 80px)',
+                'box-shadow': '2px 0 4px rgba(0,0,0,0.08)',
+                'width': '270px',
+                'flex-shrink': '0',
+                'height': '100%',
                 'overflow': 'hidden',
-                'width': '250px',
             }
         ),
         # html.Button(
@@ -758,7 +753,26 @@ def get_layout_map():
         dcc.Store(id='location-search-data', data=[]),
     ]
     
-    return layout_map
+    # layout_map[0..5] = dl.Map + map overlay controls (position:absolute)
+    # layout_map[6]    = div_reports (the sidebar)
+    # layout_map[7:]   = invisible elements (stores, interval, position:fixed overlays)
+    map_panel_children = layout_map[:6]
+    sidebar            = layout_map[6]
+    invisible          = layout_map[7:]
+
+    return [
+        html.Div(
+            style={'display': 'flex', 'width': '100%', 'height': '100%'},
+            children=[
+                sidebar,
+                html.Div(
+                    map_panel_children,
+                    style={'position': 'relative', 'flex': '1', 'height': '100%', 'overflow': 'hidden'},
+                ),
+            ]
+        ),
+        *invisible,
+    ]
 
 def callbacks_map(app: Dash):
     """

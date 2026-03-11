@@ -45,9 +45,17 @@ li.report-entry-active {
 
 
 /* === General Rules === */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
 .fullscreen-container {
     width: 100vw;
     height: 100vh;
+    overflow: hidden;
 }
 
 /* === Map Rules === */
