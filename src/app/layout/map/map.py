@@ -18,7 +18,7 @@ from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, St
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
-from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values, get_sidebar_dropdown_relevance_type_values, ALL_EVENT_TYPES, ALL_RELEVANCE_TYPES
+from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values, get_sidebar_dropdown_relevance_type_values, ALL_EVENT_TYPES, ALL_RELEVANCE_TYPES, get_sidebar_max_timestamp
 from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
 from server_reports import fetch_osm_polygon
 
@@ -579,6 +579,13 @@ def get_layout_map():
                         'margin-bottom': '6px',
                     }
                 ),
+                # ---- new posts banner ----
+                html.Button(
+                    '',
+                    id='new-posts-banner',
+                    n_clicks=0,
+                    style={'display': 'none'},
+                ),
                 # ---- scrollable report list ----
                 html.Ul(
                     id='reports_list',
@@ -793,6 +800,7 @@ def get_layout_map():
             },
         ),
         dcc.Store(id='location-search-data', data=[]),
+        dcc.Store(id='sidebar-loaded-at', data=None),
     ]
     
     # layout_map[0..5] = dl.Map + map overlay controls (position:absolute)
@@ -1599,32 +1607,12 @@ def callbacks_map(app: Dash):
             'font-weight': 'bold', 'line-height': '1.4',
         }
 
-    # update the reports
-    @app.callback(
-        Output('reports_list', 'children'),
-        Output('active-report-id', 'data', allow_duplicate=True),
-        [Input('interval_refresh_reports', 'n_intervals'), Input('reports_dropdown_platform', 'value'), Input('reports_dropdown_event_type', 'value'),
-         Input('reports_dropdown_relevance_type', 'value'), Input('event_type_toggle', 'value')],
-        State('user-seen', 'data'),
-        State('user-flagged', 'data'),
-        State('user-locations', 'data'),
-        prevent_initial_call='initial_duplicate',
-    )
-    def update_reports(n_clicks, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                       seen_list, flagged_list, locs_dict):
-        """
-        Fires on interval and whenever any filter changes.
-        Resets the active selection when the localization toggle changes
-        (which in turn triggers render_report_polygons to clear polygons).
-        """
-
-        if n_clicks is None:
-            raise PreventUpdate
-
+    # Build the sidebar list — fires on filter changes and initial load, NOT on interval
+    def _build_sidebar_content(filter_platform, filter_event_type, filter_relevance_type,
+                                event_type_toggle, seen_list, flagged_list, locs_dict):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
-
-        sidebar_content = get_sidebar_content(
+        return get_sidebar_content(
             filter_platform=eff_platform,
             filter_event_type=eff_events,
             filter_relevance_type=eff_relevance,
@@ -1634,10 +1622,83 @@ def callbacks_map(app: Dash):
             user_locs_map=user_locs_map,
         )
 
+    @app.callback(
+        Output('reports_list', 'children'),
+        Output('active-report-id', 'data', allow_duplicate=True),
+        Output('sidebar-loaded-at', 'data'),
+        Output('new-posts-banner', 'style', allow_duplicate=True),
+        Input('reports_dropdown_platform', 'value'),
+        Input('reports_dropdown_event_type', 'value'),
+        Input('reports_dropdown_relevance_type', 'value'),
+        Input('event_type_toggle', 'value'),
+        Input('new-posts-banner', 'n_clicks'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
+        prevent_initial_call='initial_duplicate',
+    )
+    def update_reports(filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                       _banner_clicks, seen_list, flagged_list, locs_dict):
+        eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
+        sidebar_content = _build_sidebar_content(
+            filter_platform, filter_event_type, filter_relevance_type,
+            event_type_toggle, seen_list, flagged_list, locs_dict,
+        )
+        loaded_at = get_sidebar_max_timestamp(eff_platform, eff_events, eff_relevance) or datetime.utcnow().isoformat()
+        banner_hidden = {'display': 'none'}
+        # Reset active selection on filter changes; preserve it on banner click
         triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
-        reset_selection = None if 'interval_refresh_reports' not in triggered else dash.no_update
+        reset_active = None if 'new-posts-banner' not in triggered else dash.no_update
+        return sidebar_content, reset_active, loaded_at, banner_hidden
 
-        return sidebar_content, reset_selection
+    # Check for new posts on each interval tick — update banner, don't touch the list
+    @app.callback(
+        Output('new-posts-banner', 'children', allow_duplicate=True),
+        Output('new-posts-banner', 'style', allow_duplicate=True),
+        Input('interval_refresh_reports', 'n_intervals'),
+        State('sidebar-loaded-at', 'data'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        prevent_initial_call=True,
+    )
+    def check_new_posts(_n, loaded_at, filter_platform, filter_event_type, filter_relevance_type, loc_filter):
+        if not loaded_at:
+            raise PreventUpdate
+        try:
+            since = datetime.fromisoformat(loaded_at)
+        except Exception:
+            raise PreventUpdate
+        eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
+        engine, session = autoconnect_db()
+        try:
+            q = session.query(Report).filter(
+                Report.timestamp > since,
+                Report.timestamp <= datetime.utcnow(),
+            )
+            if os.environ.get('DEMO_MODE') == '1':
+                q = q.filter(Report.identifier.like('demo-%'))
+            if eff_platform:
+                from sqlalchemy import or_ as _or
+                q = q.filter(_or(*[Report.platform.like(f'{p}%') for p in eff_platform]))
+            if eff_events:
+                q = q.filter(Report.event_type.in_(eff_events))
+            if eff_relevance:
+                q = q.filter(Report.relevance.in_(eff_relevance))
+            count = q.count()
+        finally:
+            session.close()
+            engine.dispose()
+        if count == 0:
+            return dash.no_update, {'display': 'none'}
+        return f'↑ {count} new post{"s" if count != 1 else ""}', {
+            'display': 'block', 'width': '100%', 'margin-bottom': '6px',
+            'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
+            'border-radius': '4px', 'border': '1px solid #42a5f5',
+            'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold',
+            'text-align': 'center',
+        }
     
     # toggle the layers widget
     @app.callback(
@@ -1860,7 +1921,7 @@ def callbacks_map(app: Dash):
     # Clientside: push new dot data + active report id + seen/flagged stores to JS, trigger re-render
     app.clientside_callback(
         """
-        function(dots, activeId, seenList, flaggedList) {
+        function(dots, activeId, _loadedAt, seenList, flaggedList) {
             window._reportDotsData = dots || [];
             window._activeReportId = activeId;
             window._seenIds = seenList || [];
@@ -1891,6 +1952,7 @@ def callbacks_map(app: Dash):
         Output('report-dots-tick', 'data'),
         Input('report-dots-data', 'data'),
         Input('active-report-id', 'data'),
+        Input('sidebar-loaded-at', 'data'),
         State('user-seen', 'data'),
         State('user-flagged', 'data'),
     )

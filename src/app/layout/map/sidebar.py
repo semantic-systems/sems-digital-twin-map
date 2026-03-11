@@ -389,6 +389,26 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
 
     return format_reports(filtered_reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
 
+def get_sidebar_max_timestamp(filter_platform=None, filter_event_type=None, filter_relevance_type=None):
+    """Return the max timestamp (as ISO string) of reports currently visible given the filters."""
+    engine, session = autoconnect_db()
+    filter_arguments = []
+    if filter_platform:
+        filter_arguments.append(or_(*[Report.platform.like(f'{p}%') for p in filter_platform]))
+    if filter_event_type:
+        filter_arguments.append(Report.event_type.in_(filter_event_type))
+    if filter_relevance_type:
+        filter_arguments.append(Report.relevance.in_(filter_relevance_type))
+    filter_arguments.append(Report.timestamp <= datetime.utcnow())
+    if os.environ.get('DEMO_MODE') == '1':
+        filter_arguments.append(Report.identifier.like('demo-%'))
+    try:
+        from sqlalchemy import func
+        result = session.query(func.max(Report.timestamp)).filter(*filter_arguments).scalar()
+        return result.isoformat() if result else None
+    finally:
+        session.close()
+
 def get_sidebar_dropdown_platform_values():
     """
     Returns the list of names of platforms in the config
