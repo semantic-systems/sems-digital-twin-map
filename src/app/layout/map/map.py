@@ -1867,19 +1867,23 @@ def callbacks_map(app: Dash):
             window._flaggedAuthors = flaggedList || [];
             if (window.updateReportDots) window.updateReportDots();
 
-            // Highlight active report entry in sidebar
+            // Highlight active report entry in sidebar — deferred so React has
+            // finished re-rendering the list before we query the new DOM nodes.
+            var _activeId = activeId;
             document.querySelectorAll('.report-entry-active').forEach(function(el) {
                 el.classList.remove('report-entry-active');
             });
-            if (activeId !== null && activeId !== undefined) {
-                var el = document.getElementById('{"index":' + activeId + ',"type":"report-entry"}');
-                if (el) {
-                    var li = el.closest('li');
-                    if (li) {
-                        li.classList.add('report-entry-active');
-                        li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            if (_activeId !== null && _activeId !== undefined) {
+                setTimeout(function() {
+                    var el = document.getElementById('{"index":' + _activeId + ',"type":"report-entry"}');
+                    if (el) {
+                        var li = el.closest('li');
+                        if (li) {
+                            li.classList.add('report-entry-active');
+                            li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
                     }
-                }
+                }, 150);
             }
             return window.dash_clientside.no_update;
         }
