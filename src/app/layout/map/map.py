@@ -18,7 +18,7 @@ from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, St
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
-from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values, get_sidebar_dropdown_relevance_type_values
+from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values, get_sidebar_dropdown_relevance_type_values, ALL_EVENT_TYPES, ALL_RELEVANCE_TYPES
 from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
 from server_reports import fetch_osm_polygon
 
@@ -464,70 +464,112 @@ def get_layout_map():
         html.Div(
             id='div_reports',
             children=[
-                # ---- sticky filter header ----
+                # ---- sticky header + filter popup ----
                 html.Div(
                     children=[
-                        html.P(
-                            children='Reports',
-                            style={
-                                'font-size': '14pt',
-                                'font-weight': 'bold',
-                                'margin': '0 0 6px 0',
-                                'text-align': 'center',
-                                'color': '#404040'
-                            }
+                        # title row
+                        html.Div(
+                            children=[
+                                html.Span('Reports', style={
+                                    'font-size': '14pt', 'font-weight': 'bold', 'color': '#404040',
+                                }),
+                                html.Div(
+                                    children=[
+                                        html.Button(
+                                            '⚙',
+                                            id='filters-toggle-btn',
+                                            n_clicks=0,
+                                            title='Filter reports',
+                                            style={
+                                                'font-size': '11px', 'padding': '2px 7px', 'cursor': 'pointer',
+                                                'border-radius': '4px', 'border': '1px solid #ddd',
+                                                'background': '#f5f5f5', 'color': '#555',
+                                            },
+                                        ),
+                                        html.Span(
+                                            id='filters-active-badge',
+                                            style={'display': 'none'},
+                                        ),
+                                    ],
+                                    style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'margin-left': 'auto'},
+                                ),
+                                html.Button(
+                                    '↺ Reset Demo',
+                                    id='demo-reset-button',
+                                    n_clicks=0,
+                                    style={
+                                        'display': 'block' if os.environ.get('DEMO_MODE') == '1' else 'none',
+                                        'font-size': '10px', 'padding': '2px 8px', 'cursor': 'pointer',
+                                        'border-radius': '4px', 'border': '1px solid #ff8a65',
+                                        'background': '#fff3e0', 'color': '#bf360c',
+                                    }
+                                ),
+                            ],
+                            style={'display': 'flex', 'align-items': 'center', 'gap': '6px'},
                         ),
-                        dcc.Dropdown(
-                            options=reports_dropdown_platform,
-                            id='reports_dropdown_platform',
-                            optionHeight=20,
-                            placeholder='Platform',
-                            style={"margin-bottom": "6px", "font-size": "7.5pt"}
-                        ),
-                        dcc.Dropdown(
-                            options=reports_dropdown_event_type,
-                            id='reports_dropdown_event_type',
-                            optionHeight=20,
-                            placeholder='Event Type',
-                            multi=True,
-                            style={"margin-bottom": "6px", "font-size": "7.5pt"}
-                        ),
-                        dcc.Dropdown(
-                            options=reports_dropdown_relevance_type,
-                            id='reports_dropdown_relevance_type',
-                            optionHeight=20,
-                            placeholder='Relevance(s)',
-                            multi=True,
-                            style={"margin-bottom": "6px", "font-size": "7.5pt"}
-                        ),
+                        # location toggle — always visible below title row
                         dcc.RadioItems(
                             id='event_type_toggle',
                             options=[
                                 {'label': 'All', 'value': 'all'},
-                                {'label': '📍 Localized', 'value': 'localized'},
-                                {'label': '◎ Pending', 'value': 'pending'},
-                                {'label': '∅ None', 'value': 'unlocalized'},
+                                {'label': '📍', 'value': 'localized', 'title': 'Localized'},
+                                {'label': '◎', 'value': 'pending', 'title': 'Pending'},
+                                {'label': '∅', 'value': 'unlocalized', 'title': 'No location'},
                             ],
                             value='all',
                             inline=True,
-                            style={"font-size": "7.5pt"}
+                            inputStyle={'margin-right': '2px'},
+                            labelStyle={'margin-right': '6px'},
+                            style={'font-size': '8pt', 'margin-top': '4px'},
                         ),
-                        html.Button(
-                            '↺ Reset Demo',
-                            id='demo-reset-button',
-                            n_clicks=0,
-                            style={
-                                'display': 'block' if os.environ.get('DEMO_MODE') == '1' else 'none',
-                                'font-size': '10px',
-                                'padding': '2px 8px',
-                                'cursor': 'pointer',
-                                'border-radius': '4px',
-                                'border': '1px solid #ff8a65',
-                                'background': '#fff3e0',
-                                'color': '#bf360c',
-                                'margin-top': '6px',
-                                'margin-left': 'auto',
-                            }
+                        # filter popup (absolute, opens below title row)
+                        html.Div(
+                            id='filters-popup',
+                            style={'display': 'none'},
+                            children=[
+                                # Relevance
+                                html.Div('Relevance', style={
+                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
+                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
+                                }),
+                                dcc.Checklist(
+                                    id='reports_dropdown_relevance_type',
+                                    options=[{'label': r, 'value': r} for r in ALL_RELEVANCE_TYPES],
+                                    value=list(ALL_RELEVANCE_TYPES),
+                                    inline=True,
+                                    inputStyle={'margin-right': '3px'},
+                                    labelStyle={'margin-right': '8px'},
+                                    style={'font-size': '8pt', 'margin-bottom': '8px'},
+                                ),
+                                html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
+                                # Event Type
+                                html.Div('Event Type', style={
+                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
+                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
+                                }),
+                                dcc.Checklist(
+                                    id='reports_dropdown_event_type',
+                                    options=[{'label': e, 'value': e} for e in ALL_EVENT_TYPES],
+                                    value=list(ALL_EVENT_TYPES),
+                                    inputStyle={'margin-right': '3px'},
+                                    labelStyle={'display': 'block', 'margin-bottom': '2px'},
+                                    style={'font-size': '8pt', 'margin-bottom': '8px'},
+                                ),
+                                html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
+                                # Platform
+                                html.Div('Platform', style={
+                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
+                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
+                                }),
+                                dcc.Checklist(
+                                    id='reports_dropdown_platform',
+                                    options=[{'label': p, 'value': p} for p in reports_dropdown_platform],
+                                    value=list(reports_dropdown_platform),
+                                    inputStyle={'margin-right': '3px'},
+                                    labelStyle={'display': 'block', 'margin-bottom': '2px'},
+                                    style={'font-size': '8pt', 'margin-bottom': '4px'},
+                                ),
+                            ],
                         ),
                     ],
                     style={
@@ -561,7 +603,7 @@ def get_layout_map():
                 'width': '270px',
                 'flex-shrink': '0',
                 'height': '100%',
-                'overflow': 'hidden',
+                'overflow': 'visible',
             }
         ),
         # html.Button(
@@ -1515,6 +1557,48 @@ def callbacks_map(app: Dash):
         return type_children, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', new_children
 
 
+    # Toggle filter popup open/closed
+    @app.callback(
+        Output('filters-popup', 'style'),
+        Input('filters-toggle-btn', 'n_clicks'),
+        State('filters-popup', 'style'),
+        prevent_initial_call=True,
+    )
+    def toggle_filters(n, current_style):
+        currently_open = (current_style or {}).get('display') != 'none'
+        if currently_open:
+            return {'display': 'none'}
+        return {
+            'display': 'block',
+            'position': 'absolute', 'top': '32px', 'left': '0', 'width': '220px',
+            'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
+            'box-shadow': '0 4px 16px rgba(0,0,0,0.18)', 'z-index': '2000',
+            'padding': '10px', 'max-height': '70vh', 'overflow-y': 'auto',
+        }
+
+    # Show a badge with the count of excluded items (deselected options)
+    @app.callback(
+        Output('filters-active-badge', 'children'),
+        Output('filters-active-badge', 'style'),
+        Input('reports_dropdown_platform', 'value'),
+        Input('reports_dropdown_event_type', 'value'),
+        Input('reports_dropdown_relevance_type', 'value'),
+    )
+    def update_filter_badge(platform, event_types, relevance_types):
+        all_platforms = get_sidebar_dropdown_platform_values()
+        excluded = (
+            (len(all_platforms) - len(platform or [])) +
+            (len(ALL_EVENT_TYPES) - len(event_types or [])) +
+            (len(ALL_RELEVANCE_TYPES) - len(relevance_types or []))
+        )
+        if excluded == 0:
+            return '', {'display': 'none'}
+        return str(excluded), {
+            'display': 'inline-block', 'background': '#e53935', 'color': 'white',
+            'border-radius': '10px', 'font-size': '8px', 'padding': '1px 5px',
+            'font-weight': 'bold', 'line-height': '1.4',
+        }
+
     # update the reports
     @app.callback(
         Output('reports_list', 'children'),
@@ -1537,22 +1621,13 @@ def callbacks_map(app: Dash):
         if n_clicks is None:
             raise PreventUpdate
 
-        if isinstance(filter_relevance_type, str):
-            filter_relevance_type = [filter_relevance_type]
-        elif filter_relevance_type is None:
-            filter_relevance_type = []
-
-        if isinstance(filter_event_type, str):
-            filter_event_type = [filter_event_type]
-        elif filter_event_type is None:
-            filter_event_type = []
-
+        eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
 
         sidebar_content = get_sidebar_content(
-            filter_platform=filter_platform,
-            filter_event_type=filter_event_type,
-            filter_relevance_type=filter_relevance_type,
+            filter_platform=eff_platform,
+            filter_event_type=eff_events,
+            filter_relevance_type=eff_relevance,
             loc_filter=event_type_toggle or 'all',
             seen_ids=seen_ids,
             flagged_authors=flagged_authors,
@@ -1563,49 +1638,6 @@ def callbacks_map(app: Dash):
         reset_selection = None if 'interval_refresh_reports' not in triggered else dash.no_update
 
         return sidebar_content, reset_selection
-    
-    @app.callback(
-        Output('reports_dropdown_platform', 'options'),
-        [Input('interval_refresh_reports', 'n_intervals')],
-    )
-    def update_report_dropdown_platform(n_clicks):
-        """
-        This callback is triggered every hour.
-        It updates the reports dropdown with all platforms of the current data.
-        """
-
-        dropdown_platform_values = get_sidebar_dropdown_platform_values()
-
-        return dropdown_platform_values
-
-    @app.callback(
-        Output('reports_dropdown_event_type', 'options'),
-        [Input('interval_refresh_reports', 'n_intervals')],
-    )
-    def update_report_dropdown_event_type(n_clicks):
-        """
-        This callback is triggered every hour.
-        It updates the reports dropdown with all classes of the current data.
-        """
-
-        dropdown_class_values = get_sidebar_dropdown_event_type_values()
-
-        return dropdown_class_values
-
-    @app.callback(
-        Output('reports_dropdown_relevance_type', 'options'),
-        [Input('interval_refresh_reports', 'n_intervals')],
-    )
-    def update_report_dropdown_relevance_type(n_clicks):
-        """
-        This callback is triggered every hour.
-        It updates the reports dropdown with all classes of the current data.
-        """
-
-        dropdown_class_values = get_sidebar_dropdown_relevance_type_values()
-
-        return dropdown_class_values
-
     
     # toggle the layers widget
     @app.callback(
@@ -1731,12 +1763,13 @@ def callbacks_map(app: Dash):
     def fetch_report_dots(_n, filter_platform, filter_event_type, filter_relevance_type, loc_filter,
                           seen_list, locs_dict):
         seen_ids, _, user_locs_map = _parse_stores(seen_list, None, locs_dict)
+        eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         engine, session = autoconnect_db()
         try:
             return _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=filter_platform,
-                                filter_event_type=filter_event_type or [],
-                                filter_relevance_type=filter_relevance_type or [],
+                                filter_platform=eff_platform,
+                                filter_event_type=eff_events,
+                                filter_relevance_type=eff_relevance,
                                 loc_filter=loc_filter or 'all')
         finally:
             session.close()
@@ -1813,9 +1846,9 @@ def callbacks_map(app: Dash):
         engine, session = autoconnect_db()
         try:
             dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=filter_platform,
-                                filter_event_type=filter_event_type or [],
-                                filter_relevance_type=filter_relevance_type or [],
+                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
+                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
+                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
                                 loc_filter=event_type_toggle or 'all')
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
@@ -1917,6 +1950,17 @@ def callbacks_map(app: Dash):
 
 
     # ---- Shared helpers for location callbacks ----
+    def _normalize_filters(filter_platform, filter_event_type, filter_relevance_type):
+        """Convert checklist values to filter args (None / [] = no filter)."""
+        all_platforms = get_sidebar_dropdown_platform_values()
+        plats = list(filter_platform or [])
+        ets   = list(filter_event_type or [])
+        rels  = list(filter_relevance_type or [])
+        eff_platform  = None if set(plats) >= set(all_platforms) else (plats or None)
+        eff_events    = [] if set(ets) >= set(ALL_EVENT_TYPES) else ets
+        eff_relevance = [] if set(rels) >= set(ALL_RELEVANCE_TYPES) else rels
+        return eff_platform, eff_events, eff_relevance
+
     def _parse_stores(seen_list, flagged_list, locs_dict):
         seen_ids = set(seen_list or [])
         flagged_authors = set(flagged_list or [])
@@ -1925,18 +1969,11 @@ def callbacks_map(app: Dash):
 
     def _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, seen_ids=None, flagged_authors=None, user_locs_map=None):
         from app.layout.map.sidebar import get_sidebar_content
-        if isinstance(filter_relevance_type, str):
-            filter_relevance_type = [filter_relevance_type]
-        elif filter_relevance_type is None:
-            filter_relevance_type = []
-        if isinstance(filter_event_type, str):
-            filter_event_type = [filter_event_type]
-        elif filter_event_type is None:
-            filter_event_type = []
+        eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         return get_sidebar_content(
-            filter_platform=filter_platform,
-            filter_event_type=filter_event_type,
-            filter_relevance_type=filter_relevance_type,
+            filter_platform=eff_platform,
+            filter_event_type=eff_events,
+            filter_relevance_type=eff_relevance,
             loc_filter=event_type_toggle or 'all',
             seen_ids=seen_ids,
             flagged_authors=flagged_authors,
@@ -1950,7 +1987,8 @@ def callbacks_map(app: Dash):
         if os.environ.get('DEMO_MODE') == '1':
             q = q.filter(Report.identifier.like('demo-%'))
         if filter_platform:
-            q = q.filter(Report.platform.like(f'{filter_platform}%'))
+            from sqlalchemy import or_ as _or
+            q = q.filter(_or(*[Report.platform.like(f'{p}%') for p in filter_platform]))
         if filter_event_type:
             q = q.filter(Report.event_type.in_(filter_event_type))
         if filter_relevance_type:
@@ -2163,9 +2201,9 @@ def callbacks_map(app: Dash):
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
             dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=filter_platform,
-                                filter_event_type=filter_event_type or [],
-                                filter_relevance_type=filter_relevance_type or [],
+                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
+                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
+                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
                                 loc_filter=event_type_toggle or 'all')
             return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
@@ -2259,9 +2297,9 @@ def callbacks_map(app: Dash):
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
             dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=filter_platform,
-                                filter_event_type=filter_event_type or [],
-                                filter_relevance_type=filter_relevance_type or [],
+                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
+                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
+                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
                                 loc_filter=event_type_toggle or 'all')
             return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
@@ -2315,9 +2353,9 @@ def callbacks_map(app: Dash):
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
             dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=filter_platform,
-                                filter_event_type=filter_event_type or [],
-                                filter_relevance_type=filter_relevance_type or [],
+                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
+                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
+                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
                                 loc_filter=event_type_toggle or 'all')
             return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
@@ -2363,9 +2401,9 @@ def callbacks_map(app: Dash):
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
             dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=filter_platform,
-                                filter_event_type=filter_event_type or [],
-                                filter_relevance_type=filter_relevance_type or [],
+                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
+                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
+                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
                                 loc_filter=event_type_toggle or 'all')
             return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:

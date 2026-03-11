@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from dash import Dash, html, dcc, Output, Input, State, callback_context, MATCH, ALL
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
+from sqlalchemy import or_
 
 from data.connect import autoconnect_db
 from data.model import Report
@@ -335,7 +336,7 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
     filter_arguments = []
 
     if filter_platform:
-        filter_arguments.append(Report.platform.like(f'{filter_platform}%'))
+        filter_arguments.append(or_(*[Report.platform.like(f'{p}%') for p in filter_platform]))
 
     if filter_event_type:
         # Handle multiple event types
