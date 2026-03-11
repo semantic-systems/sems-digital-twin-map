@@ -581,10 +581,16 @@ def get_layout_map():
                 ),
                 # ---- new posts banner ----
                 html.Button(
-                    '',
+                    '↑ 0 new posts',
                     id='new-posts-banner',
                     n_clicks=0,
-                    style={'display': 'none'},
+                    style={
+                        'display': 'block', 'width': '100%', 'margin-bottom': '6px',
+                        'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
+                        'border-radius': '4px', 'border': '1px solid #ddd',
+                        'background': '#f5f5f5', 'color': '#aaa', 'font-weight': 'normal',
+                        'text-align': 'center',
+                    },
                 ),
                 # ---- scrollable report list ----
                 html.Ul(
@@ -1626,6 +1632,7 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children'),
         Output('active-report-id', 'data', allow_duplicate=True),
         Output('sidebar-loaded-at', 'data'),
+        Output('new-posts-banner', 'children', allow_duplicate=True),
         Output('new-posts-banner', 'style', allow_duplicate=True),
         Input('reports_dropdown_platform', 'value'),
         Input('reports_dropdown_event_type', 'value'),
@@ -1645,11 +1652,16 @@ def callbacks_map(app: Dash):
             event_type_toggle, seen_list, flagged_list, locs_dict,
         )
         loaded_at = get_sidebar_max_timestamp(eff_platform, eff_events, eff_relevance) or datetime.utcnow().isoformat()
-        banner_hidden = {'display': 'none'}
+        banner_reset = {
+            'display': 'block', 'width': '100%', 'margin-bottom': '6px',
+            'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
+            'border-radius': '4px', 'text-align': 'center',
+            'border': '1px solid #ddd', 'background': '#f5f5f5', 'color': '#aaa', 'font-weight': 'normal',
+        }
         # Reset active selection on filter changes; preserve it on banner click
         triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
         reset_active = None if 'new-posts-banner' not in triggered else dash.no_update
-        return sidebar_content, reset_active, loaded_at, banner_hidden
+        return sidebar_content, reset_active, loaded_at, '↑ 0 new posts', banner_reset
 
     # Check for new posts on each interval tick — update banner, don't touch the list
     @app.callback(
@@ -1690,15 +1702,14 @@ def callbacks_map(app: Dash):
         finally:
             session.close()
             engine.dispose()
-        if count == 0:
-            return dash.no_update, {'display': 'none'}
-        return f'↑ {count} new post{"s" if count != 1 else ""}', {
+        _base = {
             'display': 'block', 'width': '100%', 'margin-bottom': '6px',
             'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
-            'border-radius': '4px', 'border': '1px solid #42a5f5',
-            'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold',
-            'text-align': 'center',
+            'border-radius': '4px', 'text-align': 'center',
         }
+        if count == 0:
+            return '↑ 0 new posts', {**_base, 'border': '1px solid #ddd', 'background': '#f5f5f5', 'color': '#aaa', 'font-weight': 'normal'}
+        return f'↑ {count} new post{"s" if count != 1 else ""}', {**_base, 'border': '1px solid #42a5f5', 'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold'}
     
     # toggle the layers widget
     @app.callback(
