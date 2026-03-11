@@ -41,6 +41,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     has_user_override = user_locs_map is not None and report.id in user_locs_map
 
     is_localized = any('osm_id' in loc for loc in (effective_locations or []))
+    has_pending  = not is_localized and bool(effective_locations)   # has locations but none georeferenced
 
     if platform == 'rss':
         feed_name = report.platform.split('/')[1]
@@ -97,10 +98,10 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                     html.P(
                         [
                             html.Span(
-                                '📍 ' if is_localized else '· ',
-                                title='Localized' if is_localized else 'No location',
+                                '📍 ' if is_localized else ('◎ ' if has_pending else '· '),
+                                title='Georeferenced' if is_localized else ('Locations pending georeferencing' if has_pending else 'No locations'),
                                 style={
-                                    'color': '#43a047' if is_localized else '#bdbdbd',
+                                    'color': '#43a047' if is_localized else ('#e65100' if has_pending else '#bdbdbd'),
                                     'font-size': '9px',
                                     'margin-right': '2px',
                                 }
@@ -202,7 +203,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                 'font-size': '9px', 'border-radius': '3px',
                                 'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
                                 'display': 'inline-flex', 'align-items': 'center',
-                                'background': '#f5f5f5', 'border': '1px dashed #bdbdbd', 'color': '#757575',
+                                'background': '#fdecea', 'border': '1px dashed #e57373', 'color': '#c62828',
                             },
                         ) if 'osm_id' not in loc else html.Span(
                             [
@@ -234,7 +235,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                 'font-size': '9px', 'border-radius': '3px',
                                 'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
                                 'display': 'inline-flex', 'align-items': 'center',
-                                'background': '#e3f2fd',
+                                'background': '#e8f5e9', 'border': '1px solid #81c784', 'color': '#2e7d32',
                             },
                         )
                         for i, loc in enumerate(effective_locations or [])
@@ -277,10 +278,10 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
             'display': 'flex',
             'flex-direction': 'column',
             'alignItems': 'flex-start',
-            'background': '#fafafa' if not is_seen else '#f5f5f5',
+            'background': '#f5f5f5' if is_seen else ('#e8f5e9' if is_localized else ('#fff3e0' if has_pending else '#fafafa')),
             'opacity': str(entry_opacity),
             'transition': 'opacity 0.2s',
-            'outline': '2px solid #e65100' if is_flagged else ('1px dashed #bdbdbd' if not is_localized else 'none'),
+            'outline': '2px solid #e65100' if is_flagged else ('1px dashed #ef6c00' if has_pending else ('1px dashed #bdbdbd' if not is_localized else 'none')),
         }
     )
 
