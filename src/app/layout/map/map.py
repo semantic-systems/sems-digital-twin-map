@@ -201,6 +201,7 @@ def get_layout_map():
             ],
             zoom=12,
             doubleClickZoom=False,
+            zoomControl=False,
             center=(53.55, 9.99),
             style={
                 'width': '100%', 
@@ -552,7 +553,7 @@ def get_layout_map():
             ],
             style={
                 'position': 'absolute',
-                'top': '150px',
+                'top': '50px',
                 'left': '0',
                 'display': 'flex',
                 'flex-direction': 'column',
@@ -563,7 +564,7 @@ def get_layout_map():
                 'padding': '10px',
                 'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
                 'z-index': '1000',
-                'max-height': 'calc(100vh - 200px)',
+                'max-height': 'calc(100vh - 80px)',
                 'overflow': 'hidden',
                 'width': '250px',
             }
