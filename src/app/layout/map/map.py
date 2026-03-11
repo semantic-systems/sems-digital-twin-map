@@ -1560,7 +1560,7 @@ def callbacks_map(app: Dash):
         )
 
         triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
-        reset_selection = None if 'event_type_toggle' in triggered else dash.no_update
+        reset_selection = None if 'interval_refresh_reports' not in triggered else dash.no_update
 
         return sidebar_content, reset_selection
     

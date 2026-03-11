@@ -278,6 +278,14 @@
     window.updateReportDots = function () {
         var allDots = window._reportDotsData || [];
         var activeId = window._activeReportId || null;
+
+        // Close popup when there is no active report
+        if (!activeId && _popup) {
+            _popup.remove();
+            _popup = null;
+            _currentDot = null;
+        }
+
         // Show unseen dots always; show seen dots only when they are the active report
         var dots = allDots.filter(function (d) {
             return !d.seen || d.report_id === activeId;
