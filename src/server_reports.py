@@ -414,6 +414,12 @@ def fetch_osm_polygon(osm_type: str, osm_id: int):
 
 if __name__ == '__main__':
 
+    import os as _os
+    if _os.environ.get('DEMO_MODE') == '1':
+        print('DEMO_MODE is active — server_reports will not fetch real posts.')
+        import sys as _sys
+        _sys.exit(0)
+
     # an initial sleep, because the api might not be ready yet
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)

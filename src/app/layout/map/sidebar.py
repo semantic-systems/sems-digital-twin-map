@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime, timedelta
 
 from dash import Dash, html, dcc, Output, Input, State, callback_context, MATCH, ALL
@@ -334,6 +335,13 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
             filter_arguments.append(Report.relevance.in_(filter_relevance_type))
         else:
             filter_arguments.append(Report.relevance == filter_relevance_type)
+
+    # Only show reports with timestamps up to now (hides future-dated demo reports)
+    filter_arguments.append(Report.timestamp <= datetime.utcnow())
+
+    # In demo mode, only show demo-seeded reports (guards against server_reports re-inserting real ones)
+    if os.environ.get('DEMO_MODE') == '1':
+        filter_arguments.append(Report.identifier.like('demo-%'))
 
     query = session.query(Report)
     if filter_arguments:

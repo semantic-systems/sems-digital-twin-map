@@ -510,6 +510,23 @@ def get_layout_map():
                             inline=True,
                             style={"font-size": "7.5pt"}
                         ),
+                        html.Button(
+                            '↺ Reset Demo',
+                            id='demo-reset-button',
+                            n_clicks=0,
+                            style={
+                                'display': 'block' if os.environ.get('DEMO_MODE') == '1' else 'none',
+                                'font-size': '10px',
+                                'padding': '2px 8px',
+                                'cursor': 'pointer',
+                                'border-radius': '4px',
+                                'border': '1px solid #ff8a65',
+                                'background': '#fff3e0',
+                                'color': '#bf360c',
+                                'margin-top': '6px',
+                                'margin-left': 'auto',
+                            }
+                        ),
                     ],
                     style={
                         'flex-shrink': '0',
@@ -1861,7 +1878,10 @@ def callbacks_map(app: Dash):
         )
 
     def _build_dots(session, seen_ids=None, user_locs_map=None):
-        reports = session.query(Report).all()
+        q = session.query(Report).filter(Report.timestamp <= datetime.utcnow())
+        if os.environ.get('DEMO_MODE') == '1':
+            q = q.filter(Report.identifier.like('demo-%'))
+        reports = q.all()
         dots = []
         for r in reports:
             effective_locs = (user_locs_map or {}).get(r.id, r.locations) or []
@@ -2250,3 +2270,24 @@ def callbacks_map(app: Dash):
         finally:
             session.close()
             engine.dispose()
+
+    # ---- Demo: reset button ----
+    @app.callback(
+        Output('reports_list', 'children', allow_duplicate=True),
+        Output('user-seen', 'data', allow_duplicate=True),
+        Output('user-flagged', 'data', allow_duplicate=True),
+        Output('user-locations', 'data', allow_duplicate=True),
+        Input('demo-reset-button', 'n_clicks'),
+        prevent_initial_call=True,
+    )
+    def reset_demo(n_clicks):
+        if not n_clicks:
+            raise PreventUpdate
+        from data.build import seed_demo_data
+        engine, session = autoconnect_db()
+        try:
+            seed_demo_data(session)
+        finally:
+            session.close()
+            engine.dispose()
+        return [], [], [], {}

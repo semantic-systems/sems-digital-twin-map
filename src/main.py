@@ -44,6 +44,16 @@ def main():
     # if not, build it
     build_if_uninitialized()
 
+    # demo mode: seed staggered reports so they "arrive" over 5 minutes
+    if '--demo' in params:
+        os.environ['DEMO_MODE'] = '1'
+        print("Running in demo mode")
+        from data.build import seed_demo_data
+        from data.connect import autoconnect_db
+        _, _demo_session = autoconnect_db()
+        seed_demo_data(_demo_session)
+        _demo_session.close()
+
     # get the map app
     m = get_app()
 
