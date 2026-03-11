@@ -310,7 +310,7 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
-    loc_filter: 'all' | 'localized' | 'unlocalized'
+    loc_filter: 'all' | 'localized' | 'pending' | 'unlocalized'
     seen_ids: set of report ids marked as seen (from browser localStorage)
     flagged_authors: set of author strings flagged (from browser localStorage)
     user_locs_map: dict mapping report_id -> [loc, ...] (from browser localStorage)
@@ -361,9 +361,12 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
     for report in reports:
         effective_locs = user_locs_map.get(report.id, report.locations)
         has_location = any('osm_id' in e for e in (effective_locs or []))
+        has_pending = not has_location and bool(effective_locs)
         if loc_filter == 'localized' and not has_location:
             continue
-        if loc_filter == 'unlocalized' and has_location:
+        if loc_filter == 'pending' and not has_pending:
+            continue
+        if loc_filter == 'unlocalized' and (has_location or has_pending):
             continue
         filtered_reports.append(report)
 

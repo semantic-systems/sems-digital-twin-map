@@ -504,7 +504,8 @@ def get_layout_map():
                             options=[
                                 {'label': 'All', 'value': 'all'},
                                 {'label': '📍 Localized', 'value': 'localized'},
-                                {'label': '∅ Unlocalized', 'value': 'unlocalized'},
+                                {'label': '◎ Pending', 'value': 'pending'},
+                                {'label': '∅ None', 'value': 'unlocalized'},
                             ],
                             value='all',
                             inline=True,
