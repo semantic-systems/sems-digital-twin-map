@@ -58,7 +58,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     }
     bg_color = relevance_color_map.get(relevance, "#e0e0e0")
 
-    seen_btn_label = "👁 Seen" if is_seen else "👁"
+    seen_btn_label = "Seen" if is_seen else "Unseen"
     seen_btn_title = "Mark as unseen" if is_seen else "Mark as seen"
     seen_btn_style = {
         'font-size': '11px',
@@ -132,7 +132,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
             html.Div(
                 children=[
                     html.A(
-                        "↗ Open",
+                        "Open",
                         href=report.url,
                         target="_blank",
                         rel="noopener noreferrer",
@@ -144,7 +144,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         }
                     ),
                     html.Button(
-                        '⊙',
+                        'Center',
                         id={'type': 'center-button', 'index': report.id},
                         title='Center map on this report',
                         n_clicks=0,
@@ -155,8 +155,8 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                             'cursor': 'pointer' if is_localized else 'default',
                             'border-radius': '4px',
                             'border': '1px solid #90caf9' if is_localized else '1px solid #eee',
-                            'background': '#e3f2fd' if is_localized else '#f5f5f5',
-                            'color': '#1565c0' if is_localized else '#bdbdbd',
+                            'background': '#fafafa' if is_localized else '#f5f5f5',
+                            'color': '#888' if is_localized else '#bdbdbd',
                         },
                     ),
                     html.Button(
@@ -167,7 +167,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         style=seen_btn_style,
                     ),
                     html.Button(
-                        '🚩' if is_flagged else '🏳',
+                        'Unflag' if is_flagged else 'Flag',
                         id={'type': 'flag-button', 'index': report.id},
                         title='Unflag author' if is_flagged else 'Flag author',
                         n_clicks=0,

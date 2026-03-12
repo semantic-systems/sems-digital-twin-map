@@ -476,7 +476,7 @@ def get_layout_map():
                                 html.Div(
                                     children=[
                                         html.Button(
-                                            '⚙',
+                                            'Filter',
                                             id='filters-toggle-btn',
                                             n_clicks=0,
                                             title='Filter reports',
@@ -1886,7 +1886,9 @@ def callbacks_map(app: Dash):
         """
         function(bounds) {
             if (!bounds || !window._leafletMap) return window.dash_clientside.no_update;
-            window._leafletMap.fitBounds(bounds, {padding: [20, 20]});
+            setTimeout(function() {
+                try { window._leafletMap.fitBounds(bounds, {padding: [20, 20]}); } catch(e) {}
+            }, 50);
             return window.dash_clientside.no_update;
         }
         """,
