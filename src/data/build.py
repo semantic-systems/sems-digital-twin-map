@@ -588,7 +588,7 @@ DEMO_REPORTS = [
     # 3 – irrelevant
     (
         "Jemand aus Blankenese hier? Gibt es in eurem Bereich Probleme mit dem Handynetz?",
-        "reddit", "Irrelevant", "none", "r_hamburg_user1", [("georef", "Blankenese")],
+        "reddit", "Irrelevant", "none", "hamburg_skeptic", [("georef", "Blankenese")],
     ),
     # 4 – irrelevant
     (
@@ -659,7 +659,7 @@ DEMO_REPORTS = [
     # 16 – irrelevant
     (
         "Vorlesungen morgen abgesagt. Wenigstens was Positives.",
-        "bluesky", "Irrelevant", "none", "student_uni_hh", [],
+        "bluesky", "Irrelevant", "none", "hh_influencer", [],
     ),
     # 17 – irrelevant
     (
@@ -691,7 +691,7 @@ DEMO_REPORTS = [
     # 22 – irrelevant
     (
         "Wie immer viel Lärm und am Ende passiert eh nichts Schlimmes. Aufgebauscht.",
-        "mastodon", "Irrelevant", "none", "pessimist_on_fedi", [],
+        "mastodon", "Irrelevant", "none", "hamburg_skeptic", [],
     ),
     # 23 – irrelevant
     (
@@ -718,7 +718,7 @@ DEMO_REPORTS = [
     # 27 – irrelevant
     (
         "Meine Reichweite explodiert gerade, weil ich über die Lage poste. Sollte ich das ausnutzen?",
-        "mastodon", "Irrelevant", "none", "influencer_hh", [],
+        "mastodon", "Irrelevant", "none", "hh_influencer", [],
     ),
     # 28 – irrelevant
     (
@@ -794,7 +794,7 @@ DEMO_REPORTS = [
     # 41 – irrelevant
     (
         "Typisch Hamburg-Hysterie. Ich erinnere an 2020 als auch alle Panik hatten und nichts passierte.",
-        "reddit", "Irrelevant", "none", "reddit_skeptic", [],
+        "reddit", "Irrelevant", "none", "hamburg_skeptic", [],
     ),
     # 42 – irrelevant
     (
@@ -826,7 +826,7 @@ DEMO_REPORTS = [
     # 47 – irrelevant
     (
         "Schon wieder Hamburg unter Wasser. Hab schon ein Wasserstand-Meme vorbereitet, falls jemand will.",
-        "bluesky", "Irrelevant", "none", "meme_lord_hh", [],
+        "bluesky", "Irrelevant", "none", "hh_influencer", [],
     ),
     # 48 – irrelevant
     (

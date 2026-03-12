@@ -10,8 +10,8 @@
     "locations": [
       {
         "osm_id": 443915882,
-        "lat": 53.5384518,
-        "lon": 9.9242425,
+        "lat": 53.5385896,
+        "lon": 9.923903,
         "name": "Elbe",
         "mention": "Elbe",
         "display_name": "Elbe, Waltershof, Hamburg-Mitte, Hamburg, 21129, Deutschland",
@@ -77,7 +77,7 @@
     "platform": "reddit",
     "event_type": "Irrelevant",
     "relevance": "none",
-    "author": "r_hamburg_user1",
+    "author": "hamburg_skeptic",
     "url": "https://example.com/demo/3",
     "locations": [
       {
@@ -3696,8 +3696,8 @@
     "locations": [
       {
         "osm_id": 443915882,
-        "lat": 53.5384518,
-        "lon": 9.9242425,
+        "lat": 53.5385896,
+        "lon": 9.923903,
         "name": "Elbe",
         "mention": "Elbe",
         "display_name": "Elbe, Waltershof, Hamburg-Mitte, Hamburg, 21129, Deutschland",
@@ -7949,7 +7949,7 @@
     "platform": "bluesky",
     "event_type": "Irrelevant",
     "relevance": "none",
-    "author": "student_uni_hh",
+    "author": "hh_influencer",
     "url": "https://example.com/demo/16",
     "locations": []
   },
@@ -10849,7 +10849,7 @@
     "platform": "mastodon",
     "event_type": "Irrelevant",
     "relevance": "none",
-    "author": "pessimist_on_fedi",
+    "author": "hamburg_skeptic",
     "url": "https://example.com/demo/22",
     "locations": []
   },
@@ -14459,7 +14459,7 @@
     "platform": "mastodon",
     "event_type": "Irrelevant",
     "relevance": "none",
-    "author": "influencer_hh",
+    "author": "hh_influencer",
     "url": "https://example.com/demo/27",
     "locations": []
   },
@@ -17355,7 +17355,7 @@
     "platform": "reddit",
     "event_type": "Irrelevant",
     "relevance": "none",
-    "author": "reddit_skeptic",
+    "author": "hamburg_skeptic",
     "url": "https://example.com/demo/41",
     "locations": []
   },
@@ -20511,7 +20511,7 @@
     "platform": "bluesky",
     "event_type": "Irrelevant",
     "relevance": "none",
-    "author": "meme_lord_hh",
+    "author": "hh_influencer",
     "url": "https://example.com/demo/47",
     "locations": []
   },
