@@ -567,6 +567,26 @@ def get_layout_map():
                                     value=list(reports_dropdown_platform),
                                     inputStyle={'margin-right': '3px'},
                                     labelStyle={'display': 'block', 'margin-bottom': '2px'},
+                                    style={'font-size': '8pt', 'margin-bottom': '8px'},
+                                ),
+                                html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
+                                # Visibility
+                                html.Div('Show', style={
+                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
+                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
+                                }),
+                                dcc.Checklist(
+                                    id='reports_filter_visibility',
+                                    options=[
+                                        {'label': 'Seen', 'value': 'show_seen'},
+                                        {'label': 'Unseen', 'value': 'show_unseen'},
+                                        {'label': 'Flagged', 'value': 'show_flagged'},
+                                        {'label': 'Unflagged', 'value': 'show_unflagged'},
+                                    ],
+                                    value=['show_seen', 'show_unseen', 'show_flagged', 'show_unflagged'],
+                                    inline=True,
+                                    inputStyle={'margin-right': '3px'},
+                                    labelStyle={'margin-right': '8px'},
                                     style={'font-size': '8pt', 'margin-bottom': '4px'},
                                 ),
                             ],
@@ -1615,8 +1635,20 @@ def callbacks_map(app: Dash):
         }
 
     # Build the sidebar list — fires on filter changes and initial load, NOT on interval
+    _ALL_VIS = ['show_seen', 'show_unseen', 'show_flagged', 'show_unflagged']
+
+    def _vis_flags(filter_visibility):
+        vis = filter_visibility or _ALL_VIS
+        return {
+            'hide_seen':      'show_seen'      not in vis,
+            'hide_unseen':    'show_unseen'    not in vis,
+            'hide_flagged':   'show_flagged'   not in vis,
+            'hide_unflagged': 'show_unflagged' not in vis,
+        }
+
     def _build_sidebar_content(filter_platform, filter_event_type, filter_relevance_type,
-                                event_type_toggle, seen_list, flagged_list, locs_dict):
+                                event_type_toggle, seen_list, flagged_list, locs_dict,
+                                filter_visibility=None):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
         return get_sidebar_content(
@@ -1627,6 +1659,7 @@ def callbacks_map(app: Dash):
             seen_ids=seen_ids,
             flagged_authors=flagged_authors,
             user_locs_map=user_locs_map,
+            **_vis_flags(filter_visibility),
         )
 
     @app.callback(
@@ -1640,17 +1673,19 @@ def callbacks_map(app: Dash):
         Input('reports_dropdown_relevance_type', 'value'),
         Input('event_type_toggle', 'value'),
         Input('new-posts-banner', 'n_clicks'),
+        Input('reports_filter_visibility', 'value'),
         State('user-seen', 'data'),
         State('user-flagged', 'data'),
         State('user-locations', 'data'),
         prevent_initial_call='initial_duplicate',
     )
     def update_reports(filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                       _banner_clicks, seen_list, flagged_list, locs_dict):
+                       _banner_clicks, filter_visibility, seen_list, flagged_list, locs_dict):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         sidebar_content = _build_sidebar_content(
             filter_platform, filter_event_type, filter_relevance_type,
             event_type_toggle, seen_list, flagged_list, locs_dict,
+            filter_visibility=filter_visibility,
         )
         loaded_at = get_sidebar_max_timestamp(eff_platform, eff_events, eff_relevance) or datetime.utcnow().isoformat()
         banner_reset = {
@@ -1829,21 +1864,25 @@ def callbacks_map(app: Dash):
         Input('reports_dropdown_event_type', 'value'),
         Input('reports_dropdown_relevance_type', 'value'),
         Input('event_type_toggle', 'value'),
+        Input('reports_filter_visibility', 'value'),
         State('user-seen', 'data'),
+        State('user-flagged', 'data'),
         State('user-locations', 'data'),
         prevent_initial_call='initial_duplicate'
     )
     def fetch_report_dots(_n, filter_platform, filter_event_type, filter_relevance_type, loc_filter,
-                          seen_list, locs_dict):
-        seen_ids, _, user_locs_map = _parse_stores(seen_list, None, locs_dict)
+                          filter_visibility, seen_list, flagged_list, locs_dict):
+        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         engine, session = autoconnect_db()
         try:
-            return _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+            return _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
+                                user_locs_map=user_locs_map,
                                 filter_platform=eff_platform,
                                 filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance,
-                                loc_filter=loc_filter or 'all')
+                                loc_filter=loc_filter or 'all',
+                                **_vis_flags(filter_visibility))
         finally:
             session.close()
             engine.dispose()
@@ -1909,10 +1948,12 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
+        State('reports_filter_visibility', 'value'),
         prevent_initial_call=True
     )
     def toggle_report_seen(n_clicks_list, seen_list, flagged_list, locs_dict,
-                           filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
+                           filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
+                           filter_visibility):
         if not ctx.triggered:
             raise PreventUpdate
         if all(n is None or n == 0 for n in n_clicks_list):
@@ -1929,14 +1970,16 @@ def callbacks_map(app: Dash):
         else:
             seen_list.append(report_id)
 
-        seen_ids, _, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
 
         engine, session = autoconnect_db()
         try:
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
+            dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
+                                user_locs_map=user_locs_map,
                                 filter_platform=eff_platform, filter_event_type=eff_events,
-                                filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all')
+                                filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all',
+                                **_vis_flags(filter_visibility))
             return seen_list, dots
         finally:
             session.close()
@@ -1970,7 +2013,7 @@ def callbacks_map(app: Dash):
                 } catch(e) {}
             });
 
-            // Update flag-button labels/styles
+            // Update flag-button labels/styles + li outline
             document.querySelectorAll('[id*="flag-button"]').forEach(function(btn) {
                 try {
                     var idObj     = JSON.parse(btn.id);
@@ -1981,6 +2024,8 @@ def callbacks_map(app: Dash):
                     btn.style.background = isFlagged ? '#fff3e0' : '#fafafa';
                     btn.style.color      = isFlagged ? '#e65100' : '#888';
                     btn.style.fontWeight = isFlagged ? 'bold' : 'normal';
+                    var li = btn.closest('li');
+                    if (li) li.style.outline = isFlagged ? '2px solid #e65100' : 'none';
                 } catch(e) {}
             });
 
@@ -2032,7 +2077,7 @@ def callbacks_map(app: Dash):
         user_locs_map = {int(k): v for k, v in (locs_dict or {}).items()}
         return seen_ids, flagged_authors, user_locs_map
 
-    def _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, seen_ids=None, flagged_authors=None, user_locs_map=None):
+    def _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, seen_ids=None, flagged_authors=None, user_locs_map=None, filter_visibility=None):
         from app.layout.map.sidebar import get_sidebar_content
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         return get_sidebar_content(
@@ -2043,11 +2088,13 @@ def callbacks_map(app: Dash):
             seen_ids=seen_ids,
             flagged_authors=flagged_authors,
             user_locs_map=user_locs_map,
+            **_vis_flags(filter_visibility),
         )
 
-    def _build_dots(session, seen_ids=None, user_locs_map=None,
+    def _build_dots(session, seen_ids=None, flagged_authors=None, user_locs_map=None,
                     filter_platform=None, filter_event_type=None,
-                    filter_relevance_type=None, loc_filter='all'):
+                    filter_relevance_type=None, loc_filter='all',
+                    hide_seen=False, hide_unseen=False, hide_flagged=False, hide_unflagged=False):
         q = session.query(Report).filter(Report.timestamp <= datetime.utcnow())
         if os.environ.get('DEMO_MODE') == '1':
             q = q.filter(Report.identifier.like('demo-%'))
@@ -2059,6 +2106,16 @@ def callbacks_map(app: Dash):
         if filter_relevance_type:
             q = q.filter(Report.relevance.in_(filter_relevance_type))
         reports = q.all()
+        _seen_ids = seen_ids or set()
+        _flagged = flagged_authors or set()
+        if hide_seen:
+            reports = [r for r in reports if r.id not in _seen_ids]
+        if hide_unseen:
+            reports = [r for r in reports if r.id in _seen_ids]
+        if hide_flagged:
+            reports = [r for r in reports if not r.author or r.author not in _flagged]
+        if hide_unflagged:
+            reports = [r for r in reports if r.author and r.author in _flagged]
         dots = []
         for r in reports:
             # location filter
@@ -2214,10 +2271,12 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         State('locations-changed', 'data'),
+        State('reports_filter_visibility', 'value'),
         prevent_initial_call=True,
     )
     def place_location_from_search(n_clicks_list, search_data, pick_mode, seen_list, flagged_list, locs_dict,
-                                   filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+                                   filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
+                                   filter_visibility):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         if not pick_mode or not search_data:
@@ -2263,13 +2322,13 @@ def callbacks_map(app: Dash):
             locs_dict[str(report_id)] = locs
 
             seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+            eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
-                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
-                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
-                                loc_filter=event_type_toggle or 'all')
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                      filter_visibility=filter_visibility)
+            dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
+                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
             return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
@@ -2323,10 +2382,12 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         State('locations-changed', 'data'),
+        State('reports_filter_visibility', 'value'),
         prevent_initial_call=True,
     )
     def place_location(click_data, pick_mode, seen_list, flagged_list, locs_dict,
-                       filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+                       filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
+                       filter_visibility):
         if pick_mode is None or not click_data:
             raise PreventUpdate
         latlng = click_data.get('latlng', {})
@@ -2359,13 +2420,13 @@ def callbacks_map(app: Dash):
             locs_dict[str(report_id)] = locs
 
             seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+            eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
-                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
-                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
-                                loc_filter=event_type_toggle or 'all')
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                      filter_visibility=filter_visibility)
+            dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
+                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
             return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
@@ -2386,10 +2447,12 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         State('locations-changed', 'data'),
+        State('reports_filter_visibility', 'value'),
         prevent_initial_call=True,
     )
     def remove_location(n_clicks_list, seen_list, flagged_list, locs_dict,
-                        filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+                        filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
+                        filter_visibility):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -2415,13 +2478,13 @@ def callbacks_map(app: Dash):
             locs_dict[str(report_id)] = locs
 
             seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+            eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
-                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
-                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
-                                loc_filter=event_type_toggle or 'all')
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                      filter_visibility=filter_visibility)
+            dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
+                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
             return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()
@@ -2442,10 +2505,12 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         State('locations-changed', 'data'),
+        State('reports_filter_visibility', 'value'),
         prevent_initial_call=True,
     )
     def restore_original_locations(n_clicks_list, seen_list, flagged_list, locs_dict,
-                                   filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev):
+                                   filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
+                                   filter_visibility):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -2461,15 +2526,15 @@ def callbacks_map(app: Dash):
 
         seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
 
+        eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         engine, session = autoconnect_db()
         try:
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
-                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
-                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
-                                loc_filter=event_type_toggle or 'all')
+                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                      filter_visibility=filter_visibility)
+            dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
+                                filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
+                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
             return sidebar, dots, (loc_rev or 0) + 1, locs_dict
         finally:
             session.close()

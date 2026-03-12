@@ -326,7 +326,7 @@ def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, use
 
     return [format_report(report, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None, hide_seen=False, hide_unseen=False, hide_flagged=False, hide_unflagged=False):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
@@ -373,6 +373,15 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
     seen_ids = seen_ids or set()
     flagged_authors = flagged_authors or set()
     user_locs_map = user_locs_map or {}
+
+    if hide_seen:
+        reports = [r for r in reports if r.id not in seen_ids]
+    if hide_unseen:
+        reports = [r for r in reports if r.id in seen_ids]
+    if hide_flagged:
+        reports = [r for r in reports if not r.author or r.author not in flagged_authors]
+    if hide_unflagged:
+        reports = [r for r in reports if r.author and r.author in flagged_authors]
 
     if loc_filter == 'all':
         return format_reports(reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
