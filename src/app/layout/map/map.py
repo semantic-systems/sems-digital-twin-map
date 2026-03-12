@@ -807,6 +807,7 @@ def get_layout_map():
         ),
         dcc.Store(id='location-search-data', data=[]),
         dcc.Store(id='sidebar-loaded-at', data=None),
+        dcc.Store(id='fit-bounds-request', data=None),  # [[lat1,lon1],[lat2,lon2]] to fitBounds
     ]
     
     # layout_map[0..5] = dl.Map + map overlay controls (position:absolute)
@@ -1849,7 +1850,7 @@ def callbacks_map(app: Dash):
 
     # Fit the map to all georeferenced locations of the clicked report
     @app.callback(
-        Output('map', 'bounds', allow_duplicate=True),
+        Output('fit-bounds-request', 'data'),
         Input({'type': 'center-button', 'index': ALL}, 'n_clicks'),
         State('user-locations', 'data'),
         prevent_initial_call=True,
@@ -1879,6 +1880,20 @@ def callbacks_map(app: Dash):
         lons = [loc['lon'] for loc in georef]
         pad = 0.01  # ~1 km padding so a single point doesn't zoom to maximum
         return [[min(lats) - pad, min(lons) - pad], [max(lats) + pad, max(lons) + pad]]
+
+    # Clientside: call window._leafletMap.fitBounds() whenever a bounds request arrives
+    app.clientside_callback(
+        """
+        function(bounds) {
+            if (!bounds || !window._leafletMap) return window.dash_clientside.no_update;
+            window._leafletMap.fitBounds(bounds, {padding: [20, 20]});
+            return window.dash_clientside.no_update;
+        }
+        """,
+        Output('report-dots-tick', 'data', allow_duplicate=True),
+        Input('fit-bounds-request', 'data'),
+        prevent_initial_call=True,
+    )
 
     # Mark a report as seen; immediately re-fetch dots so they vanish without waiting for interval
     @app.callback(
@@ -1941,12 +1956,14 @@ def callbacks_map(app: Dash):
 
             // Highlight active report entry in sidebar — deferred so React has
             // finished re-rendering the list before we query the new DOM nodes.
+            // Both removal and addition happen inside the timeout to avoid a visible blink
+            // when the interval tick re-fires without changing the active report.
             var _activeId = activeId;
-            document.querySelectorAll('.report-entry-active').forEach(function(el) {
-                el.classList.remove('report-entry-active');
-            });
-            if (_activeId !== null && _activeId !== undefined) {
-                setTimeout(function() {
+            setTimeout(function() {
+                document.querySelectorAll('.report-entry-active').forEach(function(el) {
+                    el.classList.remove('report-entry-active');
+                });
+                if (_activeId !== null && _activeId !== undefined) {
                     var el = document.getElementById('{"index":' + _activeId + ',"type":"report-entry"}');
                     if (el) {
                         var li = el.closest('li');
@@ -1955,8 +1972,8 @@ def callbacks_map(app: Dash):
                             li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         }
                     }
-                }, 150);
-            }
+                }
+            }, 150);
             return window.dash_clientside.no_update;
         }
         """,
