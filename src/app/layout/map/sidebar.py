@@ -154,7 +154,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                             'padding': '2px 7px',
                             'cursor': 'pointer' if is_localized else 'default',
                             'border-radius': '4px',
-                            'border': '1px solid #90caf9' if is_localized else '1px solid #eee',
+                            'border': '1px solid #ddd' if is_localized else '1px solid #eee',
                             'background': '#fafafa' if is_localized else '#f5f5f5',
                             'color': '#888' if is_localized else '#bdbdbd',
                         },
