@@ -168,7 +168,8 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                     ),
                     html.Button(
                         'Unflag' if is_flagged else 'Flag',
-                        id={'type': 'flag-button', 'index': report.id},
+                        id={'type': 'flag-button', 'index': report.id, 'author': author or ''},
+                        className='sidebar-flag-btn',
                         title='Unflag author' if is_flagged else 'Flag author',
                         n_clicks=0,
                         style={

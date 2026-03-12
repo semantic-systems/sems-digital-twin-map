@@ -209,6 +209,42 @@
         syncToStore('active-report-id', reportId);
     }
 
+    // ─── Flag toggle helper ───────────────────────────────────────────────────
+
+    function _toggleAuthorFlag(author) {
+        var flagged = (window._flaggedAuthors || []).slice();
+        var fidx = flagged.indexOf(author);
+        if (fidx !== -1) flagged.splice(fidx, 1);
+        else             flagged.push(author);
+        window._flaggedAuthors = flagged;
+
+        var isFlagged = flagged.indexOf(author) !== -1;
+
+        // Update all sidebar flag buttons for this author immediately
+        document.querySelectorAll('.sidebar-flag-btn').forEach(function(btn) {
+            try {
+                var bid = JSON.parse(btn.id);
+                if ((bid.author || '') !== author) return;
+                btn.textContent      = isFlagged ? 'Unflag' : 'Flag';
+                btn.style.border     = isFlagged ? '1px solid #e65100' : '1px solid #ddd';
+                btn.style.background = isFlagged ? '#fff3e0' : '#fafafa';
+                btn.style.color      = isFlagged ? '#e65100' : '#888';
+                btn.style.fontWeight = isFlagged ? 'bold' : 'normal';
+                // Mark the whole report entry with a red outline
+                var li = btn.closest('li');
+                if (li) li.style.outline = isFlagged ? '2px solid #e65100' : 'none';
+            } catch(e) {}
+        });
+
+        syncToStore('user-flagged', flagged);
+
+        // Refresh map popup if open
+        if (_currentDot && _popup) {
+            _popup.setContent(buildDotPopupContent(_currentDot));
+        }
+        if (window.updateReportDots) window.updateReportDots();
+    }
+
     // ─── Event delegation ─────────────────────────────────────────────────────
 
     document.addEventListener('click', function (e) {
@@ -252,23 +288,25 @@
             return;
         }
 
-        // Flag button
+        // Flag button (map popup)
         var flagBtn = e.target.closest('.rdot-flag-btn');
         if (flagBtn) {
             var author = flagBtn.dataset.author;
             if (!author) return;
-            var flagged = (window._flaggedAuthors || []).slice();
-            var fidx = flagged.indexOf(author);
-            if (fidx !== -1) flagged.splice(fidx, 1);
-            else             flagged.push(author);
-            window._flaggedAuthors = flagged;
+            _toggleAuthorFlag(author);
+            return;
+        }
 
-            syncToStore('user-flagged', flagged);
-
-            // Refresh popup in place with updated flag state
-            if (_currentDot && _popup) {
-                _popup.setContent(buildDotPopupContent(_currentDot));
-            }
+        // Flag button (sidebar)
+        var sidebarFlagBtn = e.target.closest('.sidebar-flag-btn');
+        if (sidebarFlagBtn) {
+            var sideFlagAuthor = '';
+            try {
+                var btnId = JSON.parse(sidebarFlagBtn.id);
+                sideFlagAuthor = btnId.author || '';
+            } catch(e2) {}
+            if (!sideFlagAuthor) return;
+            _toggleAuthorFlag(sideFlagAuthor);
             return;
         }
     });

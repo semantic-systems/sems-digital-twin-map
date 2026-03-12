@@ -1901,7 +1901,6 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('user-seen', 'data'),
         Output('report-dots-data', 'data', allow_duplicate=True),
-        Output('reports_list', 'children', allow_duplicate=True),
         Input({'type': 'seen-button', 'index': ALL}, 'n_clicks'),
         State('user-seen', 'data'),
         State('user-flagged', 'data'),
@@ -1930,36 +1929,62 @@ def callbacks_map(app: Dash):
         else:
             seen_list.append(report_id)
 
-        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+        seen_ids, _, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
+        eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
 
         engine, session = autoconnect_db()
         try:
             dots = _build_dots(session, seen_ids=seen_ids, user_locs_map=user_locs_map,
-                                filter_platform=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[0],
-                                filter_event_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[1],
-                                filter_relevance_type=_normalize_filters(filter_platform, filter_event_type, filter_relevance_type)[2],
-                                loc_filter=event_type_toggle or 'all')
-            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            return seen_list, dots, sidebar
+                                filter_platform=eff_platform, filter_event_type=eff_events,
+                                filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all')
+            return seen_list, dots
         finally:
             session.close()
             engine.dispose()
 
-    # Clientside: push new dot data + active report id + seen/flagged stores to JS, trigger re-render
+    # Clientside: push dot data + seen/flagged stores to JS; update sidebar DOM in one pass
     app.clientside_callback(
         """
         function(dots, activeId, _loadedAt, seenList, flaggedList) {
+            var seen    = seenList    || [];
+            var flagged = flaggedList || [];
+
             window._reportDotsData = dots || [];
             window._activeReportId = activeId;
-            window._seenIds = seenList || [];
-            window._flaggedAuthors = flaggedList || [];
+            window._seenIds        = seen;
+            window._flaggedAuthors = flagged;
             if (window.updateReportDots) window.updateReportDots();
 
-            // Highlight active report entry in sidebar — deferred so React has
-            // finished re-rendering the list before we query the new DOM nodes.
-            // Both removal and addition happen inside the timeout to avoid a visible blink
-            // when the interval tick re-fires without changing the active report.
+            // Update seen-button labels/styles + entry opacity
+            document.querySelectorAll('[id*="seen-button"]').forEach(function(btn) {
+                try {
+                    var idObj  = JSON.parse(btn.id);
+                    var isSeen = seen.indexOf(idObj.index) !== -1;
+                    var li     = btn.closest('li');
+                    if (li) li.style.opacity = isSeen ? '0.5' : '1';
+                    btn.textContent       = isSeen ? 'Mark as unseen' : 'Mark as seen';
+                    btn.style.border      = isSeen ? '1px solid #a5d6a7' : '1px solid #ddd';
+                    btn.style.background  = isSeen ? '#e8f5e9' : '#fafafa';
+                    btn.style.color       = isSeen ? '#2e7d32' : '#888';
+                    btn.style.fontWeight  = isSeen ? 'bold' : 'normal';
+                } catch(e) {}
+            });
+
+            // Update flag-button labels/styles
+            document.querySelectorAll('[id*="flag-button"]').forEach(function(btn) {
+                try {
+                    var idObj     = JSON.parse(btn.id);
+                    var author    = idObj.author || '';
+                    var isFlagged = !!author && flagged.indexOf(author) !== -1;
+                    btn.textContent      = isFlagged ? 'Unflag' : 'Flag';
+                    btn.style.border     = isFlagged ? '1px solid #e65100' : '1px solid #ddd';
+                    btn.style.background = isFlagged ? '#fff3e0' : '#fafafa';
+                    btn.style.color      = isFlagged ? '#e65100' : '#888';
+                    btn.style.fontWeight = isFlagged ? 'bold' : 'normal';
+                } catch(e) {}
+            });
+
+            // Highlight active report entry — deferred so React has finished re-rendering
             var _activeId = activeId;
             setTimeout(function() {
                 document.querySelectorAll('.report-entry-active').forEach(function(el) {
@@ -1983,66 +2008,10 @@ def callbacks_map(app: Dash):
         Input('report-dots-data', 'data'),
         Input('active-report-id', 'data'),
         Input('sidebar-loaded-at', 'data'),
-        State('user-seen', 'data'),
-        State('user-flagged', 'data'),
+        Input('user-seen', 'data'),
+        Input('user-flagged', 'data'),
     )
 
-    # ---- Flag: toggle author flagging per user ----
-    @app.callback(
-        Output('user-flagged', 'data'),
-        Output('reports_list', 'children', allow_duplicate=True),
-        Input({'type': 'flag-button', 'index': ALL}, 'n_clicks'),
-        State('user-seen', 'data'),
-        State('user-flagged', 'data'),
-        State('user-locations', 'data'),
-        State('reports_dropdown_platform', 'value'),
-        State('reports_dropdown_event_type', 'value'),
-        State('reports_dropdown_relevance_type', 'value'),
-        State('event_type_toggle', 'value'),
-        prevent_initial_call=True,
-    )
-    def toggle_author_flag(n_clicks_list, seen_list, flagged_list, locs_dict,
-                           filter_platform, filter_event_type, filter_relevance_type, event_type_toggle):
-        if not ctx.triggered:
-            raise PreventUpdate
-        if all(n is None or n == 0 for n in n_clicks_list):
-            raise PreventUpdate
-
-        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
-        try:
-            report_id = json.loads(triggered_id_str).get('index')
-        except Exception:
-            raise PreventUpdate
-        if report_id is None:
-            raise PreventUpdate
-
-        engine, session = autoconnect_db()
-        try:
-            r = session.query(Report).filter(Report.id == report_id).first()
-            if r is None:
-                raise PreventUpdate
-            author = r.author or ''
-        finally:
-            session.close()
-            engine.dispose()
-
-        flagged_list = list(flagged_list or [])
-        if author:
-            if author in flagged_list:
-                flagged_list.remove(author)
-            else:
-                flagged_list.append(author)
-
-        seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
-
-        engine, session = autoconnect_db()
-        try:
-            sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                                      seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
-            return flagged_list, sidebar
-        finally:
-            session.close()
-            engine.dispose()
 
 
     # ---- Shared helpers for location callbacks ----
