@@ -475,6 +475,13 @@ def get_layout_map():
                                 }),
                                 html.Div(
                                     children=[
+                                        dcc.Checklist(
+                                            id='autoscroll-toggle',
+                                            options=[{'label': 'Auto-update', 'value': 'on'}],
+                                            value=[],
+                                            inputStyle={'margin-right': '3px'},
+                                            style={'font-size': '9pt', 'color': '#888', 'white-space': 'nowrap'},
+                                        ),
                                         html.Button(
                                             'Filter',
                                             id='filters-toggle-btn',
@@ -491,7 +498,7 @@ def get_layout_map():
                                             style={'display': 'none'},
                                         ),
                                     ],
-                                    style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'margin-left': 'auto'},
+                                    style={'display': 'flex', 'align-items': 'center', 'gap': '6px', 'margin-left': 'auto'},
                                 ),
                                 html.Button(
                                     '↺ Reset Demo',
@@ -1699,19 +1706,30 @@ def callbacks_map(app: Dash):
         reset_active = None if 'new-posts-banner' not in triggered else dash.no_update
         return sidebar_content, reset_active, loaded_at, '↑ 0 new posts', banner_reset
 
-    # Check for new posts on each interval tick — update banner, don't touch the list
+    # Check for new posts on each interval tick.
+    # Auto-update mode: rebuild the list immediately when new posts arrive.
+    # Manual mode: show the banner so the user can click to refresh.
     @app.callback(
         Output('new-posts-banner', 'children', allow_duplicate=True),
         Output('new-posts-banner', 'style', allow_duplicate=True),
+        Output('reports_list', 'children', allow_duplicate=True),
+        Output('sidebar-loaded-at', 'data', allow_duplicate=True),
         Input('interval_refresh_reports', 'n_intervals'),
         State('sidebar-loaded-at', 'data'),
+        State('autoscroll-toggle', 'value'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
+        State('reports_filter_visibility', 'value'),
+        State('user-seen', 'data'),
+        State('user-flagged', 'data'),
+        State('user-locations', 'data'),
         prevent_initial_call=True,
     )
-    def check_new_posts(_n, loaded_at, filter_platform, filter_event_type, filter_relevance_type, loc_filter):
+    def check_new_posts(_n, loaded_at, autoupdate, filter_platform, filter_event_type,
+                        filter_relevance_type, loc_filter, filter_visibility,
+                        seen_list, flagged_list, locs_dict):
         if not loaded_at:
             raise PreventUpdate
         try:
@@ -1720,6 +1738,12 @@ def callbacks_map(app: Dash):
             raise PreventUpdate
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         engine, session = autoconnect_db()
+        _banner_base = {
+            'display': 'block', 'width': '100%', 'margin-bottom': '6px',
+            'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
+            'border-radius': '4px', 'text-align': 'center',
+        }
+        _banner_idle = {**_banner_base, 'border': '1px solid #ddd', 'background': '#f5f5f5', 'color': '#aaa', 'font-weight': 'normal'}
         try:
             q = session.query(Report).filter(
                 Report.timestamp > since,
@@ -1735,17 +1759,26 @@ def callbacks_map(app: Dash):
             if eff_relevance:
                 q = q.filter(Report.relevance.in_(eff_relevance))
             count = q.count()
+
+            if count == 0:
+                return '↑ 0 new posts', _banner_idle, dash.no_update, dash.no_update
+
+            if autoupdate and 'on' in autoupdate:
+                # Rebuild sidebar immediately
+                new_loaded_at = get_sidebar_max_timestamp(eff_platform, eff_events, eff_relevance) or datetime.utcnow().isoformat()
+                sidebar = _build_sidebar_content(
+                    filter_platform, filter_event_type, filter_relevance_type,
+                    loc_filter, seen_list, flagged_list, locs_dict,
+                    filter_visibility=filter_visibility,
+                )
+                return '↑ 0 new posts', _banner_idle, sidebar, new_loaded_at
+
+            # Manual mode: show banner
+            label = f'↑ {count} new post{"s" if count != 1 else ""}'
+            return label, {**_banner_base, 'border': '1px solid #42a5f5', 'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold'}, dash.no_update, dash.no_update
         finally:
             session.close()
             engine.dispose()
-        _base = {
-            'display': 'block', 'width': '100%', 'margin-bottom': '6px',
-            'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
-            'border-radius': '4px', 'text-align': 'center',
-        }
-        if count == 0:
-            return '↑ 0 new posts', {**_base, 'border': '1px solid #ddd', 'background': '#f5f5f5', 'color': '#aaa', 'font-weight': 'normal'}
-        return f'↑ {count} new post{"s" if count != 1 else ""}', {**_base, 'border': '1px solid #42a5f5', 'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold'}
     
     # toggle the layers widget
     @app.callback(
