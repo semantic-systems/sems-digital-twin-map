@@ -1717,7 +1717,7 @@ def callbacks_map(app: Dash):
                 since = datetime.fromisoformat(old_loaded_at)
             except Exception:
                 since = None
-            new_reports = _query_reports(since=since)
+            new_reports = _query_reports(since=None)
             seen_ids_set, _, user_locs_map = _parse_stores(report_state, locs_dict)
             new_reports = _filter_by_display(
                 new_reports,
@@ -1753,7 +1753,7 @@ def callbacks_map(app: Dash):
             if old_loaded_at:
                 try:
                     since = datetime.fromisoformat(old_loaded_at)
-                    pending = _query_reports(since=since)
+                    pending = _query_reports(since=None)
                     seen_ids_set, flagged_set, user_locs_map = _parse_stores(updated_state, locs_dict)
                     pending = _filter_by_display(
                         pending,
@@ -1761,6 +1761,9 @@ def callbacks_map(app: Dash):
                         seen_ids_set, flagged_set, user_locs_map,
                         _vis_flags(filter_visibility),
                     )
+
+                    already_added = {k for k, v in report_state.items() if v["added"]}
+                    pending = [r for r in pending if str(r.id) not in already_added]
                     count = len(pending)
                 except Exception:
                     count = 0
@@ -1822,7 +1825,17 @@ def callbacks_map(app: Dash):
                 q = q.filter(Report.event_type.in_(eff_events))
             if eff_relevance:
                 q = q.filter(Report.relevance.in_(eff_relevance))
+            already_added = {k for k, v in report_state.items() if v["added"]}
+            q = q.filter(Report.identifier.notin_(already_added))
             new_reports = q.all()
+            seen_ids_set, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
+
+            new_reports = _filter_by_display(
+                new_reports,
+                loc_filter or 'all',
+                seen_ids_set, flagged_authors, user_locs_map,
+                _vis_flags(filter_visibility),
+            )
             count = len(new_reports)
 
             if count == 0:
