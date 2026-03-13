@@ -577,21 +577,14 @@ def get_layout_map():
                                     style={'font-size': '8pt', 'margin-bottom': '8px'},
                                 ),
                                 html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
-                                # Visibility
-                                html.Div('Show', style={
-                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
-                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
-                                }),
                                 dcc.Checklist(
                                     id='reports_filter_visibility',
                                     options=[
-                                        {'label': 'Seen', 'value': 'show_seen'},
-                                        {'label': 'Unseen', 'value': 'show_unseen'},
+                                        {'label': 'Show hidden', 'value': 'show_hidden'},
                                         {'label': 'Flagged', 'value': 'show_flagged'},
                                         {'label': 'Unflagged', 'value': 'show_unflagged'},
                                     ],
-                                    value=['show_seen', 'show_unseen', 'show_flagged', 'show_unflagged'],
-                                    inline=True,
+                                    value=['show_flagged', 'show_unflagged'],
                                     inputStyle={'margin-right': '3px'},
                                     labelStyle={'margin-right': '8px'},
                                     style={'font-size': '8pt', 'margin-bottom': '4px'},
@@ -1642,20 +1635,17 @@ def callbacks_map(app: Dash):
         }
 
     # Build the sidebar list — fires on filter changes and initial load, NOT on interval
-    _ALL_VIS = ['show_seen', 'show_unseen', 'show_flagged', 'show_unflagged']
-
     def _vis_flags(filter_visibility):
-        vis = filter_visibility or _ALL_VIS
+        vis = filter_visibility or []
         return {
-            'hide_seen':      'show_seen'      not in vis,
-            'hide_unseen':    'show_unseen'    not in vis,
-            'hide_flagged':   'show_flagged'   not in vis,
+            'hide_seen':      'show_hidden'   not in vis,
+            'hide_flagged':   'show_flagged'  not in vis,
             'hide_unflagged': 'show_unflagged' not in vis,
         }
 
     def _build_sidebar_content(filter_platform, filter_event_type, filter_relevance_type,
                                 event_type_toggle, seen_list, flagged_list, locs_dict,
-                                filter_visibility=None):
+                                filter_visibility=None, max_timestamp=None):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         seen_ids, flagged_authors, user_locs_map = _parse_stores(seen_list, flagged_list, locs_dict)
         return get_sidebar_content(
@@ -1666,6 +1656,7 @@ def callbacks_map(app: Dash):
             seen_ids=seen_ids,
             flagged_authors=flagged_authors,
             user_locs_map=user_locs_map,
+            max_timestamp=max_timestamp,
             **_vis_flags(filter_visibility),
         )
 
@@ -1969,10 +1960,11 @@ def callbacks_map(app: Dash):
         prevent_initial_call=True,
     )
 
-    # Mark a report as seen; immediately re-fetch dots so they vanish without waiting for interval
+    # Mark a report as seen; immediately rebuild sidebar + dots so the entry vanishes without waiting for interval
     @app.callback(
         Output('user-seen', 'data'),
         Output('report-dots-data', 'data', allow_duplicate=True),
+        Output('reports_list', 'children', allow_duplicate=True),
         Input({'type': 'seen-button', 'index': ALL}, 'n_clicks'),
         State('user-seen', 'data'),
         State('user-flagged', 'data'),
@@ -1982,11 +1974,12 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         State('reports_filter_visibility', 'value'),
+        State('sidebar-loaded-at', 'data'),
         prevent_initial_call=True
     )
     def toggle_report_seen(n_clicks_list, seen_list, flagged_list, locs_dict,
                            filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                           filter_visibility):
+                           filter_visibility, loaded_at):
         if not ctx.triggered:
             raise PreventUpdate
         if all(n is None or n == 0 for n in n_clicks_list):
@@ -2008,12 +2001,19 @@ def callbacks_map(app: Dash):
 
         engine, session = autoconnect_db()
         try:
+            vis = _vis_flags(filter_visibility)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform, filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all',
-                                **_vis_flags(filter_visibility))
-            return seen_list, dots
+                                **vis)
+            sidebar = _build_sidebar_content(
+                filter_platform, filter_event_type, filter_relevance_type,
+                event_type_toggle, seen_list, flagged_list, locs_dict,
+                filter_visibility=filter_visibility,
+                max_timestamp=loaded_at,
+            )
+            return seen_list, dots, sidebar
         finally:
             session.close()
             engine.dispose()
@@ -2038,7 +2038,7 @@ def callbacks_map(app: Dash):
                     var isSeen = seen.indexOf(idObj.index) !== -1;
                     var li     = btn.closest('li');
                     if (li) li.style.opacity = isSeen ? '0.5' : '1';
-                    btn.textContent       = isSeen ? 'Mark as unseen' : 'Mark as seen';
+                    btn.textContent       = isSeen ? 'Unhide' : 'Hide';
                     btn.style.border      = isSeen ? '1px solid #a5d6a7' : '1px solid #ddd';
                     btn.style.background  = isSeen ? '#e8f5e9' : '#fafafa';
                     btn.style.color       = isSeen ? '#2e7d32' : '#888';
@@ -2127,7 +2127,7 @@ def callbacks_map(app: Dash):
     def _build_dots(session, seen_ids=None, flagged_authors=None, user_locs_map=None,
                     filter_platform=None, filter_event_type=None,
                     filter_relevance_type=None, loc_filter='all',
-                    hide_seen=False, hide_unseen=False, hide_flagged=False, hide_unflagged=False):
+                    hide_seen=False, hide_flagged=False, hide_unflagged=False):
         q = session.query(Report).filter(Report.timestamp <= datetime.utcnow())
         if os.environ.get('DEMO_MODE') == '1':
             q = q.filter(Report.identifier.like('demo-%'))
@@ -2143,8 +2143,6 @@ def callbacks_map(app: Dash):
         _flagged = flagged_authors or set()
         if hide_seen:
             reports = [r for r in reports if r.id not in _seen_ids]
-        if hide_unseen:
-            reports = [r for r in reports if r.id in _seen_ids]
         if hide_flagged:
             reports = [r for r in reports if not r.author or r.author not in _flagged]
         if hide_unflagged:
