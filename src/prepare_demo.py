@@ -104,7 +104,7 @@ def main():
             print(f"  ✓ {place} → {result['lat']:.4f}, {result['lon']:.4f}")
 
     # Build fully resolved report list (no timestamps — added fresh at seed time)
-    records = []But
+    records = []
     for i, (text, platform, event_type, relevance, author, loc_mentions) in enumerate(DEMO_REPORTS):
         locs = _build_locs(loc_mentions, osm_cache)
         records.append({
