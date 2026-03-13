@@ -326,7 +326,7 @@ def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, use
 
     return [format_report(report, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None, hide_seen=False, hide_flagged=False, hide_unflagged=False, max_timestamp=None):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None, hide_seen=False, hide_flagged=False, hide_unflagged=False, max_timestamp=None, added_ids=None):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
@@ -355,15 +355,19 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
         else:
             filter_arguments.append(Report.relevance == filter_relevance_type)
 
-    # Only show reports with timestamps up to the loaded_at cutoff (prevents new posts sneaking in on hide)
-    if max_timestamp:
-        try:
-            cutoff = datetime.fromisoformat(max_timestamp)
-        except Exception:
-            cutoff = datetime.utcnow()
+    # Only show reports explicitly admitted into the current view.
+    # added_ids is the authoritative set; if empty fall back to a timestamp cutoff.
+    _added = [int(i) for i in (added_ids or [])]
+    if _added:
+        filter_arguments.append(Report.id.in_(_added))
     else:
         cutoff = datetime.utcnow()
-    filter_arguments.append(Report.timestamp <= cutoff)
+        if max_timestamp:
+            try:
+                cutoff = datetime.fromisoformat(max_timestamp)
+            except Exception:
+                pass
+        filter_arguments.append(Report.timestamp <= cutoff)
 
     # In demo mode, only show demo-seeded reports (guards against server_reports re-inserting real ones)
     if os.environ.get('DEMO_MODE') == '1':

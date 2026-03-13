@@ -1,8 +1,9 @@
 // Manages live report dots on the Leaflet map.
-// Data: window._reportDotsData  (set by Dash clientside callback)
-// Active: window._activeReportId (set by Dash clientside callback)
-// Seen:   window._seenIds         (array of report IDs, mirrored from user-seen store)
-// Flagged: window._flaggedAuthors (array of author strings, mirrored from user-flagged store)
+// Data:    window._reportDotsData  (set by Dash clientside callback)
+// Active:  window._activeReportId  (set by Dash clientside callback)
+// State:   window._reportState     (dict {reportId: {hide, flag, added, author}}, mirrored from report-state store)
+// Derived: window._seenIds         (array of report IDs where hide=true)
+// Derived: window._flaggedAuthors  (array of unique author strings where flag=true)
 (function () {
 
     var CLUSTER_RADIUS = 28; // pixels — dots closer than this collapse into one
@@ -90,7 +91,7 @@
     }
 
     function isSeen(reportId) {
-        return (window._seenIds || []).indexOf(reportId) !== -1;
+        return !!((window._reportState || {})[reportId] || {}).hide;
     }
 
     function isFlagged(author) {
@@ -212,15 +213,46 @@
     // ─── Flag toggle helper ───────────────────────────────────────────────────
 
     function _toggleAuthorFlag(author) {
-        var flagged = (window._flaggedAuthors || []).slice();
-        var fidx = flagged.indexOf(author);
-        if (fidx !== -1) flagged.splice(fidx, 1);
-        else             flagged.push(author);
-        window._flaggedAuthors = flagged;
+        var state = window._reportState || {};
 
-        var isFlagged = flagged.indexOf(author) !== -1;
+        // Determine current flag status for this author across all known entries
+        var anyFlagged = Object.keys(state).some(function(id) {
+            return state[id].author === author && state[id].flag;
+        });
+        var newFlag = !anyFlagged;
 
-        // Update all sidebar flag buttons for this author immediately
+        // Update all known state entries for this author
+        Object.keys(state).forEach(function(id) {
+            if (state[id].author === author) {
+                state[id].flag = newFlag;
+            }
+        });
+
+        // Also ensure entries exist for all sidebar buttons with this author
+        document.querySelectorAll('.sidebar-flag-btn').forEach(function(btn) {
+            try {
+                var bid = JSON.parse(btn.id);
+                if ((bid.author || '') !== author) return;
+                var rid = bid.index;
+                if (!state[rid]) {
+                    state[rid] = {hide: false, flag: newFlag, added: false, author: author};
+                } else {
+                    state[rid].flag = newFlag;
+                }
+            } catch(e) {}
+        });
+
+        window._reportState = state;
+
+        // Re-derive flaggedAuthors
+        window._flaggedAuthors = Object.values(state)
+            .filter(function(s) { return s.flag && s.author; })
+            .map(function(s) { return s.author; })
+            .filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+        var isFlagged = newFlag;
+
+        // Update sidebar DOM for all buttons with this author
         document.querySelectorAll('.sidebar-flag-btn').forEach(function(btn) {
             try {
                 var bid = JSON.parse(btn.id);
@@ -230,13 +262,12 @@
                 btn.style.background = isFlagged ? '#fff3e0' : '#fafafa';
                 btn.style.color      = isFlagged ? '#e65100' : '#888';
                 btn.style.fontWeight = isFlagged ? 'bold' : 'normal';
-                // Mark the whole report entry with a red outline
                 var li = btn.closest('li');
                 if (li) li.style.outline = isFlagged ? '2px solid #e65100' : 'none';
             } catch(e) {}
         });
 
-        syncToStore('user-flagged', flagged);
+        syncToStore('report-state', state);
 
         // Refresh map popup if open
         if (_currentDot && _popup) {
@@ -263,24 +294,35 @@
         var seenBtn = e.target.closest('.rdot-seen-btn');
         if (seenBtn) {
             var reportId = parseInt(seenBtn.dataset.reportId);
-            var seenIds = (window._seenIds || []).slice();
-            var idx = seenIds.indexOf(reportId);
-            if (idx !== -1) seenIds.splice(idx, 1);
-            else            seenIds.push(reportId);
-            window._seenIds = seenIds;
+            var state = window._reportState || {};
+            var entry = state[reportId] || {hide: false, flag: false, added: false, author: ''};
+            // Fill in author from dots data if not yet in state
+            if (!entry.author) {
+                var dot = (window._reportDotsData || []).find(function(d) { return d.report_id === reportId; });
+                if (dot) entry.author = dot.author || '';
+            }
+            var wasHidden = !!entry.hide;
+            entry.hide = !wasHidden;
+            state[reportId] = entry;
+            window._reportState = state;
 
-            // Update the in-memory dot so it disappears / reappears immediately
-            var dotEntry = (window._reportDotsData || []).find(function (d) { return d.report_id === reportId; });
-            if (dotEntry) dotEntry.seen = (idx === -1); // true if we just added it
+            // Re-derive seenIds
+            window._seenIds = Object.keys(state).filter(function(id) {
+                return state[id].hide;
+            }).map(Number);
 
-            syncToStore('user-seen', seenIds);
+            // Update the in-memory dot
+            var dotEntry = (window._reportDotsData || []).find(function(d) { return d.report_id === reportId; });
+            if (dotEntry) dotEntry.seen = entry.hide;
+
+            syncToStore('report-state', state);
             window.updateReportDots();
 
-            if (idx === -1) {
-                // Just marked as seen — dot will vanish, close the popup
+            if (entry.hide) {
+                // Just hidden — dot will vanish, close the popup
                 if (_popup) { _popup.remove(); _popup = null; _currentDot = null; }
             } else {
-                // Just unmarked — refresh popup in place
+                // Just unhidden — refresh popup in place
                 if (_currentDot && _popup) {
                     _popup.setContent(buildDotPopupContent(_currentDot));
                 }
