@@ -1706,8 +1706,8 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('sidebar-loaded-at', 'data', allow_duplicate=True),
         Input('interval_refresh_reports', 'n_intervals'),
+        Input('autoscroll-toggle', 'value'),
         State('sidebar-loaded-at', 'data'),
-        State('autoscroll-toggle', 'value'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -1718,7 +1718,7 @@ def callbacks_map(app: Dash):
         State('user-locations', 'data'),
         prevent_initial_call=True,
     )
-    def check_new_posts(_n, loaded_at, autoupdate, filter_platform, filter_event_type,
+    def check_new_posts(_n, autoupdate, loaded_at, filter_platform, filter_event_type,
                         filter_relevance_type, loc_filter, filter_visibility,
                         seen_list, flagged_list, locs_dict):
         if not loaded_at:
