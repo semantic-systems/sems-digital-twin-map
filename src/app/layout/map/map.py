@@ -2720,9 +2720,15 @@ def callbacks_map(app: Dash):
         Output('user-locations', 'data', allow_duplicate=True),
         Output('sidebar-loaded-at', 'data', allow_duplicate=True),
         Input('demo-reset-button', 'n_clicks'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        State('reports_filter_visibility', 'value'),
         prevent_initial_call=True,
     )
-    def reset_demo(n_clicks):
+    def reset_demo(n_clicks, filter_platform, filter_event_type, filter_relevance_type,
+                   event_type_toggle, filter_visibility):
         if not n_clicks:
             raise PreventUpdate
         from data.build import seed_demo_data
@@ -2735,7 +2741,11 @@ def callbacks_map(app: Dash):
         # Admit the demo posts that are already current and rebuild the sidebar.
         demo_reports = _query_all_demo_reports()
         fresh_state = _mark_reports_added({}, demo_reports, set())
-        sidebar = _build_sidebar_content(None, None, None, 'all', fresh_state, {})
+        sidebar = _build_sidebar_content(
+            filter_platform, filter_event_type, filter_relevance_type,
+            event_type_toggle, fresh_state, {},
+            filter_visibility=filter_visibility,
+        )
         # Use the earliest demo post timestamp as loaded_at so check_new_posts
         # correctly finds all future demo posts (spread over 5 min) as they arrive.
         if demo_reports:
