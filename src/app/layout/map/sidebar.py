@@ -58,8 +58,8 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     }
     bg_color = relevance_color_map.get(relevance, "#e0e0e0")
 
-    seen_btn_label = "Mark as unseen" if is_seen else "Mark as seen"
-    seen_btn_title = "Mark as unseen" if is_seen else "Mark as seen"
+    seen_btn_label = "Unhide" if is_seen else "Hide"
+    seen_btn_title = "Unhide" if is_seen else "Hide"
     seen_btn_style = {
         'font-size': '11px',
         'padding': '2px 7px',

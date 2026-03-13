@@ -139,7 +139,7 @@
                 ? '<a href="' + escHtml(dot.url) + '" target="_blank" style="font-size:9pt;color:#1976d2;margin-right:auto;white-space:nowrap">↗ Open</a>'
                 : '<span style="margin-right:auto"></span>')
             +   '<button class="rdot-seen-btn" data-report-id="' + dot.report_id + '" style="' + btnBase + seenStyle + '">'
-            +     (seen ? 'Mark as unseen' : 'Mark as seen')
+            +     (seen ? 'Unhide' : 'Hide')
             +   '</button>'
             +   (dot.author
                 ? '<button class="rdot-flag-btn" data-author="' + escHtml(dot.author) + '" data-report-id="' + dot.report_id + '" style="' + btnBase + flagStyle + '">'
