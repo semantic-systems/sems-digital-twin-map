@@ -191,17 +191,26 @@
         _currentLatlng = latlng;
 
         var items = dots.map(function (d, i) {
-            return '<div class="rdot-cluster-item" data-idx="' + i + '" style="padding:4px 6px;cursor:pointer;border-radius:3px;font-size:9pt">'
-                + '<b>' + escHtml(d.event_type) + '</b>'
-                + (d.author ? ' · @' + escHtml(d.author) : '')
-                + ' <span style="color:#888">' + escHtml(d.timestamp) + '</span>'
+            var isNew = isNewReport(d);
+            var newBadge = isNew
+                ? '<span style="display:inline-block;background:#e53935;color:white;font-size:8px;font-weight:bold;border-radius:10px;padding:0 5px;margin-right:4px;vertical-align:middle">NEW</span>'
+                : '';
+            var preview = d.text ? escHtml(d.text.slice(0, 80)) + (d.text.length > 80 ? '…' : '') : '';
+            return '<div class="rdot-cluster-item" data-idx="' + i + '" style="padding:5px 6px;cursor:pointer;border-radius:3px;border-bottom:1px solid #f0f0f0">'
+                + '<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">'
+                +   newBadge
+                +   '<b style="font-size:9pt">' + escHtml(d.event_type) + '</b>'
+                +   (d.author ? '<span style="color:#555;font-size:8pt">@' + escHtml(d.author) + '</span>' : '')
+                +   '<span style="color:#aaa;font-size:8pt;margin-left:auto">' + escHtml(d.timestamp) + '</span>'
+                + '</div>'
+                + (preview ? '<div style="font-size:8pt;color:#555;line-height:1.4">' + preview + '</div>' : '')
                 + '</div>';
         }).join('');
 
-        var content = '<div style="font-size:10pt"><b style="display:block;margin-bottom:4px">'
+        var content = '<div style="font-size:10pt;min-width:220px"><b style="display:block;margin-bottom:6px">'
             + dots.length + ' reports here</b>' + items + '</div>';
 
-        _popup = L.popup({ maxWidth: 280 })
+        _popup = L.popup({ maxWidth: 320 })
             .setLatLng(latlng)
             .setContent(content)
             .openOn(window._leafletMap);
