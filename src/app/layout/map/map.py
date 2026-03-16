@@ -557,7 +557,7 @@ def get_layout_map():
                                 dcc.Checklist(
                                     id='reports_dropdown_event_type',
                                     options=[{'label': e, 'value': e} for e in ALL_EVENT_TYPES],
-                                    value=list(ALL_EVENT_TYPES),
+                                    value=[e for e in ALL_EVENT_TYPES if e != 'Irrelevant'],
                                     inputStyle={'margin-right': '3px'},
                                     labelStyle={'display': 'block', 'margin-bottom': '2px'},
                                     style={'font-size': '8pt', 'margin-bottom': '8px'},
@@ -3053,7 +3053,7 @@ def callbacks_map(app: Dash):
         all_platforms = list(get_sidebar_dropdown_platform_values())
         return (
             data.get('platform', all_platforms),
-            data.get('event_type', list(ALL_EVENT_TYPES)),
+            data.get('event_type', [e for e in ALL_EVENT_TYPES if e != 'Irrelevant']),
             data.get('relevance', list(ALL_RELEVANCE_TYPES)),
             data.get('loc_filter', 'all'),
             data.get('visibility', ['show_flagged', 'show_unflagged']),
