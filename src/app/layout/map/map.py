@@ -3075,6 +3075,81 @@ def callbacks_map(app: Dash):
             data.get('autoscroll', []),
         )
 
+    # ---- Filter counts ----
+    @app.callback(
+        Output({'type': 'event-chip', 'index': ALL}, 'children'),
+        Output('reports_dropdown_platform', 'options'),
+        Output('reports_dropdown_relevance_type', 'options'),
+        Input('sidebar-loaded-at', 'data'),
+        Input('interval_refresh_reports', 'n_intervals'),
+        State('current-user', 'data'),
+        State({'type': 'event-chip', 'index': ALL}, 'id'),
+    )
+    def update_filter_counts(_loaded_at, _n, username, chip_ids):
+        from sqlalchemy import func as sqlfunc
+        if not username:
+            raise PreventUpdate
+        engine, session = autoconnect_db()
+        try:
+            # Count ALL current posts (admitted + pending banner posts)
+            filters = [Report.timestamp <= datetime.now(timezone.utc)]
+            if os.environ.get('DEMO_MODE') == '1':
+                filters.append(Report.identifier.like('demo-%'))
+
+            et_counts = dict(
+                session.query(Report.event_type, sqlfunc.count(Report.id))
+                .filter(*filters).group_by(Report.event_type).all()
+            )
+            raw_plat = session.query(Report.platform, sqlfunc.count(Report.id)) \
+                .filter(*filters).group_by(Report.platform).all()
+            rel_counts = dict(
+                session.query(Report.relevance, sqlfunc.count(Report.id))
+                .filter(*filters).group_by(Report.relevance).all()
+            )
+
+            plat_counts = {}
+            for plat, cnt in raw_plat:
+                key = 'rss' if str(plat).startswith('rss') else plat
+                plat_counts[key] = plat_counts.get(key, 0) + cnt
+
+            chip_children = [
+                [cid['index'], html.Span(f" {et_counts.get(cid['index'], 0)}", className='chip-count')]
+                for cid in chip_ids
+            ]
+            all_platforms = list(get_sidebar_dropdown_platform_values())
+            plat_options = [
+                {'label': f'{p} ({plat_counts.get(p, 0)})', 'value': p}
+                for p in all_platforms
+            ]
+            rel_options = [
+                {'label': f'{r} ({rel_counts.get(r, 0)})', 'value': r}
+                for r in ALL_RELEVANCE_TYPES
+            ]
+            return chip_children, plat_options, rel_options
+        finally:
+            session.close()
+            engine.dispose()
+
+    # Visibility counts derived from snapshot (no DB round-trip needed)
+    app.clientside_callback(
+        """
+        function(snapshot) {
+            if (!snapshot) return window.dash_clientside.no_update;
+            var vals = Object.values(snapshot);
+            var hidden    = vals.filter(function(s) { return s.added && s.hide; }).length;
+            var flagged   = vals.filter(function(s) { return s.added && s.flag; }).length;
+            var unflagged = vals.filter(function(s) { return s.added && !s.flag; }).length;
+            return [
+                {label: 'Show hidden ('  + hidden    + ')', value: 'show_hidden'},
+                {label: 'Flagged ('      + flagged   + ')', value: 'show_flagged'},
+                {label: 'Unflagged ('    + unflagged + ')', value: 'show_unflagged'},
+            ];
+        }
+        """,
+        Output('reports_filter_visibility', 'options'),
+        Input('user-state-snapshot', 'data'),
+    )
+
     # ---- Event-type filter chips ----
     # Chip click → update hidden checklist value (handles shift+click solo mode)
     app.clientside_callback(

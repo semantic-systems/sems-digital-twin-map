@@ -255,3 +255,9 @@ table{
 .filter-chip.filter-chip-active:hover {
     background: #bbdefb;
 }
+.chip-count {
+    opacity: 0.55;
+    font-size: 7pt;
+    font-weight: normal;
+    margin-left: 2px;
+}
