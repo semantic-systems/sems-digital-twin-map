@@ -2053,15 +2053,15 @@ def callbacks_map(app: Dash):
         engine, session = autoconnect_db()
         try:
             if username:
-                seen_ids, flagged_authors, user_locs_map, _, new_ids, _ = _get_user_state(username, session)
+                seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _ = _get_user_state(username, session)
             else:
-                seen_ids, flagged_authors, user_locs_map, new_ids = set(), set(), {}, set()
+                seen_ids, flagged_authors, user_locs_map, added_ids, new_ids = set(), set(), {}, set(), set()
             return _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform,
                                 filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance,
-                                new_ids=new_ids,
+                                new_ids=new_ids, added_ids=added_ids,
                                 loc_filter=loc_filter or 'all',
                                 **_vis_flags(filter_visibility))
         finally:
@@ -2170,7 +2170,7 @@ def callbacks_map(app: Dash):
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform, filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all',
-                                new_ids=new_ids, **vis)
+                                new_ids=new_ids, added_ids=added_ids, **vis)
             sidebar = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
@@ -2251,7 +2251,7 @@ def callbacks_map(app: Dash):
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform, filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all',
-                                new_ids=new_ids, **vis)
+                                new_ids=new_ids, added_ids=added_ids, **vis)
             sidebar = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
@@ -2499,7 +2499,7 @@ def callbacks_map(app: Dash):
                     filter_platform=None, filter_event_type=None,
                     filter_relevance_type=None, loc_filter='all',
                     hide_seen=False, hide_flagged=False, hide_unflagged=False,
-                    new_ids=None):
+                    new_ids=None, added_ids=None):
         q = session.query(Report).filter(Report.timestamp <= datetime.now(timezone.utc))
         if os.environ.get('DEMO_MODE') == '1':
             q = q.filter(Report.identifier.like('demo-%'))
@@ -2510,6 +2510,8 @@ def callbacks_map(app: Dash):
             q = q.filter(Report.event_type.in_(filter_event_type))
         if filter_relevance_type:
             q = q.filter(Report.relevance.in_(filter_relevance_type))
+        if added_ids:
+            q = q.filter(Report.id.in_(added_ids))
         reports = q.all()
         _seen_ids = seen_ids or set()
         _flagged = flagged_authors or set()
@@ -2741,7 +2743,7 @@ def callbacks_map(app: Dash):
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, added_ids=added_ids, **_vis_flags(filter_visibility))
             return None, sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
@@ -2837,7 +2839,7 @@ def callbacks_map(app: Dash):
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, added_ids=added_ids, **_vis_flags(filter_visibility))
             return None, sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
@@ -2894,7 +2896,7 @@ def callbacks_map(app: Dash):
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, added_ids=added_ids, **_vis_flags(filter_visibility))
             return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
@@ -2942,7 +2944,7 @@ def callbacks_map(app: Dash):
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, added_ids=added_ids, **_vis_flags(filter_visibility))
             return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
