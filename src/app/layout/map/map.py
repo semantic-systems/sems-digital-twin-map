@@ -1413,6 +1413,36 @@ def callbacks_map(app: Dash):
         return new_active_id, updated_snapshot
 
     @app.callback(
+        Output('user-state-snapshot', 'data', allow_duplicate=True),
+        Input('active-report-id', 'data'),
+        State('current-user', 'data'),
+        State('user-state-snapshot', 'data'),
+        prevent_initial_call=True,
+    )
+    def acknowledge_active_report(report_id, username, snapshot):
+        """Persist new=False whenever a report becomes active (covers map-dot clicks
+        which bypass the sidebar select_report callback)."""
+        if not report_id or not username:
+            raise PreventUpdate
+        updated_snapshot = dict(snapshot or {})
+        entry = dict(updated_snapshot.get(str(report_id), {}))
+        if not entry.get('new', True):
+            raise PreventUpdate  # already acknowledged, nothing to do
+        entry['new'] = False
+        updated_snapshot[str(report_id)] = entry
+        try:
+            engine, session = autoconnect_db()
+            try:
+                _upsert_user_state(username, report_id, session, new=False)
+                session.commit()
+            finally:
+                session.close()
+                engine.dispose()
+        except Exception:
+            pass
+        return updated_snapshot
+
+    @app.callback(
         Output('map', 'children', allow_duplicate=False),
         Output('active-report-locations', 'data'),
         Input('active-report-id', 'data'),
@@ -1696,10 +1726,11 @@ def callbacks_map(app: Dash):
         Input('reports_filter_visibility', 'value'),
         State('current-user', 'data'),
         State('sidebar-loaded-at', 'data'),
+        State('active-report-id', 'data'),
         prevent_initial_call='initial_duplicate',
     )
     def update_reports(filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                       _banner_clicks, filter_visibility, username, old_loaded_at):
+                       _banner_clicks, filter_visibility, username, old_loaded_at, active_report_id):
         if not username:
             raise PreventUpdate
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
@@ -1730,6 +1761,8 @@ def callbacks_map(app: Dash):
                 # Admit all currently matching reports as the baseline view.
                 all_reports = _query_reports_inner()
                 _bulk_admit_reports(username, [r.id for r in all_reports], session)
+                if active_report_id:
+                    _upsert_user_state(username, active_report_id, session, new=False)
                 session.commit()
                 seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
             elif is_banner_click:
@@ -1740,10 +1773,12 @@ def callbacks_map(app: Dash):
                     seen_ids, flagged_authors, user_locs_map,
                     _vis_flags(filter_visibility),
                 )
+                if active_report_id:
+                    _upsert_user_state(username, active_report_id, session, new=False)
                 if new_reports:
                     _bulk_admit_reports(username, [r.id for r in new_reports], session)
-                    session.commit()
-                    seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
+                session.commit()
+                seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             sidebar_content = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
@@ -1820,10 +1855,11 @@ def callbacks_map(app: Dash):
         State('event_type_toggle', 'value'),
         State('reports_filter_visibility', 'value'),
         State('current-user', 'data'),
+        State('active-report-id', 'data'),
         prevent_initial_call=True,
     )
     def check_new_posts(_n, autoupdate, loaded_at, filter_platform, filter_event_type,
-                        filter_relevance_type, loc_filter, filter_visibility, username):
+                        filter_relevance_type, loc_filter, filter_visibility, username, active_report_id):
         if not username or not loaded_at:
             raise PreventUpdate
         try:
@@ -1871,6 +1907,8 @@ def callbacks_map(app: Dash):
 
             if autoupdate and 'on' in autoupdate:
                 _bulk_admit_reports(username, [r.id for r in new_reports], session)
+                if active_report_id:
+                    _upsert_user_state(username, active_report_id, session, new=False)
                 session.commit()
                 _, _, _, _, _, snapshot = _get_user_state(username, session)
                 new_loaded_at = datetime.now(timezone.utc).isoformat()

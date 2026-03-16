@@ -63,23 +63,39 @@
 
     // ─── Icon factory ─────────────────────────────────────────────────────────
 
-    function makeIcon(count, isActive) {
+    function makeIcon(count, isActive, hasNew) {
         var color = isActive ? '#1976d2' : '#e53935';
+        var newBadge = hasNew
+            ? '<span style="position:absolute;top:-5px;right:-5px;background:#ff9800;color:white;'
+            +   'border-radius:50%;width:12px;height:12px;font-size:8px;font-weight:bold;'
+            +   'display:flex;align-items:center;justify-content:center;'
+            +   'border:1.5px solid white;line-height:1;pointer-events:none">!</span>'
+            : '';
         if (count > 1) {
             return L.divIcon({
-                html: '<div class="report-dot-cluster" style="background:' + color + '">'
-                    + '<span class="report-dot-count">' + count + '</span></div>',
+                html: '<div class="report-dot-cluster" style="background:' + color + ';position:relative">'
+                    + '<span class="report-dot-count">' + count + '</span>'
+                    + newBadge + '</div>',
                 className: '',
                 iconSize: [26, 26],
                 iconAnchor: [13, 13],
             });
         }
         return L.divIcon({
-            html: '<div class="report-dot" style="background:' + color + '"></div>',
+            html: '<div class="report-dot" style="background:' + color + ';position:relative">'
+                + newBadge + '</div>',
             className: '',
             iconSize: [14, 14],
             iconAnchor: [7, 7],
         });
+    }
+
+    // Returns whether a dot should show the NEW (!) badge.
+    // Prefers window._reportState (updated by snapshot) over d.new (set at server render time).
+    function isNewReport(d) {
+        var stateEntry = (window._reportState || {})[d.report_id];
+        if (stateEntry && stateEntry.new !== undefined) return !!stateEntry.new;
+        return !!d.new;
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -205,6 +221,11 @@
     // ─── Active report helper ─────────────────────────────────────────────────
 
     function setActiveReport(reportId) {
+        // Optimistically clear the NEW flag locally so the ! badge disappears immediately
+        var state = window._reportState || {};
+        if (!state[reportId]) state[reportId] = {};
+        state[reportId].new = false;
+        window._reportState = state;
         window._activeReportId = reportId;
         window.updateReportDots();
         syncToStore('active-report-id', reportId);
@@ -324,8 +345,9 @@
         var clusters = computeClusters(dots);
         clusters.forEach(function (cluster) {
             var isActive = cluster.dots.some(function (d) { return d.report_id === activeId; });
+            var hasNew   = cluster.dots.some(function (d) { return isNewReport(d); });
             var marker = L.marker([cluster.lat, cluster.lon], {
-                icon: makeIcon(cluster.dots.length, isActive),
+                icon: makeIcon(cluster.dots.length, isActive, hasNew),
                 zIndexOffset: isActive ? 1000 : 0,
             });
 
