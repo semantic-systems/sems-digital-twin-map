@@ -1374,13 +1374,15 @@ def callbacks_map(app: Dash):
 
     @app.callback(
         Output('active-report-id', 'data'),
+        Output('user-state-snapshot', 'data', allow_duplicate=True),
         [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
         State({'type': 'report-entry', 'index': ALL}, 'id'),
         State('active-report-id', 'data'),
         State('current-user', 'data'),
+        State('user-state-snapshot', 'data'),
         prevent_initial_call=True
     )
-    def select_report(report_nclicks, report_ids, current_active_id, username):
+    def select_report(report_nclicks, report_ids, current_active_id, username, snapshot):
         if not ctx.triggered:
             raise PreventUpdate
         if not report_nclicks or all((x is None or x == 0) for x in report_nclicks):
@@ -1391,8 +1393,13 @@ def callbacks_map(app: Dash):
         report_id = json.loads(triggered_id_str).get('index')
         if report_id is None:
             raise PreventUpdate
-        # Set new=False to mark this report as acknowledged by the user
-        if username and report_id != current_active_id:
+        new_active_id = None if report_id == current_active_id else report_id
+        # Set new=False to mark this report as acknowledged; update snapshot for instant badge removal
+        updated_snapshot = dict(snapshot or {})
+        entry = dict(updated_snapshot.get(str(report_id), {}))
+        entry['new'] = False
+        updated_snapshot[str(report_id)] = entry
+        if username:
             try:
                 engine, session = autoconnect_db()
                 try:
@@ -1403,7 +1410,7 @@ def callbacks_map(app: Dash):
                     engine.dispose()
             except Exception:
                 pass
-        return None if report_id == current_active_id else report_id
+        return new_active_id, updated_snapshot
 
     @app.callback(
         Output('map', 'children', allow_duplicate=False),
@@ -1654,11 +1661,12 @@ def callbacks_map(app: Dash):
                                 report_state=None, locs_dict=None):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         if username and session:
-            seen_ids, flagged_authors, user_locs_map, added_ids, _, _snap = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _snap = _get_user_state(username, session)
         else:
             # fallback to legacy stores when username not available yet
             seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
             added_ids = {int(k) for k, v in (report_state or {}).items() if v.get('added')}
+            new_ids = set()
         return get_sidebar_content(
             filter_platform=eff_platform,
             filter_event_type=eff_events,
@@ -1669,6 +1677,7 @@ def callbacks_map(app: Dash):
             user_locs_map=user_locs_map,
             max_timestamp=max_timestamp,
             added_ids=added_ids,
+            new_ids=new_ids,
             **_vis_flags(filter_visibility),
         )
 
@@ -2266,6 +2275,14 @@ def callbacks_map(app: Dash):
                     var li = btn.closest('li');
                     if (li) li.style.outline = isFlagged ? '2px solid #e65100' : 'none';
                 } catch(e) {}
+            });
+
+            // Update NEW badges based on snapshot
+            Object.keys(state).forEach(function(rid) {
+                var badge = document.getElementById('new-badge-' + rid);
+                if (badge) {
+                    badge.style.display = state[rid].new ? 'inline-block' : 'none';
+                }
             });
 
             // Highlight active report entry — deferred so React has finished re-rendering

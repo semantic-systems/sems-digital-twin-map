@@ -23,7 +23,7 @@ def get_platform_config(platform):
         config = json.load(f)
         return config[platform]
 
-def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs_map=None) -> html.Li:
+def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs_map=None, new_ids=None) -> html.Li:
     platform = report.platform
     if platform.startswith('rss'):
         platform = 'rss'
@@ -36,6 +36,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     relevance = report.relevance
     is_seen    = (report.id in seen_ids) if seen_ids else False
     is_flagged = ((report.author or '') in flagged_authors) if flagged_authors else False
+    is_new     = (report.id in new_ids) if new_ids else False
 
     author = getattr(report, 'author', '') or ''
     effective_locations = (user_locs_map or {}).get(report.id, report.locations)
@@ -77,6 +78,21 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
 
     return html.Li(
         children=[
+            html.Span(
+                'NEW',
+                id=f'new-badge-{report.id}',
+                style={
+                    'display': 'inline-block' if is_new else 'none',
+                    'font-size': '9px',
+                    'font-weight': 'bold',
+                    'color': 'white',
+                    'background': '#e53935',
+                    'border-radius': '10px',
+                    'padding': '1px 6px',
+                    'margin-bottom': '4px',
+                    'letter-spacing': '0.5px',
+                },
+            ),
             html.Button(
                 [
                     html.Span(
@@ -305,7 +321,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
         }
     )
 
-def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, user_locs_map=None) -> list:
+def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, user_locs_map=None, new_ids=None) -> list:
     """
     Formats the reports into a list of html elements that can be displayed in the sidebar.
     """
@@ -324,9 +340,9 @@ def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, use
             )
         ]
 
-    return [format_report(report, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map) for report in reports[:n]]
+    return [format_report(report, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map, new_ids=new_ids) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None, hide_seen=False, hide_flagged=False, hide_unflagged=False, max_timestamp=None, added_ids=None):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None, hide_seen=False, hide_flagged=False, hide_unflagged=False, max_timestamp=None, added_ids=None, new_ids=None):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
@@ -393,7 +409,7 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
         reports = [r for r in reports if r.author and r.author in flagged_authors]
 
     if loc_filter == 'all':
-        return format_reports(reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+        return format_reports(reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map, new_ids=new_ids)
 
     filtered_reports = []
     for report in reports:
