@@ -448,6 +448,7 @@ def migrate_columns():
     CONSTRAINT uq_user_report UNIQUE (username, report_id)
 )""",
         "CREATE INDEX IF NOT EXISTS ix_urs_username ON user_report_state (username)",
+        "ALTER TABLE user_report_state ADD COLUMN IF NOT EXISTS new BOOLEAN NOT NULL DEFAULT TRUE",
     ]
     for sql in migrations:
         try:

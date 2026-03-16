@@ -278,7 +278,8 @@ class UserReportState(Base):
     flag          = Column(Boolean, nullable=False, server_default='false')   # author flagged
     flag_author   = Column(String, nullable=True)    # denormalised author string when flag=True
     locations     = Column(JSON, nullable=True)       # user-overridden locations
-    first_seen_at = Column(DateTime, nullable=True)   # NULL = new/unadmitted; set on admit
+    first_seen_at = Column(DateTime, nullable=True)   # NULL = not yet admitted to sidebar; set on admit
+    new           = Column(Boolean, nullable=False, server_default='true')    # True until user explicitly clicks/acknowledges the report
     report        = relationship('Report', back_populates='user_states')
     __table_args__ = (UniqueConstraint('username', 'report_id', name='uq_user_report'),)
 

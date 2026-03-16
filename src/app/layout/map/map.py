@@ -1391,12 +1391,12 @@ def callbacks_map(app: Dash):
         report_id = json.loads(triggered_id_str).get('index')
         if report_id is None:
             raise PreventUpdate
-        # Write first_seen_at to clear "new" flag for this report
+        # Set new=False to mark this report as acknowledged by the user
         if username and report_id != current_active_id:
             try:
                 engine, session = autoconnect_db()
                 try:
-                    _upsert_user_state(username, report_id, session, first_seen_at=datetime.now(timezone.utc))
+                    _upsert_user_state(username, report_id, session, new=False)
                     session.commit()
                 finally:
                     session.close()
@@ -1654,7 +1654,7 @@ def callbacks_map(app: Dash):
                                 report_state=None, locs_dict=None):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         if username and session:
-            seen_ids, flagged_authors, user_locs_map, added_ids, _snap = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, _, _snap = _get_user_state(username, session)
         else:
             # fallback to legacy stores when username not available yet
             seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
@@ -1715,14 +1715,14 @@ def callbacks_map(app: Dash):
                     q = q.filter(Report.relevance.in_(eff_relevance))
                 return q.all()
 
-            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             if is_initial_load:
                 # Admit all currently matching reports as the baseline view.
                 all_reports = _query_reports_inner()
                 _bulk_admit_reports(username, [r.id for r in all_reports], session)
                 session.commit()
-                seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+                seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
             elif is_banner_click:
                 new_reports = _query_reports_inner(since=None)
                 new_reports = _filter_by_display(
@@ -1734,7 +1734,7 @@ def callbacks_map(app: Dash):
                 if new_reports:
                     _bulk_admit_reports(username, [r.id for r in new_reports], session)
                     session.commit()
-                    seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+                    seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             sidebar_content = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
@@ -1830,7 +1830,7 @@ def callbacks_map(app: Dash):
         }
         _banner_idle = {**_banner_base, 'border': '1px solid #ddd', 'background': '#f5f5f5', 'color': '#aaa', 'font-weight': 'normal'}
         try:
-            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             q = session.query(Report).filter(
                 Report.timestamp > since,
@@ -1863,7 +1863,7 @@ def callbacks_map(app: Dash):
             if autoupdate and 'on' in autoupdate:
                 _bulk_admit_reports(username, [r.id for r in new_reports], session)
                 session.commit()
-                _, _, _, _, snapshot = _get_user_state(username, session)
+                _, _, _, _, _, snapshot = _get_user_state(username, session)
                 new_loaded_at = datetime.now(timezone.utc).isoformat()
                 sidebar = _build_sidebar_content(
                     filter_platform, filter_event_type, filter_relevance_type,
@@ -2006,14 +2006,15 @@ def callbacks_map(app: Dash):
         engine, session = autoconnect_db()
         try:
             if username:
-                seen_ids, flagged_authors, user_locs_map, _, _ = _get_user_state(username, session)
+                seen_ids, flagged_authors, user_locs_map, _, new_ids, _ = _get_user_state(username, session)
             else:
-                seen_ids, flagged_authors, user_locs_map = set(), set(), {}
+                seen_ids, flagged_authors, user_locs_map, new_ids = set(), set(), {}, set()
             return _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform,
                                 filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance,
+                                new_ids=new_ids,
                                 loc_filter=loc_filter or 'all',
                                 **_vis_flags(filter_visibility))
         finally:
@@ -2116,13 +2117,13 @@ def callbacks_map(app: Dash):
             _upsert_user_state(username, report_id, session, hide=new_hide)
             session.commit()
 
-            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
             vis = _vis_flags(filter_visibility)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform, filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all',
-                                **vis)
+                                new_ids=new_ids, **vis)
             sidebar = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
@@ -2197,13 +2198,13 @@ def callbacks_map(app: Dash):
                     _upsert_user_state(username, r.id, session, flag=new_flag, flag_author=author if new_flag else None)
             session.commit()
 
-            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
             vis = _vis_flags(filter_visibility)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform, filter_event_type=eff_events,
                                 filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all',
-                                **vis)
+                                new_ids=new_ids, **vis)
             sidebar = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
@@ -2326,8 +2327,9 @@ def callbacks_map(app: Dash):
         - seen_ids       : set of report_ids where hide=True
         - flagged_authors: set of flag_author strings where flag=True
         - user_locs_map  : {report_id: locations} where locations IS NOT NULL
-        - added_ids      : set of report_ids where first_seen_at IS NOT NULL
-        - snapshot       : {str(report_id): {hide, flag, flag_author, added}} for clientside sync
+        - added_ids      : set of report_ids where first_seen_at IS NOT NULL (admitted to sidebar)
+        - new_ids        : set of report_ids where first_seen_at IS NOT NULL AND new=True (admitted but not yet clicked)
+        - snapshot       : {str(report_id): {hide, flag, flag_author, added, new}} for clientside sync
         """
         rows = session.query(UserReportState).filter(
             UserReportState.username == username
@@ -2336,6 +2338,7 @@ def callbacks_map(app: Dash):
         flagged_authors = set()
         user_locs_map  = {}
         added_ids      = set()
+        new_ids        = set()
         snapshot       = {}
         for row in rows:
             rid = row.report_id
@@ -2345,21 +2348,25 @@ def callbacks_map(app: Dash):
                 flagged_authors.add(row.flag_author)
             if row.locations is not None:
                 user_locs_map[rid] = row.locations
-            if row.first_seen_at is not None:
+            admitted = row.first_seen_at is not None
+            if admitted:
                 added_ids.add(rid)
+                if row.new:
+                    new_ids.add(rid)
             snapshot[str(rid)] = {
                 'hide': bool(row.hide),
                 'flag': bool(row.flag),
                 'flag_author': row.flag_author or '',
-                'added': row.first_seen_at is not None,
+                'added': admitted,
+                'new': admitted and bool(row.new),
                 'author': row.flag_author or '',
             }
-        return seen_ids, flagged_authors, user_locs_map, added_ids, snapshot
+        return seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot
 
     def _upsert_user_state(username, report_id, session, **kwargs):
         """
         INSERT or UPDATE a single user_report_state row.
-        kwargs may include: hide, flag, flag_author, locations, first_seen_at
+        kwargs may include: hide, flag, flag_author, locations, first_seen_at, new
         """
         stmt = pg_insert(UserReportState).values(
             username=username,
@@ -2436,7 +2443,8 @@ def callbacks_map(app: Dash):
     def _build_dots(session, seen_ids=None, flagged_authors=None, user_locs_map=None,
                     filter_platform=None, filter_event_type=None,
                     filter_relevance_type=None, loc_filter='all',
-                    hide_seen=False, hide_flagged=False, hide_unflagged=False):
+                    hide_seen=False, hide_flagged=False, hide_unflagged=False,
+                    new_ids=None):
         q = session.query(Report).filter(Report.timestamp <= datetime.now(timezone.utc))
         if os.environ.get('DEMO_MODE') == '1':
             q = q.filter(Report.identifier.like('demo-%'))
@@ -2481,6 +2489,7 @@ def callbacks_map(app: Dash):
                     'lat': lat,
                     'lon': lon,
                     'seen': r.id in (seen_ids or set()),
+                    'new': r.id in (new_ids or set()),
                     'location_name': loc.get('name') or loc.get('mention') or '',
                     'location_display': loc.get('display_name') or '',
                     'text': (r.text or '')[:300],
@@ -2670,14 +2679,14 @@ def callbacks_map(app: Dash):
             _upsert_user_state(username, report_id, session, locations=locs)
             session.commit()
 
-            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _ = _get_user_state(username, session)
             eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
             return None, sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
@@ -2766,14 +2775,14 @@ def callbacks_map(app: Dash):
             _upsert_user_state(username, report_id, session, locations=locs)
             session.commit()
 
-            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _ = _get_user_state(username, session)
             eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
             return None, sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
@@ -2823,14 +2832,14 @@ def callbacks_map(app: Dash):
             _upsert_user_state(username, report_id, session, locations=locs)
             session.commit()
 
-            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _ = _get_user_state(username, session)
             eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
             return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
@@ -2872,13 +2881,13 @@ def callbacks_map(app: Dash):
             _upsert_user_state(username, report_id, session, locations=None)
             session.commit()
 
-            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
+            seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _ = _get_user_state(username, session)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
-                                loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
+                                loc_filter=event_type_toggle or 'all', new_ids=new_ids, **_vis_flags(filter_visibility))
             return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
@@ -2914,7 +2923,7 @@ def callbacks_map(app: Dash):
             if username:
                 _bulk_admit_reports(username, [r.id for r in demo_reports], session)
                 session.commit()
-                _, _, _, _, snapshot = _get_user_state(username, session)
+                _, _, _, _, _, snapshot = _get_user_state(username, session)
             else:
                 snapshot = {}
             sidebar = _build_sidebar_content(
