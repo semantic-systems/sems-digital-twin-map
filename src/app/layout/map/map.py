@@ -2335,8 +2335,10 @@ def callbacks_map(app: Dash):
                 }
             });
 
-            // Highlight active report entry — deferred so React has finished re-rendering
+            // Highlight active report entry — only scroll when the active ID actually changed
             var _activeId = activeId;
+            var _activeChanged = _activeId !== window._lastHighlightedActiveId;
+            window._lastHighlightedActiveId = _activeId;
             setTimeout(function() {
                 document.querySelectorAll('.report-entry-active').forEach(function(el) {
                     el.classList.remove('report-entry-active');
@@ -2347,7 +2349,9 @@ def callbacks_map(app: Dash):
                         var li = el.closest('li');
                         if (li) {
                             li.classList.add('report-entry-active');
-                            li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            if (_activeChanged) {
+                                li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
                         }
                     }
                 }
