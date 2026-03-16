@@ -1,7 +1,7 @@
 // Manages live report dots on the Leaflet map.
 // Data:    window._reportDotsData  (set by Dash clientside callback)
 // Active:  window._activeReportId  (set by Dash clientside callback)
-// State:   window._reportState     (dict {reportId: {hide, flag, added, author}}, mirrored from report-state store)
+// State:   window._reportState     (dict {reportId: {hide, flag, flag_author, added}}, mirrored from user-state-snapshot store)
 // Derived: window._seenIds         (array of report IDs where hide=true)
 // Derived: window._flaggedAuthors  (array of unique author strings where flag=true)
 (function () {
@@ -210,64 +210,30 @@
         syncToStore('active-report-id', reportId);
     }
 
-    // ─── Flag toggle helper ───────────────────────────────────────────────────
+    // ─── Flag toggle helper (map popup only — server callback handles sidebar) ──
 
-    function _toggleAuthorFlag(author) {
+    function _toggleAuthorFlagLocal(author) {
+        // Optimistic local-only update for the map popup display.
+        // The actual persistence is handled by the server-side toggle_author_flag callback.
         var state = window._reportState || {};
 
-        // Determine current flag status for this author across all known entries
         var anyFlagged = Object.keys(state).some(function(id) {
-            return state[id].author === author && state[id].flag;
+            return (state[id].flag_author || state[id].author) === author && state[id].flag;
         });
         var newFlag = !anyFlagged;
 
-        // Update all known state entries for this author
         Object.keys(state).forEach(function(id) {
-            if (state[id].author === author) {
+            var a = state[id].flag_author || state[id].author || '';
+            if (a === author) {
                 state[id].flag = newFlag;
             }
         });
 
-        // Also ensure entries exist for all sidebar buttons with this author
-        document.querySelectorAll('.sidebar-flag-btn').forEach(function(btn) {
-            try {
-                var bid = JSON.parse(btn.id);
-                if ((bid.author || '') !== author) return;
-                var rid = bid.index;
-                if (!state[rid]) {
-                    state[rid] = {hide: false, flag: newFlag, added: false, author: author};
-                } else {
-                    state[rid].flag = newFlag;
-                }
-            } catch(e) {}
-        });
-
         window._reportState = state;
-
-        // Re-derive flaggedAuthors
         window._flaggedAuthors = Object.values(state)
-            .filter(function(s) { return s.flag && s.author; })
-            .map(function(s) { return s.author; })
+            .filter(function(s) { return s.flag && (s.flag_author || s.author); })
+            .map(function(s) { return s.flag_author || s.author; })
             .filter(function(v, i, a) { return a.indexOf(v) === i; });
-
-        var isFlagged = newFlag;
-
-        // Update sidebar DOM for all buttons with this author
-        document.querySelectorAll('.sidebar-flag-btn').forEach(function(btn) {
-            try {
-                var bid = JSON.parse(btn.id);
-                if ((bid.author || '') !== author) return;
-                btn.textContent      = isFlagged ? 'Unflag' : 'Flag';
-                btn.style.border     = isFlagged ? '1px solid #e65100' : '1px solid #ddd';
-                btn.style.background = isFlagged ? '#fff3e0' : '#fafafa';
-                btn.style.color      = isFlagged ? '#e65100' : '#888';
-                btn.style.fontWeight = isFlagged ? 'bold' : 'normal';
-                var li = btn.closest('li');
-                if (li) li.style.outline = isFlagged ? '2px solid #e65100' : 'none';
-            } catch(e) {}
-        });
-
-        syncToStore('report-state', state);
 
         // Refresh map popup if open
         if (_currentDot && _popup) {
@@ -290,17 +256,12 @@
             return;
         }
 
-        // Seen button
+        // Seen button (map popup only — sidebar seen buttons are handled by Dash server callback)
         var seenBtn = e.target.closest('.rdot-seen-btn');
         if (seenBtn) {
             var reportId = parseInt(seenBtn.dataset.reportId);
             var state = window._reportState || {};
-            var entry = state[reportId] || {hide: false, flag: false, added: false, author: ''};
-            // Fill in author from dots data if not yet in state
-            if (!entry.author) {
-                var dot = (window._reportDotsData || []).find(function(d) { return d.report_id === reportId; });
-                if (dot) entry.author = dot.author || '';
-            }
+            var entry = state[reportId] || {hide: false, flag: false, added: false, flag_author: '', author: ''};
             var wasHidden = !!entry.hide;
             entry.hide = !wasHidden;
             state[reportId] = entry;
@@ -315,7 +276,6 @@
             var dotEntry = (window._reportDotsData || []).find(function(d) { return d.report_id === reportId; });
             if (dotEntry) dotEntry.seen = entry.hide;
 
-            syncToStore('report-state', state);
             window.updateReportDots();
 
             if (entry.hide) {
@@ -330,25 +290,12 @@
             return;
         }
 
-        // Flag button (map popup)
+        // Flag button (map popup only — sidebar flag buttons are handled by Dash server callback)
         var flagBtn = e.target.closest('.rdot-flag-btn');
         if (flagBtn) {
             var author = flagBtn.dataset.author;
             if (!author) return;
-            _toggleAuthorFlag(author);
-            return;
-        }
-
-        // Flag button (sidebar)
-        var sidebarFlagBtn = e.target.closest('.sidebar-flag-btn');
-        if (sidebarFlagBtn) {
-            var sideFlagAuthor = '';
-            try {
-                var btnId = JSON.parse(sidebarFlagBtn.id);
-                sideFlagAuthor = btnId.author || '';
-            } catch(e2) {}
-            if (!sideFlagAuthor) return;
-            _toggleAuthorFlag(sideFlagAuthor);
+            _toggleAuthorFlagLocal(author);
             return;
         }
     });

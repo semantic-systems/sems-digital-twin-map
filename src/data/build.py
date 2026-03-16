@@ -8,7 +8,7 @@ from tqdm import tqdm
 from sqlalchemy import text, func, inspect
 from geoalchemy2 import WKTElement
 from shapely.geometry import shape
-from data.model import Base, TABLES, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap, Report
+from data.model import Base, TABLES, Feature, FeatureSet, Dataset, Collection, Layer, Style, Colormap, Report, UserReportState
 from data.connect import autoconnect_db
 
 # request imports
@@ -436,12 +436,24 @@ def migrate_columns():
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author VARCHAR DEFAULT ''",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS seen BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author_flagged BOOLEAN NOT NULL DEFAULT FALSE",
+        """CREATE TABLE IF NOT EXISTS user_report_state (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR NOT NULL,
+    report_id INTEGER NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+    hide BOOLEAN NOT NULL DEFAULT FALSE,
+    flag BOOLEAN NOT NULL DEFAULT FALSE,
+    flag_author VARCHAR,
+    locations JSON,
+    first_seen_at TIMESTAMP,
+    CONSTRAINT uq_user_report UNIQUE (username, report_id)
+)""",
+        "CREATE INDEX IF NOT EXISTS ix_urs_username ON user_report_state (username)",
     ]
     for sql in migrations:
         try:
             session.execute(text(sql))
         except Exception as e:
-            print(f"Migration skipped ({sql}): {e}")
+            print(f"Migration skipped ({sql[:60]}...): {e}")
     session.commit()
     session.close()
     engine.dispose()
@@ -858,6 +870,7 @@ def seed_demo_data(session):
     with open(demo_json, 'r', encoding='utf-8') as f:
         records = json.load(f)
 
+    session.query(UserReportState).delete(synchronize_session=False)
     session.query(Report).delete(synchronize_session=False)
     session.commit()
 

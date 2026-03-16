@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -262,6 +262,26 @@ class Report(Base):
     author = Column(String, nullable=True, default='')          # username / handle of the post author
     seen = Column(Boolean, nullable=False, server_default='false')          # whether this post has been marked as seen
     author_flagged = Column(Boolean, nullable=False, server_default='false')  # whether the author has been flagged
+    user_states = relationship('UserReportState', back_populates='report', cascade='all, delete-orphan')
+
+
+class UserReportState(Base):
+    """
+    Per-user mutable state for a single report.
+    Replaces the old browser-local report-state and user-locations stores.
+    """
+    __tablename__ = 'user_report_state'
+    id            = Column(Integer, primary_key=True)
+    username      = Column(String, nullable=False, index=True)
+    report_id     = Column(Integer, ForeignKey('reports.id', ondelete='CASCADE'), nullable=False)
+    hide          = Column(Boolean, nullable=False, server_default='false')   # seen/hidden
+    flag          = Column(Boolean, nullable=False, server_default='false')   # author flagged
+    flag_author   = Column(String, nullable=True)    # denormalised author string when flag=True
+    locations     = Column(JSON, nullable=True)       # user-overridden locations
+    first_seen_at = Column(DateTime, nullable=True)   # NULL = new/unadmitted; set on admit
+    report        = relationship('Report', back_populates='user_states')
+    __table_args__ = (UniqueConstraint('username', 'report_id', name='uq_user_report'),)
+
 
 # the following tables are defined in the database
 # UPDATE THIS IF YOU ADD NEW TABLES
@@ -278,4 +298,5 @@ TABLES = [
     Style,
     Alert,
     Report,
+    UserReportState,
 ]

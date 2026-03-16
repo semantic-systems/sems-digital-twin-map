@@ -2,8 +2,7 @@ import math
 import os
 import time
 import requests
-from datetime import date, timedelta, datetime
-from datetime import datetime
+from datetime import date, timedelta, datetime, timezone
 import json
 
 import dash
@@ -12,9 +11,10 @@ from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 
 from sqlalchemy import inspect
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 # internal imports
-from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario, Report
+from data.model import Base, Feature, FeatureSet, Collection, Dataset, Layer, Style, Colormap, Scenario, Report, UserReportState
 from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
@@ -650,9 +650,9 @@ def get_layout_map():
         dcc.Store(id='active-report-id', data=None),  # id of selected report (its dots turn blue)
         dcc.Store(id='report-dots-tick', data=None),  # dummy store for clientside callback output
         dcc.Store(id='location-pick-mode', data=None),  # None = off, dict = {report_id, loc_index, mention}
-        dcc.Store(id='locations-changed', data=0),      # incremented whenever a report's locations are edited
-        dcc.Store(id='report-state',   storage_type='local', data={}),       # {str(report_id): {hide, flag, added, author}}
-        dcc.Store(id='user-locations', storage_type='local', data={}),       # {"report_id": [loc, ...]}
+        dcc.Store(id='locations-changed', data=0),      # incremented whenever a report's locations are edited (kept for render_report_polygons trigger)
+        dcc.Store(id='current-user', storage_type='local', data=None),       # username string, entered once on first load
+        dcc.Store(id='user-state-snapshot', storage_type='memory', data={}), # {str(report_id): {hide, flag, flag_author, added}} – feeds clientside DOM-sync
         html.Div(
             id='offscreen-indicators',
             style={
@@ -730,6 +730,50 @@ def get_layout_map():
         dcc.Store(id='location-search-data', data=[]),
         dcc.Store(id='sidebar-loaded-at', data=None),
         dcc.Store(id='fit-bounds-request', data=None),  # [[lat1,lon1],[lat2,lon2]] to fitBounds
+        # ---- Username prompt modal ----
+        html.Div(
+            id='username-modal',
+            children=[
+                html.Div(
+                    children=[
+                        html.H3('Welcome', style={'margin': '0 0 8px 0', 'font-size': '16pt', 'color': '#333'}),
+                        html.P('Enter your username to track your session state across browser refreshes.',
+                               style={'font-size': '10pt', 'color': '#666', 'margin': '0 0 16px 0'}),
+                        dcc.Input(
+                            id='username-input',
+                            type='text',
+                            placeholder='Enter username…',
+                            n_submit=0,
+                            maxLength=64,
+                            style={
+                                'width': '100%', 'padding': '8px 10px', 'font-size': '12pt',
+                                'border': '1px solid #ccc', 'border-radius': '6px',
+                                'box-sizing': 'border-box', 'margin-bottom': '12px', 'outline': 'none',
+                            },
+                        ),
+                        html.Button(
+                            'Continue',
+                            id='username-submit',
+                            n_clicks=0,
+                            style={
+                                'width': '100%', 'padding': '8px', 'font-size': '11pt',
+                                'border': 'none', 'border-radius': '6px', 'cursor': 'pointer',
+                                'background': '#1565c0', 'color': '#fff', 'font-weight': 'bold',
+                            },
+                        ),
+                        html.Div(id='username-error', style={'color': '#c62828', 'font-size': '9pt', 'margin-top': '8px'}),
+                    ],
+                    style={
+                        'background': 'white', 'border-radius': '10px', 'padding': '28px 32px',
+                        'box-shadow': '0 8px 32px rgba(0,0,0,0.22)', 'width': '360px', 'max-width': '90vw',
+                    },
+                ),
+            ],
+            style={
+                'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+                'zIndex': 9999, 'background': 'rgba(0,0,0,0.45)', 'align-items': 'center', 'justify-content': 'center',
+            },
+        ),
     ]
     
     # layout_map[0..5] = dl.Map + map overlay controls (position:absolute)
@@ -1333,9 +1377,10 @@ def callbacks_map(app: Dash):
         [Input({'type': 'report-entry', 'index': ALL}, 'n_clicks')],
         State({'type': 'report-entry', 'index': ALL}, 'id'),
         State('active-report-id', 'data'),
+        State('current-user', 'data'),
         prevent_initial_call=True
     )
-    def select_report(report_nclicks, report_ids, current_active_id):
+    def select_report(report_nclicks, report_ids, current_active_id, username):
         if not ctx.triggered:
             raise PreventUpdate
         if not report_nclicks or all((x is None or x == 0) for x in report_nclicks):
@@ -1346,6 +1391,18 @@ def callbacks_map(app: Dash):
         report_id = json.loads(triggered_id_str).get('index')
         if report_id is None:
             raise PreventUpdate
+        # Write first_seen_at to clear "new" flag for this report
+        if username and report_id != current_active_id:
+            try:
+                engine, session = autoconnect_db()
+                try:
+                    _upsert_user_state(username, report_id, session, first_seen_at=datetime.now(timezone.utc))
+                    session.commit()
+                finally:
+                    session.close()
+                    engine.dispose()
+            except Exception:
+                pass
         return None if report_id == current_active_id else report_id
 
     @app.callback(
@@ -1354,23 +1411,31 @@ def callbacks_map(app: Dash):
         Input('active-report-id', 'data'),
         Input('locations-changed', 'data'),
         State('map', 'children'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         prevent_initial_call=True
     )
-    def render_report_polygons(report_id, _locations_changed, map_children, locs_dict):
+    def render_report_polygons(report_id, _locations_changed, map_children, username):
         children = get_children(map_children)
         if not report_id:
             return children, []
 
         engine, session = autoconnect_db()
-        report = session.query(Report).filter(Report.id == report_id).first()
-        session.close()
-        engine.dispose()
+        try:
+            report = session.query(Report).filter(Report.id == report_id).first()
+            if not report:
+                return children, []
+            # User override locations from DB
+            effective_locations = report.locations or []
+            if username:
+                urs = session.query(UserReportState).filter_by(
+                    username=username, report_id=report_id
+                ).first()
+                if urs and urs.locations is not None:
+                    effective_locations = urs.locations
+        finally:
+            session.close()
+            engine.dispose()
 
-        if not report:
-            return children, []
-
-        effective_locations = (locs_dict or {}).get(str(report_id), report.locations) or []
         if not effective_locations:
             return children, []
 
@@ -1494,6 +1559,43 @@ def callbacks_map(app: Dash):
         return type_children, sel_desc, sel_url, sel_url, f'Latitude: {sel_lat}', f'Longitude: {sel_lon}', new_children
 
 
+    # ---- Username modal ----
+    @app.callback(
+        Output('username-modal', 'style'),
+        Output('current-user', 'data'),
+        Output('username-error', 'children'),
+        Input('username-submit', 'n_clicks'),
+        Input('username-input', 'n_submit'),
+        Input('current-user', 'data'),
+        State('username-input', 'value'),
+        prevent_initial_call=False,
+    )
+    def handle_username_prompt(n_clicks, n_submit, current_user, input_value):
+        _modal_hidden = {'display': 'none'}
+        _modal_shown  = {
+            'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+            'zIndex': 9999, 'background': 'rgba(0,0,0,0.45)', 'align-items': 'center', 'justify-content': 'center',
+        }
+        triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
+
+        # On page load: if already set, hide modal
+        if 'current-user' in triggered or not triggered:
+            if current_user:
+                return _modal_hidden, current_user, ''
+            else:
+                return _modal_shown, dash.no_update, ''
+
+        # Submit action
+        if 'username-submit' in triggered or 'username-input' in triggered:
+            val = (input_value or '').strip()
+            if not val:
+                return _modal_shown, dash.no_update, 'Please enter a username.'
+            if len(val) > 64:
+                return _modal_shown, dash.no_update, 'Username must be 64 characters or fewer.'
+            return _modal_hidden, val, ''
+
+        return _modal_shown, dash.no_update, ''
+
     # Toggle filter popup open/closed
     @app.callback(
         Output('filters-popup', 'style'),
@@ -1546,11 +1648,17 @@ def callbacks_map(app: Dash):
         }
 
     def _build_sidebar_content(filter_platform, filter_event_type, filter_relevance_type,
-                                event_type_toggle, report_state, locs_dict,
-                                filter_visibility=None, max_timestamp=None):
+                                event_type_toggle, username=None, session=None,
+                                filter_visibility=None, max_timestamp=None,
+                                # legacy params for callers that still pass report_state/locs_dict:
+                                report_state=None, locs_dict=None):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
-        seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
-        added_ids = {int(k) for k, v in (report_state or {}).items() if v.get('added')}
+        if username and session:
+            seen_ids, flagged_authors, user_locs_map, added_ids, _snap = _get_user_state(username, session)
+        else:
+            # fallback to legacy stores when username not available yet
+            seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
+            added_ids = {int(k) for k, v in (report_state or {}).items() if v.get('added')}
         return get_sidebar_content(
             filter_platform=eff_platform,
             filter_event_type=eff_events,
@@ -1570,31 +1678,30 @@ def callbacks_map(app: Dash):
         Output('sidebar-loaded-at', 'data'),
         Output('new-posts-banner', 'children', allow_duplicate=True),
         Output('new-posts-banner', 'style', allow_duplicate=True),
-        Output('report-state', 'data', allow_duplicate=True),
+        Output('user-state-snapshot', 'data', allow_duplicate=True),
         Input('reports_dropdown_platform', 'value'),
         Input('reports_dropdown_event_type', 'value'),
         Input('reports_dropdown_relevance_type', 'value'),
         Input('event_type_toggle', 'value'),
         Input('new-posts-banner', 'n_clicks'),
         Input('reports_filter_visibility', 'value'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         State('sidebar-loaded-at', 'data'),
         prevent_initial_call='initial_duplicate',
     )
     def update_reports(filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                       _banner_clicks, filter_visibility, report_state, locs_dict, old_loaded_at):
+                       _banner_clicks, filter_visibility, username, old_loaded_at):
+        if not username:
+            raise PreventUpdate
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         triggered = ctx.triggered[0]['prop_id'] if ctx.triggered else ''
         is_banner_click = 'new-posts-banner' in triggered
         is_initial_load = not old_loaded_at
 
-        _, flagged_authors, _ = _parse_stores(report_state, locs_dict)
-
-        def _query_reports(since=None):
-            engine, session = autoconnect_db()
-            try:
-                q = session.query(Report).filter(Report.timestamp <= datetime.utcnow())
+        engine, session = autoconnect_db()
+        try:
+            def _query_reports_inner(since=None):
+                q = session.query(Report).filter(Report.timestamp <= datetime.now(timezone.utc))
                 if since:
                     q = q.filter(Report.timestamp > since)
                 if os.environ.get('DEMO_MODE') == '1':
@@ -1607,37 +1714,37 @@ def callbacks_map(app: Dash):
                 if eff_relevance:
                     q = q.filter(Report.relevance.in_(eff_relevance))
                 return q.all()
-            finally:
-                session.close()
-                engine.dispose()
 
-        if is_initial_load:
-            # Admit all currently matching reports as the baseline view.
-            updated_state = _mark_reports_added(report_state, _query_reports(), flagged_authors)
-        elif is_banner_click:
-            # Admit only posts matching ALL current filters (including location/visibility).
-            try:
-                since = datetime.fromisoformat(old_loaded_at)
-            except Exception:
-                since = None
-            new_reports = _query_reports(since=None)
-            seen_ids_set, _, user_locs_map = _parse_stores(report_state, locs_dict)
-            new_reports = _filter_by_display(
-                new_reports,
-                event_type_toggle or 'all',
-                seen_ids_set, flagged_authors, user_locs_map,
-                _vis_flags(filter_visibility),
+            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+
+            if is_initial_load:
+                # Admit all currently matching reports as the baseline view.
+                all_reports = _query_reports_inner()
+                _bulk_admit_reports(username, [r.id for r in all_reports], session)
+                session.commit()
+                seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+            elif is_banner_click:
+                new_reports = _query_reports_inner(since=None)
+                new_reports = _filter_by_display(
+                    new_reports,
+                    event_type_toggle or 'all',
+                    seen_ids, flagged_authors, user_locs_map,
+                    _vis_flags(filter_visibility),
+                )
+                if new_reports:
+                    _bulk_admit_reports(username, [r.id for r in new_reports], session)
+                    session.commit()
+                    seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+
+            sidebar_content = _build_sidebar_content(
+                filter_platform, filter_event_type, filter_relevance_type,
+                event_type_toggle, username=username, session=session,
+                filter_visibility=filter_visibility,
             )
-            updated_state = _mark_reports_added(report_state, new_reports, flagged_authors) if new_reports else report_state
-        else:
-            # Filter change: never touch added state.
-            updated_state = report_state
+        finally:
+            session.close()
+            engine.dispose()
 
-        sidebar_content = _build_sidebar_content(
-            filter_platform, filter_event_type, filter_relevance_type,
-            event_type_toggle, updated_state, locs_dict,
-            filter_visibility=filter_visibility,
-        )
         _banner_base = {
             'display': 'block', 'width': '100%', 'margin-bottom': '6px',
             'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
@@ -1648,33 +1755,43 @@ def callbacks_map(app: Dash):
 
         reset_active = None if not is_banner_click else dash.no_update
         if is_initial_load or is_banner_click:
-            # Reset loaded_at and banner on true refreshes.
-            return sidebar_content, reset_active, datetime.utcnow().isoformat(), '↑ 0 new posts', _banner_idle, updated_state
+            return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), '↑ 0 new posts', _banner_idle, snapshot
         else:
-            # Filter change: preserve loaded_at but recount pending new posts under the new filter.
+            # Filter change: recount pending new posts under the new filter.
             count = 0
             if old_loaded_at:
                 try:
-                    since = datetime.fromisoformat(old_loaded_at)
-                    pending = _query_reports(since=None)
-                    seen_ids_set, flagged_set, user_locs_map = _parse_stores(updated_state, locs_dict)
-                    pending = _filter_by_display(
-                        pending,
-                        event_type_toggle or 'all',
-                        seen_ids_set, flagged_set, user_locs_map,
-                        _vis_flags(filter_visibility),
-                    )
-
-                    already_added = {k for k, v in report_state.items() if v["added"]}
-                    pending = [r for r in pending if str(r.id) not in already_added]
-                    count = len(pending)
+                    engine2, session2 = autoconnect_db()
+                    try:
+                        q = session2.query(Report).filter(Report.timestamp <= datetime.now(timezone.utc))
+                        if os.environ.get('DEMO_MODE') == '1':
+                            q = q.filter(Report.identifier.like('demo-%'))
+                        if eff_platform:
+                            from sqlalchemy import or_ as _or
+                            q = q.filter(_or(*[Report.platform.like(f'{p}%') for p in eff_platform]))
+                        if eff_events:
+                            q = q.filter(Report.event_type.in_(eff_events))
+                        if eff_relevance:
+                            q = q.filter(Report.relevance.in_(eff_relevance))
+                        pending = q.all()
+                        pending = _filter_by_display(
+                            pending,
+                            event_type_toggle or 'all',
+                            seen_ids, flagged_authors, user_locs_map,
+                            _vis_flags(filter_visibility),
+                        )
+                        pending = [r for r in pending if r.id not in added_ids]
+                        count = len(pending)
+                    finally:
+                        session2.close()
+                        engine2.dispose()
                 except Exception:
                     count = 0
             if count > 0:
                 label = f'↑ {count} new post{"s" if count != 1 else ""}'
-                return sidebar_content, reset_active, dash.no_update, label, _banner_active, updated_state
+                return sidebar_content, reset_active, dash.no_update, label, _banner_active, snapshot
             else:
-                return sidebar_content, reset_active, dash.no_update, '↑ 0 new posts', _banner_idle, updated_state
+                return sidebar_content, reset_active, dash.no_update, '↑ 0 new posts', _banner_idle, snapshot
 
     # Check for new posts on each interval tick.
     # Auto-update mode: rebuild the list immediately when new posts arrive.
@@ -1684,7 +1801,7 @@ def callbacks_map(app: Dash):
         Output('new-posts-banner', 'style', allow_duplicate=True),
         Output('reports_list', 'children', allow_duplicate=True),
         Output('sidebar-loaded-at', 'data', allow_duplicate=True),
-        Output('report-state', 'data', allow_duplicate=True),
+        Output('user-state-snapshot', 'data', allow_duplicate=True),
         Input('interval_refresh_reports', 'n_intervals'),
         Input('autoscroll-toggle', 'value'),
         State('sidebar-loaded-at', 'data'),
@@ -1693,14 +1810,12 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         State('reports_filter_visibility', 'value'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         prevent_initial_call=True,
     )
     def check_new_posts(_n, autoupdate, loaded_at, filter_platform, filter_event_type,
-                        filter_relevance_type, loc_filter, filter_visibility,
-                        report_state, locs_dict):
-        if not loaded_at:
+                        filter_relevance_type, loc_filter, filter_visibility, username):
+        if not username or not loaded_at:
             raise PreventUpdate
         try:
             since = datetime.fromisoformat(loaded_at)
@@ -1715,9 +1830,11 @@ def callbacks_map(app: Dash):
         }
         _banner_idle = {**_banner_base, 'border': '1px solid #ddd', 'background': '#f5f5f5', 'color': '#aaa', 'font-weight': 'normal'}
         try:
+            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+
             q = session.query(Report).filter(
                 Report.timestamp > since,
-                Report.timestamp <= datetime.utcnow(),
+                Report.timestamp <= datetime.now(timezone.utc),
             )
             if os.environ.get('DEMO_MODE') == '1':
                 q = q.filter(Report.identifier.like('demo-%'))
@@ -1728,15 +1845,14 @@ def callbacks_map(app: Dash):
                 q = q.filter(Report.event_type.in_(eff_events))
             if eff_relevance:
                 q = q.filter(Report.relevance.in_(eff_relevance))
-            already_added = {k for k, v in report_state.items() if v["added"]}
-            q = q.filter(Report.identifier.notin_(already_added))
+            # Fix: filter by integer report IDs (not identifiers)
+            q = q.filter(Report.id.notin_(added_ids))
             new_reports = q.all()
-            seen_ids_set, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
 
             new_reports = _filter_by_display(
                 new_reports,
                 loc_filter or 'all',
-                seen_ids_set, flagged_authors, user_locs_map,
+                seen_ids, flagged_authors, user_locs_map,
                 _vis_flags(filter_visibility),
             )
             count = len(new_reports)
@@ -1745,16 +1861,16 @@ def callbacks_map(app: Dash):
                 return '↑ 0 new posts', _banner_idle, dash.no_update, dash.no_update, dash.no_update
 
             if autoupdate and 'on' in autoupdate:
-                # Mark new reports as added; sidebar uses added_ids as the sole gate.
-                _, flagged_authors, _ = _parse_stores(report_state, locs_dict)
-                updated_state = _mark_reports_added(report_state, new_reports, flagged_authors)
-                new_loaded_at = datetime.utcnow().isoformat()
+                _bulk_admit_reports(username, [r.id for r in new_reports], session)
+                session.commit()
+                _, _, _, _, snapshot = _get_user_state(username, session)
+                new_loaded_at = datetime.now(timezone.utc).isoformat()
                 sidebar = _build_sidebar_content(
                     filter_platform, filter_event_type, filter_relevance_type,
-                    loc_filter, updated_state, locs_dict,
+                    loc_filter, username=username, session=session,
                     filter_visibility=filter_visibility,
                 )
-                return '↑ 0 new posts', _banner_idle, sidebar, new_loaded_at, updated_state
+                return '↑ 0 new posts', _banner_idle, sidebar, new_loaded_at, snapshot
 
             # Manual mode: show banner only, no state change
             label = f'↑ {count} new post{"s" if count != 1 else ""}'
@@ -1881,16 +1997,18 @@ def callbacks_map(app: Dash):
         Input('reports_dropdown_relevance_type', 'value'),
         Input('event_type_toggle', 'value'),
         Input('reports_filter_visibility', 'value'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         prevent_initial_call='initial_duplicate'
     )
     def fetch_report_dots(_n, filter_platform, filter_event_type, filter_relevance_type, loc_filter,
-                          filter_visibility, report_state, locs_dict):
-        seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
+                          filter_visibility, username):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         engine, session = autoconnect_db()
         try:
+            if username:
+                seen_ids, flagged_authors, user_locs_map, _, _ = _get_user_state(username, session)
+            else:
+                seen_ids, flagged_authors, user_locs_map = set(), set(), {}
             return _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform,
@@ -1906,27 +2024,32 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('fit-bounds-request', 'data'),
         Input({'type': 'center-button', 'index': ALL}, 'n_clicks'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         prevent_initial_call=True,
     )
-    def center_map_on_report(n_clicks_list, locs_dict):
+    def center_map_on_report(n_clicks_list, username):
         if not any(n for n in (n_clicks_list or []) if n):
             raise PreventUpdate
         triggered = ctx.triggered_id
         if not triggered:
             raise PreventUpdate
         report_id = triggered['index']
-        user_locs_map = (locs_dict or {})
-        # look up locations: user override first, then DB
-        locs = user_locs_map.get(str(report_id)) or user_locs_map.get(report_id)
-        if locs is None:
-            engine, session = autoconnect_db()
-            try:
+        engine, session = autoconnect_db()
+        try:
+            # look up locations: user override first, then DB
+            locs = None
+            if username:
+                urs = session.query(UserReportState).filter_by(
+                    username=username, report_id=report_id
+                ).first()
+                if urs and urs.locations is not None:
+                    locs = urs.locations
+            if locs is None:
                 report = session.query(Report).filter(Report.id == report_id).first()
                 locs = report.locations if report else []
-            finally:
-                session.close()
-                engine.dispose()
+        finally:
+            session.close()
+            engine.dispose()
         georef = [loc for loc in (locs or []) if 'osm_id' in loc and loc.get('lat') and loc.get('lon')]
         if not georef:
             raise PreventUpdate
@@ -1953,12 +2076,11 @@ def callbacks_map(app: Dash):
 
     # Toggle hide state for a report; immediately rebuild sidebar + dots
     @app.callback(
-        Output('report-state', 'data'),
+        Output('user-state-snapshot', 'data', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('reports_list', 'children', allow_duplicate=True),
         Input({'type': 'seen-button', 'index': ALL}, 'n_clicks'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -1967,9 +2089,11 @@ def callbacks_map(app: Dash):
         State('sidebar-loaded-at', 'data'),
         prevent_initial_call=True
     )
-    def toggle_report_seen(n_clicks_list, report_state, locs_dict,
+    def toggle_report_seen(n_clicks_list, username,
                            filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                            filter_visibility, loaded_at):
+        if not username:
+            raise PreventUpdate
         if not ctx.triggered:
             raise PreventUpdate
         if all(n is None or n == 0 for n in n_clicks_list):
@@ -1980,20 +2104,19 @@ def callbacks_map(app: Dash):
         if report_id is None:
             raise PreventUpdate
 
-        state = dict(report_state or {})
-        rid = str(report_id)
-        entry = dict(state.get(rid, {}))
-        entry.setdefault('flag', False)
-        entry.setdefault('added', False)
-        entry.setdefault('author', '')
-        entry['hide'] = not entry.get('hide', False)
-        state[rid] = entry
-
-        seen_ids, flagged_authors, user_locs_map = _parse_stores(state, locs_dict)
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
 
         engine, session = autoconnect_db()
         try:
+            # Get current hide state
+            existing = session.query(UserReportState).filter_by(
+                username=username, report_id=report_id
+            ).first()
+            new_hide = not (existing.hide if existing else False)
+            _upsert_user_state(username, report_id, session, hide=new_hide)
+            session.commit()
+
+            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
             vis = _vis_flags(filter_visibility)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
@@ -2002,11 +2125,92 @@ def callbacks_map(app: Dash):
                                 **vis)
             sidebar = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
-                event_type_toggle, state, locs_dict,
+                event_type_toggle, username=username, session=session,
                 filter_visibility=filter_visibility,
                 max_timestamp=loaded_at,
             )
-            return state, dots, sidebar
+            return snapshot, dots, sidebar
+        finally:
+            session.close()
+            engine.dispose()
+
+    # Server-side flag toggle — replaces the JS _toggleAuthorFlag for sidebar flag buttons
+    @app.callback(
+        Output('user-state-snapshot', 'data', allow_duplicate=True),
+        Output('report-dots-data', 'data', allow_duplicate=True),
+        Output('reports_list', 'children', allow_duplicate=True),
+        Input({'type': 'flag-button', 'index': ALL, 'author': ALL}, 'n_clicks'),
+        State('current-user', 'data'),
+        State('reports_dropdown_platform', 'value'),
+        State('reports_dropdown_event_type', 'value'),
+        State('reports_dropdown_relevance_type', 'value'),
+        State('event_type_toggle', 'value'),
+        State('reports_filter_visibility', 'value'),
+        State('sidebar-loaded-at', 'data'),
+        prevent_initial_call=True,
+    )
+    def toggle_author_flag(n_clicks_list, username,
+                           filter_platform, filter_event_type, filter_relevance_type,
+                           event_type_toggle, filter_visibility, loaded_at):
+        if not username:
+            raise PreventUpdate
+        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+            raise PreventUpdate
+        triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
+        try:
+            id_dict = json.loads(triggered_id_str)
+            author = id_dict.get('author', '')
+        except Exception:
+            raise PreventUpdate
+        if not author:
+            raise PreventUpdate
+
+        eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
+
+        engine, session = autoconnect_db()
+        try:
+            # Determine current flag state for this author
+            existing_flagged = session.query(UserReportState).filter_by(
+                username=username, flag=True, flag_author=author
+            ).first()
+            new_flag = not bool(existing_flagged)
+
+            # Get all reports by this author that have a state row for this user
+            rows_for_author = session.query(UserReportState).filter(
+                UserReportState.username == username,
+                UserReportState.flag_author == author,
+            ).all()
+            for row in rows_for_author:
+                row.flag = new_flag
+            session.flush()
+
+            # Also ensure rows exist for all reports by this author (via reports table)
+            author_reports = session.query(Report).filter(Report.author == author).all()
+            for r in author_reports:
+                existing = session.query(UserReportState).filter_by(
+                    username=username, report_id=r.id
+                ).first()
+                if existing:
+                    existing.flag = new_flag
+                    existing.flag_author = author if new_flag else existing.flag_author
+                else:
+                    _upsert_user_state(username, r.id, session, flag=new_flag, flag_author=author if new_flag else None)
+            session.commit()
+
+            seen_ids, flagged_authors, user_locs_map, added_ids, snapshot = _get_user_state(username, session)
+            vis = _vis_flags(filter_visibility)
+            dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
+                                user_locs_map=user_locs_map,
+                                filter_platform=eff_platform, filter_event_type=eff_events,
+                                filter_relevance_type=eff_relevance, loc_filter=event_type_toggle or 'all',
+                                **vis)
+            sidebar = _build_sidebar_content(
+                filter_platform, filter_event_type, filter_relevance_type,
+                event_type_toggle, username=username, session=session,
+                filter_visibility=filter_visibility,
+                max_timestamp=loaded_at,
+            )
+            return snapshot, dots, sidebar
         finally:
             session.close()
             engine.dispose()
@@ -2087,7 +2291,7 @@ def callbacks_map(app: Dash):
         Input('report-dots-data', 'data'),
         Input('active-report-id', 'data'),
         Input('sidebar-loaded-at', 'data'),
-        Input('report-state', 'data'),
+        Input('user-state-snapshot', 'data'),
     )
 
 
@@ -2105,6 +2309,7 @@ def callbacks_map(app: Dash):
         return eff_platform, eff_events, eff_relevance
 
     def _parse_stores(report_state, locs_dict):
+        """Legacy helper kept for compatibility during transition; prefer _get_user_state."""
         state = report_state or {}
         seen_ids = {int(k) for k, v in state.items() if v.get('hide')}
         flagged_authors = {v.get('author', '') for v in state.values()
@@ -2112,17 +2317,81 @@ def callbacks_map(app: Dash):
         user_locs_map = {int(k): v for k, v in (locs_dict or {}).items()}
         return seen_ids, flagged_authors, user_locs_map
 
-    def _query_all_demo_reports():
-        """Return all current demo reports (used after demo reset)."""
-        engine, session = autoconnect_db()
-        try:
-            return session.query(Report).filter(
-                Report.identifier.like('demo-%'),
-                Report.timestamp <= datetime.utcnow(),
-            ).all()
-        finally:
-            session.close()
-            engine.dispose()
+    # ---- New DB-backed per-user state helpers ----
+
+    def _get_user_state(username, session):
+        """
+        Query user_report_state once for the given username.
+        Returns (seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot).
+        - seen_ids       : set of report_ids where hide=True
+        - flagged_authors: set of flag_author strings where flag=True
+        - user_locs_map  : {report_id: locations} where locations IS NOT NULL
+        - added_ids      : set of report_ids where first_seen_at IS NOT NULL
+        - snapshot       : {str(report_id): {hide, flag, flag_author, added}} for clientside sync
+        """
+        rows = session.query(UserReportState).filter(
+            UserReportState.username == username
+        ).all()
+        seen_ids       = set()
+        flagged_authors = set()
+        user_locs_map  = {}
+        added_ids      = set()
+        snapshot       = {}
+        for row in rows:
+            rid = row.report_id
+            if row.hide:
+                seen_ids.add(rid)
+            if row.flag and row.flag_author:
+                flagged_authors.add(row.flag_author)
+            if row.locations is not None:
+                user_locs_map[rid] = row.locations
+            if row.first_seen_at is not None:
+                added_ids.add(rid)
+            snapshot[str(rid)] = {
+                'hide': bool(row.hide),
+                'flag': bool(row.flag),
+                'flag_author': row.flag_author or '',
+                'added': row.first_seen_at is not None,
+                'author': row.flag_author or '',
+            }
+        return seen_ids, flagged_authors, user_locs_map, added_ids, snapshot
+
+    def _upsert_user_state(username, report_id, session, **kwargs):
+        """
+        INSERT or UPDATE a single user_report_state row.
+        kwargs may include: hide, flag, flag_author, locations, first_seen_at
+        """
+        stmt = pg_insert(UserReportState).values(
+            username=username,
+            report_id=report_id,
+            **kwargs,
+        )
+        update_cols = {k: stmt.excluded[k] for k in kwargs}
+        stmt = stmt.on_conflict_do_update(
+            constraint='uq_user_report',
+            set_=update_cols,
+        )
+        session.execute(stmt)
+
+    def _bulk_admit_reports(username, report_ids, session):
+        """
+        Bulk upsert: set first_seen_at=now() for all given report IDs for username.
+        Rows that don't exist yet are created with defaults (hide=False, flag=False).
+        """
+        now = datetime.now(timezone.utc)
+        for rid in report_ids:
+            stmt = pg_insert(UserReportState).values(
+                username=username,
+                report_id=rid,
+                first_seen_at=now,
+                hide=False,
+                flag=False,
+            )
+            stmt = stmt.on_conflict_do_update(
+                constraint='uq_user_report',
+                set_={'first_seen_at': now},
+            )
+            session.execute(stmt)
 
     def _filter_by_display(reports, loc_filter, seen_ids, flagged_authors, user_locs_map, vis):
         """Apply location and visibility (hide_seen/flagged/unflagged) filters in Python."""
@@ -2148,20 +2417,6 @@ def callbacks_map(app: Dash):
             reports = filtered
         return reports
 
-    def _mark_reports_added(report_state, new_reports, flagged_authors):
-        """Merge new reports into report-state, setting added=True for each."""
-        state = dict(report_state or {})
-        for r in new_reports:
-            rid = str(r.id)
-            author = r.author or ''
-            entry = dict(state.get(rid, {}))
-            entry.setdefault('hide', False)
-            entry.setdefault('flag', author in (flagged_authors or set()))
-            entry['added'] = True
-            entry['author'] = author
-            state[rid] = entry
-        return state
-
     def _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, seen_ids=None, flagged_authors=None, user_locs_map=None, filter_visibility=None, added_ids=None, max_timestamp=None):
         from app.layout.map.sidebar import get_sidebar_content
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
@@ -2182,7 +2437,7 @@ def callbacks_map(app: Dash):
                     filter_platform=None, filter_event_type=None,
                     filter_relevance_type=None, loc_filter='all',
                     hide_seen=False, hide_flagged=False, hide_unflagged=False):
-        q = session.query(Report).filter(Report.timestamp <= datetime.utcnow())
+        q = session.query(Report).filter(Report.timestamp <= datetime.now(timezone.utc))
         if os.environ.get('DEMO_MODE') == '1':
             q = q.filter(Report.identifier.like('demo-%'))
         if filter_platform:
@@ -2258,10 +2513,10 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('location-pick-mode', 'data', allow_duplicate=True),
         Input({'type': 'georeference-location-button', 'report': ALL, 'loc': ALL}, 'n_clicks'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         prevent_initial_call=True,
     )
-    def enter_georeference_mode(n_clicks_list, locs_dict):
+    def enter_georeference_mode(n_clicks_list, username):
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -2274,7 +2529,14 @@ def callbacks_map(app: Dash):
         engine, session = autoconnect_db()
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
-            effective_locs = (locs_dict or {}).get(str(report_id), r.locations if r else None) or []
+            effective_locs = r.locations if r else []
+            if username:
+                urs = session.query(UserReportState).filter_by(
+                    username=username, report_id=report_id
+                ).first()
+                if urs and urs.locations is not None:
+                    effective_locs = urs.locations
+            effective_locs = effective_locs or []
             mention = ''
             if 0 <= loc_index < len(effective_locs):
                 loc = effective_locs[loc_index]
@@ -2344,12 +2606,10 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('locations-changed', 'data', allow_duplicate=True),
-        Output('user-locations', 'data', allow_duplicate=True),
         Input({'type': 'osm-result-button', 'index': ALL}, 'n_clicks'),
         State('location-search-data', 'data'),
         State('location-pick-mode', 'data'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -2359,9 +2619,11 @@ def callbacks_map(app: Dash):
         State('sidebar-loaded-at', 'data'),
         prevent_initial_call=True,
     )
-    def place_location_from_search(n_clicks_list, search_data, pick_mode, report_state, locs_dict,
+    def place_location_from_search(n_clicks_list, search_data, pick_mode, username,
                                    filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
                                    filter_visibility, loaded_at):
+        if not username:
+            raise PreventUpdate
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         if not pick_mode or not search_data:
@@ -2392,22 +2654,23 @@ def callbacks_map(app: Dash):
         if isinstance(pick_mode, dict) and pick_mode.get('mention'):
             new_loc['mention'] = pick_mode['mention']
 
-        locs_dict = dict(locs_dict or {})
         engine, session = autoconnect_db()
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
             if r is None:
                 raise PreventUpdate
-            current_locs = locs_dict.get(str(report_id), r.locations) or []
+            # Get current locations (user override or report default)
+            urs = session.query(UserReportState).filter_by(username=username, report_id=report_id).first()
+            current_locs = (urs.locations if urs and urs.locations is not None else r.locations) or []
             locs = list(current_locs)
             if loc_index is not None and 0 <= loc_index < len(locs):
                 locs[loc_index] = {**locs[loc_index], **new_loc}
             else:
                 locs.append(new_loc)
-            locs_dict[str(report_id)] = locs
+            _upsert_user_state(username, report_id, session, locations=locs)
+            session.commit()
 
-            seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
-            added_ids = {int(k) for k, v in (report_state or {}).items() if v.get('added')}
+            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
             eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
@@ -2415,7 +2678,7 @@ def callbacks_map(app: Dash):
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
                                 loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
-            return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
+            return None, sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
             engine.dispose()
@@ -2457,11 +2720,9 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('locations-changed', 'data', allow_duplicate=True),
-        Output('user-locations', 'data', allow_duplicate=True),
         Input('map', 'clickData'),
         State('location-pick-mode', 'data'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -2471,10 +2732,10 @@ def callbacks_map(app: Dash):
         State('sidebar-loaded-at', 'data'),
         prevent_initial_call=True,
     )
-    def place_location(click_data, pick_mode, report_state, locs_dict,
+    def place_location(click_data, pick_mode, username,
                        filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
                        filter_visibility, loaded_at):
-        if pick_mode is None or not click_data:
+        if not username or pick_mode is None or not click_data:
             raise PreventUpdate
         latlng = click_data.get('latlng', {})
         lat, lon = latlng.get('lat'), latlng.get('lng')
@@ -2484,14 +2745,13 @@ def callbacks_map(app: Dash):
         report_id = pick_mode.get('report_id') if isinstance(pick_mode, dict) else pick_mode
         loc_index = pick_mode.get('loc_index') if isinstance(pick_mode, dict) else None
 
-        # Build user locations map, fall back to DB locations if no override exists
-        locs_dict = dict(locs_dict or {})
         engine, session = autoconnect_db()
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
             if r is None:
                 raise PreventUpdate
-            current_locs = locs_dict.get(str(report_id), r.locations) or []
+            urs = session.query(UserReportState).filter_by(username=username, report_id=report_id).first()
+            current_locs = (urs.locations if urs and urs.locations is not None else r.locations) or []
             locs = list(current_locs)
             new_coords = {
                 'osm_id': f'manual_{lat:.6f}_{lon:.6f}',
@@ -2503,10 +2763,10 @@ def callbacks_map(app: Dash):
                 locs[loc_index] = {**locs[loc_index], **new_coords}
             else:
                 locs.append(new_coords)
-            locs_dict[str(report_id)] = locs
+            _upsert_user_state(username, report_id, session, locations=locs)
+            session.commit()
 
-            seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
-            added_ids = {int(k) for k, v in (report_state or {}).items() if v.get('added')}
+            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
             eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
@@ -2514,7 +2774,7 @@ def callbacks_map(app: Dash):
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
                                 loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
-            return None, sidebar, dots, (loc_rev or 0) + 1, locs_dict
+            return None, sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
             engine.dispose()
@@ -2524,10 +2784,8 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('locations-changed', 'data', allow_duplicate=True),
-        Output('user-locations', 'data', allow_duplicate=True),
         Input({'type': 'remove-location-button', 'report': ALL, 'loc': ALL}, 'n_clicks'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -2537,10 +2795,10 @@ def callbacks_map(app: Dash):
         State('sidebar-loaded-at', 'data'),
         prevent_initial_call=True,
     )
-    def remove_location(n_clicks_list, report_state, locs_dict,
+    def remove_location(n_clicks_list, username,
                         filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
                         filter_visibility, loaded_at):
-        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+        if not username or not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
         try:
@@ -2552,20 +2810,20 @@ def callbacks_map(app: Dash):
         if report_id is None or loc_index is None:
             raise PreventUpdate
 
-        locs_dict = dict(locs_dict or {})
         engine, session = autoconnect_db()
         try:
             r = session.query(Report).filter(Report.id == report_id).first()
             if r is None:
                 raise PreventUpdate
-            current_locs = locs_dict.get(str(report_id), r.locations) or []
+            urs = session.query(UserReportState).filter_by(username=username, report_id=report_id).first()
+            current_locs = (urs.locations if urs and urs.locations is not None else r.locations) or []
             locs = list(current_locs)
             if 0 <= loc_index < len(locs):
                 locs.pop(loc_index)
-            locs_dict[str(report_id)] = locs
+            _upsert_user_state(username, report_id, session, locations=locs)
+            session.commit()
 
-            seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
-            added_ids = {int(k) for k, v in (report_state or {}).items() if v.get('added')}
+            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
             eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
@@ -2573,7 +2831,7 @@ def callbacks_map(app: Dash):
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
                                 loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
-            return sidebar, dots, (loc_rev or 0) + 1, locs_dict
+            return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
             engine.dispose()
@@ -2583,10 +2841,8 @@ def callbacks_map(app: Dash):
         Output('reports_list', 'children', allow_duplicate=True),
         Output('report-dots-data', 'data', allow_duplicate=True),
         Output('locations-changed', 'data', allow_duplicate=True),
-        Output('user-locations', 'data', allow_duplicate=True),
         Input({'type': 'restore-locations-button', 'index': ALL}, 'n_clicks'),
-        State('report-state', 'data'),
-        State('user-locations', 'data'),
+        State('current-user', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -2596,10 +2852,10 @@ def callbacks_map(app: Dash):
         State('sidebar-loaded-at', 'data'),
         prevent_initial_call=True,
     )
-    def restore_original_locations(n_clicks_list, report_state, locs_dict,
+    def restore_original_locations(n_clicks_list, username,
                                    filter_platform, filter_event_type, filter_relevance_type, event_type_toggle, loc_rev,
                                    filter_visibility, loaded_at):
-        if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
+        if not username or not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
             raise PreventUpdate
         triggered_id_str = ctx.triggered[0]['prop_id'].split('.')[0]
         try:
@@ -2609,22 +2865,21 @@ def callbacks_map(app: Dash):
         if report_id is None:
             raise PreventUpdate
 
-        locs_dict = dict(locs_dict or {})
-        locs_dict.pop(str(report_id), None)
-
-        seen_ids, flagged_authors, user_locs_map = _parse_stores(report_state, locs_dict)
-        added_ids = {int(k) for k, v in (report_state or {}).items() if v.get('added')}
-
         eff_p, eff_e, eff_r = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
         engine, session = autoconnect_db()
         try:
+            # Clear user location override (set locations=None)
+            _upsert_user_state(username, report_id, session, locations=None)
+            session.commit()
+
+            seen_ids, flagged_authors, user_locs_map, added_ids, _ = _get_user_state(username, session)
             sidebar = _render_sidebar(session, filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
                                       seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                       filter_visibility=filter_visibility, added_ids=added_ids, max_timestamp=loaded_at)
             dots = _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map,
                                 filter_platform=eff_p, filter_event_type=eff_e, filter_relevance_type=eff_r,
                                 loc_filter=event_type_toggle or 'all', **_vis_flags(filter_visibility))
-            return sidebar, dots, (loc_rev or 0) + 1, locs_dict
+            return sidebar, dots, (loc_rev or 0) + 1
         finally:
             session.close()
             engine.dispose()
@@ -2632,10 +2887,10 @@ def callbacks_map(app: Dash):
     # ---- Demo: reset button ----
     @app.callback(
         Output('reports_list', 'children', allow_duplicate=True),
-        Output('report-state', 'data', allow_duplicate=True),
-        Output('user-locations', 'data', allow_duplicate=True),
+        Output('user-state-snapshot', 'data', allow_duplicate=True),
         Output('sidebar-loaded-at', 'data', allow_duplicate=True),
         Input('demo-reset-button', 'n_clicks'),
+        State('current-user', 'data'),
         State('reports_dropdown_platform', 'value'),
         State('reports_dropdown_event_type', 'value'),
         State('reports_dropdown_relevance_type', 'value'),
@@ -2643,7 +2898,7 @@ def callbacks_map(app: Dash):
         State('reports_filter_visibility', 'value'),
         prevent_initial_call=True,
     )
-    def reset_demo(n_clicks, filter_platform, filter_event_type, filter_relevance_type,
+    def reset_demo(n_clicks, username, filter_platform, filter_event_type, filter_relevance_type,
                    event_type_toggle, filter_visibility):
         if not n_clicks:
             raise PreventUpdate
@@ -2651,21 +2906,29 @@ def callbacks_map(app: Dash):
         engine, session = autoconnect_db()
         try:
             seed_demo_data(session)
+            # Admit the demo posts that are already current and rebuild the sidebar.
+            demo_reports = session.query(Report).filter(
+                Report.identifier.like('demo-%'),
+                Report.timestamp <= datetime.now(timezone.utc),
+            ).all()
+            if username:
+                _bulk_admit_reports(username, [r.id for r in demo_reports], session)
+                session.commit()
+                _, _, _, _, snapshot = _get_user_state(username, session)
+            else:
+                snapshot = {}
+            sidebar = _build_sidebar_content(
+                filter_platform, filter_event_type, filter_relevance_type,
+                event_type_toggle, username=username, session=session,
+                filter_visibility=filter_visibility,
+            )
+            # Use the earliest demo post timestamp as loaded_at so check_new_posts
+            # correctly finds all future demo posts (spread over 5 min) as they arrive.
+            if demo_reports:
+                loaded_at = min(r.timestamp for r in demo_reports).isoformat()
+            else:
+                loaded_at = datetime.now(timezone.utc).isoformat()
+            return sidebar, snapshot, loaded_at
         finally:
             session.close()
             engine.dispose()
-        # Admit the demo posts that are already current and rebuild the sidebar.
-        demo_reports = _query_all_demo_reports()
-        fresh_state = _mark_reports_added({}, demo_reports, set())
-        sidebar = _build_sidebar_content(
-            filter_platform, filter_event_type, filter_relevance_type,
-            event_type_toggle, fresh_state, {},
-            filter_visibility=filter_visibility,
-        )
-        # Use the earliest demo post timestamp as loaded_at so check_new_posts
-        # correctly finds all future demo posts (spread over 5 min) as they arrive.
-        if demo_reports:
-            loaded_at = min(r.timestamp for r in demo_reports).isoformat()
-        else:
-            loaded_at = datetime.utcnow().isoformat()
-        return sidebar, fresh_state, {}, loaded_at
