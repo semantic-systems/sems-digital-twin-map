@@ -554,13 +554,27 @@ def get_layout_map():
                                     'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
                                     'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
                                 }),
+                                # Hidden checklist — holds state, drives all existing callbacks
                                 dcc.Checklist(
                                     id='reports_dropdown_event_type',
                                     options=[{'label': e, 'value': e} for e in ALL_EVENT_TYPES],
                                     value=[e for e in ALL_EVENT_TYPES if e != 'Irrelevant'],
-                                    inputStyle={'margin-right': '3px'},
-                                    labelStyle={'display': 'block', 'margin-bottom': '2px'},
-                                    style={'font-size': '8pt', 'margin-bottom': '8px'},
+                                    style={'display': 'none'},
+                                ),
+                                # Visible chip buttons
+                                html.Div(
+                                    id='event-type-chips-container',
+                                    children=[
+                                        html.Button(
+                                            e,
+                                            id={'type': 'event-chip', 'index': e},
+                                            n_clicks=0,
+                                            className='filter-chip' + ('' if e == 'Irrelevant' else ' filter-chip-active'),
+                                            title='Click to toggle · Shift+click to solo',
+                                        )
+                                        for e in ALL_EVENT_TYPES
+                                    ],
+                                    style={'display': 'flex', 'flex-wrap': 'wrap', 'gap': '4px', 'margin-bottom': '8px'},
                                 ),
                                 html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
                                 # Platform
@@ -654,6 +668,7 @@ def get_layout_map():
         dcc.Store(id='current-user', storage_type='local', data=None),       # username string, entered once on first load
         dcc.Store(id='user-state-snapshot', storage_type='memory', data={}), # {str(report_id): {hide, flag, flag_author, added}} – feeds clientside DOM-sync
         dcc.Store(id='filter-state', storage_type='local', data=None),       # persisted filter values (platform, event_type, etc.)
+        dcc.Store(id='event-types-all', data=list(ALL_EVENT_TYPES)),          # static list passed to clientside chip callbacks
         html.Div(
             id='offscreen-indicators',
             style={
@@ -3059,3 +3074,52 @@ def callbacks_map(app: Dash):
             data.get('visibility', ['show_flagged', 'show_unflagged']),
             data.get('autoscroll', []),
         )
+
+    # ---- Event-type filter chips ----
+    # Chip click → update hidden checklist value (handles shift+click solo mode)
+    app.clientside_callback(
+        """
+        function(n_clicks_list, current_values, all_types) {
+            var ctx = dash_clientside.callback_context;
+            if (!ctx.triggered || !ctx.triggered.length) return dash_clientside.no_update;
+            var prop_id = ctx.triggered[0].prop_id;
+            var match = prop_id.match(/"index":"([^"]+)"/);
+            if (!match) return dash_clientside.no_update;
+            var clicked = match[1];
+
+            var selected = current_values ? current_values.slice() : all_types.slice();
+
+            if (window._shiftPressed) {
+                // Solo mode: if already the only one selected → restore all non-Irrelevant
+                var isSolo = selected.length === 1 && selected[0] === clicked;
+                return isSolo
+                    ? all_types.filter(function(e) { return e !== 'Irrelevant'; })
+                    : [clicked];
+            } else {
+                var idx = selected.indexOf(clicked);
+                if (idx >= 0) { selected.splice(idx, 1); } else { selected.push(clicked); }
+                return selected;
+            }
+        }
+        """,
+        Output('reports_dropdown_event_type', 'value', allow_duplicate=True),
+        Input({'type': 'event-chip', 'index': ALL}, 'n_clicks'),
+        State('reports_dropdown_event_type', 'value'),
+        State('event-types-all', 'data'),
+        prevent_initial_call=True,
+    )
+
+    # Checklist value → chip classNames (keeps chips in sync with restore/reset)
+    app.clientside_callback(
+        """
+        function(values, ids) {
+            if (!values || !ids) return ids.map(function() { return 'filter-chip'; });
+            return ids.map(function(id) {
+                return values.indexOf(id.index) >= 0 ? 'filter-chip filter-chip-active' : 'filter-chip';
+            });
+        }
+        """,
+        Output({'type': 'event-chip', 'index': ALL}, 'className'),
+        Input('reports_dropdown_event_type', 'value'),
+        State({'type': 'event-chip', 'index': ALL}, 'id'),
+    )

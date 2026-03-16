@@ -229,3 +229,29 @@ table{
     opacity: 1;
     filter: drop-shadow(0 0 8px rgba(250,100,0,1)) drop-shadow(0 0 14px rgba(250,100,0,0.6));
 }
+/* === Event-type filter chips === */
+.filter-chip {
+    border: 1px solid #ddd;
+    background: #f5f5f5;
+    color: #aaa;
+    border-radius: 10px;
+    padding: 2px 7px;
+    font-size: 8pt;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+    line-height: 1.5;
+    user-select: none;
+}
+.filter-chip:hover {
+    border-color: #bbb;
+    color: #666;
+}
+.filter-chip.filter-chip-active {
+    border-color: #1976d2;
+    background: #e3f2fd;
+    color: #1565c0;
+}
+.filter-chip.filter-chip-active:hover {
+    background: #bbdefb;
+}
