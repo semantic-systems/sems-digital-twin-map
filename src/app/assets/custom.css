@@ -261,3 +261,15 @@ table{
     font-weight: normal;
     margin-left: 2px;
 }
+
+/* === Inline filter row labels === */
+.filter-label {
+    font-size: 7pt;
+    font-weight: bold;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 5px;
+    white-space: nowrap;
+    vertical-align: middle;
+}

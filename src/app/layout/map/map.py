@@ -483,127 +483,21 @@ def get_layout_map():
                                             style={'font-size': '9pt', 'color': '#888', 'white-space': 'nowrap'},
                                         ),
                                         html.Button(
-                                            'Filter',
-                                            id='filters-toggle-btn',
+                                            '↺ Reset Demo',
+                                            id='demo-reset-button',
                                             n_clicks=0,
-                                            title='Filter reports',
                                             style={
-                                                'font-size': '11px', 'padding': '2px 7px', 'cursor': 'pointer',
-                                                'border-radius': '4px', 'border': '1px solid #ddd',
-                                                'background': '#f5f5f5', 'color': '#555',
-                                            },
-                                        ),
-                                        html.Span(
-                                            id='filters-active-badge',
-                                            style={'display': 'none'},
+                                                'display': 'block' if os.environ.get('DEMO_MODE') == '1' else 'none',
+                                                'font-size': '10px', 'padding': '2px 8px', 'cursor': 'pointer',
+                                                'border-radius': '4px', 'border': '1px solid #ff8a65',
+                                                'background': '#fff3e0', 'color': '#bf360c',
+                                            }
                                         ),
                                     ],
                                     style={'display': 'flex', 'align-items': 'center', 'gap': '6px', 'margin-left': 'auto'},
                                 ),
-                                html.Button(
-                                    '↺ Reset Demo',
-                                    id='demo-reset-button',
-                                    n_clicks=0,
-                                    style={
-                                        'display': 'block' if os.environ.get('DEMO_MODE') == '1' else 'none',
-                                        'font-size': '10px', 'padding': '2px 8px', 'cursor': 'pointer',
-                                        'border-radius': '4px', 'border': '1px solid #ff8a65',
-                                        'background': '#fff3e0', 'color': '#bf360c',
-                                    }
-                                ),
                             ],
                             style={'display': 'flex', 'align-items': 'center', 'gap': '6px'},
-                        ),
-                        # location toggle — always visible below title row
-                        dcc.RadioItems(
-                            id='event_type_toggle',
-                            options=[
-                                {'label': 'All', 'value': 'all'},
-                                {'label': '📍 Located', 'value': 'localized'},
-                                {'label': '◎ Pending', 'value': 'pending'},
-                                {'label': '∅ None', 'value': 'unlocalized'},
-                            ],
-                            value='all',
-                            inline=True,
-                            inputStyle={'margin-right': '2px'},
-                            labelStyle={'margin-right': '6px'},
-                            style={'font-size': '8pt', 'margin-top': '4px'},
-                        ),
-                        # filter popup (absolute, opens below title row)
-                        html.Div(
-                            id='filters-popup',
-                            style={'display': 'none'},
-                            children=[
-                                # Relevance
-                                html.Div('Relevance', style={
-                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
-                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
-                                }),
-                                dcc.Checklist(
-                                    id='reports_dropdown_relevance_type',
-                                    options=[{'label': r, 'value': r} for r in ALL_RELEVANCE_TYPES],
-                                    value=list(ALL_RELEVANCE_TYPES),
-                                    inline=True,
-                                    inputStyle={'margin-right': '3px'},
-                                    labelStyle={'margin-right': '8px'},
-                                    style={'font-size': '8pt', 'margin-bottom': '8px'},
-                                ),
-                                html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
-                                # Event Type
-                                html.Div('Event Type', style={
-                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
-                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
-                                }),
-                                # Hidden checklist — holds state, drives all existing callbacks
-                                dcc.Checklist(
-                                    id='reports_dropdown_event_type',
-                                    options=[{'label': e, 'value': e} for e in ALL_EVENT_TYPES],
-                                    value=[e for e in ALL_EVENT_TYPES if e != 'Irrelevant'],
-                                    style={'display': 'none'},
-                                ),
-                                # Visible chip buttons
-                                html.Div(
-                                    id='event-type-chips-container',
-                                    children=[
-                                        html.Button(
-                                            e,
-                                            id={'type': 'event-chip', 'index': e},
-                                            n_clicks=0,
-                                            className='filter-chip' + ('' if e == 'Irrelevant' else ' filter-chip-active'),
-                                            title='Click to toggle · Shift+click to solo',
-                                        )
-                                        for e in ALL_EVENT_TYPES
-                                    ],
-                                    style={'display': 'flex', 'flex-wrap': 'wrap', 'gap': '4px', 'margin-bottom': '8px'},
-                                ),
-                                html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
-                                # Platform
-                                html.Div('Platform', style={
-                                    'font-size': '7pt', 'font-weight': 'bold', 'color': '#888',
-                                    'text-transform': 'uppercase', 'letter-spacing': '0.5px', 'margin-bottom': '3px',
-                                }),
-                                dcc.Checklist(
-                                    id='reports_dropdown_platform',
-                                    options=[{'label': p, 'value': p} for p in reports_dropdown_platform],
-                                    value=list(reports_dropdown_platform),
-                                    inputStyle={'margin-right': '3px'},
-                                    labelStyle={'display': 'block', 'margin-bottom': '2px'},
-                                    style={'font-size': '8pt', 'margin-bottom': '8px'},
-                                ),
-                                html.Hr(style={'margin': '0 0 8px 0', 'border': 'none', 'border-top': '1px solid #eee'}),
-                                dcc.Checklist(
-                                    id='reports_filter_visibility',
-                                    options=[
-                                        {'label': 'Show hidden', 'value': 'show_hidden'},
-                                        {'label': 'Flagged', 'value': 'show_flagged'},
-                                        {'label': 'Unflagged', 'value': 'show_unflagged'},
-                                    ],
-                                    value=['show_flagged', 'show_unflagged'],
-                                    inputStyle={'margin-right': '3px'},
-                                    labelStyle={'margin-right': '8px'},
-                                    style={'font-size': '8pt', 'margin-bottom': '4px'},
-                                ),
-                            ],
                         ),
                     ],
                     style={
@@ -799,14 +693,128 @@ def get_layout_map():
     sidebar            = layout_map[6]
     invisible          = layout_map[7:]
 
+    filter_bar = html.Div(
+        id='filter-bar',
+        children=[
+            # Hidden checklist — holds state, driven by chip buttons
+            dcc.Checklist(
+                id='reports_dropdown_event_type',
+                options=[{'label': e, 'value': e} for e in ALL_EVENT_TYPES],
+                value=[e for e in ALL_EVENT_TYPES if e != 'Irrelevant'],
+                style={'display': 'none'},
+            ),
+            # Location filter
+            html.Div(children=[
+                html.Span('Location', className='filter-label'),
+                dcc.RadioItems(
+                    id='event_type_toggle',
+                    options=[
+                        {'label': 'All', 'value': 'all'},
+                        {'label': '📍 Located', 'value': 'localized'},
+                        {'label': '◎ Pending', 'value': 'pending'},
+                        {'label': '∅ None', 'value': 'unlocalized'},
+                    ],
+                    value='all',
+                    inline=True,
+                    inputStyle={'margin-right': '2px'},
+                    labelStyle={'margin-right': '6px'},
+                    style={'font-size': '8pt', 'display': 'inline'},
+                ),
+            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+            # Relevance
+            html.Div(children=[
+                html.Span('Relevance', className='filter-label'),
+                dcc.Checklist(
+                    id='reports_dropdown_relevance_type',
+                    options=[{'label': r, 'value': r} for r in ALL_RELEVANCE_TYPES],
+                    value=list(ALL_RELEVANCE_TYPES),
+                    inline=True,
+                    inputStyle={'margin-right': '3px'},
+                    labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
+                    style={'font-size': '8pt', 'display': 'inline'},
+                ),
+            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+            # Platform
+            html.Div(children=[
+                html.Span('Platform', className='filter-label'),
+                dcc.Checklist(
+                    id='reports_dropdown_platform',
+                    options=[{'label': p, 'value': p} for p in reports_dropdown_platform],
+                    value=list(reports_dropdown_platform),
+                    inline=True,
+                    inputStyle={'margin-right': '3px'},
+                    labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
+                    style={'font-size': '8pt', 'display': 'inline'},
+                ),
+            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+            # View / visibility
+            html.Div(children=[
+                html.Span('View', className='filter-label'),
+                dcc.Checklist(
+                    id='reports_filter_visibility',
+                    options=[
+                        {'label': 'Show hidden', 'value': 'show_hidden'},
+                        {'label': 'Flagged', 'value': 'show_flagged'},
+                        {'label': 'Unflagged', 'value': 'show_unflagged'},
+                    ],
+                    value=['show_flagged', 'show_unflagged'],
+                    inline=True,
+                    inputStyle={'margin-right': '3px'},
+                    labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
+                    style={'font-size': '8pt', 'display': 'inline'},
+                ),
+            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+            # Event type chips
+            html.Div(children=[
+                html.Span('Type', className='filter-label'),
+                html.Div(
+                    id='event-type-chips-container',
+                    children=[
+                        html.Button(
+                            e,
+                            id={'type': 'event-chip', 'index': e},
+                            n_clicks=0,
+                            className='filter-chip' + ('' if e == 'Irrelevant' else ' filter-chip-active'),
+                            title='Click to toggle · Shift+click to solo',
+                        )
+                        for e in ALL_EVENT_TYPES
+                    ],
+                    style={'display': 'inline-flex', 'flex-wrap': 'wrap', 'gap': '3px'},
+                ),
+            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+        ],
+        style={
+            'display': 'flex',
+            'align-items': 'center',
+            'gap': '12px',
+            'background': 'white',
+            'border-bottom': '1px solid #e0e0e0',
+            'padding': '5px 12px',
+            'flex-shrink': '0',
+            'flex-wrap': 'wrap',
+            'box-shadow': '0 1px 3px rgba(0,0,0,0.07)',
+            'z-index': '1001',
+        }
+    )
+
     return [
         html.Div(
-            style={'display': 'flex', 'width': '100%', 'height': '100%'},
+            style={'display': 'flex', 'flex-direction': 'column', 'width': '100%', 'height': '100%'},
             children=[
-                sidebar,
+                filter_bar,
                 html.Div(
-                    map_panel_children,
-                    style={'position': 'relative', 'flex': '1', 'height': '100%', 'overflow': 'hidden'},
+                    style={'display': 'flex', 'flex': '1', 'min-height': '0'},
+                    children=[
+                        sidebar,
+                        html.Div(
+                            map_panel_children,
+                            style={'position': 'relative', 'flex': '1', 'height': '100%', 'overflow': 'hidden'},
+                        ),
+                    ]
                 ),
             ]
         ),
@@ -1648,48 +1656,6 @@ def callbacks_map(app: Dash):
             return _modal_hidden, val, ''
 
         return _modal_shown, dash.no_update, ''
-
-    # Toggle filter popup open/closed
-    @app.callback(
-        Output('filters-popup', 'style'),
-        Input('filters-toggle-btn', 'n_clicks'),
-        State('filters-popup', 'style'),
-        prevent_initial_call=True,
-    )
-    def toggle_filters(n, current_style):
-        currently_open = (current_style or {}).get('display') != 'none'
-        if currently_open:
-            return {'display': 'none'}
-        return {
-            'display': 'block',
-            'position': 'absolute', 'top': '32px', 'left': '0', 'width': '220px',
-            'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
-            'box-shadow': '0 4px 16px rgba(0,0,0,0.18)', 'z-index': '2000',
-            'padding': '10px', 'max-height': '70vh', 'overflow-y': 'auto',
-        }
-
-    # Show a badge with the count of excluded items (deselected options)
-    @app.callback(
-        Output('filters-active-badge', 'children'),
-        Output('filters-active-badge', 'style'),
-        Input('reports_dropdown_platform', 'value'),
-        Input('reports_dropdown_event_type', 'value'),
-        Input('reports_dropdown_relevance_type', 'value'),
-    )
-    def update_filter_badge(platform, event_types, relevance_types):
-        all_platforms = get_sidebar_dropdown_platform_values()
-        excluded = (
-            (len(all_platforms) - len(platform or [])) +
-            (len(ALL_EVENT_TYPES) - len(event_types or [])) +
-            (len(ALL_RELEVANCE_TYPES) - len(relevance_types or []))
-        )
-        if excluded == 0:
-            return '', {'display': 'none'}
-        return str(excluded), {
-            'display': 'inline-block', 'background': '#e53935', 'color': 'white',
-            'border-radius': '10px', 'font-size': '8px', 'padding': '1px 5px',
-            'font-weight': 'bold', 'line-height': '1.4',
-        }
 
     # Build the sidebar list — fires on filter changes and initial load, NOT on interval
     def _vis_flags(filter_visibility):
