@@ -1718,6 +1718,7 @@ def callbacks_map(app: Dash):
         Output('new-posts-banner', 'children', allow_duplicate=True),
         Output('new-posts-banner', 'style', allow_duplicate=True),
         Output('user-state-snapshot', 'data', allow_duplicate=True),
+        Output('report-dots-data', 'data', allow_duplicate=True),
         Input('reports_dropdown_platform', 'value'),
         Input('reports_dropdown_event_type', 'value'),
         Input('reports_dropdown_relevance_type', 'value'),
@@ -1785,6 +1786,17 @@ def callbacks_map(app: Dash):
                 event_type_toggle, username=username, session=session,
                 filter_visibility=filter_visibility,
             )
+            dots = dash.no_update
+            if is_initial_load or is_banner_click:
+                dots = _build_dots(
+                    session, seen_ids=seen_ids, flagged_authors=flagged_authors,
+                    user_locs_map=user_locs_map,
+                    filter_platform=eff_platform, filter_event_type=eff_events,
+                    filter_relevance_type=eff_relevance,
+                    loc_filter=event_type_toggle or 'all',
+                    new_ids=new_ids, added_ids=added_ids,
+                    **_vis_flags(filter_visibility),
+                )
         finally:
             session.close()
             engine.dispose()
@@ -1799,7 +1811,7 @@ def callbacks_map(app: Dash):
 
         reset_active = None if not is_banner_click else dash.no_update
         if is_initial_load or is_banner_click:
-            return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), '↑ 0 new posts', _banner_idle, snapshot
+            return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), '↑ 0 new posts', _banner_idle, snapshot, dots
         else:
             # Filter change: recount pending new posts under the new filter.
             count = 0
@@ -1833,9 +1845,9 @@ def callbacks_map(app: Dash):
                     count = 0
             if count > 0:
                 label = f'↑ {count} new post{"s" if count != 1 else ""}'
-                return sidebar_content, reset_active, dash.no_update, label, _banner_active, snapshot
+                return sidebar_content, reset_active, dash.no_update, label, _banner_active, snapshot, dash.no_update
             else:
-                return sidebar_content, reset_active, dash.no_update, '↑ 0 new posts', _banner_idle, snapshot
+                return sidebar_content, reset_active, dash.no_update, '↑ 0 new posts', _banner_idle, snapshot, dash.no_update
 
     # Check for new posts on each interval tick.
     # Auto-update mode: rebuild the list immediately when new posts arrive.
