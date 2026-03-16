@@ -653,6 +653,7 @@ def get_layout_map():
         dcc.Store(id='locations-changed', data=0),      # incremented whenever a report's locations are edited (kept for render_report_polygons trigger)
         dcc.Store(id='current-user', storage_type='local', data=None),       # username string, entered once on first load
         dcc.Store(id='user-state-snapshot', storage_type='memory', data={}), # {str(report_id): {hide, flag, flag_author, added}} – feeds clientside DOM-sync
+        dcc.Store(id='filter-state', storage_type='local', data=None),       # persisted filter values (platform, event_type, etc.)
         html.Div(
             id='offscreen-indicators',
             style={
@@ -728,7 +729,7 @@ def get_layout_map():
             },
         ),
         dcc.Store(id='location-search-data', data=[]),
-        dcc.Store(id='sidebar-loaded-at', data=None),
+        dcc.Store(id='sidebar-loaded-at', storage_type='local', data=None),
         dcc.Store(id='fit-bounds-request', data=None),  # [[lat1,lon1],[lat2,lon2]] to fitBounds
         # ---- Username prompt modal ----
         html.Div(
@@ -3014,3 +3015,47 @@ def callbacks_map(app: Dash):
         finally:
             session.close()
             engine.dispose()
+
+    # ---- Persist filter state across page reloads ----
+    @app.callback(
+        Output('filter-state', 'data'),
+        Input('reports_dropdown_platform', 'value'),
+        Input('reports_dropdown_event_type', 'value'),
+        Input('reports_dropdown_relevance_type', 'value'),
+        Input('event_type_toggle', 'value'),
+        Input('reports_filter_visibility', 'value'),
+        Input('autoscroll-toggle', 'value'),
+        prevent_initial_call=True,
+    )
+    def save_filter_state(platform, event_type, relevance, loc_filter, visibility, autoscroll):
+        return {
+            'platform': platform,
+            'event_type': event_type,
+            'relevance': relevance,
+            'loc_filter': loc_filter,
+            'visibility': visibility,
+            'autoscroll': autoscroll,
+        }
+
+    @app.callback(
+        Output('reports_dropdown_platform', 'value'),
+        Output('reports_dropdown_event_type', 'value'),
+        Output('reports_dropdown_relevance_type', 'value'),
+        Output('event_type_toggle', 'value'),
+        Output('reports_filter_visibility', 'value'),
+        Output('autoscroll-toggle', 'value'),
+        Input('current-user', 'data'),
+        State('filter-state', 'data'),
+    )
+    def restore_filter_state(username, data):
+        if not data:
+            raise PreventUpdate
+        all_platforms = list(get_sidebar_dropdown_platform_values())
+        return (
+            data.get('platform', all_platforms),
+            data.get('event_type', list(ALL_EVENT_TYPES)),
+            data.get('relevance', list(ALL_RELEVANCE_TYPES)),
+            data.get('loc_filter', 'all'),
+            data.get('visibility', ['show_flagged', 'show_unflagged']),
+            data.get('autoscroll', []),
+        )
