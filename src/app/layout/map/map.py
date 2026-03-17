@@ -28,11 +28,12 @@ from server_reports import fetch_osm_polygon
 # in this branch, some components have been disabled
 # you can reenable them by removing the 'display': 'none' from their style dictionary
 
-def build_layer_checkboxes():
+def build_layer_checkboxes(lang='de'):
     """
     Build the layer checkboxes for the layers control.
     Format: `[{'label': 'Layer Display Name', 'value': 'Layer ID'}]`
     """
+    from app.i18n import layer_name as _layer_name
 
     # get all available layers sets
     engine, session = autoconnect_db()
@@ -48,7 +49,7 @@ def build_layer_checkboxes():
 
     layers = session.query(Layer).all()
 
-    layer_checkboxes = [{'label': layer.name, 'value': layer.id} for layer in layers]
+    layer_checkboxes = [{'label': _layer_name(lang, layer.name), 'value': layer.id} for layer in layers]
 
     # close database connection
     session.close()
@@ -1680,7 +1681,9 @@ def callbacks_map(app: Dash):
         Output('lbl-type', 'children'),
         Output('lbl-layers', 'children'),
         Output('event_type_toggle', 'options'),
+        Output('overlay_checklist', 'options', allow_duplicate=True),
         Input('lang', 'data'),
+        prevent_initial_call='initial_duplicate',
     )
     def apply_lang(lang):
         lg = lang or 'de'
@@ -1690,10 +1693,11 @@ def callbacks_map(app: Dash):
             {'label': _t(lg, 'loc_pending'), 'value': 'pending'},
             {'label': _t(lg, 'loc_none'),    'value': 'unlocalized'},
         ]
+        layer_options = build_layer_checkboxes(lang=lg)
         return (
             _t(lg, 'location'), _t(lg, 'relevance'), _t(lg, 'platform'),
             _t(lg, 'view'), _t(lg, 'type'), _t(lg, 'layers'),
-            loc_options,
+            loc_options, layer_options,
         )
 
     # Build the sidebar list — fires on filter changes and initial load, NOT on interval
@@ -3145,8 +3149,9 @@ def callbacks_map(app: Dash):
                 key = 'rss' if str(plat).startswith('rss') else plat
                 plat_counts[key] = plat_counts.get(key, 0) + cnt
 
+            _lg = lang or 'de'
             chip_children = [
-                [cid['index'], html.Span(f" {et_counts.get(cid['index'], 0)}", className='chip-count')]
+                [_t(_lg, f"et_{cid['index']}"), html.Span(f" {et_counts.get(cid['index'], 0)}", className='chip-count')]
                 for cid in chip_ids
             ]
             all_platforms = list(get_sidebar_dropdown_platform_values())
@@ -3154,7 +3159,6 @@ def callbacks_map(app: Dash):
                 {'label': f'{p} ({plat_counts.get(p, 0)})', 'value': p}
                 for p in all_platforms
             ]
-            _lg = lang or 'de'
             rel_options = [
                 {'label': f'{_t(_lg, "rel_" + r)} ({rel_counts.get(r, 0)})', 'value': r}
                 for r in ALL_RELEVANCE_TYPES

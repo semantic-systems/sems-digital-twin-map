@@ -20,6 +20,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'show_hidden':   'Ausgeblendete anzeigen',
         'show_flagged':  'Markiert',
         'show_unflagged':'Nicht markiert',
+        # --- event types (keys = DE value stored in DB) ---
+        'et_Irrelevant':                    'Irrelevant',
+        'et_Menschen betroffen':            'Menschen betroffen',
+        'et_Warnungen & Hinweise':          'Warnungen & Hinweise',
+        'et_Evakuierungen & Umsiedlungen':  'Evakuierungen & Umsiedlungen',
+        'et_Spenden & Freiwillige':         'Spenden & Freiwillige',
+        'et_Infrastruktur-Schäden':         'Infrastruktur-Schäden',
+        'et_Verletzte & Tote':              'Verletzte & Tote',
+        'et_Vermisste & Gefundene':         'Vermisste & Gefundene',
+        'et_Bedarfe & Anfragen':            'Bedarfe & Anfragen',
+        'et_Einsatzmaßnahmen':              'Einsatzmaßnahmen',
+        'et_Mitgefühl & Unterstützung':     'Mitgefühl & Unterstützung',
+        'et_Sonstiges':                     'Sonstiges',
         # --- location filter options ---
         'loc_all':       'Alle',
         'loc_located':   '📍 Verortet',
@@ -97,6 +110,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'show_hidden':   'Show hidden',
         'show_flagged':  'Flagged',
         'show_unflagged':'Unflagged',
+        # --- event types (keys = DE value stored in DB) ---
+        'et_Irrelevant':                    'Irrelevant',
+        'et_Menschen betroffen':            'People affected',
+        'et_Warnungen & Hinweise':          'Warnings & Notices',
+        'et_Evakuierungen & Umsiedlungen':  'Evacuations & Relocations',
+        'et_Spenden & Freiwillige':         'Donations & Volunteers',
+        'et_Infrastruktur-Schäden':         'Infrastructure Damage',
+        'et_Verletzte & Tote':              'Injured & Fatalities',
+        'et_Vermisste & Gefundene':         'Missing & Found',
+        'et_Bedarfe & Anfragen':            'Needs & Requests',
+        'et_Einsatzmaßnahmen':              'Response Measures',
+        'et_Mitgefühl & Unterstützung':     'Sympathy & Support',
+        'et_Sonstiges':                     'Other',
         # --- location filter options ---
         'loc_all':       'All',
         'loc_located':   '📍 Located',
@@ -160,6 +186,31 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'js_reports_here': '{n} reports here',
     },
 }
+
+# Layer name translations: {en_name: {lang: translated_name}}
+# Keys are the English names stored in the DB (from api_config.json "layer" fields).
+LAYER_NAMES: dict[str, dict[str, str]] = {
+    'Schools':              {'de': 'Schulen'},
+    'Nursing Homes':        {'de': 'Pflegeeinrichtungen'},
+    'Hospitals':            {'de': 'Krankenhäuser'},
+    'Emergency Shelters':   {'de': 'Notunterkünfte'},
+    'Fire Departments':     {'de': 'Feuerwehrstandorte'},
+    'Main Dike':            {'de': 'Hauptdeichlinie'},
+    'Water Rescue Points':  {'de': 'Wasserrettungspunkte'},
+    'Flooding Areas':       {'de': 'Überschwemmungsgebiete'},
+    'Train Stations':       {'de': 'Bahnhaltestellen'},
+    'Bus Stops':            {'de': 'Bushaltestellen'},
+    'Ferry Stops':          {'de': 'Fährhaltestellen'},
+    'Events':               {'de': 'Ereignisse'},
+    'Predictions':          {'de': 'Vorhersagen'},
+}
+
+
+def layer_name(lang: str, en_name: str) -> str:
+    """Return translated layer name. DB stores English names; translate to DE when lang='de'."""
+    if lang == 'en' or lang not in ('de',):
+        return en_name
+    return LAYER_NAMES.get(en_name, {}).get(lang, en_name)
 
 DEFAULT_LANG = 'de'
 
