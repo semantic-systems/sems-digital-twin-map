@@ -1761,7 +1761,7 @@ def callbacks_map(app: Dash):
         Input('event_type_toggle', 'value'),
         Input('new-posts-banner', 'n_clicks'),
         Input('reports_filter_visibility', 'value'),
-        State('current-user', 'data'),
+        Input('current-user', 'data'),
         State('sidebar-loaded-at', 'data'),
         State('active-report-id', 'data'),
         State('autoscroll-toggle', 'value'),
