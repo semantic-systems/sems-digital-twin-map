@@ -158,14 +158,14 @@
             // ── action bar ──
             + '<div style="display:flex;gap:6px;align-items:center">'
             +   (dot.url
-                ? '<a href="' + escHtml(dot.url) + '" target="_blank" style="font-size:9pt;color:#1976d2;margin-right:auto;white-space:nowrap">↗ Open</a>'
+                ? '<a href="' + escHtml(dot.url) + '" target="_blank" style="font-size:9pt;color:#1976d2;margin-right:auto;white-space:nowrap">' + _t('js_open', '↗ Open') + '</a>'
                 : '<span style="margin-right:auto"></span>')
             +   '<button class="rdot-seen-btn" data-report-id="' + dot.report_id + '" style="' + btnBase + seenStyle + '">'
-            +     (seen ? 'Unhide' : 'Hide')
+            +     (seen ? _t('js_unhide', 'Unhide') : _t('js_hide', 'Hide'))
             +   '</button>'
             +   (dot.author
                 ? '<button class="rdot-flag-btn" data-author="' + escHtml(dot.author) + '" data-report-id="' + dot.report_id + '" style="' + btnBase + flagStyle + '">'
-                +   (flagged ? 'Unflag' : 'Flag')
+                +   (flagged ? _t('js_unflag', 'Unflag') : _t('js_flag', 'Flag'))
                 + '</button>'
                 : '')
             + '</div>'
@@ -199,7 +199,7 @@
         var items = dots.map(function (d, i) {
             var isNew = isNewReport(d);
             var newBadge = isNew
-                ? '<span style="display:inline-block;background:#e53935;color:white;font-size:8px;font-weight:bold;border-radius:10px;padding:0 5px;margin-right:4px;vertical-align:middle">NEW</span>'
+                ? '<span style="display:inline-block;background:#e53935;color:white;font-size:8px;font-weight:bold;border-radius:10px;padding:0 5px;margin-right:4px;vertical-align:middle">' + _t('js_new', 'NEW') + '</span>'
                 : '';
             var preview = d.text ? escHtml(d.text.slice(0, 80)) + (d.text.length > 80 ? '…' : '') : '';
             return '<div class="rdot-cluster-item" data-idx="' + i + '" style="padding:5px 6px;cursor:pointer;border-radius:3px;border-bottom:1px solid #f0f0f0">'
@@ -214,7 +214,7 @@
         }).join('');
 
         var content = '<div style="font-size:10pt;min-width:220px"><b style="display:block;margin-bottom:6px">'
-            + dots.length + ' reports here</b>' + items + '</div>';
+            + _t('js_reports_here', '{n} reports here').replace('{n}', dots.length) + '</b>' + items + '</div>';
 
         _popup = L.popup({ maxWidth: 320 })
             .setLatLng(latlng)

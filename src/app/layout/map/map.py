@@ -19,6 +19,7 @@ from data.connect import autoconnect_db
 from data.build import build, refresh
 from app.convert import layer_id_to_layer_group, scenario_id_to_layer_group, style_to_dict
 from app.layout.map.sidebar import get_sidebar_content, get_sidebar_dropdown_platform_values, get_sidebar_dropdown_event_type_values, get_sidebar_dropdown_relevance_type_values, ALL_EVENT_TYPES, ALL_RELEVANCE_TYPES, get_sidebar_max_timestamp
+from app.i18n import t as _t, new_posts_label, TRANSLATIONS
 from app.layout.map.geocoder import geolocate, PREDICTED_LABELS
 from server_reports import fetch_osm_polygon
 
@@ -513,6 +514,8 @@ def get_layout_map():
         dcc.Store(id='report-dots-tick', data=None),  # dummy store for clientside callback output
         dcc.Store(id='location-pick-mode', data=None),  # None = off, dict = {report_id, loc_index, mention}
         dcc.Store(id='locations-changed', data=0),      # incremented whenever a report's locations are edited (kept for render_report_polygons trigger)
+        dcc.Location(id='url', refresh=False),                                # reads the current URL (for ?lang= param)
+        dcc.Store(id='lang', data='de'),                                       # UI language: 'de' | 'en' — derived from ?lang= URL param
         dcc.Store(id='current-user', storage_type='local', data=None),       # username string, entered once on first load
         dcc.Store(id='user-state-snapshot', storage_type='memory', data={}), # {str(report_id): {hide, flag, flag_author, added}} – feeds clientside DOM-sync
         dcc.Store(id='filter-state', storage_type='local', data=None),       # persisted filter values (platform, event_type, etc.)
@@ -662,7 +665,7 @@ def get_layout_map():
                 children=[
                     # Location filter
                     html.Div(children=[
-                        html.Span('Location', className='filter-label'),
+                        html.Span('Location', id='lbl-location', className='filter-label'),
                         dcc.RadioItems(
                             id='event_type_toggle',
                             options=[
@@ -681,7 +684,7 @@ def get_layout_map():
                     html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
                     # Relevance
                     html.Div(children=[
-                        html.Span('Relevance', className='filter-label'),
+                        html.Span('Relevance', id='lbl-relevance', className='filter-label'),
                         dcc.Checklist(
                             id='reports_dropdown_relevance_type',
                             options=[{'label': r, 'value': r} for r in ALL_RELEVANCE_TYPES],
@@ -695,7 +698,7 @@ def get_layout_map():
                     html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
                     # Platform
                     html.Div(children=[
-                        html.Span('Platform', className='filter-label'),
+                        html.Span('Platform', id='lbl-platform', className='filter-label'),
                         dcc.Checklist(
                             id='reports_dropdown_platform',
                             options=[{'label': p, 'value': p} for p in reports_dropdown_platform],
@@ -709,7 +712,7 @@ def get_layout_map():
                     html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
                     # View / visibility
                     html.Div(children=[
-                        html.Span('View', className='filter-label'),
+                        html.Span('View', id='lbl-view', className='filter-label'),
                         dcc.Checklist(
                             id='reports_filter_visibility',
                             options=[
@@ -727,7 +730,7 @@ def get_layout_map():
                     html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
                     # Event type chips
                     html.Div(children=[
-                        html.Span('Type', className='filter-label'),
+                        html.Span('Type', id='lbl-type', className='filter-label'),
                         html.Div(
                             id='event-type-chips-container',
                             children=[
@@ -753,7 +756,7 @@ def get_layout_map():
             # Right column — Layers (22%)
             html.Div(
                 children=[
-                    html.Span('Layers', className='filter-label'),
+                    html.Span('Layers', id='lbl-layers', className='filter-label'),
                     dcc.Checklist(
                         id='overlay_checklist',
                         options=layer_checkboxes,
@@ -1609,9 +1612,10 @@ def callbacks_map(app: Dash):
         Input('username-input', 'n_submit'),
         Input('current-user', 'data'),
         State('username-input', 'value'),
+        State('lang', 'data'),
         prevent_initial_call=False,
     )
-    def handle_username_prompt(n_clicks, n_submit, current_user, input_value):
+    def handle_username_prompt(n_clicks, n_submit, current_user, input_value, lang):
         _modal_hidden = {'display': 'none'}
         _modal_shown  = {
             'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
@@ -1628,14 +1632,72 @@ def callbacks_map(app: Dash):
 
         # Submit action
         if 'username-submit' in triggered or 'username-input' in triggered:
+            _lang = lang or 'de'
             val = (input_value or '').strip()
             if not val:
-                return _modal_shown, dash.no_update, 'Please enter a username.'
+                return _modal_shown, dash.no_update, _t(_lang, 'err_empty')
             if len(val) > 64:
-                return _modal_shown, dash.no_update, 'Username must be 64 characters or fewer.'
+                return _modal_shown, dash.no_update, _t(_lang, 'err_too_long')
             return _modal_hidden, val, ''
 
         return _modal_shown, dash.no_update, ''
+
+    # ── URL → lang store ─────────────────────────────────────────────────────
+    @app.callback(
+        Output('lang', 'data'),
+        Input('url', 'search'),
+    )
+    def set_lang_from_url(search):
+        """Derive language from ?lang= query parameter. Defaults to 'de'."""
+        if search:
+            import urllib.parse
+            params = urllib.parse.parse_qs(search.lstrip('?'))
+            lang = params.get('lang', ['de'])[0]
+            return lang if lang in ('de', 'en') else 'de'
+        return 'de'
+
+    # ── Push lang strings to JS (window._langStrings) ────────────────────────
+    _js_strings = {
+        k: {sk: sv for sk, sv in v.items() if sk.startswith('js_')}
+        for k, v in TRANSLATIONS.items()
+    }
+    app.clientside_callback(
+        """
+        function(lang) {
+            var strings = %s;
+            window._langStrings = strings[lang] || strings['de'];
+            return window.dash_clientside.no_update;
+        }
+        """ % json.dumps(_js_strings),
+        Output('lang', 'data', allow_duplicate=True),
+        Input('lang', 'data'),
+        prevent_initial_call=True,
+    )
+
+    # ── Apply lang to filter bar labels and checklist options ────────────────
+    @app.callback(
+        Output('lbl-location', 'children'),
+        Output('lbl-relevance', 'children'),
+        Output('lbl-platform', 'children'),
+        Output('lbl-view', 'children'),
+        Output('lbl-type', 'children'),
+        Output('lbl-layers', 'children'),
+        Output('event_type_toggle', 'options'),
+        Input('lang', 'data'),
+    )
+    def apply_lang(lang):
+        lg = lang or 'de'
+        loc_options = [
+            {'label': _t(lg, 'loc_all'),     'value': 'all'},
+            {'label': _t(lg, 'loc_located'), 'value': 'localized'},
+            {'label': _t(lg, 'loc_pending'), 'value': 'pending'},
+            {'label': _t(lg, 'loc_none'),    'value': 'unlocalized'},
+        ]
+        return (
+            _t(lg, 'location'), _t(lg, 'relevance'), _t(lg, 'platform'),
+            _t(lg, 'view'), _t(lg, 'type'), _t(lg, 'layers'),
+            loc_options,
+        )
 
     # Build the sidebar list — fires on filter changes and initial load, NOT on interval
     def _vis_flags(filter_visibility):
@@ -1649,6 +1711,7 @@ def callbacks_map(app: Dash):
     def _build_sidebar_content(filter_platform, filter_event_type, filter_relevance_type,
                                 event_type_toggle, username=None, session=None,
                                 filter_visibility=None, max_timestamp=None,
+                                lang='de',
                                 # legacy params for callers that still pass report_state/locs_dict:
                                 report_state=None, locs_dict=None):
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
@@ -1670,6 +1733,7 @@ def callbacks_map(app: Dash):
             max_timestamp=max_timestamp,
             added_ids=added_ids,
             new_ids=new_ids,
+            lang=lang,
             **_vis_flags(filter_visibility),
         )
 
@@ -1691,10 +1755,11 @@ def callbacks_map(app: Dash):
         State('sidebar-loaded-at', 'data'),
         State('active-report-id', 'data'),
         State('autoscroll-toggle', 'value'),
+        State('lang', 'data'),
         prevent_initial_call='initial_duplicate',
     )
     def update_reports(filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                       _banner_clicks, filter_visibility, username, old_loaded_at, active_report_id, autoupdate):
+                       _banner_clicks, filter_visibility, username, old_loaded_at, active_report_id, autoupdate, lang):
         if not username:
             raise PreventUpdate
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
@@ -1744,10 +1809,11 @@ def callbacks_map(app: Dash):
                 session.commit()
                 seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
+            lang = lang or 'de'
             sidebar_content = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
-                filter_visibility=filter_visibility,
+                filter_visibility=filter_visibility, lang=lang,
             )
             dots = dash.no_update
             if is_initial_load or is_banner_click:
@@ -1774,7 +1840,7 @@ def callbacks_map(app: Dash):
 
         reset_active = None if not is_banner_click else dash.no_update
         if is_initial_load or is_banner_click:
-            return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), '↑ 0 new posts', _banner_idle, snapshot, dots
+            return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), new_posts_label(lang, 0), _banner_idle, snapshot, dots
         else:
             # Filter change: find pending posts that match the new filters.
             pending = []
@@ -1816,19 +1882,18 @@ def callbacks_map(app: Dash):
                     sidebar_content = _build_sidebar_content(
                         filter_platform, filter_event_type, filter_relevance_type,
                         event_type_toggle, username=username, session=session3,
-                        filter_visibility=filter_visibility,
+                        filter_visibility=filter_visibility, lang=lang,
                     )
                 finally:
                     session3.close()
                     engine3.dispose()
-                return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), '↑ 0 new posts', _banner_idle, snapshot, dash.no_update
+                return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), new_posts_label(lang, 0), _banner_idle, snapshot, dash.no_update
 
             count = len(pending)
             if count > 0:
-                label = f'↑ {count} new post{"s" if count != 1 else ""}'
-                return sidebar_content, reset_active, dash.no_update, label, _banner_active, snapshot, dash.no_update
+                return sidebar_content, reset_active, dash.no_update, new_posts_label(lang, count), _banner_active, snapshot, dash.no_update
             else:
-                return sidebar_content, reset_active, dash.no_update, '↑ 0 new posts', _banner_idle, snapshot, dash.no_update
+                return sidebar_content, reset_active, dash.no_update, new_posts_label(lang, 0), _banner_idle, snapshot, dash.no_update
 
     # Check for new posts on each interval tick.
     # Auto-update mode: rebuild the list immediately when new posts arrive.
@@ -1849,10 +1914,11 @@ def callbacks_map(app: Dash):
         State('reports_filter_visibility', 'value'),
         State('current-user', 'data'),
         State('active-report-id', 'data'),
+        State('lang', 'data'),
         prevent_initial_call=True,
     )
     def check_new_posts(_n, autoupdate, loaded_at, filter_platform, filter_event_type,
-                        filter_relevance_type, loc_filter, filter_visibility, username, active_report_id):
+                        filter_relevance_type, loc_filter, filter_visibility, username, active_report_id, lang):
         if not username or not loaded_at:
             raise PreventUpdate
         try:
@@ -1895,8 +1961,9 @@ def callbacks_map(app: Dash):
             )
             count = len(new_reports)
 
+            lang = lang or 'de'
             if count == 0:
-                return '↑ 0 new posts', _banner_idle, dash.no_update, dash.no_update, dash.no_update
+                return new_posts_label(lang, 0), _banner_idle, dash.no_update, dash.no_update, dash.no_update
 
             if autoupdate and 'on' in autoupdate:
                 _bulk_admit_reports(username, [r.id for r in new_reports], session)
@@ -1908,13 +1975,12 @@ def callbacks_map(app: Dash):
                 sidebar = _build_sidebar_content(
                     filter_platform, filter_event_type, filter_relevance_type,
                     loc_filter, username=username, session=session,
-                    filter_visibility=filter_visibility,
+                    filter_visibility=filter_visibility, lang=lang,
                 )
-                return '↑ 0 new posts', _banner_idle, sidebar, new_loaded_at, snapshot
+                return new_posts_label(lang, 0), _banner_idle, sidebar, new_loaded_at, snapshot
 
             # Manual mode: show banner only, no state change
-            label = f'↑ {count} new post{"s" if count != 1 else ""}'
-            return label, {**_banner_base, 'border': '1px solid #42a5f5', 'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold'}, dash.no_update, dash.no_update, dash.no_update
+            return new_posts_label(lang, count), {**_banner_base, 'border': '1px solid #42a5f5', 'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold'}, dash.no_update, dash.no_update, dash.no_update
         finally:
             session.close()
             engine.dispose()
@@ -2128,11 +2194,12 @@ def callbacks_map(app: Dash):
         State('event_type_toggle', 'value'),
         State('reports_filter_visibility', 'value'),
         State('sidebar-loaded-at', 'data'),
+        State('lang', 'data'),
         prevent_initial_call=True
     )
     def toggle_report_seen(n_clicks_list, username,
                            filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                           filter_visibility, loaded_at):
+                           filter_visibility, loaded_at, lang):
         if not username:
             raise PreventUpdate
         if not ctx.triggered:
@@ -2168,7 +2235,7 @@ def callbacks_map(app: Dash):
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
                 filter_visibility=filter_visibility,
-                max_timestamp=loaded_at,
+                max_timestamp=loaded_at, lang=lang or 'de',
             )
             return snapshot, dots, sidebar
         finally:
@@ -2188,11 +2255,12 @@ def callbacks_map(app: Dash):
         State('event_type_toggle', 'value'),
         State('reports_filter_visibility', 'value'),
         State('sidebar-loaded-at', 'data'),
+        State('lang', 'data'),
         prevent_initial_call=True,
     )
     def toggle_author_flag(n_clicks_list, username,
                            filter_platform, filter_event_type, filter_relevance_type,
-                           event_type_toggle, filter_visibility, loaded_at):
+                           event_type_toggle, filter_visibility, loaded_at, lang):
         if not username:
             raise PreventUpdate
         if not ctx.triggered or all(n is None or n == 0 for n in n_clicks_list):
@@ -2249,7 +2317,7 @@ def callbacks_map(app: Dash):
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
                 filter_visibility=filter_visibility,
-                max_timestamp=loaded_at,
+                max_timestamp=loaded_at, lang=lang or 'de',
             )
             return snapshot, dots, sidebar
         finally:
@@ -2627,9 +2695,10 @@ def callbacks_map(app: Dash):
         Input('location-search-input', 'n_submit'),
         State('location-search-input', 'value'),
         State('location-pick-mode', 'data'),
+        State('lang', 'data'),
         prevent_initial_call=True,
     )
-    def search_osm_location(_btn, _submit, query, pick_mode):
+    def search_osm_location(_btn, _submit, query, pick_mode, lang):
         if not pick_mode or not query or not query.strip():
             raise PreventUpdate
         try:
@@ -2644,7 +2713,7 @@ def callbacks_map(app: Dash):
         except Exception:
             results = []
         if not results:
-            items = [html.Div('No results found.', style={'padding': '8px 12px', 'font-size': '11px', 'color': '#888'})]
+            items = [html.Div(_t(lang or 'de', 'no_results'), style={'padding': '8px 12px', 'font-size': '11px', 'color': '#888'})]
             show_style = {**_results_hidden_style, 'display': 'block'}
             return [], items, show_style
         items = [
@@ -2959,10 +3028,11 @@ def callbacks_map(app: Dash):
         State('reports_dropdown_relevance_type', 'value'),
         State('event_type_toggle', 'value'),
         State('reports_filter_visibility', 'value'),
+        State('lang', 'data'),
         prevent_initial_call=True,
     )
     def reset_demo(n_clicks, username, filter_platform, filter_event_type, filter_relevance_type,
-                   event_type_toggle, filter_visibility):
+                   event_type_toggle, filter_visibility, lang):
         if not n_clicks:
             raise PreventUpdate
         from data.build import seed_demo_data
@@ -2983,7 +3053,7 @@ def callbacks_map(app: Dash):
             sidebar = _build_sidebar_content(
                 filter_platform, filter_event_type, filter_relevance_type,
                 event_type_toggle, username=username, session=session,
-                filter_visibility=filter_visibility,
+                filter_visibility=filter_visibility, lang=lang or 'de',
             )
             # Use the earliest demo post timestamp as loaded_at so check_new_posts
             # correctly finds all future demo posts (spread over 5 min) as they arrive.
@@ -3105,9 +3175,9 @@ def callbacks_map(app: Dash):
             var flagged   = vals.filter(function(s) { return s.added && s.flag; }).length;
             var unflagged = vals.filter(function(s) { return s.added && !s.flag; }).length;
             return [
-                {label: 'Show hidden ('  + hidden    + ')', value: 'show_hidden'},
-                {label: 'Flagged ('      + flagged   + ')', value: 'show_flagged'},
-                {label: 'Unflagged ('    + unflagged + ')', value: 'show_unflagged'},
+                {label: _t('show_hidden',   'Show hidden')   + ' (' + hidden    + ')', value: 'show_hidden'},
+                {label: _t('show_flagged',  'Flagged')       + ' (' + flagged   + ')', value: 'show_flagged'},
+                {label: _t('show_unflagged','Unflagged')     + ' (' + unflagged + ')', value: 'show_unflagged'},
             ];
         }
         """,

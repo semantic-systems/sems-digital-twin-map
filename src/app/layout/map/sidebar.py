@@ -9,6 +9,7 @@ from sqlalchemy import or_
 
 from data.connect import autoconnect_db
 from data.model import Report
+from app.i18n import t
 
 
 
@@ -23,7 +24,7 @@ def get_platform_config(platform):
         config = json.load(f)
         return config[platform]
 
-def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs_map=None, new_ids=None) -> html.Li:
+def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs_map=None, new_ids=None, lang='de') -> html.Li:
     platform = report.platform
     if platform.startswith('rss'):
         platform = 'rss'
@@ -59,8 +60,8 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     }
     bg_color = relevance_color_map.get(relevance, "#e0e0e0")
 
-    seen_btn_label = "Unhide" if is_seen else "Hide"
-    seen_btn_title = "Unhide" if is_seen else "Hide"
+    seen_btn_label = t(lang, 'unhide') if is_seen else t(lang, 'hide')
+    seen_btn_title = t(lang, 'unhide') if is_seen else t(lang, 'hide')
     seen_btn_style = {
         'font-size': '11px',
         'padding': '2px 7px',
@@ -79,7 +80,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     return html.Li(
         children=[
             html.Span(
-                'NEW',
+                t(lang, 'new_badge'),
                 id=f'new-badge-{report.id}',
                 style={
                     'display': 'inline-block' if is_new else 'none',
@@ -115,8 +116,8 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                     html.P(
                         [
                             html.Span(
-                                '📍 ' if is_localized else ('◎ ' if has_pending else '· '),
-                                title='Georeferenced' if is_localized else ('Locations pending georeferencing' if has_pending else 'No locations'),
+                                t(lang, 'geo_icon') + ' ' if is_localized else (t(lang, 'pending_icon') if has_pending else t(lang, 'no_loc_icon')),
+                                title=t(lang, 'geo_title') if is_localized else (t(lang, 'pending_title') if has_pending else t(lang, 'no_loc_title')),
                                 style={
                                     'color': '#43a047' if is_localized else ('#e65100' if has_pending else '#bdbdbd'),
                                     'font-size': '9px',
@@ -148,11 +149,11 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
             html.Div(
                 children=[
                     html.A(
-                        "Open",
+                        t(lang, 'open'),
                         href=report.url,
                         target="_blank",
                         rel="noopener noreferrer",
-                        title="Open original post",
+                        title=t(lang, 'open_title'),
                         style={
                             'font-size': '9px',
                             'color': '#1976d2',
@@ -160,9 +161,9 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         }
                     ),
                     html.Button(
-                        'Center',
+                        t(lang, 'center'),
                         id={'type': 'center-button', 'index': report.id},
-                        title='Center map on this report',
+                        title=t(lang, 'center_title'),
                         n_clicks=0,
                         disabled=not is_localized,
                         style={
@@ -183,10 +184,10 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         style=seen_btn_style,
                     ),
                     html.Button(
-                        'Unflag' if is_flagged else 'Flag',
+                        t(lang, 'unflag') if is_flagged else t(lang, 'flag'),
                         id={'type': 'flag-button', 'index': report.id, 'author': author or ''},
                         className='sidebar-flag-btn',
-                        title='Unflag author' if is_flagged else ('Flag author' if author else 'No author to flag'),
+                        title=t(lang, 'unflag_title') if is_flagged else (t(lang, 'flag_title') if author else t(lang, 'no_author_title')),
                         n_clicks=0,
                         disabled=not author,
                         style={
@@ -215,7 +216,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     ['◌ ', html.I(loc.get('mention') or loc.get('name') or '')],
                                     id={'type': 'georeference-location-button', 'report': report.id, 'loc': i},
                                     n_clicks=0,
-                                    title='Click to georeference this location on the map',
+                                    title=t(lang, 'georeference_title'),
                                     style={
                                         'font-size': '9px', 'padding': '0', 'border': 'none',
                                         'background': 'transparent', 'cursor': 'pointer',
@@ -227,7 +228,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     '✕',
                                     id={'type': 'remove-location-button', 'report': report.id, 'loc': i},
                                     n_clicks=0,
-                                    title='Remove location',
+                                    title=t(lang, 'remove_location'),
                                     style={
                                         'font-size': '9px', 'padding': '0 3px', 'margin-left': '3px',
                                         'cursor': 'pointer', 'border': 'none', 'background': 'transparent',
@@ -247,7 +248,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     loc.get('mention') or loc.get('name') or f"{loc.get('lat', 0):.4f}, {loc.get('lon', 0):.4f}",
                                     id={'type': 'georeference-location-button', 'report': report.id, 'loc': i},
                                     n_clicks=0,
-                                    title='Click to reassign location on the map',
+                                    title=t(lang, 'reassign_title'),
                                     style={
                                         'font-size': '9px', 'padding': '0', 'border': 'none',
                                         'background': 'transparent', 'cursor': 'pointer',
@@ -258,7 +259,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     '✕',
                                     id={'type': 'remove-location-button', 'report': report.id, 'loc': i},
                                     n_clicks=0,
-                                    title='Remove location',
+                                    title=t(lang, 'remove_location'),
                                     style={
                                         'font-size': '9px', 'padding': '0 3px', 'margin-left': '3px',
                                         'cursor': 'pointer', 'border': 'none', 'background': 'transparent',
@@ -277,10 +278,10 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         for i, loc in enumerate(effective_locations or [])
                     ],
                     html.Button(
-                        '📍 Add',
+                        t(lang, 'add_location'),
                         id={'type': 'pick-location-button', 'index': report.id},
                         n_clicks=0,
-                        title='Click to place a location on the map',
+                        title=t(lang, 'add_location_title'),
                         style={
                             'font-size': '9px', 'padding': '1px 6px', 'cursor': 'pointer',
                             'border-radius': '3px', 'border': '1px solid #90caf9',
@@ -289,10 +290,10 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                     ),
                     *(
                         [html.Button(
-                            '↩ Restore',
+                            t(lang, 'restore_locations'),
                             id={'type': 'restore-locations-button', 'index': report.id},
                             n_clicks=0,
-                            title='Restore originally detected locations',
+                            title=t(lang, 'restore_title'),
                             style={
                                 'font-size': '9px', 'padding': '1px 6px', 'cursor': 'pointer',
                                 'border-radius': '3px', 'border': '1px solid #ce93d8',
@@ -321,7 +322,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
         }
     )
 
-def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, user_locs_map=None, new_ids=None) -> list:
+def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, user_locs_map=None, new_ids=None, lang='de') -> list:
     """
     Formats the reports into a list of html elements that can be displayed in the sidebar.
     """
@@ -330,7 +331,7 @@ def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, use
     if len(reports) == 0:
         return [
             html.Li(
-                html.I('No reports available.'),
+                html.I(t(lang, 'no_reports')),
                 style={
                     'color': 'gray',
                     'min-height': '50px',
@@ -340,9 +341,9 @@ def format_reports(reports: list, n=25, seen_ids=None, flagged_authors=None, use
             )
         ]
 
-    return [format_report(report, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map, new_ids=new_ids) for report in reports[:n]]
+    return [format_report(report, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map, new_ids=new_ids, lang=lang) for report in reports[:n]]
 
-def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None, hide_seen=False, hide_flagged=False, hide_unflagged=False, max_timestamp=None, added_ids=None, new_ids=None):
+def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filter_relevance_type=None, loc_filter='all', seen_ids=None, flagged_authors=None, user_locs_map=None, hide_seen=False, hide_flagged=False, hide_unflagged=False, max_timestamp=None, added_ids=None, new_ids=None, lang='de'):
     """
     Returns the n most recent posts from the reports server (posts.json).
     You can also filter by platform, event type, and relevance type(s).
@@ -409,7 +410,7 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
         reports = [r for r in reports if r.author and r.author in flagged_authors]
 
     if loc_filter == 'all':
-        return format_reports(reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map, new_ids=new_ids)
+        return format_reports(reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map, new_ids=new_ids, lang=lang)
 
     filtered_reports = []
     for report in reports:
@@ -424,7 +425,7 @@ def get_sidebar_content(n=25, filter_platform=None, filter_event_type=None, filt
             continue
         filtered_reports.append(report)
 
-    return format_reports(filtered_reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map)
+    return format_reports(filtered_reports, n, seen_ids=seen_ids, flagged_authors=flagged_authors, user_locs_map=user_locs_map, lang=lang)
 
 def get_sidebar_max_timestamp(filter_platform=None, filter_event_type=None, filter_relevance_type=None):
     """Return the max timestamp (as ISO string) of reports currently visible given the filters."""
