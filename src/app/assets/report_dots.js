@@ -65,28 +65,34 @@
 
     function makeIcon(count, isActive, hasNew) {
         var color = isActive ? '#1976d2' : '#e53935';
-        var newBadge = hasNew
-            ? '<span style="position:absolute;top:-5px;right:-5px;background:#ff9800;color:white;'
-            +   'border-radius:50%;width:12px;height:12px;font-size:8px;font-weight:bold;'
+        var newBadgeLarge = hasNew
+            ? '<span style="position:absolute;top:-7px;right:-7px;background:#ff9800;color:white;'
+            +   'border-radius:50%;width:18px;height:18px;font-size:12px;font-weight:bold;'
             +   'display:flex;align-items:center;justify-content:center;'
-            +   'border:1.5px solid white;line-height:1;pointer-events:none">!</span>'
+            +   'border:2px solid white;line-height:1;pointer-events:none">!</span>'
+            : '';
+        var newBadgeSmall = hasNew
+            ? '<span style="position:absolute;top:-5px;right:-5px;background:#ff9800;color:white;'
+            +   'border-radius:50%;width:13px;height:13px;font-size:9px;font-weight:bold;'
+            +   'display:flex;align-items:center;justify-content:center;'
+            +   'border:2px solid white;line-height:1;pointer-events:none">!</span>'
             : '';
         if (count > 1) {
             return L.divIcon({
                 html: '<div class="report-dot-cluster" style="background:' + color + ';position:relative">'
                     + '<span class="report-dot-count">' + count + '</span>'
-                    + newBadge + '</div>',
+                    + newBadgeLarge + '</div>',
                 className: '',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13],
+                iconSize: [34, 34],
+                iconAnchor: [17, 17],
             });
         }
         return L.divIcon({
             html: '<div class="report-dot" style="background:' + color + ';position:relative">'
-                + newBadge + '</div>',
+                + newBadgeSmall + '</div>',
             className: '',
-            iconSize: [14, 14],
-            iconAnchor: [7, 7],
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
         });
     }
 
