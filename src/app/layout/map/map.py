@@ -1649,12 +1649,21 @@ def callbacks_map(app: Dash):
         Input('url', 'search'),
     )
     def set_lang_from_url(search):
-        """Derive language from ?lang= query parameter. Defaults to 'de'."""
+        """Derive language from ?lang= override, then Accept-Language header, then default to 'de'."""
+        import urllib.parse
+        import flask
+        # 1. Explicit URL override takes precedence
         if search:
-            import urllib.parse
             params = urllib.parse.parse_qs(search.lstrip('?'))
-            lang = params.get('lang', ['de'])[0]
-            return lang if lang in ('de', 'en') else 'de'
+            if 'lang' in params:
+                lang = params['lang'][0]
+                return lang if lang in ('de', 'en') else 'de'
+        # 2. Browser's Accept-Language header
+        accept = flask.request.headers.get('Accept-Language', '')
+        for tag in accept.replace(' ', '').split(','):
+            primary = tag.split(';')[0].split('-')[0].lower()
+            if primary in ('de', 'en'):
+                return primary
         return 'de'
 
     # ── Push lang strings to JS (window._langStrings) ────────────────────────
