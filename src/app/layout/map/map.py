@@ -1710,10 +1710,11 @@ def callbacks_map(app: Dash):
         State('current-user', 'data'),
         State('sidebar-loaded-at', 'data'),
         State('active-report-id', 'data'),
+        State('autoscroll-toggle', 'value'),
         prevent_initial_call='initial_duplicate',
     )
     def update_reports(filter_platform, filter_event_type, filter_relevance_type, event_type_toggle,
-                       _banner_clicks, filter_visibility, username, old_loaded_at, active_report_id):
+                       _banner_clicks, filter_visibility, username, old_loaded_at, active_report_id, autoupdate):
         if not username:
             raise PreventUpdate
         eff_platform, eff_events, eff_relevance = _normalize_filters(filter_platform, filter_event_type, filter_relevance_type)
@@ -1795,8 +1796,8 @@ def callbacks_map(app: Dash):
         if is_initial_load or is_banner_click:
             return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), '↑ 0 new posts', _banner_idle, snapshot, dots
         else:
-            # Filter change: recount pending new posts under the new filter.
-            count = 0
+            # Filter change: find pending posts that match the new filters.
+            pending = []
             if old_loaded_at:
                 try:
                     engine2, session2 = autoconnect_db()
@@ -1819,12 +1820,30 @@ def callbacks_map(app: Dash):
                             _vis_flags(filter_visibility),
                         )
                         pending = [r for r in pending if r.id not in added_ids]
-                        count = len(pending)
                     finally:
                         session2.close()
                         engine2.dispose()
                 except Exception:
-                    count = 0
+                    pending = []
+
+            if autoupdate and 'on' in autoupdate and pending:
+                # Auto-update on: admit pending posts immediately, same as interval path.
+                engine3, session3 = autoconnect_db()
+                try:
+                    _bulk_admit_reports(username, [r.id for r in pending], session3)
+                    session3.commit()
+                    _, _, _, _, _, snapshot = _get_user_state(username, session3)
+                    sidebar_content = _build_sidebar_content(
+                        filter_platform, filter_event_type, filter_relevance_type,
+                        event_type_toggle, username=username, session=session3,
+                        filter_visibility=filter_visibility,
+                    )
+                finally:
+                    session3.close()
+                    engine3.dispose()
+                return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), '↑ 0 new posts', _banner_idle, snapshot, dash.no_update
+
+            count = len(pending)
             if count > 0:
                 label = f'↑ {count} new post{"s" if count != 1 else ""}'
                 return sidebar_content, reset_active, dash.no_update, label, _banner_active, snapshot, dash.no_update
