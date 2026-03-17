@@ -579,7 +579,7 @@ def get_layout_map():
             style={
                 'display': 'none',
                 'position': 'fixed', 'top': '12px', 'left': '50%', 'transform': 'translateX(-50%)',
-                'zIndex': 1000, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
+                'zIndex': 1100, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
                 'padding': '10px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
                 'flex-direction': 'column', 'align-items': 'flex-start', 'gap': '0',
             },
@@ -590,7 +590,7 @@ def get_layout_map():
             style={
                 'display': 'none',
                 'position': 'fixed', 'top': '94px', 'left': '50%', 'transform': 'translateX(-50%)',
-                'zIndex': 1001, 'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
+                'zIndex': 1101, 'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
                 'box-shadow': '0 4px 16px rgba(0,0,0,0.15)', 'width': '400px', 'max-width': '90vw',
                 'max-height': '240px', 'overflow-y': 'auto', 'pointer-events': 'auto',
             },
@@ -2700,7 +2700,7 @@ def callbacks_map(app: Dash):
     @app.callback(
         Output('location-search-data', 'data', allow_duplicate=True),
         Output('location-search-results', 'children'),
-        Output('location-search-results', 'style', allow_duplicate=True),
+        Output('location-search-results', 'style'),
         Input('location-search-button', 'n_clicks'),
         Input('location-search-input', 'n_submit'),
         State('location-search-input', 'value'),
@@ -2724,7 +2724,13 @@ def callbacks_map(app: Dash):
             results = []
         if not results:
             items = [html.Div(_t(lang or 'de', 'no_results'), style={'padding': '8px 12px', 'font-size': '11px', 'color': '#888'})]
-            show_style = {**_results_hidden_style, 'display': 'block'}
+            show_style = {
+                'display': 'block',
+                'position': 'fixed', 'top': '94px', 'left': '50%', 'transform': 'translateX(-50%)',
+                'zIndex': 1101, 'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
+                'box-shadow': '0 4px 16px rgba(0,0,0,0.15)', 'width': '400px', 'max-width': '90vw',
+                'max-height': '240px', 'overflow-y': 'auto', 'pointer-events': 'auto',
+            }
             return [], items, show_style
         items = [
             html.Button(
@@ -2828,14 +2834,14 @@ def callbacks_map(app: Dash):
     # ---- Location picking: show/hide overlay (server-side) ----
     _overlay_base_style = {
         'position': 'fixed', 'top': '12px', 'left': '50%', 'transform': 'translateX(-50%)',
-        'zIndex': 1000, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
+        'zIndex': 1010, 'background': 'rgba(21,101,192,0.92)', 'color': '#fff',
         'padding': '10px 18px', 'border-radius': '8px', 'pointer-events': 'auto',
         'flex-direction': 'column', 'align-items': 'flex-start', 'gap': '0',
     }
     _results_hidden_style = {
         'display': 'none',
         'position': 'fixed', 'top': '94px', 'left': '50%', 'transform': 'translateX(-50%)',
-        'zIndex': 1001, 'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
+        'zIndex': 1011, 'background': 'white', 'border': '1px solid #ddd', 'border-radius': '6px',
         'box-shadow': '0 4px 16px rgba(0,0,0,0.15)', 'width': '400px', 'max-width': '90vw',
         'max-height': '240px', 'overflow-y': 'auto', 'pointer-events': 'auto',
     }
