@@ -9,11 +9,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # --- filter bar ---
         'location':      'Standort',
         'relevance':     'Relevanz',
+        'rel_high':      'Hoch',
+        'rel_medium':    'Mittel',
+        'rel_low':       'Niedrig',
+        'rel_none':      'Keine',
         'platform':      'Plattform',
         'view':          'Ansicht',
         'type':          'Typ',
         'layers':        'Ebenen',
-        'show_hidden':   'Versteckte anzeigen',
+        'show_hidden':   'Ausgeblendete anzeigen',
         'show_flagged':  'Markiert',
         'show_unflagged':'Nicht markiert',
         # --- location filter options ---
@@ -82,6 +86,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # --- filter bar ---
         'location':      'Location',
         'relevance':     'Relevance',
+        'rel_high':      'High',
+        'rel_medium':    'Medium',
+        'rel_low':       'Low',
+        'rel_none':      'None',
         'platform':      'Platform',
         'view':          'View',
         'type':          'Type',

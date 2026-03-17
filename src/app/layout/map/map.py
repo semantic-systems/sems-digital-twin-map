@@ -1657,10 +1657,7 @@ def callbacks_map(app: Dash):
         return 'de'
 
     # ── Push lang strings to JS (window._langStrings) ────────────────────────
-    _js_strings = {
-        k: {sk: sv for sk, sv in v.items() if sk.startswith('js_')}
-        for k, v in TRANSLATIONS.items()
-    }
+    _js_strings = TRANSLATIONS  # push all keys so JS _t() can translate view labels too
     app.clientside_callback(
         """
         function(lang) {
@@ -2351,7 +2348,7 @@ def callbacks_map(app: Dash):
                     var isSeen = !!((state[String(idObj.index)] || {}).hide);
                     var li     = btn.closest('li');
                     if (li) li.style.opacity = isSeen ? '0.5' : '1';
-                    btn.textContent       = isSeen ? 'Unhide' : 'Hide';
+                    btn.textContent       = isSeen ? _t('unhide', 'Unhide') : _t('hide', 'Hide');
                     btn.style.border      = isSeen ? '1px solid #a5d6a7' : '1px solid #ddd';
                     btn.style.background  = isSeen ? '#e8f5e9' : '#fafafa';
                     btn.style.color       = isSeen ? '#2e7d32' : '#888';
@@ -2366,7 +2363,7 @@ def callbacks_map(app: Dash):
                     var idObj     = JSON.parse(btn.id);
                     var author    = idObj.author || '';
                     var isFlagged = !!author && flagged.indexOf(author) !== -1;
-                    btn.textContent      = isFlagged ? 'Unflag' : 'Flag';
+                    btn.textContent      = isFlagged ? _t('unflag', 'Unflag') : _t('flag', 'Flag');
                     btn.style.border     = isFlagged ? '1px solid #e65100' : '1px solid #ddd';
                     btn.style.background = isFlagged ? '#fff3e0' : '#fafafa';
                     btn.style.color      = isFlagged ? '#e65100' : '#888';
@@ -3119,8 +3116,9 @@ def callbacks_map(app: Dash):
         Input('interval_refresh_reports', 'n_intervals'),
         State('current-user', 'data'),
         State({'type': 'event-chip', 'index': ALL}, 'id'),
+        State('lang', 'data'),
     )
-    def update_filter_counts(_loaded_at, _n, username, chip_ids):
+    def update_filter_counts(_loaded_at, _n, username, chip_ids, lang):
         from sqlalchemy import func as sqlfunc
         if not username:
             raise PreventUpdate
@@ -3156,8 +3154,9 @@ def callbacks_map(app: Dash):
                 {'label': f'{p} ({plat_counts.get(p, 0)})', 'value': p}
                 for p in all_platforms
             ]
+            _lg = lang or 'de'
             rel_options = [
-                {'label': f'{r} ({rel_counts.get(r, 0)})', 'value': r}
+                {'label': f'{_t(_lg, "rel_" + r)} ({rel_counts.get(r, 0)})', 'value': r}
                 for r in ALL_RELEVANCE_TYPES
             ]
             return chip_children, plat_options, rel_options
