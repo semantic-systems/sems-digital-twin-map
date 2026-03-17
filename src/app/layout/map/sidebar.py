@@ -63,7 +63,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
     seen_btn_label = t(lang, 'unhide') if is_seen else t(lang, 'hide')
     seen_btn_title = t(lang, 'unhide') if is_seen else t(lang, 'hide')
     seen_btn_style = {
-        'font-size': '11px',
+        'font-size': '13px',
         'padding': '2px 7px',
         'cursor': 'pointer',
         'border-radius': '4px',
@@ -84,7 +84,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                 id=f'new-badge-{report.id}',
                 style={
                     'display': 'inline-block' if is_new else 'none',
-                    'font-size': '9px',
+                    'font-size': '13px',
                     'font-weight': 'bold',
                     'color': 'white',
                     'background': '#e53935',
@@ -100,7 +100,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         text,
                         style={
                             "font-weight": "bold",
-                            "font-size": "10px",
+                            "font-size": "12px",
                             "line-height": "1.4",
                             "display": "-webkit-box",
                             "-webkit-box-orient": "vertical",
@@ -120,14 +120,14 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                 title=t(lang, 'geo_title') if is_localized else (t(lang, 'pending_title') if has_pending else t(lang, 'no_loc_title')),
                                 style={
                                     'color': '#43a047' if is_localized else ('#e65100' if has_pending else '#bdbdbd'),
-                                    'font-size': '9px',
+                                    'font-size': '13px',
                                     'margin-right': '2px',
                                 }
                             ),
                             (f'@{author} · ' if author else '') + descriptor_text,
                         ],
                         style={
-                            'font-size': '9px',
+                            'font-size': '13px',
                             'color': '#888',
                             'margin': '0',
                         }
@@ -155,7 +155,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         rel="noopener noreferrer",
                         title=t(lang, 'open_title'),
                         style={
-                            'font-size': '9px',
+                            'font-size': '13px',
                             'color': '#1976d2',
                             'text-decoration': 'none',
                         }
@@ -167,7 +167,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         n_clicks=0,
                         disabled=not is_localized,
                         style={
-                            'font-size': '11px',
+                            'font-size': '13px',
                             'padding': '2px 7px',
                             'cursor': 'pointer' if is_localized else 'default',
                             'border-radius': '4px',
@@ -191,7 +191,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         n_clicks=0,
                         disabled=not author,
                         style={
-                            'font-size': '11px',
+                            'font-size': '13px',
                             'padding': '2px 7px',
                             'cursor': 'pointer' if author else 'default',
                             'border-radius': '4px',
@@ -218,7 +218,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     n_clicks=0,
                                     title=t(lang, 'georeference_title'),
                                     style={
-                                        'font-size': '9px', 'padding': '0', 'border': 'none',
+                                        'font-size': '13px', 'padding': '0', 'border': 'none',
                                         'background': 'transparent', 'cursor': 'pointer',
                                         'color': '#757575', 'font-style': 'italic',
                                         'text-decoration': 'underline dotted',
@@ -230,14 +230,14 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     n_clicks=0,
                                     title=t(lang, 'remove_location'),
                                     style={
-                                        'font-size': '9px', 'padding': '0 3px', 'margin-left': '3px',
+                                        'font-size': '13px', 'padding': '0 3px', 'margin-left': '3px',
                                         'cursor': 'pointer', 'border': 'none', 'background': 'transparent',
                                         'color': '#888', 'line-height': '1',
                                     },
                                 ),
                             ],
                             style={
-                                'font-size': '9px', 'border-radius': '3px',
+                                'font-size': '13px', 'border-radius': '3px',
                                 'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
                                 'display': 'inline-flex', 'align-items': 'center',
                                 'background': '#fdecea', 'border': '1px dashed #e57373', 'color': '#c62828',
@@ -250,7 +250,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     n_clicks=0,
                                     title=t(lang, 'reassign_title'),
                                     style={
-                                        'font-size': '9px', 'padding': '0', 'border': 'none',
+                                        'font-size': '13px', 'padding': '0', 'border': 'none',
                                         'background': 'transparent', 'cursor': 'pointer',
                                         'color': 'inherit', 'text-decoration': 'underline dotted',
                                     },
@@ -261,7 +261,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                                     n_clicks=0,
                                     title=t(lang, 'remove_location'),
                                     style={
-                                        'font-size': '9px', 'padding': '0 3px', 'margin-left': '3px',
+                                        'font-size': '13px', 'padding': '0 3px', 'margin-left': '3px',
                                         'cursor': 'pointer', 'border': 'none', 'background': 'transparent',
                                         'color': '#888', 'line-height': '1',
                                     },
@@ -269,7 +269,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                             ],
                             title=loc.get('display_name') or loc.get('name') or '',
                             style={
-                                'font-size': '9px', 'border-radius': '3px',
+                                'font-size': '13px', 'border-radius': '3px',
                                 'padding': '1px 4px', 'margin-right': '3px', 'white-space': 'nowrap',
                                 'display': 'inline-flex', 'align-items': 'center',
                                 'background': '#e8f5e9', 'border': '1px solid #81c784', 'color': '#2e7d32',
@@ -283,7 +283,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                         n_clicks=0,
                         title=t(lang, 'add_location_title'),
                         style={
-                            'font-size': '9px', 'padding': '1px 6px', 'cursor': 'pointer',
+                            'font-size': '13px', 'padding': '1px 6px', 'cursor': 'pointer',
                             'border-radius': '3px', 'border': '1px solid #90caf9',
                             'background': '#e3f2fd', 'color': '#1565c0',
                         },
@@ -295,7 +295,7 @@ def format_report(report: Report, seen_ids=None, flagged_authors=None, user_locs
                             n_clicks=0,
                             title=t(lang, 'restore_title'),
                             style={
-                                'font-size': '9px', 'padding': '1px 6px', 'cursor': 'pointer',
+                                'font-size': '13px', 'padding': '1px 6px', 'cursor': 'pointer',
                                 'border-radius': '3px', 'border': '1px solid #ce93d8',
                                 'background': '#f3e5f5', 'color': '#6a1b9a',
                             },
