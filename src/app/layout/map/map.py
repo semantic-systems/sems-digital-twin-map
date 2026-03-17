@@ -496,7 +496,7 @@ def get_layout_map():
                 'border-right': '1px solid #ccc',
                 'padding': '10px',
                 'box-shadow': '2px 0 4px rgba(0,0,0,0.08)',
-                'width': '270px',
+                'width': '300px',
                 'flex-shrink': '0',
                 'height': '100%',
                 'overflow': 'visible',
