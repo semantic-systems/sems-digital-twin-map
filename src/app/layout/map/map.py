@@ -210,40 +210,10 @@ def get_layout_map():
             },
             id='map'
         ),
-        html.Button(
-            id='button_toggle_layers',
-            children='-',
-            style={
-                'position': 'absolute',
-                'float': 'right',
-                'top': '0px',
-                'right': '0',
-                'margin': '10px',
-                'z-index': '1001',
-                'padding': '10px',
-                'border': '1px solid #ccc',
-                'width': '35px',
-                'height': '35px'
-            }
-        ),
-        html.Div(  # here we create a 'fake' layers control that looks identical to dash-leaflet, but gives us more control
+        html.Button(id='button_toggle_layers', children='-', style={'display': 'none'}),
+        html.Div(  # here we create a 'fake' layers control that holds hidden components needed by callbacks
             id='layers_control',
             children=[
-                html.P(
-                    children='Layers',
-                    style={
-                        'font-size': '14pt',
-                        'font-weight': 'bold',
-                        'margin': '4px 2px 4 2px',
-                        'text-align': 'center',
-                        'color': '#404040'
-                    }
-                ),
-                dcc.Checklist(
-                    id='overlay_checklist',
-                    options=layer_checkboxes,
-                    value=[]
-                ),
                 dcc.Tabs(
                     id='map-tabs',
                     children=[
@@ -316,23 +286,7 @@ def get_layout_map():
                 #     }
                 # ),
             ],
-            style={
-                'position': 'absolute',
-                'float': 'right',
-                'margin': '10px',
-                'background-color': 'white',
-                'border': '1px solid #ccc',
-                'padding': '10px',
-                'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                'border-radius': '5px',
-                'max-height': '700px',
-                'overflow-y': 'auto',
-                'z-index': '1000',
-                'right': '0',
-                'top': '60px',
-                'width:': '200px',
-                'color': '#333'
-            }
+            style={'display': 'none'}
         ),
         html.Button(
             id='button_toggle_event_range',
@@ -703,99 +657,125 @@ def get_layout_map():
                 value=[e for e in ALL_EVENT_TYPES if e != 'Irrelevant'],
                 style={'display': 'none'},
             ),
-            # Location filter
-            html.Div(children=[
-                html.Span('Location', className='filter-label'),
-                dcc.RadioItems(
-                    id='event_type_toggle',
-                    options=[
-                        {'label': 'All', 'value': 'all'},
-                        {'label': '📍 Located', 'value': 'localized'},
-                        {'label': '◎ Pending', 'value': 'pending'},
-                        {'label': '∅ None', 'value': 'unlocalized'},
-                    ],
-                    value='all',
-                    inline=True,
-                    inputStyle={'margin-right': '2px'},
-                    labelStyle={'margin-right': '6px'},
-                    style={'font-size': '10pt', 'display': 'inline'},
-                ),
-            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
-            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
-            # Relevance
-            html.Div(children=[
-                html.Span('Relevance', className='filter-label'),
-                dcc.Checklist(
-                    id='reports_dropdown_relevance_type',
-                    options=[{'label': r, 'value': r} for r in ALL_RELEVANCE_TYPES],
-                    value=list(ALL_RELEVANCE_TYPES),
-                    inline=True,
-                    inputStyle={'margin-right': '3px'},
-                    labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
-                    style={'font-size': '10pt', 'display': 'inline'},
-                ),
-            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
-            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
-            # Platform
-            html.Div(children=[
-                html.Span('Platform', className='filter-label'),
-                dcc.Checklist(
-                    id='reports_dropdown_platform',
-                    options=[{'label': p, 'value': p} for p in reports_dropdown_platform],
-                    value=list(reports_dropdown_platform),
-                    inline=True,
-                    inputStyle={'margin-right': '3px'},
-                    labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
-                    style={'font-size': '10pt', 'display': 'inline'},
-                ),
-            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
-            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
-            # View / visibility
-            html.Div(children=[
-                html.Span('View', className='filter-label'),
-                dcc.Checklist(
-                    id='reports_filter_visibility',
-                    options=[
-                        {'label': 'Show hidden', 'value': 'show_hidden'},
-                        {'label': 'Flagged', 'value': 'show_flagged'},
-                        {'label': 'Unflagged', 'value': 'show_unflagged'},
-                    ],
-                    value=['show_flagged', 'show_unflagged'],
-                    inline=True,
-                    inputStyle={'margin-right': '3px'},
-                    labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
-                    style={'font-size': '10pt', 'display': 'inline'},
-                ),
-            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
-            html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
-            # Event type chips
-            html.Div(children=[
-                html.Span('Type', className='filter-label'),
-                html.Div(
-                    id='event-type-chips-container',
-                    children=[
-                        html.Button(
-                            e,
-                            id={'type': 'event-chip', 'index': e},
-                            n_clicks=0,
-                            className='filter-chip' + ('' if e == 'Irrelevant' else ' filter-chip-active'),
-                            title='Click to toggle · Shift+click to solo',
-                        )
-                        for e in ALL_EVENT_TYPES
-                    ],
-                    style={'display': 'inline-flex', 'flex-wrap': 'wrap', 'gap': '3px'},
-                ),
-            ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+            # Left column — all other filters (78%)
+            html.Div(
+                children=[
+                    # Location filter
+                    html.Div(children=[
+                        html.Span('Location', className='filter-label'),
+                        dcc.RadioItems(
+                            id='event_type_toggle',
+                            options=[
+                                {'label': 'All', 'value': 'all'},
+                                {'label': '📍 Located', 'value': 'localized'},
+                                {'label': '◎ Pending', 'value': 'pending'},
+                                {'label': '∅ None', 'value': 'unlocalized'},
+                            ],
+                            value='all',
+                            inline=True,
+                            inputStyle={'margin-right': '2px'},
+                            labelStyle={'margin-right': '6px'},
+                            style={'font-size': '10pt', 'display': 'inline'},
+                        ),
+                    ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+                    html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+                    # Relevance
+                    html.Div(children=[
+                        html.Span('Relevance', className='filter-label'),
+                        dcc.Checklist(
+                            id='reports_dropdown_relevance_type',
+                            options=[{'label': r, 'value': r} for r in ALL_RELEVANCE_TYPES],
+                            value=list(ALL_RELEVANCE_TYPES),
+                            inline=True,
+                            inputStyle={'margin-right': '3px'},
+                            labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
+                            style={'font-size': '10pt', 'display': 'inline'},
+                        ),
+                    ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+                    html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+                    # Platform
+                    html.Div(children=[
+                        html.Span('Platform', className='filter-label'),
+                        dcc.Checklist(
+                            id='reports_dropdown_platform',
+                            options=[{'label': p, 'value': p} for p in reports_dropdown_platform],
+                            value=list(reports_dropdown_platform),
+                            inline=True,
+                            inputStyle={'margin-right': '3px'},
+                            labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
+                            style={'font-size': '10pt', 'display': 'inline'},
+                        ),
+                    ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+                    html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+                    # View / visibility
+                    html.Div(children=[
+                        html.Span('View', className='filter-label'),
+                        dcc.Checklist(
+                            id='reports_filter_visibility',
+                            options=[
+                                {'label': 'Show hidden', 'value': 'show_hidden'},
+                                {'label': 'Flagged', 'value': 'show_flagged'},
+                                {'label': 'Unflagged', 'value': 'show_unflagged'},
+                            ],
+                            value=['show_flagged', 'show_unflagged'],
+                            inline=True,
+                            inputStyle={'margin-right': '3px'},
+                            labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
+                            style={'font-size': '10pt', 'display': 'inline'},
+                        ),
+                    ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+                    html.Div(style={'width': '1px', 'height': '20px', 'background': '#e0e0e0', 'flex-shrink': '0'}),
+                    # Event type chips
+                    html.Div(children=[
+                        html.Span('Type', className='filter-label'),
+                        html.Div(
+                            id='event-type-chips-container',
+                            children=[
+                                html.Button(
+                                    e,
+                                    id={'type': 'event-chip', 'index': e},
+                                    n_clicks=0,
+                                    className='filter-chip' + ('' if e == 'Irrelevant' else ' filter-chip-active'),
+                                    title='Click to toggle · Shift+click to solo',
+                                )
+                                for e in ALL_EVENT_TYPES
+                            ],
+                            style={'display': 'inline-flex', 'flex-wrap': 'wrap', 'gap': '3px'},
+                        ),
+                    ], style={'display': 'flex', 'align-items': 'center', 'gap': '4px', 'white-space': 'nowrap'}),
+                ],
+                style={
+                    'flex': '1', 'display': 'flex', 'align-items': 'center',
+                    'gap': '12px', 'flex-wrap': 'wrap', 'padding': '4px 12px 4px 0',
+                    'border-right': '1px solid #e0e0e0',
+                }
+            ),
+            # Right column — Layers (22%)
+            html.Div(
+                children=[
+                    html.Span('Layers', className='filter-label'),
+                    dcc.Checklist(
+                        id='overlay_checklist',
+                        options=layer_checkboxes,
+                        value=[],
+                        inline=True,
+                        inputStyle={'margin-right': '3px'},
+                        labelStyle={'margin-right': '6px', 'white-space': 'nowrap'},
+                        style={'font-size': '10pt'},
+                    ),
+                ],
+                style={
+                    'flex': '0 0 25%', 'padding': '4px 0 4px 12px',
+                }
+            ),
         ],
         style={
             'display': 'flex',
-            'align-items': 'center',
-            'gap': '12px',
+            'align-items': 'stretch',
             'background': 'white',
             'border-bottom': '1px solid #e0e0e0',
             'padding': '5px 12px',
             'flex-shrink': '0',
-            'flex-wrap': 'wrap',
             'box-shadow': '0 1px 3px rgba(0,0,0,0.07)',
             'z-index': '1001',
         }
