@@ -1798,8 +1798,7 @@ def callbacks_map(app: Dash):
             seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             if is_initial_load:
-                # Do NOT auto-admit existing reports — show the banner so the user
-                # actively loads them. Sidebar and map stay empty until the banner is clicked.
+                # Show already-admitted reports; put unadmitted ones behind the banner.
                 all_reports = _query_reports_inner()
                 initial_pending_count = len([r for r in all_reports if r.id not in added_ids])
             elif is_banner_click:
@@ -1818,27 +1817,27 @@ def callbacks_map(app: Dash):
                 seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             lang = lang or 'de'
-            if is_initial_load:
+            if is_initial_load and not added_ids:
+                # Fresh start (nothing ever admitted) — keep sidebar and map empty.
                 sidebar_content = []
+                dots = []
             else:
                 sidebar_content = _build_sidebar_content(
                     filter_platform, filter_event_type, filter_relevance_type,
                     event_type_toggle, username=username, session=session,
                     filter_visibility=filter_visibility, lang=lang,
                 )
-            dots = dash.no_update
-            if is_initial_load:
-                dots = []  # nothing admitted yet — hide all dots until banner is clicked
-            elif is_banner_click:
-                dots = _build_dots(
-                    session, seen_ids=seen_ids, flagged_authors=flagged_authors,
-                    user_locs_map=user_locs_map,
-                    filter_platform=eff_platform, filter_event_type=eff_events,
-                    filter_relevance_type=eff_relevance,
-                    loc_filter=event_type_toggle or 'all',
-                    new_ids=new_ids, added_ids=added_ids,
-                    **_vis_flags(filter_visibility),
-                )
+                dots = dash.no_update
+                if is_initial_load or is_banner_click:
+                    dots = _build_dots(
+                        session, seen_ids=seen_ids, flagged_authors=flagged_authors,
+                        user_locs_map=user_locs_map,
+                        filter_platform=eff_platform, filter_event_type=eff_events,
+                        filter_relevance_type=eff_relevance,
+                        loc_filter=event_type_toggle or 'all',
+                        new_ids=new_ids, added_ids=added_ids,
+                        **_vis_flags(filter_visibility),
+                    )
         finally:
             session.close()
             engine.dispose()
@@ -1854,7 +1853,7 @@ def callbacks_map(app: Dash):
         reset_active = None if not is_banner_click else dash.no_update
         if is_initial_load:
             banner_style = _banner_active if initial_pending_count > 0 else _banner_idle
-            return [], reset_active, datetime.now(timezone.utc).isoformat(), new_posts_label(lang, initial_pending_count), banner_style, snapshot, dots
+            return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), new_posts_label(lang, initial_pending_count), banner_style, snapshot, dots
         if is_banner_click:
             return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), new_posts_label(lang, 0), _banner_idle, snapshot, dots
         else:
@@ -3038,49 +3037,57 @@ def callbacks_map(app: Dash):
     # ---- Demo: reset button ----
     @app.callback(
         Output('reports_list', 'children', allow_duplicate=True),
+        Output('report-dots-data', 'data', allow_duplicate=True),
         Output('user-state-snapshot', 'data', allow_duplicate=True),
         Output('sidebar-loaded-at', 'data', allow_duplicate=True),
+        Output('new-posts-banner', 'children', allow_duplicate=True),
+        Output('new-posts-banner', 'style', allow_duplicate=True),
         Input('demo-reset-button', 'n_clicks'),
         State('current-user', 'data'),
-        State('reports_dropdown_platform', 'value'),
-        State('reports_dropdown_event_type', 'value'),
-        State('reports_dropdown_relevance_type', 'value'),
-        State('event_type_toggle', 'value'),
-        State('reports_filter_visibility', 'value'),
         State('lang', 'data'),
         prevent_initial_call=True,
     )
-    def reset_demo(n_clicks, username, filter_platform, filter_event_type, filter_relevance_type,
-                   event_type_toggle, filter_visibility, lang):
+    def reset_demo(n_clicks, username, lang):
         if not n_clicks:
             raise PreventUpdate
         from data.build import seed_demo_data
         engine, session = autoconnect_db()
         try:
             seed_demo_data(session)
-            # Admit the demo posts that are already current and rebuild the sidebar.
+            # Clear all existing user state so nothing is pre-admitted.
+            if username:
+                from data.model import UserReportState
+                session.query(UserReportState).filter_by(username=username).delete()
+                session.commit()
+                _, _, _, added_ids, _, snapshot = _get_user_state(username, session)
+            else:
+                added_ids, snapshot = set(), {}
+
+            # Count demo reports already due — show in banner but don't admit them.
             demo_reports = session.query(Report).filter(
                 Report.identifier.like('demo-%'),
                 Report.timestamp <= datetime.now(timezone.utc),
             ).all()
-            if username:
-                _bulk_admit_reports(username, [r.id for r in demo_reports], session)
-                session.commit()
-                _, _, _, _, _, snapshot = _get_user_state(username, session)
-            else:
-                snapshot = {}
-            sidebar = _build_sidebar_content(
-                filter_platform, filter_event_type, filter_relevance_type,
-                event_type_toggle, username=username, session=session,
-                filter_visibility=filter_visibility, lang=lang or 'de',
-            )
+            count = len([r for r in demo_reports if r.id not in added_ids])
+
             # Use the earliest demo post timestamp as loaded_at so check_new_posts
-            # correctly finds all future demo posts (spread over 5 min) as they arrive.
+            # correctly finds all future demo posts as they arrive.
             if demo_reports:
                 loaded_at = min(r.timestamp for r in demo_reports).isoformat()
             else:
                 loaded_at = datetime.now(timezone.utc).isoformat()
-            return sidebar, snapshot, loaded_at
+
+            lg = lang or 'de'
+            _banner_base = {
+                'display': 'block', 'width': '100%', 'margin-bottom': '6px',
+                'font-size': '9px', 'padding': '4px 8px', 'cursor': 'pointer',
+                'border-radius': '4px', 'text-align': 'center',
+            }
+            banner_style = {**_banner_base, 'border': '1px solid #42a5f5', 'background': '#e3f2fd',
+                            'color': '#1565c0', 'font-weight': 'bold'} if count > 0 else \
+                           {**_banner_base, 'border': '1px solid #ddd', 'background': '#f5f5f5',
+                            'color': '#aaa', 'font-weight': 'normal'}
+            return [], [], snapshot, loaded_at, new_posts_label(lg, count), banner_style
         finally:
             session.close()
             engine.dispose()
