@@ -258,18 +258,49 @@
         });
         var newFlag = !anyFlagged;
 
+        // Update all existing entries that belong to this author
+        var updated = false;
         Object.keys(state).forEach(function(id) {
             var a = state[id].flag_author || state[id].author || '';
             if (a === author) {
                 state[id].flag = newFlag;
+                state[id].flag_author = author;
+                state[id].author = author;
+                updated = true;
             }
         });
+
+        // No existing entry matched — create one for the current dot so the toggle takes effect
+        if (!updated && _currentDot) {
+            var rid = String(_currentDot.report_id);
+            if (!state[rid]) state[rid] = { hide: false, flag: false, flag_author: '', author: '', added: true, new: false };
+            state[rid].flag = newFlag;
+            state[rid].flag_author = author;
+            state[rid].author = author;
+        }
 
         window._reportState = state;
         window._flaggedAuthors = Object.values(state)
             .filter(function(s) { return s.flag && (s.flag_author || s.author); })
             .map(function(s) { return s.flag_author || s.author; })
             .filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+        // Immediately sync sidebar flag buttons and li outlines without waiting for server
+        var flagged = window._flaggedAuthors;
+        document.querySelectorAll('[id*="flag-button"]').forEach(function(btn) {
+            try {
+                var idObj = JSON.parse(btn.id);
+                var a = idObj.author || '';
+                var isFlagged = !!a && flagged.indexOf(a) !== -1;
+                btn.textContent      = isFlagged ? _t('unflag', 'Unflag') : _t('flag', 'Flag');
+                btn.style.border     = isFlagged ? '1px solid #e65100' : '1px solid #ddd';
+                btn.style.background = isFlagged ? '#fff3e0' : '#fafafa';
+                btn.style.color      = isFlagged ? '#e65100' : '#888';
+                btn.style.fontWeight = isFlagged ? 'bold' : 'normal';
+                var li = btn.closest('li');
+                if (li) li.style.outline = isFlagged ? '2px solid #e65100' : 'none';
+            } catch(e) {}
+        });
 
         // Refresh map popup if open
         if (_currentDot && _popup) {
@@ -332,6 +363,7 @@
             var author = flagBtn.dataset.author;
             if (!author) return;
             _toggleAuthorFlagLocal(author);
+            syncToStore('popup-flag-request', { author: author, ts: Date.now() });
             return;
         }
     });

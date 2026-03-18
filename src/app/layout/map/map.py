@@ -2497,7 +2497,10 @@ def callbacks_map(app: Dash):
         """
         INSERT or UPDATE a single user_report_state row.
         kwargs may include: hide, flag, flag_author, locations, first_seen_at, new
+        Silently skips if report_id no longer exists in the reports table.
         """
+        if not session.query(Report.id).filter(Report.id == report_id).scalar():
+            return
         stmt = pg_insert(UserReportState).values(
             username=username,
             report_id=report_id,
