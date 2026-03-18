@@ -2130,6 +2130,8 @@ def callbacks_map(app: Dash):
                 seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _ = _get_user_state(username, session)
             else:
                 seen_ids, flagged_authors, user_locs_map, added_ids, new_ids = set(), set(), {}, set(), set()
+            if not added_ids:
+                return []
             return _build_dots(session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                                 user_locs_map=user_locs_map,
                                 filter_platform=eff_platform,
