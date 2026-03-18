@@ -596,7 +596,7 @@ def get_layout_map():
             },
         ),
         dcc.Store(id='location-search-data', data=[]),
-        dcc.Store(id='sidebar-loaded-at', storage_type='local', data=None),
+        dcc.Store(id='sidebar-loaded-at', storage_type='memory', data=None),
         dcc.Store(id='fit-bounds-request', data=None),  # [[lat1,lon1],[lat2,lon2]] to fitBounds
         # ---- Username prompt modal ----
         html.Div(
@@ -1777,6 +1777,7 @@ def callbacks_map(app: Dash):
         is_banner_click = 'new-posts-banner' in triggered
         is_initial_load = not old_loaded_at
 
+        initial_pending_count = 0
         engine, session = autoconnect_db()
         try:
             def _query_reports_inner(since=None):
@@ -1797,13 +1798,10 @@ def callbacks_map(app: Dash):
             seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             if is_initial_load:
-                # Admit all currently matching reports as the baseline view.
+                # Do NOT auto-admit existing reports — show the banner so the user
+                # actively loads them. Sidebar and map stay empty until the banner is clicked.
                 all_reports = _query_reports_inner()
-                _bulk_admit_reports(username, [r.id for r in all_reports], session)
-                if active_report_id:
-                    _upsert_user_state(username, active_report_id, session, new=False)
-                session.commit()
-                seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
+                initial_pending_count = len([r for r in all_reports if r.id not in added_ids])
             elif is_banner_click:
                 new_reports = _query_reports_inner(since=None)
                 new_reports = _filter_by_display(
@@ -1820,13 +1818,18 @@ def callbacks_map(app: Dash):
                 seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot = _get_user_state(username, session)
 
             lang = lang or 'de'
-            sidebar_content = _build_sidebar_content(
-                filter_platform, filter_event_type, filter_relevance_type,
-                event_type_toggle, username=username, session=session,
-                filter_visibility=filter_visibility, lang=lang,
-            )
+            if is_initial_load:
+                sidebar_content = []
+            else:
+                sidebar_content = _build_sidebar_content(
+                    filter_platform, filter_event_type, filter_relevance_type,
+                    event_type_toggle, username=username, session=session,
+                    filter_visibility=filter_visibility, lang=lang,
+                )
             dots = dash.no_update
-            if is_initial_load or is_banner_click:
+            if is_initial_load:
+                dots = []  # nothing admitted yet — hide all dots until banner is clicked
+            elif is_banner_click:
                 dots = _build_dots(
                     session, seen_ids=seen_ids, flagged_authors=flagged_authors,
                     user_locs_map=user_locs_map,
@@ -1849,7 +1852,10 @@ def callbacks_map(app: Dash):
         _banner_active = {**_banner_base, 'border': '1px solid #42a5f5', 'background': '#e3f2fd', 'color': '#1565c0', 'font-weight': 'bold'}
 
         reset_active = None if not is_banner_click else dash.no_update
-        if is_initial_load or is_banner_click:
+        if is_initial_load:
+            banner_style = _banner_active if initial_pending_count > 0 else _banner_idle
+            return [], reset_active, datetime.now(timezone.utc).isoformat(), new_posts_label(lang, initial_pending_count), banner_style, snapshot, dots
+        if is_banner_click:
             return sidebar_content, reset_active, datetime.now(timezone.utc).isoformat(), new_posts_label(lang, 0), _banner_idle, snapshot, dots
         else:
             # Filter change: find pending posts that match the new filters.
