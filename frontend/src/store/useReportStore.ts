@@ -63,6 +63,9 @@ export const useReportStore = create<ReportStore>((set) => ({
       reports: s.reports.map((r) =>
         r.id === id ? { ...r, user_state: { ...r.user_state, new: false } } : r,
       ),
+      dots: s.dots.map((d) =>
+        d.report_id === id ? { ...d, new: false } : d,
+      ),
     })),
 
   optimisticUpdateLocations: (id, locations) =>
