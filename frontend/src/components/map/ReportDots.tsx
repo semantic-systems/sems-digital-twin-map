@@ -317,7 +317,7 @@ export function ReportDots(): React.ReactElement {
               },
             }}
           >
-            <Popup closeOnClick={false}>
+            <Popup>
               {isMulti
                 ? <MultiDotPopup
                     ref={(handle) => {
