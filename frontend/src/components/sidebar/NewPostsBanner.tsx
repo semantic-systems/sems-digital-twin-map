@@ -1,0 +1,75 @@
+import React from 'react';
+import { newPostsLabel } from '../../i18n';
+import { useReportStore } from '../../store/useReportStore';
+import { useUserStore } from '../../store/useUserStore';
+import { useFilterStore } from '../../store/useFilterStore';
+import { admitAllReports, fetchReports, fetchDots } from '../../api/reports';
+
+export function NewPostsBanner(): React.ReactElement {
+  const { pendingNewCount, setPendingNewCount, setReports, setDots } = useReportStore();
+  const { username } = useUserStore();
+  const filters = useFilterStore();
+  const { setAllPlatforms } = filters;
+
+  const handleClick = async () => {
+    if (!username || pendingNewCount === 0) return;
+
+    try {
+      const params = {
+        username,
+        loc_filter: filters.locFilter,
+        platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
+        event_types: filters.eventTypes,
+        relevances: filters.relevances,
+        show_hidden: filters.showHidden,
+        show_flagged: filters.showFlagged,
+        show_unflagged: filters.showUnflagged,
+      };
+
+      // Admit all pending (unadmitted) reports in one call
+      await admitAllReports(username);
+      const reloaded = await fetchReports(params);
+      setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals);
+      if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
+      const dotsRes = await fetchDots(params);
+      setDots(dotsRes.dots);
+      setPendingNewCount(0);
+    } catch (e) {
+      console.error('Failed to admit reports:', e);
+    }
+  };
+
+  const active = pendingNewCount > 0;
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={!active}
+      style={{
+        width: '100%',
+        padding: '7px 12px',
+        background: active ? '#2563eb' : '#1e2235',
+        color: active ? '#fff' : '#4b5563',
+        border: 'none',
+        borderBottom: '1px solid #252836',
+        cursor: active ? 'pointer' : 'default',
+        fontSize: 12,
+        fontWeight: active ? 600 : 400,
+        fontFamily: "'Inter', system-ui, sans-serif",
+        textAlign: 'center',
+        transition: 'background 0.15s',
+        flexShrink: 0,
+      }}
+      onMouseEnter={(e) => {
+        if (active)
+          (e.currentTarget as HTMLButtonElement).style.background = '#1d4ed8';
+      }}
+      onMouseLeave={(e) => {
+        if (active)
+          (e.currentTarget as HTMLButtonElement).style.background = '#2563eb';
+      }}
+    >
+      {newPostsLabel(pendingNewCount)}
+    </button>
+  );
+}
