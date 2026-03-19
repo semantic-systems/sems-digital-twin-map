@@ -32,20 +32,21 @@ function clampToViewport(
   cx: number,
   cy: number,
   bearing: number,
-  margin: number,
-  vw: number,
-  vh: number,
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number,
 ): { x: number; y: number } {
-  // Ray from map center toward target; clamp to viewport edge
+  // Ray from map center toward target; clamp to map area edge
   const rad = (bearing * Math.PI) / 180;
   const dx = Math.sin(rad);
   const dy = -Math.cos(rad);
 
   let t = Infinity;
-  if (dx > 0) t = Math.min(t, (vw - margin - cx) / dx);
-  else if (dx < 0) t = Math.min(t, (margin - cx) / dx);
-  if (dy > 0) t = Math.min(t, (vh - margin - cy) / dy);
-  else if (dy < 0) t = Math.min(t, (margin - cy) / dy);
+  if (dx > 0) t = Math.min(t, (maxX - cx) / dx);
+  else if (dx < 0) t = Math.min(t, (minX - cx) / dx);
+  if (dy > 0) t = Math.min(t, (maxY - cy) / dy);
+  else if (dy < 0) t = Math.min(t, (minY - cy) / dy);
 
   return { x: cx + dx * t, y: cy + dy * t };
 }
@@ -103,9 +104,19 @@ function ArrowsInner(): React.ReactElement {
     const center = map.getCenter();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    // Sidebar offset
     const sidebarWidth = 380;
     const filterBarHeight = 48;
+    const margin = 20;
+
+    // Map area bounds in fixed/window coords
+    const mapMinX = sidebarWidth + margin;
+    const mapMaxX = vw - margin;
+    const mapMinY = filterBarHeight + margin;
+    const mapMaxY = vh - margin;
+
+    // Center of the map area
+    const cx = (mapMinX + mapMaxX) / 2;
+    const cy = (mapMinY + mapMaxY) / 2;
 
     const newArrows: Arrow[] = [];
 
@@ -116,11 +127,7 @@ function ArrowsInner(): React.ReactElement {
       const bearing = computeBearing(center.lat, center.lng, pt.lat, pt.lon);
       const direction = getDirection(bearing);
 
-      const cx = sidebarWidth + (vw - sidebarWidth) / 2;
-      const cy = filterBarHeight + (vh - filterBarHeight) / 2;
-      const margin = 20;
-
-      const { x, y } = clampToViewport(cx, cy, bearing, margin, vw, vh);
+      const { x, y } = clampToViewport(cx, cy, bearing, mapMinX, mapMaxX, mapMinY, mapMaxY);
 
       newArrows.push({ key: pt.key, x, y, direction, lat: pt.lat, lon: pt.lon });
     }

@@ -1,11 +1,12 @@
-import React, { useMemo, useRef, useEffect } from 'react';
-import { Marker, Popup } from 'react-leaflet';
+import React, { useMemo, useRef, useEffect, useCallback, useState } from 'react';
+import ReactDOM from 'react-dom';
+import { Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
-import type { DotDTO } from '../../types';
+import type { DotDTO, ReportDTO } from '../../types';
 
 const RELEVANCE_COLORS: Record<string, string> = {
   high: '#b91c1c',
@@ -41,35 +42,21 @@ function groupDots(dots: DotDTO[]): DotGroup[] {
 // ---------------------------------------------------------------------------
 
 function makeDotIcon({
-  color,
-  size,
-  count,
-  hasNew,
-  isActive,
+  color, size, count, hasNew, isActive,
 }: {
-  color: string;
-  size: number;
-  count: number;
-  hasNew: boolean;
-  isActive: boolean;
+  color: string; size: number; count: number; hasNew: boolean; isActive: boolean;
 }): L.DivIcon {
-  const borderColor = '#ffffff';
   const borderWidth = isActive ? 3 : 2;
-
-  const countBadge =
-    count > 1
-      ? `<div style="position:absolute;top:-8px;right:-8px;background:#1f2937;color:#fff;font-size:9px;font-weight:700;font-family:'Inter',sans-serif;border-radius:999px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.5;border:1.5px solid #fff;pointer-events:none;">${count}</div>`
-      : '';
-
-  // Amber ring around the dot when any event is "new"
+  const countBadge = count > 1
+    ? `<div style="position:absolute;top:-8px;right:-8px;background:#1f2937;color:#fff;font-size:9px;font-weight:700;font-family:'Inter',sans-serif;border-radius:999px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.5;border:1.5px solid #fff;pointer-events:none;">${count}</div>`
+    : '';
   const newRing = hasNew && !isActive
     ? `<div style="position:absolute;inset:-5px;border-radius:50%;border:2.5px solid #fbbf24;pointer-events:none;"></div>`
     : '';
-
   return L.divIcon({
     html: `<div style="position:relative;width:${size}px;height:${size}px;">
       ${newRing}
-      <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${borderWidth}px solid ${borderColor};box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,0.45);"></div>
+      <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${borderWidth}px solid #ffffff;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,0.45);"></div>
       ${countBadge}
     </div>`,
     className: '',
@@ -80,7 +67,7 @@ function makeDotIcon({
 }
 
 // ---------------------------------------------------------------------------
-// Single-dot popup
+// DotPopup (used both inside Leaflet Popup and inside detail overlay)
 // ---------------------------------------------------------------------------
 
 function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
@@ -93,7 +80,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
     const newHide = !report.user_state.hide;
     optimisticHide(dot.report_id, newHide);
     try { await hideReport(dot.report_id, username, newHide); }
-    catch (e) { console.error('Failed to hide from dot:', e); }
+    catch (e) { console.error('Failed to hide:', e); }
   };
 
   const handleFlag = async () => {
@@ -101,7 +88,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
     const newFlag = !report.user_state.flag;
     optimisticFlag(dot.author, newFlag);
     try { await flagReport(dot.report_id, username, newFlag); }
-    catch (e) { console.error('Failed to flag from dot:', e); }
+    catch (e) { console.error('Failed to flag:', e); }
   };
 
   const btn: React.CSSProperties = {
@@ -153,36 +140,18 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
 }
 
 // ---------------------------------------------------------------------------
-// Multi-dot popup
+// Multi-dot aggregate popup (list only — no embedded detail view)
 // ---------------------------------------------------------------------------
 
-interface MultiDotPopupHandle { reset: () => void; }
-
-const MultiDotPopup = React.forwardRef<MultiDotPopupHandle, {
+function MultiDotPopup({ dots, onSelect }: {
   dots: DotDTO[];
   onSelect: (dot: DotDTO) => void;
-  onBack: () => void;
-}>(function MultiDotPopupInner({ dots, onSelect, onBack }, ref) {
-  const [selectedDot, setSelectedDot] = React.useState<DotDTO | null>(null);
+}): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  React.useImperativeHandle(ref, () => ({
-    reset: () => setSelectedDot(null),
-  }));
 
   useEffect(() => {
     if (containerRef.current) L.DomEvent.disableClickPropagation(containerRef.current);
   }, []);
-
-  const handleRowClick = (dot: DotDTO) => {
-    setSelectedDot(dot);
-    onSelect(dot);
-  };
-
-  const handleBack = () => {
-    setSelectedDot(null);
-    onBack();
-  };
 
   const rowStyle: React.CSSProperties = {
     cursor: 'pointer', borderRadius: 4, padding: '4px 6px',
@@ -191,66 +160,235 @@ const MultiDotPopup = React.forwardRef<MultiDotPopupHandle, {
 
   return (
     <div ref={containerRef} style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {selectedDot ? (
-        <div style={{ maxWidth: 280 }}>
-          <button
-            onClick={handleBack}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 3, width: '100%',
-              fontSize: 10, color: '#6b7280', background: 'none', border: 'none',
-              padding: '0 0 6px', marginBottom: 6, cursor: 'pointer',
-              borderBottom: '1px solid #e5e7eb',
-            }}
-          >
-            ← {dots.length} Ereignisse an diesem Ort
-          </button>
-          <DotPopup dot={selectedDot} />
-        </div>
-      ) : (
-        <div style={{ maxWidth: 300 }}>
-          <p style={{
-            fontSize: 11, fontWeight: 700, color: '#374151',
-            marginBottom: 8, borderBottom: '1px solid #e5e7eb', paddingBottom: 4,
-          }}>
-            {dots.length} Ereignisse an diesem Ort
-          </p>
-          <div style={{ maxHeight: 300, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {dots.map((dot) => (
-              <div
-                key={dot.report_id}
-                style={rowStyle}
-                onClick={() => handleRowClick(dot)}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = '#f9fafb'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ''; }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginBottom: 2 }}>
-                  {dot.new && (
-                    <span style={{
-                      background: '#ef4444', color: '#fff', fontSize: 8, fontWeight: 700,
-                      padding: '1px 4px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0,
-                    }}>
-                      NEU
-                    </span>
-                  )}
+      <div style={{ maxWidth: 300 }}>
+        <p style={{
+          fontSize: 11, fontWeight: 700, color: '#374151',
+          marginBottom: 8, borderBottom: '1px solid #e5e7eb', paddingBottom: 4,
+        }}>
+          {dots.length} Ereignisse an diesem Ort
+        </p>
+        <div style={{ maxHeight: 300, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {dots.map((dot) => (
+            <div
+              key={dot.report_id}
+              style={rowStyle}
+              onClick={() => onSelect(dot)}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = '#f9fafb'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ''; }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginBottom: 2 }}>
+                {dot.new && (
                   <span style={{
-                    width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 2,
-                    background: RELEVANCE_COLORS[dot.relevance] ?? '#6b7280',
-                    border: '1px solid rgba(0,0,0,0.15)',
-                    display: 'inline-block',
-                  }} />
-                  <p style={{ fontSize: 11, color: '#1f2937', lineHeight: 1.35, margin: 0 }}>
-                    {dot.text.slice(0, 80)}{dot.text.length > 80 ? '…' : ''}
-                  </p>
-                </div>
-                <span style={{ fontSize: 10, color: '#6b7280', paddingLeft: 13 }}>
-                  {dot.author ? `@${dot.author} · ` : ''}{dot.platform} · {dot.event_type} · {dot.timestamp}
-                </span>
+                    background: '#ef4444', color: '#fff', fontSize: 8, fontWeight: 700,
+                    padding: '1px 4px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0,
+                  }}>
+                    NEU
+                  </span>
+                )}
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                  background: RELEVANCE_COLORS[dot.relevance] ?? '#6b7280',
+                  border: '1px solid rgba(0,0,0,0.15)', display: 'inline-block',
+                }} />
+                <p style={{ fontSize: 11, color: '#1f2937', lineHeight: 1.35, margin: 0 }}>
+                  {dot.text.slice(0, 80)}{dot.text.length > 80 ? '…' : ''}
+                </p>
               </div>
-            ))}
-          </div>
+              <span style={{ fontSize: 10, color: '#6b7280', paddingLeft: 13 }}>
+                {dot.author ? `@${dot.author} · ` : ''}{dot.platform} · {dot.event_type} · {dot.timestamp}
+              </span>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Detail overlay — React portal, completely outside Leaflet popup system
+// ---------------------------------------------------------------------------
+
+function DetailOverlay({
+  reportId, pos, onClose, onBack,
+}: {
+  reportId: number;
+  pos: { x: number; y: number };
+  onClose: () => void;
+  onBack: () => void;
+}): React.ReactElement | null {
+  // Always read the latest dot from the store so we reflect optimistic updates.
+  const { dots } = useReportStore();
+  const dot = dots.find((d) => d.report_id === reportId);
+  if (!dot) return null;
+
+  const headerBtn: React.CSSProperties = {
+    background: 'none', border: 'none', cursor: 'pointer',
+    color: '#6b7280', fontSize: 11, lineHeight: 1, padding: '0',
+    fontFamily: "'Inter', system-ui, sans-serif",
+  };
+
+  return ReactDOM.createPortal(
+    <div
+      style={{
+        position: 'fixed',
+        left: pos.x,
+        top: pos.y - 18,
+        transform: 'translateX(-50%) translateY(-100%)',
+        background: '#fff',
+        borderRadius: 8,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+        padding: '8px 12px 12px',
+        zIndex: 1000,
+        minWidth: 220,
+        maxWidth: 280,
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, borderBottom: '1px solid #f3f4f6', paddingBottom: 6 }}>
+        <button onClick={onBack} style={headerBtn} title="Back to list">
+          ← Zurück zur Liste
+        </button>
+        <button onClick={onClose} style={{ ...headerBtn, fontSize: 14, color: '#9ca3af' }} title="Close">
+          ✕
+        </button>
+      </div>
+      <DotPopup dot={dot} />
+    </div>,
+    document.body,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// GroupMarker — stable event handlers via mutable-ref pattern
+// ---------------------------------------------------------------------------
+
+interface GroupMarkerProps {
+  group: DotGroup;
+  activeReportId: number | null;
+  username: string | null;
+  map: L.Map;
+  didSelectRef: React.MutableRefObject<boolean>;
+  mapClickHandlerRef: React.MutableRefObject<(() => void) | null>;
+  reports: ReportDTO[];
+  setActiveReportId: (id: number | null) => void;
+  optimisticAcknowledge: (id: number) => void;
+  openDetail: (reportId: number, lat: number, lon: number, reopenPopup: () => void) => void;
+  closeDetail: () => void;
+}
+
+const GroupMarker = React.memo(function GroupMarker({
+  group, activeReportId, username, map,
+  didSelectRef, mapClickHandlerRef,
+  reports, setActiveReportId, optimisticAcknowledge,
+  openDetail, closeDetail,
+}: GroupMarkerProps) {
+  const key = `${group.lat.toFixed(5)},${group.lon.toFixed(5)}`;
+  const isGroupActive = group.dots.some((d) => d.report_id === activeReportId);
+  const hasNew = group.dots.some((d) => d.new);
+  const isMulti = group.dots.length > 1;
+
+  const primaryDot = useMemo(
+    () => [...group.dots].sort(
+      (a, b) => (RELEVANCE_ORDER[a.relevance] ?? 3) - (RELEVANCE_ORDER[b.relevance] ?? 3),
+    )[0],
+    [group.dots],
+  );
+
+  const color = isGroupActive ? '#3b82f6' : (RELEVANCE_COLORS[primaryDot.relevance] ?? '#6b7280');
+  const size = isGroupActive ? 26 : isMulti ? 24 : 20;
+
+  const icon = useMemo(
+    () => makeDotIcon({ color, size, count: group.dots.length, hasNew, isActive: isGroupActive }),
+    [color, size, group.dots.length, hasNew, isGroupActive],
+  );
+
+  // Ref to the Leaflet Marker instance so we can reopen the popup programmatically.
+  const markerRef = useRef<L.Marker>(null);
+
+  // Mutable ref so stable closures always see latest values.
+  const s = useRef({
+    isMulti, group, activeReportId, username, reports,
+    setActiveReportId, optimisticAcknowledge,
+    didSelectRef, mapClickHandlerRef, map,
+    openDetail, closeDetail, markerRef,
+  });
+  s.current = {
+    isMulti, group, activeReportId, username, reports,
+    setActiveReportId, optimisticAcknowledge,
+    didSelectRef, mapClickHandlerRef, map,
+    openDetail, closeDetail, markerRef,
+  };
+
+  // Identity-stable event handlers — useEventHandlers never removes/re-adds them.
+  const eventHandlers = useMemo(() => ({
+    click: () => {
+      const { isMulti, group, activeReportId, username, reports, setActiveReportId, optimisticAcknowledge } = s.current;
+      if (!isMulti) {
+        const dot = group.dots[0];
+        const newId = dot.report_id === activeReportId ? null : dot.report_id;
+        setActiveReportId(newId);
+        if (newId !== null && username) {
+          const report = reports.find((r) => r.id === newId);
+          if (report?.user_state.new) {
+            optimisticAcknowledge(newId);
+            acknowledgeReport(newId, username).catch(() => {});
+          }
+        }
+      }
+    },
+    popupopen: () => {
+      const { isMulti, didSelectRef, mapClickHandlerRef, map, closeDetail } = s.current;
+      if (isMulti) {
+        closeDetail(); // close any open detail overlay
+        didSelectRef.current = false;
+        const handler = () => map.closePopup();
+        mapClickHandlerRef.current = handler;
+        setTimeout(() => {
+          if (s.current.mapClickHandlerRef.current === handler) {
+            s.current.map.on('click', handler);
+          }
+        }, 0);
+      }
+    },
+    popupclose: () => {
+      const { mapClickHandlerRef, didSelectRef, setActiveReportId, map } = s.current;
+      if (mapClickHandlerRef.current) {
+        map.off('click', mapClickHandlerRef.current);
+        mapClickHandlerRef.current = null;
+      }
+      if (!didSelectRef.current) setActiveReportId(null);
+      didSelectRef.current = false;
+    },
+  }), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Stable onSelect: closes the Leaflet popup FIRST, then triggers store updates.
+  const onSelect = useCallback((dot: DotDTO) => {
+    const { didSelectRef, map, setActiveReportId, username, optimisticAcknowledge, group, openDetail, markerRef } = s.current;
+    didSelectRef.current = true;
+    map.closePopup(); // close aggregate popup before any re-renders
+    setActiveReportId(dot.report_id);
+    if (dot.new && username) {
+      optimisticAcknowledge(dot.report_id);
+      acknowledgeReport(dot.report_id, username).catch(() => {});
+    }
+    // Pass a reopen function so the detail overlay's back button can reopen this popup.
+    const reopenPopup = () => {
+      s.current.didSelectRef.current = false;
+      s.current.markerRef.current?.openPopup();
+    };
+    openDetail(dot.report_id, group.lat, group.lon, reopenPopup);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <Marker ref={markerRef} position={[group.lat, group.lon]} icon={icon} eventHandlers={eventHandlers}>
+      <Popup closeOnClick={isMulti ? false : undefined}>
+        {isMulti
+          ? <MultiDotPopup dots={group.dots} onSelect={onSelect} />
+          : <DotPopup dot={group.dots[0]} />}
+      </Popup>
+    </Marker>
   );
 });
 
@@ -259,90 +397,80 @@ const MultiDotPopup = React.forwardRef<MultiDotPopupHandle, {
 // ---------------------------------------------------------------------------
 
 export function ReportDots(): React.ReactElement {
+  const map = useMap();
   const { dots, activeReportId, setActiveReportId, optimisticAcknowledge, reports } = useReportStore();
   const { username } = useUserStore();
 
   const groups = useMemo(() => groupDots(dots), [dots]);
-  // Refs to each MultiDotPopup so popupopen can reset it to the list view.
-  const multiPopupRefs = useRef<Map<string, MultiDotPopupHandle>>(new Map());
-  // True while a row was selected in the current popup session so popupclose
-  // knows not to clear activeReportId.
   const didSelectRef = useRef(false);
+  const mapClickHandlerRef = useRef<(() => void) | null>(null);
+
+  // Detail overlay state — separate from Leaflet popup system entirely.
+  const [detailState, setDetailState] = useState<{
+    reportId: number; lat: number; lon: number; reopenPopup: () => void;
+  } | null>(null);
+  const [detailPos, setDetailPos] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (!detailState) { setDetailPos(null); return; }
+    const update = () => {
+      const pt = map.latLngToContainerPoint(L.latLng(detailState.lat, detailState.lon));
+      const rect = map.getContainer().getBoundingClientRect();
+      setDetailPos({ x: rect.left + pt.x, y: rect.top + pt.y });
+    };
+    update();
+    map.on('move zoom moveend zoomend', update);
+    return () => { map.off('move zoom moveend zoomend', update); };
+  }, [detailState, map]);
+
+  const openDetail = useCallback((reportId: number, lat: number, lon: number, reopenPopup: () => void) => {
+    setDetailState({ reportId, lat, lon, reopenPopup });
+  }, []);
+
+  // Close detail overlay and clear active marker.
+  const closeDetail = useCallback(() => {
+    setDetailState(null);
+    setActiveReportId(null);
+  }, [setActiveReportId]);
+
+  // Back: close detail, clear active, reopen aggregate popup.
+  const backToList = useCallback(() => {
+    setDetailState((prev) => {
+      if (prev) prev.reopenPopup();
+      return null;
+    });
+    setActiveReportId(null);
+  }, [setActiveReportId]);
 
   return (
     <>
       {groups.map((group) => {
         const key = `${group.lat.toFixed(5)},${group.lon.toFixed(5)}`;
-        const isGroupActive = group.dots.some((d) => d.report_id === activeReportId);
-        const hasNew = group.dots.some((d) => d.new);
-        const isMulti = group.dots.length > 1;
-
-        // Pick highest-relevance dot to set the group color
-        const primaryDot = [...group.dots].sort(
-          (a, b) => (RELEVANCE_ORDER[a.relevance] ?? 3) - (RELEVANCE_ORDER[b.relevance] ?? 3),
-        )[0];
-
-        const color = isGroupActive ? '#3b82f6' : (RELEVANCE_COLORS[primaryDot.relevance] ?? '#6b7280');
-        const size = isGroupActive ? 26 : isMulti ? 24 : 20;
-
-        const icon = makeDotIcon({ color, size, count: group.dots.length, hasNew, isActive: isGroupActive });
-
         return (
-          <Marker
+          <GroupMarker
             key={key}
-            position={[group.lat, group.lon]}
-            icon={icon}
-            eventHandlers={{
-              click: () => {
-                if (!isMulti) {
-                  const dot = group.dots[0];
-                  const newId = dot.report_id === activeReportId ? null : dot.report_id;
-                  setActiveReportId(newId);
-                  if (newId !== null && username) {
-                    const report = reports.find((r) => r.id === newId);
-                    if (report?.user_state.new) {
-                      optimisticAcknowledge(newId);
-                      acknowledgeReport(newId, username).catch(() => {});
-                    }
-                  }
-                }
-              },
-              popupopen: () => {
-                didSelectRef.current = false;
-                multiPopupRefs.current.get(key)?.reset();
-              },
-              popupclose: () => {
-                if (!didSelectRef.current) setActiveReportId(null);
-                didSelectRef.current = false;
-              },
-            }}
-          >
-            <Popup>
-              {isMulti
-                ? <MultiDotPopup
-                    ref={(handle) => {
-                      if (handle) multiPopupRefs.current.set(key, handle);
-                      else multiPopupRefs.current.delete(key);
-                    }}
-                    dots={group.dots}
-                    onSelect={(dot) => {
-                      didSelectRef.current = true;
-                      setActiveReportId(dot.report_id);
-                      if (dot.new && username) {
-                        optimisticAcknowledge(dot.report_id);
-                        acknowledgeReport(dot.report_id, username).catch(() => {});
-                      }
-                    }}
-                    onBack={() => {
-                      didSelectRef.current = false;
-                      setActiveReportId(null);
-                    }}
-                  />
-                : <DotPopup dot={group.dots[0]} />}
-            </Popup>
-          </Marker>
+            group={group}
+            activeReportId={activeReportId}
+            username={username}
+            map={map}
+            didSelectRef={didSelectRef}
+            mapClickHandlerRef={mapClickHandlerRef}
+            reports={reports}
+            setActiveReportId={setActiveReportId}
+            optimisticAcknowledge={optimisticAcknowledge}
+            openDetail={openDetail}
+            closeDetail={closeDetail}
+          />
         );
       })}
+      {detailState && detailPos && (
+        <DetailOverlay
+          reportId={detailState.reportId}
+          pos={detailPos}
+          onClose={closeDetail}
+          onBack={backToList}
+        />
+      )}
     </>
   );
 }
