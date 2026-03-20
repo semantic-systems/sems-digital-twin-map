@@ -13,7 +13,7 @@ import { PickModeOverlay } from './components/map/PickModeOverlay';
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, locFilter, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged } =
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, locFilter, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged } =
     useFilterStore();
   const { setReports, setDots, setPendingNewCount, reloadTrigger } = useReportStore();
 
@@ -68,16 +68,8 @@ function AppInner(): React.ReactElement {
   // Load layers list once
   useEffect(() => {
     fetchLayers()
-      .then((res) => {
-        // Just ensure we have layer IDs available for the filter store
-        // Default: no layers active initially
-        if (res.layers.length > 0 && useFilterStore.getState().activeLayers.length === 0) {
-          // Leave activeLayers empty by default — user must opt in
-        }
-      })
-      .catch(() => {
-        // Layers endpoint may not exist
-      });
+      .then((res) => { if (res.layers.length > 0) setAvailableLayers(res.layers); })
+      .catch(() => {});
   }, []);
 
   return (

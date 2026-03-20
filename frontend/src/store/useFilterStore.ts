@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { LayerDTO } from '../types';
 
 export const ALL_EVENT_TYPES_LIST = [
   'Irrelevant',
@@ -30,6 +31,7 @@ interface FilterStore {
   showUnflagged: boolean;
   eventTypes: string[];
   activeLayers: number[];
+  availableLayers: LayerDTO[];
   autoUpdate: boolean;
 
   setLocFilter: (v: FilterStore['locFilter']) => void;
@@ -45,6 +47,7 @@ interface FilterStore {
   soloEventType: (type: string) => void;
   setActiveLayers: (ids: number[]) => void;
   toggleLayer: (id: number) => void;
+  setAvailableLayers: (layers: LayerDTO[]) => void;
   setAutoUpdate: (v: boolean) => void;
 }
 
@@ -62,6 +65,7 @@ export const useFilterStore = create<FilterStore>()(
       showUnflagged: true,
       eventTypes: ALL_EVENT_TYPES_LIST.filter((e) => e !== 'Irrelevant'),
       activeLayers: [],
+      availableLayers: [],
       autoUpdate: false,
 
       setLocFilter: (locFilter) => set({ locFilter }),
@@ -89,6 +93,7 @@ export const useFilterStore = create<FilterStore>()(
               : [type],
         })),
       setActiveLayers: (ids) => set({ activeLayers: ids }),
+      setAvailableLayers: (availableLayers) => set({ availableLayers }),
       toggleLayer: (id) => {
         const cur = get().activeLayers;
         set({

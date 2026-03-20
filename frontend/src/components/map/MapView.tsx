@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
 import {
   MapContainer,
   TileLayer,
@@ -92,13 +93,28 @@ function FitBoundsHandler(): null {
 }
 
 // ---- LayerRenderer ----
+const LAYER_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
+
 interface LayerData {
   id: number;
   geojson: object | null;
 }
 
+function buildPopupHtml(props: Record<string, unknown> | null, layerName: string): string {
+  if (!props) return `<div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;">${layerName}</div>`;
+  const entries = Object.entries(props).filter(([k]) => !k.startsWith('_'));
+  if (entries.length === 0) return `<div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;">${layerName}</div>`;
+  const rows = entries
+    .map(([k, v]) => `<tr><td style="padding:2px 8px 2px 0;color:#6b7280;white-space:nowrap;">${k}</td><td style="padding:2px 0;color:#111827;">${v}</td></tr>`)
+    .join('');
+  return `<div style="font-family:'Inter',sans-serif;font-size:12px;min-width:160px;">
+    <div style="font-weight:600;margin-bottom:6px;">${layerName}</div>
+    <table style="border-collapse:collapse;width:100%">${rows}</table>
+  </div>`;
+}
+
 function LayerRenderer(): React.ReactElement {
-  const { activeLayers } = useFilterStore();
+  const { activeLayers, availableLayers } = useFilterStore();
   const [layerData, setLayerData] = useState<LayerData[]>([]);
   const loadedRef = useRef<Set<number>>(new Set());
 
@@ -124,16 +140,28 @@ function LayerRenderer(): React.ReactElement {
 
   return (
     <>
-      {visibleData.map((d) => (
-        <GeoJSON
-          key={d.id}
-          data={d.geojson as GeoJSON.GeoJsonObject}
-          style={(feature) => {
-            if (feature?.properties?._style) return feature.properties._style;
-            return { color: '#6366f1', weight: 2, fillOpacity: 0.15 };
-          }}
-        />
-      ))}
+      {visibleData.map((d) => {
+        const colorIdx = availableLayers.findIndex((l) => l.id === d.id);
+        const color = LAYER_COLORS[colorIdx % LAYER_COLORS.length] ?? '#6366f1';
+        const layerName = availableLayers.find((l) => l.id === d.id)?.name ?? `Layer ${d.id}`;
+        return (
+          <GeoJSON
+            key={d.id}
+            data={d.geojson as GeoJSON.GeoJsonObject}
+            style={(feature) => {
+              if (feature?.properties?._style) return feature.properties._style;
+              return { color, weight: 2, fillColor: color, fillOpacity: 0.15 };
+            }}
+            pointToLayer={(_feature, latlng) =>
+              L.circleMarker(latlng, { radius: 7, color, fillColor: color, fillOpacity: 0.8, weight: 2 })
+            }
+            onEachFeature={(feature, leafletLayer) => {
+              const html = buildPopupHtml(feature.properties as Record<string, unknown> | null, layerName);
+              leafletLayer.bindPopup(html, { maxWidth: 320 });
+            }}
+          />
+        );
+      })}
     </>
   );
 }

@@ -4,6 +4,8 @@ import { useFilterStore, ALL_RELEVANCES_LIST } from '../../store/useFilterStore'
 import { useReportStore } from '../../store/useReportStore';
 import { EventTypeChips } from './EventTypeChips';
 
+const LAYER_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
+
 const RELEVANCE_COLORS: Record<string, string> = {
   high: '#ef4444',
   medium: '#f97316',
@@ -53,6 +55,9 @@ export function FilterBar(): React.ReactElement {
     setShowFlagged,
     showUnflagged,
     setShowUnflagged,
+    activeLayers,
+    availableLayers,
+    toggleLayer,
   } = useFilterStore();
 
   const { eventTypeTotals, reports } = useReportStore();
@@ -216,6 +221,30 @@ export function FilterBar(): React.ReactElement {
         <div style={{ marginLeft: 6, flex: 1, overflow: 'hidden' }}>
           <EventTypeChips counts={eventTypeTotals} />
         </div>
+
+        {availableLayers.length > 0 && (
+          <>
+            <Divider />
+            <SectionLabel>{t('layers')}</SectionLabel>
+            <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center' }}>
+              {availableLayers.map((layer, idx) => {
+                const color = LAYER_COLORS[idx % LAYER_COLORS.length];
+                return (
+                  <label key={layer.id} style={checkLabel}>
+                    <input
+                      type="checkbox"
+                      checked={activeLayers.includes(layer.id)}
+                      onChange={() => toggleLayer(layer.id)}
+                      style={{ width: 12, height: 12, accentColor: color }}
+                    />
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0, display: 'inline-block' }} />
+                    {layer.name}
+                  </label>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
