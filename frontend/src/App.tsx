@@ -41,7 +41,7 @@ function AppInner(): React.ReactElement {
         fetchDots(params),
       ]);
 
-      setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals);
+      setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals);
       setDots(dotsRes.dots);
       setPendingNewCount(reportsRes.pending_count ?? 0);
 

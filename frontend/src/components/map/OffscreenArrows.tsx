@@ -8,15 +8,9 @@ interface Arrow {
   key: string;
   x: number;
   y: number;
-  direction: string; // 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW'
+  bearing: number;
   lat: number;
   lon: number;
-}
-
-function getDirection(bearingDeg: number): string {
-  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  const idx = Math.round(((bearingDeg % 360) + 360) / 45) % 8;
-  return dirs[idx];
 }
 
 function computeBearing(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
@@ -37,7 +31,6 @@ function clampToViewport(
   minY: number,
   maxY: number,
 ): { x: number; y: number } {
-  // Ray from map center toward target; clamp to map area edge
   const rad = (bearing * Math.PI) / 180;
   const dx = Math.sin(rad);
   const dy = -Math.cos(rad);
@@ -50,17 +43,6 @@ function clampToViewport(
 
   return { x: cx + dx * t, y: cy + dy * t };
 }
-
-const DIRECTION_STYLES: Record<string, React.CSSProperties> = {
-  N: { borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '14px solid #f97316', transform: 'translate(-50%, -100%)' },
-  NE: { borderLeft: '14px solid transparent', borderBottom: '14px solid #f97316', transform: 'translate(-20%, -80%)' },
-  E: { borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '14px solid #f97316', transform: 'translate(0, -50%)' },
-  SE: { borderLeft: '14px solid transparent', borderTop: '14px solid #f97316', transform: 'translate(-20%, -20%)' },
-  S: { borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '14px solid #f97316', transform: 'translate(-50%, 0)' },
-  SW: { borderRight: '14px solid transparent', borderTop: '14px solid #f97316', transform: 'translate(-80%, -20%)' },
-  W: { borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderRight: '14px solid #f97316', transform: 'translate(-100%, -50%)' },
-  NW: { borderRight: '14px solid transparent', borderBottom: '14px solid #f97316', transform: 'translate(-80%, -80%)' },
-};
 
 function ArrowsInner(): React.ReactElement {
   const map = useMap();
@@ -85,8 +67,6 @@ function ArrowsInner(): React.ReactElement {
         : report.locations;
 
     const geoLocs = effectiveLocs.filter((l) => l.osm_id && l.lat && l.lon);
-
-    // Also check dots
     const activeDots = dots.filter((d) => d.report_id === activeReportId);
 
     const allPoints: { lat: number; lon: number; key: string }[] = [
@@ -100,21 +80,19 @@ function ArrowsInner(): React.ReactElement {
     }
 
     const bounds = map.getBounds();
-    const mapSize = map.getSize();
     const center = map.getCenter();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const sidebarWidth = 380;
-    const filterBarHeight = 48;
-    const margin = 20;
+    const filterBarHeight = 90;
+    const arrowSize = 36;
+    const margin = arrowSize / 2 + 4;
 
-    // Map area bounds in fixed/window coords
     const mapMinX = sidebarWidth + margin;
     const mapMaxX = vw - margin;
     const mapMinY = filterBarHeight + margin;
     const mapMaxY = vh - margin;
 
-    // Center of the map area
     const cx = (mapMinX + mapMaxX) / 2;
     const cy = (mapMinY + mapMaxY) / 2;
 
@@ -125,11 +103,9 @@ function ArrowsInner(): React.ReactElement {
       if (bounds.contains(ll)) continue;
 
       const bearing = computeBearing(center.lat, center.lng, pt.lat, pt.lon);
-      const direction = getDirection(bearing);
-
       const { x, y } = clampToViewport(cx, cy, bearing, mapMinX, mapMaxX, mapMinY, mapMaxY);
 
-      newArrows.push({ key: pt.key, x, y, direction, lat: pt.lat, lon: pt.lon });
+      newArrows.push({ key: pt.key, x, y, bearing, lat: pt.lat, lon: pt.lon });
     }
 
     setArrows(newArrows);
@@ -143,8 +119,9 @@ function ArrowsInner(): React.ReactElement {
     };
   }, [activeReportId, reports, dots]);
 
-  const handleArrowClick = (arrow: Arrow) => {
-    map.setView([arrow.lat, arrow.lon], Math.max(map.getZoom(), 14));
+  const handleArrowClick = (e: React.MouseEvent, arrow: Arrow) => {
+    e.stopPropagation();
+    map.setView([arrow.lat, arrow.lon], Math.max(map.getZoom(), 14), { animate: false });
   };
 
   return (
@@ -152,20 +129,39 @@ function ArrowsInner(): React.ReactElement {
       {arrows.map((arrow) => (
         <div
           key={arrow.key}
-          onClick={() => handleArrowClick(arrow)}
+          onClick={(e) => handleArrowClick(e, arrow)}
           title="Click to navigate"
           style={{
             position: 'fixed',
             left: arrow.x,
             top: arrow.y,
-            width: 0,
-            height: 0,
+            transform: 'translate(-50%, -50%)',
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            background: '#f97316',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.35)',
             pointerEvents: 'auto',
             cursor: 'pointer',
             zIndex: 490,
-            ...DIRECTION_STYLES[arrow.direction],
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-        />
+        >
+          {/* Triangle pointing up, rotated to bearing */}
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderLeft: '7px solid transparent',
+              borderRight: '7px solid transparent',
+              borderBottom: '13px solid white',
+              transform: `rotate(${arrow.bearing}deg)`,
+              flexShrink: 0,
+            }}
+          />
+        </div>
       ))}
     </>
   );

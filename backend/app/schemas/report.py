@@ -49,6 +49,7 @@ class ReportsResponse(BaseModel):
     pending_count: int
     loaded_at: str  # ISO 8601
     event_type_totals: dict[str, int] = {}
+    relevance_totals: dict[str, int] = {}
     all_platforms: list[str] = []
     platform_counts: dict[str, int] = {}
     platform_added_counts: dict[str, int] = {}

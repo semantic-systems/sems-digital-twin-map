@@ -58,14 +58,8 @@ export function FilterBar(): React.ReactElement {
     toggleLayer,
   } = useFilterStore();
 
-  const { eventTypeTotals, reports } = useReportStore();
+  const { eventTypeTotals, relevanceTotals } = useReportStore();
   const { platformCounts } = useFilterStore();
-
-  const relevanceCounts = React.useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const r of reports) counts[r.relevance] = (counts[r.relevance] ?? 0) + 1;
-    return counts;
-  }, [reports]);
 
   const locOptions: { value: FilterStore_LocFilter; label: string }[] = [
     { value: 'all', label: t('loc_all') },
@@ -166,8 +160,8 @@ export function FilterBar(): React.ReactElement {
                 style={{ accentColor: RELEVANCE_COLORS[rel], width: 12, height: 12 }}
               />
               {t(`rel_${rel}`)}
-              {(relevanceCounts[rel] ?? 0) > 0 && (
-                <span style={{ color: '#9ca3af', fontWeight: 400 }}>({relevanceCounts[rel]})</span>
+              {(relevanceTotals[rel] ?? 0) > 0 && (
+                <span style={{ color: '#9ca3af', fontWeight: 400 }}>({relevanceTotals[rel]})</span>
               )}
             </label>
           ))}

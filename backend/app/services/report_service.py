@@ -445,14 +445,17 @@ def get_reports(
         eff_relevance=eff_relevance,
         demo_mode=demo_mode,
     )
-    all_base_rows = all_base_q.with_entities(Report.event_type, Report.platform).all()
+    all_base_rows = all_base_q.with_entities(Report.event_type, Report.platform, Report.relevance).all()
 
     event_type_totals: dict[str, int] = {}
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
-    for (et, plat) in all_base_rows:
+    relevance_totals: dict[str, int] = {}
+    for (et, plat, rel) in all_base_rows:
         event_type_totals[et] = event_type_totals.get(et, 0) + 1
         if plat:
             platform_counts[plat] = platform_counts.get(plat, 0) + 1
+        if rel:
+            relevance_totals[rel] = relevance_totals.get(rel, 0) + 1
     # Always expose the full known platform list, plus any unexpected ones from DB.
     all_platforms = sorted(platform_counts.keys())
 
@@ -486,7 +489,7 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals
 
     # Build the main query (only admitted reports)
     q = build_report_query(
@@ -554,7 +557,7 @@ def get_reports(
     pending_count = len(all_matching_ids - added_ids)
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals
 
 
 # ---------------------------------------------------------------------------

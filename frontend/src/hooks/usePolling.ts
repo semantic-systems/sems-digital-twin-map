@@ -46,7 +46,7 @@ export function usePolling() {
           relevances: params.relevances,
         });
         const reloaded = await fetchReports(params);
-        setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals);
+        setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals);
         if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
         if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
         if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
@@ -54,7 +54,7 @@ export function usePolling() {
         setDots(dotsRes.dots);
         setPendingNewCount(0);
       } else {
-        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals);
+        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals);
         setPendingNewCount(pendingCount);
       }
     } catch {

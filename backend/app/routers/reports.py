@@ -48,7 +48,7 @@ def get_reports_endpoint(
 ) -> ReportsResponse:
     from ..config import settings
 
-    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts = svc.get_reports(
+    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter,
@@ -66,6 +66,7 @@ def get_reports_endpoint(
         pending_count=pending_count,
         loaded_at=loaded_at,
         event_type_totals=event_type_totals,
+        relevance_totals=relevance_totals,
         all_platforms=all_platforms,
         platform_counts=platform_counts,
         platform_added_counts=platform_added_counts,
