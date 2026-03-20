@@ -70,5 +70,18 @@
   "cancel": "Abbrechen",
   "or": "oder",
   "search_osm_ph": "OpenStreetMap durchsuchen…",
-  "no_results": "Keine Ergebnisse gefunden."
+  "no_results": "Keine Ergebnisse gefunden.",
+  "layer_Schools": "Schulen",
+  "layer_Nursing Homes": "Pflegeheime",
+  "layer_Hospitals": "Krankenhäuser",
+  "layer_Emergency Shelters": "Notunterkünfte",
+  "layer_Fire Departments": "Feuerwehren",
+  "layer_Main Dike": "Hauptdeich",
+  "layer_Water Rescue Points": "Wasserrettungspunkte",
+  "layer_Flooding Areas": "Überschwemmungsgebiete",
+  "layer_Train Stations": "Bahnhöfe",
+  "layer_Bus Stops": "Bushaltestellen",
+  "layer_Ferry Stops": "Fährhaltestellen",
+  "layer_Events": "Ereignisse",
+  "layer_Predictions": "Vorhersagen"
 }

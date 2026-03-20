@@ -70,5 +70,18 @@
   "cancel": "Cancel",
   "or": "or",
   "search_osm_ph": "Search OpenStreetMap…",
-  "no_results": "No results found."
+  "no_results": "No results found.",
+  "layer_Schools": "Schools",
+  "layer_Nursing Homes": "Nursing Homes",
+  "layer_Hospitals": "Hospitals",
+  "layer_Emergency Shelters": "Emergency Shelters",
+  "layer_Fire Departments": "Fire Departments",
+  "layer_Main Dike": "Main Dike",
+  "layer_Water Rescue Points": "Water Rescue Points",
+  "layer_Flooding Areas": "Flooding Areas",
+  "layer_Train Stations": "Train Stations",
+  "layer_Bus Stops": "Bus Stops",
+  "layer_Ferry Stops": "Ferry Stops",
+  "layer_Events": "Events",
+  "layer_Predictions": "Predictions"
 }

@@ -9,7 +9,8 @@ import {
   useMapEvents,
 } from 'react-leaflet';
 import { useMapStore } from '../../store/useMapStore';
-import { useFilterStore } from '../../store/useFilterStore';
+import { useFilterStore, getLayerColor } from '../../store/useFilterStore';
+import { t } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import { fetchLayerGeoJSON } from '../../api/layers';
@@ -93,8 +94,6 @@ function FitBoundsHandler(): null {
 }
 
 // ---- LayerRenderer ----
-const LAYER_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
-
 interface LayerData {
   id: number;
   geojson: object | null;
@@ -136,17 +135,19 @@ function LayerRenderer(): React.ReactElement {
     );
   }, [activeLayers]);
 
-  const visibleData = layerData.filter((d) => activeLayers.includes(d.id) && d.geojson !== null);
+  const visibleData = layerData.filter(
+    (d) => activeLayers.includes(d.id) && d.geojson !== null && availableLayers.some((l) => l.id === d.id),
+  );
 
   return (
     <>
       {visibleData.map((d) => {
-        const colorIdx = availableLayers.findIndex((l) => l.id === d.id);
-        const color = LAYER_COLORS[colorIdx % LAYER_COLORS.length] ?? '#6366f1';
-        const layerName = availableLayers.find((l) => l.id === d.id)?.name ?? `Layer ${d.id}`;
+        const color = getLayerColor(d.id, availableLayers);
+        const rawName = availableLayers.find((l) => l.id === d.id)?.name ?? `Layer ${d.id}`;
+        const layerName = t('layer_' + rawName);
         return (
           <GeoJSON
-            key={d.id}
+            key={`${d.id}-${color}`}
             data={d.geojson as GeoJSON.GeoJsonObject}
             style={(feature) => {
               if (feature?.properties?._style) return feature.properties._style;

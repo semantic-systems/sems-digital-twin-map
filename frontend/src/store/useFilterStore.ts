@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { LayerDTO } from '../types';
+import { LAYER_COLORS } from '../constants';
 
 export const ALL_EVENT_TYPES_LIST = [
   'Irrelevant',
@@ -18,6 +19,13 @@ export const ALL_EVENT_TYPES_LIST = [
 ];
 
 export const ALL_RELEVANCES_LIST = ['high', 'medium', 'low', 'none'];
+
+/** Derive a stable color for a layer based on its position in availableLayers. */
+export function getLayerColor(layerId: number, availableLayers: LayerDTO[]): string {
+  const idx = availableLayers.findIndex((l) => l.id === layerId);
+  if (idx < 0) return '#6366f1';
+  return LAYER_COLORS[idx % LAYER_COLORS.length];
+}
 
 interface FilterStore {
   locFilter: 'all' | 'localized' | 'pending' | 'unlocalized';

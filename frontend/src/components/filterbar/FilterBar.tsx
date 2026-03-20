@@ -1,10 +1,8 @@
 import React from 'react';
 import { t } from '../../i18n';
-import { useFilterStore, ALL_RELEVANCES_LIST } from '../../store/useFilterStore';
+import { useFilterStore, ALL_RELEVANCES_LIST, getLayerColor } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
 import { EventTypeChips } from './EventTypeChips';
-
-const LAYER_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
 
 const RELEVANCE_COLORS: Record<string, string> = {
   high: '#ef4444',
@@ -227,8 +225,8 @@ export function FilterBar(): React.ReactElement {
             <Divider />
             <SectionLabel>{t('layers')}</SectionLabel>
             <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center' }}>
-              {availableLayers.map((layer, idx) => {
-                const color = LAYER_COLORS[idx % LAYER_COLORS.length];
+              {availableLayers.map((layer) => {
+                const color = getLayerColor(layer.id, availableLayers);
                 return (
                   <label key={layer.id} style={checkLabel}>
                     <input
@@ -238,7 +236,7 @@ export function FilterBar(): React.ReactElement {
                       style={{ width: 12, height: 12, accentColor: color }}
                     />
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0, display: 'inline-block' }} />
-                    {layer.name}
+                    {t('layer_' + layer.name)}
                   </label>
                 );
               })}
