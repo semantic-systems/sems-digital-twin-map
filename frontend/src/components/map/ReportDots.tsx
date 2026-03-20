@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useEffect, useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Marker, Popup, useMap } from 'react-leaflet';
+import { Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import { useFilterStore } from '../../store/useFilterStore';
@@ -28,14 +28,19 @@ interface DotGroup {
   dots: DotDTO[];
 }
 
-function groupDots(dots: DotDTO[]): DotGroup[] {
-  const map = new Map<string, DotDTO[]>();
+function clusterDots(dots: DotDTO[], leafletMap: L.Map, cellSize = 60): DotGroup[] {
+  const cellMap = new Map<string, DotDTO[]>();
   for (const dot of dots) {
-    const key = `${dot.lat.toFixed(5)},${dot.lon.toFixed(5)}`;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(dot);
+    const px = leafletMap.latLngToContainerPoint([dot.lat, dot.lon]);
+    const key = `${Math.floor(px.x / cellSize)},${Math.floor(px.y / cellSize)}`;
+    if (!cellMap.has(key)) cellMap.set(key, []);
+    cellMap.get(key)!.push(dot);
   }
-  return Array.from(map.values()).map((g) => ({ lat: g[0].lat, lon: g[0].lon, dots: g }));
+  return Array.from(cellMap.values()).map((group) => {
+    const lat = group.reduce((s, d) => s + d.lat, 0) / group.length;
+    const lon = group.reduce((s, d) => s + d.lon, 0) / group.length;
+    return { lat, lon, dots: group };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -403,13 +408,16 @@ export function ReportDots(): React.ReactElement {
   const { username } = useUserStore();
   const { showHidden } = useFilterStore();
 
+  const [zoom, setZoom] = useState(() => map.getZoom());
+  useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
+
   const visibleDots = useMemo(() => {
     if (showHidden) return dots;
     const hiddenIds = new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
     return dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
   }, [dots, showHidden, reports]);
 
-  const groups = useMemo(() => groupDots(visibleDots), [visibleDots]);
+  const groups = useMemo(() => clusterDots(visibleDots, map), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   const didSelectRef = useRef(false);
   const mapClickHandlerRef = useRef<(() => void) | null>(null);
 
