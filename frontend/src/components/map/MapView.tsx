@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
+
+type GeoJSONFeature = { type: string; geometry: { type: string; coordinates: unknown } | null; properties: Record<string, unknown> | null };
 import {
   MapContainer,
   TileLayer,
   ZoomControl,
   GeoJSON,
+  CircleMarker,
+  Popup,
   useMap,
   useMapEvents,
 } from 'react-leaflet';
@@ -145,22 +148,46 @@ function LayerRenderer(): React.ReactElement {
         const color = getLayerColor(d.id, availableLayers);
         const rawName = availableLayers.find((l) => l.id === d.id)?.name ?? `Layer ${d.id}`;
         const layerName = t('layer_' + rawName);
+        const geo = d.geojson as { type: string; features?: GeoJSONFeature[] } & GeoJSONFeature;
+        const features: GeoJSONFeature[] = geo.type === 'FeatureCollection'
+          ? (geo.features ?? [])
+          : [geo as GeoJSONFeature];
+        const pointFeatures = features.filter((f) => f.geometry?.type === 'Point');
+        const otherFeatures = features.filter((f) => f.geometry?.type !== 'Point');
+
         return (
-          <GeoJSON
-            key={`${d.id}-${color}`}
-            data={d.geojson as GeoJSON.GeoJsonObject}
-            style={(feature) => {
-              if (feature?.properties?._style) return feature.properties._style;
-              return { color, weight: 2, fillColor: color, fillOpacity: 0.15 };
-            }}
-            pointToLayer={(_feature, latlng) =>
-              L.circleMarker(latlng, { radius: 7, color, fillColor: color, fillOpacity: 0.8, weight: 2 })
-            }
-            onEachFeature={(feature, leafletLayer) => {
-              const html = buildPopupHtml(feature.properties as Record<string, unknown> | null, layerName);
-              leafletLayer.bindPopup(html, { maxWidth: 320 });
-            }}
-          />
+          <React.Fragment key={d.id}>
+            {/* Non-point features (polygons, lines) */}
+            {otherFeatures.length > 0 && (
+              <GeoJSON
+                key={`${d.id}-poly-${color}`}
+                data={{ type: 'FeatureCollection', features: otherFeatures } as GeoJSON.GeoJsonObject}
+                style={(feature) => {
+                  if (feature?.properties?._style) return feature.properties._style;
+                  return { color, weight: 2, fillColor: color, fillOpacity: 0.15 };
+                }}
+                onEachFeature={(feature, layer) => {
+                  layer.bindPopup(buildPopupHtml(feature.properties as Record<string, unknown> | null, layerName), { maxWidth: 320 });
+                }}
+              />
+            )}
+            {/* Point features as CircleMarker — react-leaflet updates color reactively */}
+            {pointFeatures.map((f, i) => {
+              const [lon, lat] = (f.geometry as { coordinates: number[] }).coordinates;
+              return (
+                <CircleMarker
+                  key={`${d.id}-pt-${i}`}
+                  center={[lat, lon]}
+                  radius={7}
+                  pathOptions={{ color, fillColor: color, fillOpacity: 0.8, weight: 2 }}
+                >
+                  <Popup maxWidth={320}>
+                    <div dangerouslySetInnerHTML={{ __html: buildPopupHtml(f.properties as Record<string, unknown> | null, layerName) }} />
+                  </Popup>
+                </CircleMarker>
+              );
+            })}
+          </React.Fragment>
         );
       })}
     </>
