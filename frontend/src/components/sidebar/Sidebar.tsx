@@ -10,6 +10,7 @@ import { NewPostsBanner } from './NewPostsBanner';
 export function Sidebar(): React.ReactElement {
   const { autoUpdate, setAutoUpdate, setAllPlatforms } = useFilterStore();
   const { reports, setReports, setDots, setPendingNewCount } = useReportStore();
+  const [collapsed, setCollapsed] = useState(false);
 
   const [demoStatus, setDemoStatus] = useState<DemoStatus | null>(null);
   const [resetting, setResetting] = useState(false);
@@ -70,6 +71,49 @@ export function Sidebar(): React.ReactElement {
 
   const showDemo = demoStatus?.demo_mode === true;
 
+  if (collapsed) {
+    return (
+      <div
+        style={{
+          width: 32,
+          flexShrink: 0,
+          background: '#0f1117',
+          borderRight: '1px solid #252836',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: 10,
+          gap: 8,
+          height: '100%',
+          fontFamily: "'Inter', system-ui, sans-serif",
+          transition: 'width 0.2s',
+        }}
+      >
+        <button
+          onClick={() => setCollapsed(false)}
+          title="Sidebar öffnen"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: '#6b7280', fontSize: 16, padding: 2, lineHeight: 1,
+          }}
+        >
+          ›
+        </button>
+        {unseenCount > 0 && (
+          <span
+            style={{
+              background: '#ef4444', color: '#fff', fontSize: 9,
+              fontWeight: 700, padding: '1px 4px', borderRadius: 999,
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          >
+            {unseenCount}
+          </span>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -96,13 +140,18 @@ export function Sidebar(): React.ReactElement {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span
+          <button
+            onClick={() => setCollapsed(true)}
+            title="Sidebar schließen"
             style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: '#f0f2f7',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#4b5563', fontSize: 16, padding: '0 2px 0 0',
+              lineHeight: 1, flexShrink: 0,
             }}
           >
+            ‹
+          </button>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#f0f2f7' }}>
             {t('reports')}
           </span>
           {unseenCount > 0 && (
@@ -120,12 +169,7 @@ export function Sidebar(): React.ReactElement {
               {unseenCount}
             </span>
           )}
-          <span
-            style={{
-              fontSize: 11,
-              color: '#4b5563',
-            }}
-          >
+          <span style={{ fontSize: 11, color: '#4b5563' }}>
             ({reports.length})
           </span>
         </div>

@@ -87,15 +87,14 @@ export function FilterBar(): React.ReactElement {
       style={{
         background: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
-        height: 48,
         display: 'flex',
         alignItems: 'center',
-        paddingLeft: 12,
-        paddingRight: 12,
-        gap: 0,
+        flexWrap: 'wrap',
+        padding: '6px 12px',
+        gap: '4px 0',
         flexShrink: 0,
         fontFamily: "'Inter', system-ui, sans-serif",
-        overflow: 'hidden',
+        minHeight: 48,
       }}
     >
       {/* Location filter */}
