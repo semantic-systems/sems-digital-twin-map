@@ -8,7 +8,7 @@ import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar(): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, setAllPlatforms } = useFilterStore();
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts } = useFilterStore();
   const { reports, setReports, setDots, setPendingNewCount } = useReportStore();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -48,7 +48,8 @@ export function Sidebar(): React.ReactElement {
       // Clear all local state so the sidebar/map empties immediately
       setReports([], new Date().toISOString(), {});
       setDots([]);
-      setAllPlatforms([]);
+      // Zero out counts but keep the platform list visible
+      setPlatformCounts(Object.fromEntries(allPlatforms.map((p) => [p, 0])));
       setPendingNewCount(0);
       // Refresh demo status
       const s = await fetchDemoStatus();
