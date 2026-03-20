@@ -2,15 +2,15 @@ import { useEffect, useRef } from 'react';
 import { useReportStore } from '../store/useReportStore';
 import { useFilterStore } from '../store/useFilterStore';
 import { useUserStore } from '../store/useUserStore';
-import { fetchNewCount, admitAllReports, fetchReports, fetchDots } from '../api/reports';
+import { admitAllReports, fetchReports, fetchDots } from '../api/reports';
 
 const INTERVAL_MS = 10_000;
 
 export function usePolling() {
   const { username } = useUserStore();
-  const { loadedAt, setReports, setDots, setPendingNewCount } = useReportStore();
+  const { setReports, setDots, setPendingNewCount } = useReportStore();
   const filters = useFilterStore();
-  const { setAllPlatforms } = filters;
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
   const timerRef = useRef<number | null>(null);
 
   // Keep a stable ref of the current poll function so the interval doesn't
@@ -31,32 +31,31 @@ export function usePolling() {
         show_unflagged: filters.showUnflagged,
       };
 
-      // Use epoch as "since" so we count ALL unadmitted reports, not just ones
-      // newer than the last fetch. This keeps the banner in sync with pending_count
-      // from fetchReports and prevents the banner from resetting to 0 on each poll.
-      // Count ALL unadmitted reports regardless of event_type filter —
-      // the banner is a notification mechanism, not a view filter.
-      const { count } = await fetchNewCount({
-        ...params,
-        event_types: [],
-        since: new Date(0).toISOString(),
-      });
+      // Fetch reports to get pending_count AND up-to-date metadata (platform counts etc.)
+      const reportsRes = await fetchReports(params);
+      if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
+      if (reportsRes.platform_counts) setPlatformCounts(reportsRes.platform_counts);
+      if (reportsRes.platform_added_counts) setPlatformAddedCounts(reportsRes.platform_added_counts);
 
-      if (count === 0) {
-        setPendingNewCount(0);
-        return;
-      }
+      const pendingCount = reportsRes.pending_count ?? 0;
 
-      if (filters.autoUpdate) {
-        await admitAllReports(username);
+      if (filters.autoUpdate && pendingCount > 0) {
+        await admitAllReports(username, {
+          platforms: params.platforms,
+          event_types: params.event_types,
+          relevances: params.relevances,
+        });
         const reloaded = await fetchReports(params);
         setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals);
         if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
+        if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
+        if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
         const dotsRes = await fetchDots(params);
         setDots(dotsRes.dots);
         setPendingNewCount(0);
       } else {
-        setPendingNewCount(count);
+        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals);
+        setPendingNewCount(pendingCount);
       }
     } catch {
       // swallow poll errors silently

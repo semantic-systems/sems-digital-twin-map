@@ -15,7 +15,7 @@ function AppInner(): React.ReactElement {
   const { username } = useUserStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, locFilter, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged } =
     useFilterStore();
-  const { setReports, setDots, setPendingNewCount } = useReportStore();
+  const { setReports, setDots, setPendingNewCount, reloadTrigger } = useReportStore();
 
   usePolling();
 
@@ -63,7 +63,7 @@ function AppInner(): React.ReactElement {
   useEffect(() => {
     if (!username) return;
     loadData();
-  }, [username, locFilter, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged]);
+  }, [username, locFilter, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, reloadTrigger]);
 
   // Load layers list once
   useEffect(() => {

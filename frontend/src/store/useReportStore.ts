@@ -8,8 +8,10 @@ interface ReportStore {
   pendingNewCount: number;
   loadedAt: string | null;
   eventTypeTotals: Record<string, number>;
+  reloadTrigger: number;
 
   setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>) => void;
+  bumpReloadTrigger: () => void;
   setDots: (dots: DotDTO[]) => void;
   setActiveReportId: (id: number | null) => void;
   setPendingNewCount: (n: number) => void;
@@ -29,8 +31,10 @@ export const useReportStore = create<ReportStore>((set) => ({
   pendingNewCount: 0,
   loadedAt: null,
   eventTypeTotals: {},
+  reloadTrigger: 0,
 
   setReports: (reports, loadedAt, eventTypeTotals = {}) => set({ reports, loadedAt, eventTypeTotals }),
+  bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
   setDots: (dots) => set({ dots }),
   setActiveReportId: (id) => set({ activeReportId: id }),
   setPendingNewCount: (n) => set({ pendingNewCount: n }),

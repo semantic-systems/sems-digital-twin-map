@@ -9,7 +9,7 @@ import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar(): React.ReactElement {
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts } = useFilterStore();
-  const { reports, setReports, setDots, setPendingNewCount } = useReportStore();
+  const { reports, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
   const [collapsed, setCollapsed] = useState(false);
 
   const [demoStatus, setDemoStatus] = useState<DemoStatus | null>(null);
@@ -51,6 +51,7 @@ export function Sidebar(): React.ReactElement {
       // Zero out counts but keep the platform list visible
       setPlatformCounts(Object.fromEntries(allPlatforms.map((p) => [p, 0])));
       setPendingNewCount(0);
+      bumpReloadTrigger();
       // Refresh demo status
       const s = await fetchDemoStatus();
       setDemoStatus(s);
