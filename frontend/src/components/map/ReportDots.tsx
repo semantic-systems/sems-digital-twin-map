@@ -276,7 +276,6 @@ interface GroupMarkerProps {
   username: string | null;
   map: L.Map;
   didSelectRef: React.MutableRefObject<boolean>;
-  mapClickHandlerRef: React.MutableRefObject<(() => void) | null>;
   reports: ReportDTO[];
   setActiveReportId: (id: number | null) => void;
   optimisticAcknowledge: (id: number) => void;
@@ -286,7 +285,7 @@ interface GroupMarkerProps {
 
 const GroupMarker = React.memo(function GroupMarker({
   group, activeReportId, username, map,
-  didSelectRef, mapClickHandlerRef,
+  didSelectRef,
   reports, setActiveReportId, optimisticAcknowledge,
   openDetail, closeDetail,
 }: GroupMarkerProps) {
@@ -317,13 +316,13 @@ const GroupMarker = React.memo(function GroupMarker({
   const s = useRef({
     isMulti, group, activeReportId, username, reports,
     setActiveReportId, optimisticAcknowledge,
-    didSelectRef, mapClickHandlerRef, map,
+    didSelectRef, map,
     openDetail, closeDetail, markerRef,
   });
   s.current = {
     isMulti, group, activeReportId, username, reports,
     setActiveReportId, optimisticAcknowledge,
-    didSelectRef, mapClickHandlerRef, map,
+    didSelectRef, map,
     openDetail, closeDetail, markerRef,
   };
 
@@ -345,25 +344,14 @@ const GroupMarker = React.memo(function GroupMarker({
       }
     },
     popupopen: () => {
-      const { isMulti, didSelectRef, mapClickHandlerRef, map, closeDetail } = s.current;
+      const { isMulti, didSelectRef, closeDetail } = s.current;
       if (isMulti) {
-        closeDetail(); // close any open detail overlay
+        closeDetail();
         didSelectRef.current = false;
-        const handler = () => map.closePopup();
-        mapClickHandlerRef.current = handler;
-        setTimeout(() => {
-          if (s.current.mapClickHandlerRef.current === handler) {
-            s.current.map.on('click', handler);
-          }
-        }, 0);
       }
     },
     popupclose: () => {
-      const { mapClickHandlerRef, didSelectRef, setActiveReportId, map } = s.current;
-      if (mapClickHandlerRef.current) {
-        map.off('click', mapClickHandlerRef.current);
-        mapClickHandlerRef.current = null;
-      }
+      const { didSelectRef, setActiveReportId } = s.current;
       if (!didSelectRef.current) setActiveReportId(null);
       didSelectRef.current = false;
     },
@@ -389,7 +377,7 @@ const GroupMarker = React.memo(function GroupMarker({
 
   return (
     <Marker ref={markerRef} position={[group.lat, group.lon]} icon={icon} eventHandlers={eventHandlers}>
-      <Popup closeOnClick={isMulti ? false : undefined}>
+      <Popup>
         {isMulti
           ? <MultiDotPopup dots={group.dots} onSelect={onSelect} />
           : <DotPopup dot={group.dots[0]} />}
@@ -419,7 +407,6 @@ export function ReportDots(): React.ReactElement {
 
   const groups = useMemo(() => clusterDots(visibleDots, map), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   const didSelectRef = useRef(false);
-  const mapClickHandlerRef = useRef<(() => void) | null>(null);
 
   // Detail overlay state — separate from Leaflet popup system entirely.
   const [detailState, setDetailState] = useState<{
@@ -449,6 +436,17 @@ export function ReportDots(): React.ReactElement {
     setActiveReportId(null);
   }, [setActiveReportId]);
 
+  // Close detail overlay when clicking on the map outside it.
+  useEffect(() => {
+    if (!detailState) return;
+    const handler = () => closeDetail();
+    const t = window.setTimeout(() => { map.on('click', handler); }, 0);
+    return () => {
+      window.clearTimeout(t);
+      map.off('click', handler);
+    };
+  }, [detailState?.reportId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Back: close detail, clear active, reopen aggregate popup.
   const backToList = useCallback(() => {
     setDetailState((prev) => {
@@ -470,7 +468,6 @@ export function ReportDots(): React.ReactElement {
             username={username}
             map={map}
             didSelectRef={didSelectRef}
-            mapClickHandlerRef={mapClickHandlerRef}
             reports={reports}
             setActiveReportId={setActiveReportId}
             optimisticAcknowledge={optimisticAcknowledge}
