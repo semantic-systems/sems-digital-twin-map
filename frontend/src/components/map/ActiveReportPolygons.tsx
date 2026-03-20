@@ -117,7 +117,7 @@ export function ActiveReportPolygons(): React.ReactElement {
   if (activeReportId === null) return <></>;
 
   const report = reports.find((r) => r.id === activeReportId);
-  if (!report) return <></>;
+  if (!report || report.user_state.hide) return <></>;
 
   const effectiveLocs: LocationEntry[] =
     report.user_state.locations !== undefined && report.user_state.locations !== null
