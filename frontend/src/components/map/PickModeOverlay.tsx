@@ -125,34 +125,32 @@ export function PickModeOverlay(): React.ReactElement | null {
         fontFamily: "'Inter', system-ui, sans-serif",
       }}
     >
-      {/* Instruction */}
-      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>
-        {overlayInstruction}
+      {/* Header row: instruction + cancel */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, flex: 1 }}>
+          {overlayInstruction}
+        </div>
+        <button
+          onClick={() => {
+            exitPickMode();
+            setResults([]);
+            setSearchQuery('');
+          }}
+          style={{
+            flexShrink: 0,
+            background: 'rgba(255,255,255,0.15)',
+            border: 'none',
+            color: '#fff',
+            fontSize: 11,
+            padding: '2px 8px',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          {t('cancel')}
+        </button>
       </div>
-
-      {/* Cancel button */}
-      <button
-        onClick={() => {
-          exitPickMode();
-          setResults([]);
-          setSearchQuery('');
-        }}
-        style={{
-          position: 'absolute',
-          top: 8,
-          right: 10,
-          background: 'rgba(255,255,255,0.15)',
-          border: 'none',
-          color: '#fff',
-          fontSize: 11,
-          padding: '2px 8px',
-          borderRadius: 4,
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-        }}
-      >
-        {t('cancel')}
-      </button>
 
       {/* Divider */}
       <div
