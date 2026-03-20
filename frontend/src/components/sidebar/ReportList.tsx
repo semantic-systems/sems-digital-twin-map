@@ -3,8 +3,8 @@ import { t } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
 import { ReportEntry } from './ReportEntry';
 
-export function ReportList(): React.ReactElement {
-  const { reports, activeReportId } = useReportStore();
+export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
+  const { reports, activeReportId, hasMore } = useReportStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,6 +46,25 @@ export function ReportList(): React.ReactElement {
       {reports.map((report) => (
         <ReportEntry key={report.id} report={report} />
       ))}
+      {hasMore && (
+        <div style={{ padding: '8px 4px', textAlign: 'center' }}>
+          <button
+            onClick={onLoadMore}
+            style={{
+              background: '#1a1d27',
+              border: '1px solid #374151',
+              borderRadius: 6,
+              color: '#9ca3af',
+              fontSize: 12,
+              padding: '5px 16px',
+              cursor: 'pointer',
+              fontFamily: "'Inter', system-ui, sans-serif",
+            }}
+          >
+            {t('load_more')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

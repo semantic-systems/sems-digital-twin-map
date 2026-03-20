@@ -53,6 +53,7 @@ class ReportsResponse(BaseModel):
     all_platforms: list[str] = []
     platform_counts: dict[str, int] = {}
     platform_added_counts: dict[str, int] = {}
+    has_more: bool = False
 
 
 class NewCountResponse(BaseModel):

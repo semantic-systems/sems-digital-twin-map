@@ -41,6 +41,7 @@ interface FilterStore {
   activeLayers: number[];
   availableLayers: LayerDTO[];
   autoUpdate: boolean;
+  search: string;
 
   setLocFilter: (v: FilterStore['locFilter']) => void;
   setRelevances: (v: string[]) => void;
@@ -57,6 +58,7 @@ interface FilterStore {
   toggleLayer: (id: number) => void;
   setAvailableLayers: (layers: LayerDTO[]) => void;
   setAutoUpdate: (v: boolean) => void;
+  setSearch: (v: string) => void;
 }
 
 export const useFilterStore = create<FilterStore>()(
@@ -75,6 +77,7 @@ export const useFilterStore = create<FilterStore>()(
       activeLayers: [],
       availableLayers: [],
       autoUpdate: false,
+      search: '',
 
       setLocFilter: (locFilter) => set({ locFilter }),
       setRelevances: (relevances) => set({ relevances }),
@@ -111,6 +114,7 @@ export const useFilterStore = create<FilterStore>()(
         });
       },
       setAutoUpdate: (autoUpdate) => set({ autoUpdate }),
+      setSearch: (search) => set({ search }),
     }),
     { name: 'sems-filters-v2' },
   ),

@@ -8,7 +8,7 @@ const INTERVAL_MS = 10_000;
 
 export function usePolling() {
   const { username } = useUserStore();
-  const { setReports, setDots, setPendingNewCount } = useReportStore();
+  const { setReports, setDots, setPendingNewCount, currentLimit } = useReportStore();
   const filters = useFilterStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
   const timerRef = useRef<number | null>(null);
@@ -29,6 +29,8 @@ export function usePolling() {
         show_hidden: filters.showHidden,
         show_flagged: filters.showFlagged,
         show_unflagged: filters.showUnflagged,
+        search: filters.search || undefined,
+        limit: currentLimit,
       };
 
       // Fetch reports to get pending_count AND up-to-date metadata (platform counts etc.)
@@ -46,7 +48,7 @@ export function usePolling() {
           relevances: params.relevances,
         });
         const reloaded = await fetchReports(params);
-        setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals);
+        setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more);
         if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
         if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
         if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
@@ -54,7 +56,7 @@ export function usePolling() {
         setDots(dotsRes.dots);
         setPendingNewCount(0);
       } else {
-        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals);
+        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more);
         setPendingNewCount(pendingCount);
       }
     } catch {

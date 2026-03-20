@@ -10,9 +10,12 @@ interface ReportStore {
   eventTypeTotals: Record<string, number>;
   relevanceTotals: Record<string, number>;
   reloadTrigger: number;
+  hasMore: boolean;
+  currentLimit: number;
 
-  setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>) => void;
+  setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>, hasMore?: boolean) => void;
   bumpReloadTrigger: () => void;
+  setCurrentLimit: (n: number) => void;
   setDots: (dots: DotDTO[]) => void;
   setActiveReportId: (id: number | null) => void;
   setPendingNewCount: (n: number) => void;
@@ -34,9 +37,12 @@ export const useReportStore = create<ReportStore>((set) => ({
   eventTypeTotals: {},
   relevanceTotals: {},
   reloadTrigger: 0,
+  hasMore: false,
+  currentLimit: 50,
 
-  setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals }),
+  setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore }),
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
+  setCurrentLimit: (currentLimit) => set({ currentLimit }),
   setDots: (dots) => set({ dots }),
   setActiveReportId: (id) => set({ activeReportId: id }),
   setPendingNewCount: (n) => set({ pendingNewCount: n }),

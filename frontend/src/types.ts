@@ -43,6 +43,7 @@ export interface ReportsResponse {
   all_platforms?: string[];
   platform_counts?: Record<string, number>;
   platform_added_counts?: Record<string, number>;
+  has_more?: boolean;
 }
 
 export interface LayerDTO {
@@ -97,6 +98,8 @@ export interface FetchReportsParams {
   show_hidden?: boolean;
   show_flagged?: boolean;
   show_unflagged?: boolean;
+  search?: string;
+  limit?: number;
 }
 
 export interface NewCountParams {

@@ -35,6 +35,8 @@
   "new_posts_one": "↑ {n} neuer Beitrag",
   "new_posts_many": "↑ {n} neue Beiträge",
   "new_badge": "NEU",
+  "search_reports_ph": "Berichte durchsuchen…",
+  "load_more": "Mehr laden",
   "no_reports": "Keine Berichte verfügbar.",
   "open": "Öffnen",
   "open_title": "Originalbeitrag öffnen",

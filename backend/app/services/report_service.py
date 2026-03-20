@@ -267,6 +267,7 @@ def build_report_query(
     eff_events: list[str] | None = None,
     eff_relevance: list[str] | None = None,
     demo_mode: bool = False,
+    search: str | None = None,
 ):
     """
     Returns a SQLAlchemy Query[Report] with all filters applied.
@@ -293,6 +294,12 @@ def build_report_query(
 
     if added_ids is not None:
         q = q.filter(Report.id.in_(added_ids))
+
+    if search:
+        term = f"%{search}%"
+        q = q.filter(
+            or_(Report.text.ilike(term), Report.author.ilike(term))
+        )
 
     return q
 
@@ -417,7 +424,8 @@ def get_reports(
     show_flagged: bool = True,
     show_unflagged: bool = True,
     demo_mode: bool = False,
-    limit: int = 25,
+    limit: int = 50,
+    search: str | None = None,
 ) -> tuple[list[ReportDTO], int, str, dict[str, int], list[str]]:
     """
     Returns (reports, pending_count, loaded_at_iso).
@@ -489,7 +497,7 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, False
 
     # Build the main query (only admitted reports)
     q = build_report_query(
@@ -499,9 +507,12 @@ def get_reports(
         eff_events=eff_events,
         eff_relevance=eff_relevance,
         demo_mode=demo_mode,
+        search=search,
     )
+    # Overfetch to account for Python-level filtering (show_hidden, loc_filter, etc.)
+    sql_limit = limit + 100
     reports_orm: list[Report] = (
-        q.order_by(Report.timestamp.desc()).limit(limit).all()
+        q.order_by(Report.timestamp.desc()).limit(sql_limit).all()
     )
 
     # Python-level display filtering
@@ -519,6 +530,10 @@ def get_reports(
         hide_flagged=hide_flagged,
         hide_unflagged=hide_unflagged,
     )
+
+    # Determine if there are more results beyond the requested limit
+    has_more = len(filtered) > limit
+    filtered = filtered[:limit]
 
     # Build a quick lookup: report_id → UserReportState row
     user_state_rows: dict[int, UserReportState] = {
@@ -557,7 +572,7 @@ def get_reports(
     pending_count = len(all_matching_ids - added_ids)
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, has_more
 
 
 # ---------------------------------------------------------------------------

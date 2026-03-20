@@ -25,8 +25,14 @@ function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): R
   };
 }
 
+const BASE_LIMIT = 50;
+
 export async function fetchReports(params: FetchReportsParams): Promise<ReportsResponse> {
-  const qs = buildQuery({ ...toBackendParams(params), limit: 500 });
+  const qs = buildQuery({
+    ...toBackendParams(params),
+    limit: params.limit ?? BASE_LIMIT,
+    ...(params.search ? { search: params.search } : {}),
+  });
   return apiFetch<ReportsResponse>(`/reports/${qs}`);
 }
 

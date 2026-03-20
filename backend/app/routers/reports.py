@@ -43,12 +43,13 @@ def get_reports_endpoint(
     show_hidden: bool = Query(False),
     show_flagged: bool = Query(True),
     show_unflagged: bool = Query(True),
-    limit: int = Query(25, ge=1, le=500),
+    limit: int = Query(50, ge=1, le=2000),
+    search: str | None = Query(None),
     session: Session = Depends(get_db),
 ) -> ReportsResponse:
     from ..config import settings
 
-    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals = svc.get_reports(
+    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, has_more = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter,
@@ -60,6 +61,7 @@ def get_reports_endpoint(
         show_unflagged=show_unflagged,
         demo_mode=settings.DEMO_MODE,
         limit=limit,
+        search=search or None,
     )
     return ReportsResponse(
         reports=reports,
@@ -70,6 +72,7 @@ def get_reports_endpoint(
         all_platforms=all_platforms,
         platform_counts=platform_counts,
         platform_added_counts=platform_added_counts,
+        has_more=has_more,
     )
 
 

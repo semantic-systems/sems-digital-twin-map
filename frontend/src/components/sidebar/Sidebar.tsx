@@ -7,8 +7,8 @@ import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
-export function Sidebar(): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts } = useFilterStore();
+export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch } = useFilterStore();
   const { reports, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -263,11 +263,33 @@ export function Sidebar(): React.ReactElement {
         </div>
       )}
 
+      {/* Search */}
+      <div style={{ padding: '6px 10px', borderBottom: '1px solid #252836', flexShrink: 0 }}>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t('search_reports_ph')}
+          style={{
+            width: '100%',
+            background: '#1a1d27',
+            border: '1px solid #374151',
+            borderRadius: 6,
+            color: '#f0f2f7',
+            fontSize: 12,
+            padding: '5px 10px',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            outline: 'none',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
       {/* New posts banner */}
       <NewPostsBanner />
 
       {/* Report list */}
-      <ReportList />
+      <ReportList onLoadMore={onLoadMore} />
     </div>
   );
 }
