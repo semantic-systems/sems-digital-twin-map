@@ -152,8 +152,8 @@ function LayerRenderer(): React.ReactElement {
         const features: GeoJSONFeature[] = geo.type === 'FeatureCollection'
           ? (geo.features ?? [])
           : [geo as GeoJSONFeature];
-        const pointFeatures = features.filter((f) => f.geometry?.type === 'Point');
-        const otherFeatures = features.filter((f) => f.geometry?.type !== 'Point');
+        const pointFeatures = features.filter((f) => f.geometry?.type === 'Point' || f.geometry?.type === 'MultiPoint');
+        const otherFeatures = features.filter((f) => f.geometry?.type !== 'Point' && f.geometry?.type !== 'MultiPoint');
 
         return (
           <React.Fragment key={d.id}>
@@ -171,21 +171,25 @@ function LayerRenderer(): React.ReactElement {
                 }}
               />
             )}
-            {/* Point features as CircleMarker — react-leaflet updates color reactively */}
-            {pointFeatures.map((f, i) => {
-              const [lon, lat] = (f.geometry as { coordinates: number[] }).coordinates;
-              return (
+            {/* Point / MultiPoint features as CircleMarker */}
+            {pointFeatures.flatMap((f, i) => {
+              const geom = f.geometry as { type: string; coordinates: unknown };
+              const coords: number[][] = geom.type === 'MultiPoint'
+                ? (geom.coordinates as number[][])
+                : [geom.coordinates as number[]];
+              const popup = buildPopupHtml(f.properties as Record<string, unknown> | null, layerName);
+              return coords.map(([lon, lat], j) => (
                 <CircleMarker
-                  key={`${d.id}-pt-${i}`}
+                  key={`${d.id}-pt-${i}-${j}`}
                   center={[lat, lon]}
                   radius={7}
                   pathOptions={{ color, fillColor: color, fillOpacity: 0.8, weight: 2 }}
                 >
                   <Popup maxWidth={320}>
-                    <div dangerouslySetInnerHTML={{ __html: buildPopupHtml(f.properties as Record<string, unknown> | null, layerName) }} />
+                    <div dangerouslySetInnerHTML={{ __html: popup }} />
                   </Popup>
                 </CircleMarker>
-              );
+              ));
             })}
           </React.Fragment>
         );
