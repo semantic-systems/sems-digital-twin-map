@@ -12,7 +12,8 @@ SQLAlchemy Session and return plain Python / Pydantic objects.
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import or_
+from sqlalchemy import cast, or_
+from sqlalchemy import Text as SaText
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -268,6 +269,7 @@ def build_report_query(
     eff_relevance: list[str] | None = None,
     demo_mode: bool = False,
     search: str | None = None,
+    loc_filter: str = 'all',
 ):
     """
     Returns a SQLAlchemy Query[Report] with all filters applied.
@@ -299,6 +301,23 @@ def build_report_query(
         term = f"%{search}%"
         q = q.filter(
             or_(Report.text.ilike(term), Report.author.ilike(term))
+        )
+
+    locs_text = cast(Report.locations, SaText)
+    if loc_filter == 'localized':
+        q = q.filter(
+            Report.locations.isnot(None),
+            locs_text.like('%"osm_id"%'),
+        )
+    elif loc_filter == 'pending':
+        q = q.filter(
+            Report.locations.isnot(None),
+            ~locs_text.like('%"osm_id"%'),
+            locs_text != '[]',
+        )
+    elif loc_filter == 'unlocalized':
+        q = q.filter(
+            or_(Report.locations.is_(None), locs_text == '[]')
         )
 
     return q
@@ -496,6 +515,7 @@ def get_reports(
             eff_events=eff_events,
             eff_relevance=eff_relevance,
             demo_mode=demo_mode,
+            loc_filter=loc_filter,
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
@@ -558,7 +578,7 @@ def get_reports(
         for r in filtered
     ]
 
-    # Pending count = reports that match filters but are NOT yet admitted
+    # Pending count = reports that match filters (incl. loc_filter) but are NOT yet admitted
     all_matching_ids: set[int] = {
         row[0]
         for row in build_report_query(
@@ -567,6 +587,7 @@ def get_reports(
             eff_events=eff_events,
             eff_relevance=eff_relevance,
             demo_mode=demo_mode,
+            loc_filter=loc_filter,
         )
         .with_entities(Report.id)
         .all()
