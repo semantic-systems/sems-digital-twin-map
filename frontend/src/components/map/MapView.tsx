@@ -7,7 +7,6 @@ import {
   useMap,
   useMapEvents,
 } from 'react-leaflet';
-import type L from 'leaflet';
 import { useMapStore } from '../../store/useMapStore';
 import { useFilterStore } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
