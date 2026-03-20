@@ -23,6 +23,7 @@ interface FilterStore {
   relevances: string[];
   platforms: string[];
   allPlatforms: string[];
+  platformCounts: Record<string, number>;
   showHidden: boolean;
   showFlagged: boolean;
   showUnflagged: boolean;
@@ -34,6 +35,7 @@ interface FilterStore {
   setRelevances: (v: string[]) => void;
   setPlatforms: (v: string[]) => void;
   setAllPlatforms: (v: string[]) => void;
+  setPlatformCounts: (v: Record<string, number>) => void;
   setShowHidden: (v: boolean) => void;
   setShowFlagged: (v: boolean) => void;
   setShowUnflagged: (v: boolean) => void;
@@ -51,6 +53,7 @@ export const useFilterStore = create<FilterStore>()(
       relevances: [...ALL_RELEVANCES_LIST],
       platforms: [],
       allPlatforms: [],
+      platformCounts: {},
       showHidden: false,
       showFlagged: true,
       showUnflagged: true,
@@ -62,6 +65,7 @@ export const useFilterStore = create<FilterStore>()(
       setRelevances: (relevances) => set({ relevances }),
       setPlatforms: (platforms) => set({ platforms }),
       setAllPlatforms: (allPlatforms) => set({ allPlatforms }),
+      setPlatformCounts: (platformCounts) => set({ platformCounts }),
       setShowHidden: (showHidden) => set({ showHidden }),
       setShowFlagged: (showFlagged) => set({ showFlagged }),
       setShowUnflagged: (showUnflagged) => set({ showUnflagged }),

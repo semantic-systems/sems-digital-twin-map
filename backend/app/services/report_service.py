@@ -448,12 +448,13 @@ def get_reports(
     all_base_rows = all_base_q.with_entities(Report.event_type, Report.platform).all()
 
     event_type_totals: dict[str, int] = {}
-    platforms_seen: set[str] = set()
+    platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     for (et, plat) in all_base_rows:
         event_type_totals[et] = event_type_totals.get(et, 0) + 1
         if plat:
-            platforms_seen.add(plat)
-    all_platforms = sorted(platforms_seen)
+            platform_counts[plat] = platform_counts.get(plat, 0) + 1
+    # Always expose the full known platform list, plus any unexpected ones from DB.
+    all_platforms = sorted(platform_counts.keys())
 
     # If the sidebar is empty (no admitted reports), return [] and count pending
     if not added_ids:
@@ -466,7 +467,7 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts
 
     # Build the main query (only admitted reports)
     q = build_report_query(
@@ -534,7 +535,7 @@ def get_reports(
     pending_count = len(all_matching_ids - added_ids)
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts
 
 
 # ---------------------------------------------------------------------------

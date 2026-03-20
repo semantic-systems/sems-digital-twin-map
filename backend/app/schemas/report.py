@@ -50,6 +50,7 @@ class ReportsResponse(BaseModel):
     loaded_at: str  # ISO 8601
     event_type_totals: dict[str, int] = {}
     all_platforms: list[str] = []
+    platform_counts: dict[str, int] = {}
 
 
 class NewCountResponse(BaseModel):

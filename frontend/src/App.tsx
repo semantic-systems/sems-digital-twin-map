@@ -13,7 +13,7 @@ import { PickModeOverlay } from './components/map/PickModeOverlay';
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, locFilter, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged } =
+  const { setAllPlatforms, setPlatformCounts, locFilter, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged } =
     useFilterStore();
   const { setReports, setDots, setPendingNewCount } = useReportStore();
 
@@ -47,6 +47,9 @@ function AppInner(): React.ReactElement {
 
       if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {
         setAllPlatforms(reportsRes.all_platforms);
+      }
+      if (reportsRes.platform_counts) {
+        setPlatformCounts(reportsRes.platform_counts);
       }
     } catch (e) {
       console.error('Failed to load reports:', e);

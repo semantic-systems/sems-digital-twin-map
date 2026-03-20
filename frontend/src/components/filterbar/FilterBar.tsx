@@ -56,6 +56,7 @@ export function FilterBar(): React.ReactElement {
   } = useFilterStore();
 
   const { eventTypeTotals } = useReportStore();
+  const { platformCounts } = useFilterStore();
 
   const locOptions: { value: FilterStore_LocFilter; label: string }[] = [
     { value: 'all', label: t('loc_all') },
@@ -82,186 +83,130 @@ export function FilterBar(): React.ReactElement {
 
   const effectivePlatforms = allPlatforms.length ? allPlatforms : [];
 
+  const row: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+    gap: 0,
+    width: '100%',
+    minHeight: 36,
+  };
+
+  const checkLabel: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 3,
+    cursor: 'pointer',
+    fontSize: 11,
+    color: '#374151',
+    whiteSpace: 'nowrap',
+  };
+
   return (
     <div
       style={{
         background: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
         display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        padding: '6px 12px',
-        gap: '4px 0',
+        flexDirection: 'column',
         flexShrink: 0,
         fontFamily: "'Inter', system-ui, sans-serif",
-        minHeight: 48,
       }}
     >
-      {/* Location filter */}
-      <SectionLabel>{t('location')}</SectionLabel>
-      <div style={{ display: 'flex', gap: 3, marginLeft: 6 }}>
-        {locOptions.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => setLocFilter(value)}
-            style={{
-              fontSize: 11,
-              padding: '2px 8px',
-              borderRadius: 999,
-              border: '1px solid',
-              borderColor: locFilter === value ? '#3b82f6' : '#d1d5db',
-              background: locFilter === value ? '#3b82f6' : 'transparent',
-              color: locFilter === value ? '#fff' : '#374151',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              whiteSpace: 'nowrap',
-              fontWeight: locFilter === value ? 600 : 400,
-              transition: 'all 0.1s',
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* Row 1: Location · Relevance · Platforms */}
+      <div style={{ ...row, padding: '4px 12px', borderBottom: '1px solid #f3f4f6' }}>
+        <SectionLabel>{t('location')}</SectionLabel>
+        <div style={{ display: 'flex', gap: 3, marginLeft: 6 }}>
+          {locOptions.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setLocFilter(value)}
+              style={{
+                fontSize: 11,
+                padding: '2px 8px',
+                borderRadius: 999,
+                border: '1px solid',
+                borderColor: locFilter === value ? '#3b82f6' : '#d1d5db',
+                background: locFilter === value ? '#3b82f6' : 'transparent',
+                color: locFilter === value ? '#fff' : '#374151',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+                fontWeight: locFilter === value ? 600 : 400,
+                transition: 'all 0.1s',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-      <Divider />
+        <Divider />
 
-      {/* Relevance */}
-      <SectionLabel>{t('relevance')}</SectionLabel>
-      <div style={{ display: 'flex', gap: 4, marginLeft: 6, alignItems: 'center' }}>
-        {ALL_RELEVANCES_LIST.map((rel) => {
-          const checked = relevances.includes(rel);
-          return (
+        <SectionLabel>{t('relevance')}</SectionLabel>
+        <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center' }}>
+          {ALL_RELEVANCES_LIST.map((rel) => (
             <label
               key={rel}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 3,
-                cursor: 'pointer',
-                fontSize: 11,
-                color: RELEVANCE_COLORS[rel],
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-              }}
+              style={{ ...checkLabel, color: RELEVANCE_COLORS[rel], fontWeight: 600 }}
             >
               <input
                 type="checkbox"
-                checked={checked}
+                checked={relevances.includes(rel)}
                 onChange={() => toggleRelevance(rel)}
                 style={{ accentColor: RELEVANCE_COLORS[rel], width: 12, height: 12 }}
               />
               {t(`rel_${rel}`)}
             </label>
-          );
-        })}
-      </div>
+          ))}
+        </div>
 
-      {effectivePlatforms.length > 0 && (
-        <>
-          <Divider />
-          {/* Platform */}
-          <SectionLabel>{t('platform')}</SectionLabel>
-          <div style={{ display: 'flex', gap: 4, marginLeft: 6, alignItems: 'center' }}>
-            {effectivePlatforms.map((p) => {
-              const checked = platforms.length === 0 || platforms.includes(p);
-              return (
-                <label
-                  key={p}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 3,
-                    cursor: 'pointer',
-                    fontSize: 11,
-                    color: '#374151',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+        {effectivePlatforms.length > 0 && (
+          <>
+            <Divider />
+            <SectionLabel>{t('platform')}</SectionLabel>
+            <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+              {effectivePlatforms.map((p) => (
+                <label key={p} style={checkLabel}>
                   <input
                     type="checkbox"
-                    checked={checked}
+                    checked={platforms.length === 0 || platforms.includes(p)}
                     onChange={() => togglePlatform(p)}
                     style={{ width: 12, height: 12 }}
                   />
                   {p}
+                  <span style={{ color: '#9ca3af' }}>({platformCounts[p] ?? 0})</span>
                 </label>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      <Divider />
-
-      {/* View */}
-      <SectionLabel>{t('view')}</SectionLabel>
-      <div style={{ display: 'flex', gap: 8, marginLeft: 6, alignItems: 'center' }}>
-        <label
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 3,
-            cursor: 'pointer',
-            fontSize: 11,
-            color: '#374151',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={showHidden}
-            onChange={(e) => setShowHidden(e.target.checked)}
-            style={{ width: 12, height: 12 }}
-          />
-          {t('show_hidden')}
-        </label>
-        <label
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 3,
-            cursor: 'pointer',
-            fontSize: 11,
-            color: '#374151',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={showFlagged}
-            onChange={(e) => setShowFlagged(e.target.checked)}
-            style={{ width: 12, height: 12 }}
-          />
-          {t('show_flagged')}
-        </label>
-        <label
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 3,
-            cursor: 'pointer',
-            fontSize: 11,
-            color: '#374151',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={showUnflagged}
-            onChange={(e) => setShowUnflagged(e.target.checked)}
-            style={{ width: 12, height: 12 }}
-          />
-          {t('show_unflagged')}
-        </label>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      <Divider />
+      {/* Row 2: View toggles · Event type chips */}
+      <div style={{ ...row, padding: '4px 12px' }}>
+        <SectionLabel>{t('view')}</SectionLabel>
+        <div style={{ display: 'flex', gap: 10, marginLeft: 6, alignItems: 'center' }}>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('show_hidden')}
+          </label>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={showFlagged} onChange={(e) => setShowFlagged(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('show_flagged')}
+          </label>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={showUnflagged} onChange={(e) => setShowUnflagged(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('show_unflagged')}
+          </label>
+        </div>
 
-      {/* Event type chips */}
-      <SectionLabel>{t('type')}</SectionLabel>
-      <div style={{ marginLeft: 6, flex: 1, overflow: 'hidden' }}>
-        <EventTypeChips counts={eventTypeTotals} />
+        <Divider />
+
+        <SectionLabel>{t('type')}</SectionLabel>
+        <div style={{ marginLeft: 6, flex: 1, overflow: 'hidden' }}>
+          <EventTypeChips counts={eventTypeTotals} />
+        </div>
       </div>
     </div>
   );
