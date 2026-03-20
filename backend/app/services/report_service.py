@@ -456,6 +456,25 @@ def get_reports(
     # Always expose the full known platform list, plus any unexpected ones from DB.
     all_platforms = sorted(platform_counts.keys())
 
+    # Count admitted posts per platform (ignoring event_type / platform filters).
+    platform_added_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
+    if added_ids:
+        added_rows = (
+            build_report_query(
+                session,
+                added_ids=added_ids,
+                eff_platform=None,
+                eff_events=None,
+                eff_relevance=eff_relevance,
+                demo_mode=demo_mode,
+            )
+            .with_entities(Report.platform)
+            .all()
+        )
+        for (plat,) in added_rows:
+            if plat:
+                platform_added_counts[plat] = platform_added_counts.get(plat, 0) + 1
+
     # If the sidebar is empty (no admitted reports), return [] and count pending
     if not added_ids:
         pending_q = build_report_query(
@@ -467,7 +486,7 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts
 
     # Build the main query (only admitted reports)
     q = build_report_query(
@@ -535,7 +554,7 @@ def get_reports(
     pending_count = len(all_matching_ids - added_ids)
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts
 
 
 # ---------------------------------------------------------------------------

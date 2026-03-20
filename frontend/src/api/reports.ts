@@ -51,10 +51,13 @@ export async function admitReports(username: string, report_ids: number[]): Prom
   });
 }
 
-export async function admitAllReports(username: string): Promise<{ admitted: number }> {
+export async function admitAllReports(
+  username: string,
+  filters?: { platforms?: string[]; event_types?: string[]; relevances?: string[] },
+): Promise<{ admitted: number }> {
   return apiFetch<{ admitted: number }>('/reports/admit-all', {
     method: 'POST',
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({ username, ...filters }),
   });
 }
 

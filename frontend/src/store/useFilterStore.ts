@@ -24,6 +24,7 @@ interface FilterStore {
   platforms: string[];
   allPlatforms: string[];
   platformCounts: Record<string, number>;
+  platformAddedCounts: Record<string, number>;
   showHidden: boolean;
   showFlagged: boolean;
   showUnflagged: boolean;
@@ -36,6 +37,7 @@ interface FilterStore {
   setPlatforms: (v: string[]) => void;
   setAllPlatforms: (v: string[]) => void;
   setPlatformCounts: (v: Record<string, number>) => void;
+  setPlatformAddedCounts: (v: Record<string, number>) => void;
   setShowHidden: (v: boolean) => void;
   setShowFlagged: (v: boolean) => void;
   setShowUnflagged: (v: boolean) => void;
@@ -54,6 +56,7 @@ export const useFilterStore = create<FilterStore>()(
       platforms: [],
       allPlatforms: [],
       platformCounts: {},
+      platformAddedCounts: {},
       showHidden: false,
       showFlagged: true,
       showUnflagged: true,
@@ -66,6 +69,7 @@ export const useFilterStore = create<FilterStore>()(
       setPlatforms: (platforms) => set({ platforms }),
       setAllPlatforms: (allPlatforms) => set({ allPlatforms }),
       setPlatformCounts: (platformCounts) => set({ platformCounts }),
+      setPlatformAddedCounts: (platformAddedCounts) => set({ platformAddedCounts }),
       setShowHidden: (showHidden) => set({ showHidden }),
       setShowFlagged: (showFlagged) => set({ showFlagged }),
       setShowUnflagged: (showUnflagged) => set({ showUnflagged }),

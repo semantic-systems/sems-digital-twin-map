@@ -21,6 +21,9 @@ from pydantic import BaseModel
 
 class _AdmitAllRequest(BaseModel):
     username: str
+    platforms: list[str] | None = None
+    event_types: list[str] | None = None
+    relevances: list[str] | None = None
 from ..services import report_service as svc
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
@@ -45,7 +48,7 @@ def get_reports_endpoint(
 ) -> ReportsResponse:
     from ..config import settings
 
-    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts = svc.get_reports(
+    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter,
@@ -65,6 +68,7 @@ def get_reports_endpoint(
         event_type_totals=event_type_totals,
         all_platforms=all_platforms,
         platform_counts=platform_counts,
+        platform_added_counts=platform_added_counts,
     )
 
 
@@ -172,11 +176,24 @@ def admit_all_endpoint(
     from ..db import Report
 
     _, _, _, added_ids, _, _ = svc.get_user_state(body.username, session)
-    q = session.query(Report.id)
-    if settings.DEMO_MODE:
-        q = q.filter(Report.identifier.like("demo-%"))
-    all_ids: list[int] = [row[0] for row in q.all()]
-    pending_ids = [rid for rid in all_ids if rid not in added_ids]
+    eff_platform, eff_events, eff_relevance = svc.normalize_filters(
+        body.platforms or None,
+        body.event_types or None,
+        body.relevances or None,
+    )
+    matching_ids = {
+        row[0]
+        for row in svc.build_report_query(
+            session,
+            eff_platform=eff_platform,
+            eff_events=eff_events,
+            eff_relevance=eff_relevance,
+            demo_mode=settings.DEMO_MODE,
+        )
+        .with_entities(Report.id)
+        .all()
+    }
+    pending_ids = [rid for rid in matching_ids if rid not in added_ids]
     admitted = svc.bulk_admit_reports(body.username, pending_ids, session)
     return {"admitted": len(admitted)}
 

@@ -51,6 +51,7 @@ class ReportsResponse(BaseModel):
     event_type_totals: dict[str, int] = {}
     all_platforms: list[str] = []
     platform_counts: dict[str, int] = {}
+    platform_added_counts: dict[str, int] = {}
 
 
 class NewCountResponse(BaseModel):

@@ -9,16 +9,17 @@ export function NewPostsBanner(): React.ReactElement {
   const { pendingNewCount, setPendingNewCount, setReports, setDots } = useReportStore();
   const { username } = useUserStore();
   const filters = useFilterStore();
-  const { setAllPlatforms } = filters;
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
 
   const handleClick = async () => {
     if (!username || pendingNewCount === 0) return;
 
     try {
+      const effectivePlatforms = filters.platforms.length ? filters.platforms : filters.allPlatforms;
       const params = {
         username,
         loc_filter: filters.locFilter,
-        platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
+        platforms: effectivePlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,
         show_hidden: filters.showHidden,
@@ -26,11 +27,17 @@ export function NewPostsBanner(): React.ReactElement {
         show_unflagged: filters.showUnflagged,
       };
 
-      // Admit all pending (unadmitted) reports in one call
-      await admitAllReports(username);
+      // Admit only filter-matching pending reports
+      await admitAllReports(username, {
+        platforms: effectivePlatforms,
+        event_types: filters.eventTypes,
+        relevances: filters.relevances,
+      });
       const reloaded = await fetchReports(params);
       setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals);
       if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
+      if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
+      if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
       const dotsRes = await fetchDots(params);
       setDots(dotsRes.dots);
       setPendingNewCount(0);

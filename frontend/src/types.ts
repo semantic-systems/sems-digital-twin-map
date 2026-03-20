@@ -41,6 +41,7 @@ export interface ReportsResponse {
   event_type_totals?: Record<string, number>;
   all_platforms?: string[];
   platform_counts?: Record<string, number>;
+  platform_added_counts?: Record<string, number>;
 }
 
 export interface LayerDTO {
