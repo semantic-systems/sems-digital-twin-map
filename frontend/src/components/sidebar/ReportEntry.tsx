@@ -162,17 +162,18 @@ export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
   };
 
   const cardStyle: React.CSSProperties = {
-    background: isActive ? '#1e2235' : '#181b23',
+    background: isActive ? '#0f2044' : '#181b23',
     borderRadius: 6,
     padding: '8px 8px 6px 10px',
     marginBottom: 6,
-    borderLeft: `3px solid ${isActive ? '#3b82f6' : leftBorder}`,
+    borderLeft: `4px solid ${isActive ? '#3b82f6' : leftBorder}`,
     borderRight: `3px solid ${rightBorder}`,
-    borderTop: '1px solid #252836',
-    borderBottom: '1px solid #252836',
+    borderTop: isActive ? '1px solid #1d4ed8' : '1px solid #252836',
+    borderBottom: isActive ? '1px solid #1d4ed8' : '1px solid #252836',
     opacity: hide ? 0.45 : 1,
-    outline: flag ? '2px solid #f97316' : 'none',
+    outline: flag ? '2px solid #f97316' : isActive ? '1px solid #2563eb' : 'none',
     outlineOffset: -1,
+    boxShadow: isActive ? '0 0 0 1px #1d4ed8 inset' : 'none',
     transition: 'opacity 0.2s, background 0.15s',
     position: 'relative',
     cursor: 'default',

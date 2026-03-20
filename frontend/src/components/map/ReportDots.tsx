@@ -50,13 +50,13 @@ function makeDotIcon({
   const countBadge = count > 1
     ? `<div style="position:absolute;top:-8px;right:-8px;background:#1f2937;color:#fff;font-size:9px;font-weight:700;font-family:'Inter',sans-serif;border-radius:999px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.5;border:1.5px solid #fff;pointer-events:none;">${count}</div>`
     : '';
-  const newRing = hasNew && !isActive
-    ? `<div style="position:absolute;inset:-5px;border-radius:50%;border:2.5px solid #fbbf24;pointer-events:none;"></div>`
+  const exclamation = hasNew && !isActive
+    ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:${Math.round(size * 0.55)}px;font-weight:900;color:#fff;font-family:'Inter',sans-serif;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.4);">!</div>`
     : '';
   return L.divIcon({
     html: `<div style="position:relative;width:${size}px;height:${size}px;">
-      ${newRing}
       <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${borderWidth}px solid #ffffff;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,0.45);"></div>
+      ${exclamation}
       ${countBadge}
     </div>`,
     className: '',
