@@ -256,10 +256,8 @@ export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
             fontSize: 11,
             color: '#6b7280',
             fontFamily: "'Inter', system-ui, sans-serif",
-            lineHeight: 1.3,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            lineHeight: 1.5,
+            whiteSpace: 'normal',
           }}
           title={geoInfo.title}
         >
