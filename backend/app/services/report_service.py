@@ -453,12 +453,14 @@ def get_reports(
         eff_relevance=eff_relevance,
         demo_mode=demo_mode,
     )
-    all_base_rows = all_base_q.with_entities(Report.event_type, Report.platform, Report.relevance).all()
+    all_base_rows = all_base_q.with_entities(Report.id, Report.event_type, Report.platform, Report.relevance).all()
 
     event_type_totals: dict[str, int] = {}
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
-    for (et, plat, rel) in all_base_rows:
+    for (rid, et, plat, rel) in all_base_rows:
+        if not show_hidden and rid in seen_ids:
+            continue
         event_type_totals[et] = event_type_totals.get(et, 0) + 1
         if plat:
             platform_counts[plat] = platform_counts.get(plat, 0) + 1

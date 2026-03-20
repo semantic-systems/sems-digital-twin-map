@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
+import { useFilterStore } from '../../store/useFilterStore';
 import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
@@ -400,8 +401,15 @@ export function ReportDots(): React.ReactElement {
   const map = useMap();
   const { dots, activeReportId, setActiveReportId, optimisticAcknowledge, reports } = useReportStore();
   const { username } = useUserStore();
+  const { showHidden } = useFilterStore();
 
-  const groups = useMemo(() => groupDots(dots), [dots]);
+  const visibleDots = useMemo(() => {
+    if (showHidden) return dots;
+    const hiddenIds = new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
+    return dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
+  }, [dots, showHidden, reports]);
+
+  const groups = useMemo(() => groupDots(visibleDots), [visibleDots]);
   const didSelectRef = useRef(false);
   const mapClickHandlerRef = useRef<(() => void) | null>(null);
 
