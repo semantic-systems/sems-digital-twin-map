@@ -92,7 +92,7 @@ export function FilterBar(): React.ReactElement {
     flexWrap: 'nowrap',
     gap: 0,
     width: '100%',
-    minHeight: 36,
+    minHeight: 28,
   };
 
   const checkLabel: React.CSSProperties = {
@@ -116,7 +116,7 @@ export function FilterBar(): React.ReactElement {
         fontFamily: "'Inter', system-ui, sans-serif",
       }}
     >
-      {/* Row 1: Location · Relevance · Platforms */}
+      {/* Row 1: Location · Relevance */}
       <div style={{ ...row, padding: '4px 12px', borderBottom: '1px solid #f3f4f6' }}>
         <SectionLabel>{t('location')}</SectionLabel>
         <div style={{ display: 'flex', gap: 3, marginLeft: 6 }}>
@@ -167,30 +167,8 @@ export function FilterBar(): React.ReactElement {
           ))}
         </div>
 
-        {effectivePlatforms.length > 0 && (
-          <>
-            <Divider />
-            <SectionLabel>{t('platform')}</SectionLabel>
-            <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-              {effectivePlatforms.map((p) => (
-                <label key={p} style={checkLabel}>
-                  <input
-                    type="checkbox"
-                    checked={platforms.length === 0 || platforms.includes(p)}
-                    onChange={() => togglePlatform(p)}
-                    style={{ width: 12, height: 12 }}
-                  />
-                  {p}
-                  <span style={{ color: '#9ca3af' }}>({platformCounts[p] ?? 0})</span>
-                </label>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+        <Divider />
 
-      {/* Row 2: View toggles · Event type chips */}
-      <div style={{ ...row, padding: '4px 12px' }}>
         <SectionLabel>{t('view')}</SectionLabel>
         <div style={{ display: 'flex', gap: 10, marginLeft: 6, alignItems: 'center' }}>
           <label style={checkLabel}>
@@ -206,38 +184,60 @@ export function FilterBar(): React.ReactElement {
             {t('show_unflagged')}
           </label>
         </div>
+      </div>
 
-        <Divider />
-
+      {/* Row 2: Event type chips */}
+      <div style={{ ...row, padding: '3px 12px', borderBottom: '1px solid #f3f4f6' }}>
         <SectionLabel>{t('type')}</SectionLabel>
-        <div style={{ marginLeft: 6, flex: 1, overflow: 'hidden' }}>
+        <div style={{ marginLeft: 6, flex: 1, overflowX: 'auto', overflowY: 'hidden' }}>
           <EventTypeChips counts={eventTypeTotals} />
         </div>
-
-        {availableLayers.length > 0 && (
-          <>
-            <Divider />
-            <SectionLabel>{t('layers')}</SectionLabel>
-            <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center' }}>
-              {availableLayers.map((layer) => {
-                const color = getLayerColor(layer.id, availableLayers);
-                return (
-                  <label key={layer.id} style={checkLabel}>
-                    <input
-                      type="checkbox"
-                      checked={activeLayers.includes(layer.id)}
-                      onChange={() => toggleLayer(layer.id)}
-                      style={{ width: 12, height: 12, accentColor: color }}
-                    />
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0, display: 'inline-block' }} />
-                    {t('layer_' + layer.name)}
-                  </label>
-                );
-              })}
-            </div>
-          </>
-        )}
       </div>
+
+      {/* Row 3: Platforms (conditional) */}
+      {effectivePlatforms.length > 0 && (
+        <div style={{ ...row, padding: '3px 12px', borderBottom: availableLayers.length > 0 ? '1px solid #f3f4f6' : undefined, flexWrap: 'wrap' }}>
+          <SectionLabel>{t('platform')}</SectionLabel>
+          <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            {effectivePlatforms.map((p) => (
+              <label key={p} style={checkLabel}>
+                <input
+                  type="checkbox"
+                  checked={platforms.length === 0 || platforms.includes(p)}
+                  onChange={() => togglePlatform(p)}
+                  style={{ width: 12, height: 12 }}
+                />
+                {p}
+                <span style={{ color: '#9ca3af' }}>({platformCounts[p] ?? 0})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Row 4: Layers (conditional) */}
+      {availableLayers.length > 0 && (
+        <div style={{ ...row, padding: '3px 12px' }}>
+          <SectionLabel>{t('layers')}</SectionLabel>
+          <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center' }}>
+            {availableLayers.map((layer) => {
+              const color = getLayerColor(layer.id, availableLayers);
+              return (
+                <label key={layer.id} style={checkLabel}>
+                  <input
+                    type="checkbox"
+                    checked={activeLayers.includes(layer.id)}
+                    onChange={() => toggleLayer(layer.id)}
+                    style={{ width: 12, height: 12, accentColor: color }}
+                  />
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0, display: 'inline-block' }} />
+                  {t('layer_' + layer.name)}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -84,7 +84,7 @@ function ArrowsInner(): React.ReactElement {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const sidebarWidth = 380;
-    const filterBarHeight = 90;
+    const filterBarHeight = 64;
     const arrowSize = 36;
     const margin = arrowSize / 2 + 4;
 

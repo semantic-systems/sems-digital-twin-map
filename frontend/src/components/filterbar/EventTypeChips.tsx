@@ -13,8 +13,8 @@ export function EventTypeChips({ counts = {} }: EventTypeChipsProps): React.Reac
     <div
       style={{
         display: 'flex',
-        flexWrap: 'wrap',
-        gap: 4,
+        flexWrap: 'nowrap',
+        gap: 3,
         alignItems: 'center',
       }}
     >
