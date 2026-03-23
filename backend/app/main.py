@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import threading
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -14,17 +13,32 @@ from .routers.layers import scenarios_router
 
 
 def _init_db() -> None:
-    """Run DB initialisation in a background thread so startup is non-blocking."""
+    """
+    Enable PostGIS, create all tables (if missing), run column migrations.
+    Safe: never drops data. Blocks startup so tables exist before first request.
+    """
+    from .db import Base, _engine  # noqa: PLC0415
+    from sqlalchemy import text
+
+    # Enable PostGIS — required for geometry columns; safe to call repeatedly
+    with _engine.begin() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
+    print("[startup] PostGIS extension ensured.")
+
+    Base.metadata.create_all(_engine)
+    print("[startup] Tables ensured.")
+
     try:
-        from data.build import build_if_uninitialized  # noqa: PLC0415
-        build_if_uninitialized()
+        from data.build import migrate_columns  # noqa: PLC0415
+        migrate_columns()
+        print("[startup] Migrations done.")
     except Exception as exc:  # noqa: BLE001
-        print(f"[startup] DB init failed: {exc}")
+        print(f"[startup] migrate_columns failed (non-fatal): {exc}")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    threading.Thread(target=_init_db, daemon=True).start()
+    _init_db()  # blocks until tables exist — fast, no external calls
     yield
 
 
