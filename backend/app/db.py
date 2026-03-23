@@ -10,12 +10,20 @@ from sqlalchemy.orm import Session, sessionmaker
 
 # ---------------------------------------------------------------------------
 # Make the existing src/ package importable regardless of where the process
-# is started from.  __file__ is  .../backend/app/db.py  →  go up two levels
-# to reach the project root, then descend into src/.
+# is started from.
+#   Local:  .../backend/app/db.py  → up two levels → project root → src/
+#   Docker: /app/app/db.py         → up one level  → /app         → src/
 # ---------------------------------------------------------------------------
-_SRC_PATH = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "src")
-)
+_HERE = os.path.dirname(__file__)
+for _levels_up in (2, 1):
+    _candidate = os.path.normpath(
+        os.path.join(_HERE, *[".."] * _levels_up, "src")
+    )
+    if os.path.isdir(_candidate):
+        _SRC_PATH = _candidate
+        break
+else:
+    _SRC_PATH = os.path.normpath(os.path.join(_HERE, "..", "..", "src"))
 if _SRC_PATH not in sys.path:
     sys.path.insert(0, _SRC_PATH)
 
