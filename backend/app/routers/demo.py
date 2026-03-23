@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import sys
 from datetime import datetime
 from typing import Any
 
@@ -15,16 +14,14 @@ from ..db import Report, UserReportState, get_session, get_db
 
 router = APIRouter(prefix="/api/v1/demo", tags=["demo"])
 
-# Ensure src/ is on the path so we can import data models
-_SRC_PATH = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "src")
-)
-if _SRC_PATH not in sys.path:
-    sys.path.insert(0, _SRC_PATH)
-
-_DEMO_JSON = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "src", "data", "demo_data.json")
-)
+_HERE_DEMO = os.path.dirname(__file__)
+for _lvl in (3, 2):
+    _candidate = os.path.normpath(os.path.join(_HERE_DEMO, *[".."] * _lvl, "src", "data", "demo_data.json"))
+    if os.path.exists(_candidate):
+        _DEMO_JSON = _candidate
+        break
+else:
+    _DEMO_JSON = os.path.normpath(os.path.join(_HERE_DEMO, "..", "..", "..", "src", "data", "demo_data.json"))
 
 # ---------------------------------------------------------------------------
 # Trickle state (module-level — one task per server process)
