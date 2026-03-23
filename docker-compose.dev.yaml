@@ -1,0 +1,6 @@
+# Dev override: exposes PostgreSQL to the host so the app can run locally in PyCharm.
+# Usage: see start_dev.sh
+services:
+  postgis:
+    ports:
+      - "5432:5432"
