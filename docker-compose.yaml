@@ -1,64 +1,31 @@
 version: '3'
 
 services:
-  python-map:
-    build: 
+  backend:
+    build:
       context: .
-      dockerfile: docker/Dockerfile_map
+      dockerfile: backend/Dockerfile
     ports:
-      - "8050:8050"
+      - "8052:8052"
     depends_on:
       - postgis
     networks:
-      - rescuemate_map
-    environment:
-      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
+      - sems_network
+    env_file:
+      - .env
     restart: always
-    volumes:
-      - post_data:/app/data
-    
-  python-server-events:
-    build: 
+
+  frontend:
+    build:
       context: .
-      dockerfile: docker/Dockerfile_server_events
+      dockerfile: frontend/Dockerfile
     ports:
-      - "8051"
-    environment:
-      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
+      - "80:80"
     depends_on:
-      - postgis
+      - backend
     networks:
-      - rescuemate_map
+      - sems_network
     restart: always
-  
-  python-server-nina:
-    build: 
-      context: .
-      dockerfile: docker/Dockerfile_server_nina
-    depends_on:
-      - postgis
-    environment:
-      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
-    networks:
-      - rescuemate_map
-    restart: always
-  
-  python-server-reports:
-    build: 
-      context: .
-      dockerfile: docker/Dockerfile_server_reports
-    environment:
-      SPARQL_ENDPOINT: ${SPARQL_ENDPOINT}
-      USERNAME: ${USERNAME}
-      PASSWORD: ${PASSWORD}
-    depends_on:
-      - postgis
-    networks:
-      - rescuemate_map
-    restart: always
-    volumes:
-      - post_data:/app/data
-  
 
   postgis:
     image: postgis/postgis
@@ -72,7 +39,7 @@ services:
     volumes:
       - postgis_data:/var/lib/postgresql/data
     networks:
-      - rescuemate_map
+      - sems_network
     restart: always
 
   pgadmin:
@@ -86,13 +53,12 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
-      - rescuemate_map
+      - sems_network
     restart: always
 
 volumes:
   postgis_data:
   pgadmin_data:
-  post_data:
 
 networks:
-  rescuemate_map:
+  sems_network:
