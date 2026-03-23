@@ -67,8 +67,6 @@ export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
   const effectiveLocations: LocationEntry[] =
     userLocations !== undefined && userLocations !== null ? userLocations : report.locations;
 
-  const hasGeoref = effectiveLocations.some((l) => l.osm_id);
-  const hasPending = !hasGeoref && effectiveLocations.length > 0;
   // Center is only useful when there are actual coordinates to pan to
   const hasCoords = effectiveLocations.some(
     (l) => (l.osm_id && l.boundingbox) || (l.lat != null && l.lon != null),
