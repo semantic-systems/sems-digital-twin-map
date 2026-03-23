@@ -17,4 +17,4 @@ ENV IN_DOCKER=true
 ENV PYTHONUNBUFFERED=1
 
 # Start the app with python main.py
-CMD python ./src/main.py
+CMD python ./src/main.py --demo
