@@ -289,7 +289,6 @@ const GroupMarker = React.memo(function GroupMarker({
   reports, setActiveReportId, optimisticAcknowledge,
   openDetail, closeDetail,
 }: GroupMarkerProps) {
-  const key = `${group.lat.toFixed(5)},${group.lon.toFixed(5)}`;
   const isGroupActive = group.dots.some((d) => d.report_id === activeReportId);
   const hasNew = group.dots.some((d) => d.new);
   const isMulti = group.dots.length > 1;
@@ -359,7 +358,7 @@ const GroupMarker = React.memo(function GroupMarker({
 
   // Stable onSelect: closes the Leaflet popup FIRST, then triggers store updates.
   const onSelect = useCallback((dot: DotDTO) => {
-    const { didSelectRef, map, setActiveReportId, username, optimisticAcknowledge, group, openDetail, markerRef } = s.current;
+    const { didSelectRef, map, setActiveReportId, username, optimisticAcknowledge, group, openDetail } = s.current;
     didSelectRef.current = true;
     map.closePopup(); // close aggregate popup before any re-renders
     setActiveReportId(dot.report_id);
