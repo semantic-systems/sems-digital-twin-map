@@ -14,14 +14,18 @@ from ..db import Report, UserReportState, get_session, get_db
 
 router = APIRouter(prefix="/api/v1/demo", tags=["demo"])
 
-_HERE_DEMO = os.path.dirname(__file__)
-for _lvl in (3, 2):
-    _candidate = os.path.normpath(os.path.join(_HERE_DEMO, *[".."] * _lvl, "src", "data", "demo_data.json"))
+# Walk up the directory tree to find src/data/demo_data.json (works both locally and in Docker)
+_search = os.path.abspath(os.path.dirname(__file__))
+_DEMO_JSON: str = ""
+for _ in range(6):
+    _candidate = os.path.join(_search, "src", "data", "demo_data.json")
     if os.path.exists(_candidate):
         _DEMO_JSON = _candidate
         break
-else:
-    _DEMO_JSON = os.path.normpath(os.path.join(_HERE_DEMO, "..", "..", "..", "src", "data", "demo_data.json"))
+    _parent = os.path.dirname(_search)
+    if _parent == _search:
+        break
+    _search = _parent
 
 # ---------------------------------------------------------------------------
 # Trickle state (module-level — one task per server process)

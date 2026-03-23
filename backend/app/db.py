@@ -9,22 +9,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 # ---------------------------------------------------------------------------
-# Make the existing src/ package importable regardless of where the process
-# is started from.
-#   Local:  .../backend/app/db.py  → up two levels → project root → src/
-#   Docker: /app/app/db.py         → up one level  → /app         → src/
-# ---------------------------------------------------------------------------
-_HERE = os.path.dirname(__file__)
-for _levels_up in (2, 1):
-    _candidate = os.path.normpath(
-        os.path.join(_HERE, *[".."] * _levels_up, "src")
-    )
+# Walk up the directory tree to find the src/ package (works both locally and in Docker)
+_search = os.path.abspath(os.path.dirname(__file__))
+_SRC_PATH: str = ""
+for _ in range(6):
+    _candidate = os.path.join(_search, "src")
     if os.path.isdir(_candidate):
         _SRC_PATH = _candidate
         break
-else:
-    _SRC_PATH = os.path.normpath(os.path.join(_HERE, "..", "..", "src"))
-if _SRC_PATH not in sys.path:
+    _parent = os.path.dirname(_search)
+    if _parent == _search:
+        break
+    _search = _parent
+if _SRC_PATH and _SRC_PATH not in sys.path:
     sys.path.insert(0, _SRC_PATH)
 
 # Now the existing models are importable as  data.model
