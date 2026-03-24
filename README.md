@@ -6,7 +6,11 @@ An interactive map to visualize datasets from the [Urban Data Hub](https://api.h
 ## Setup
 To quickly set up the project, follow these steps:
 1. Clone the repository (`git clone https://github.com/semantic-systems/sems-digital-twin-map`)
-2. Configure the `.env.example` file in the base directory and rename it to `.env`
+2. Configure the `example.env` file in the base directory and rename it to `.env`
 3. Launch the project with `docker compose up -d --build`
 
-This will launch a simple Dash Flask server accessible under [http://localhost:8050/](http://localhost:8050/). For more information on the setup, see [here](/docs/setup.md).
+This will start:
+- The **React frontend** accessible under [http://localhost:8050/](http://localhost:8050/)
+- The **FastAPI backend** accessible under [http://localhost:8052/](http://localhost:8052/) (API docs at `/docs`)
+
+For more information on the setup, see [here](/docs/setup.md).

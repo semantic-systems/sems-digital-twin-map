@@ -1,23 +1,27 @@
 # Servers
-This file explains the different servers and containers used in the project. For more information, see `docker-compose.yml` and the respective Dockerfiles in `docker/`.
+This file explains the different services and containers used in the project. For more information, see `docker-compose.yaml` and the respective Dockerfiles.
 
-## python-map
-The main container of the project. It contains the Dash app and the logic to request and display data. It is accessible by default under [http://localhost:8050/](http://localhost:8050/). Starting this container for the first time will trigger the `build()` function in `build.py`, which will create and configure the database and request the data from the API. Additionally, you can force a rebuild of the database by starting the project locally via `python src/main.py --rebuild`.
+## backend
+The FastAPI backend. Serves all data to the frontend via a REST API and handles per-user state. It is accessible by default under [http://localhost:8052/](http://localhost:8052/), with Swagger UI at [http://localhost:8052/docs](http://localhost:8052/docs). On first start, the backend automatically creates all required database tables. Source code is in `backend/`.
+
+## frontend
+The React (Vite) frontend. Serves the interactive map UI. It is accessible by default under [http://localhost:8050/](http://localhost:8050/). Source code is in `frontend/`.
 
 ## postgis
-A PostgreSQL database with the PostGIS extension. The database is accessible under `localhost:5432` with the credentials defined in the `.env` file. For more information on the database amd datamodel, see [datamodel.md](/docs/datamodel.md).
+A PostgreSQL database with the PostGIS extension. Inside Docker, other services connect to it via the hostname `postgis`. In development mode, it is also exposed on `localhost:5432`. Credentials are defined in the `.env` file. For more information on the data model, see [datamodel.md](/docs/datamodel.md).
 
 ## pgadmin
-A web interface to interact with the PostgreSQL database. It is accessible under [http://localhost:5050/](http://localhost:5050/). The credentials are defined in the `.env` file.
+A web interface to interact with the PostgreSQL database. It is accessible under [http://localhost:8080/](http://localhost:8080/). The credentials are defined in the `.env` file.
 
-## python-server-nina
-A simple Python server to request data from the NINA API. Every hour, this server requests the newest alerts from the NINA API, and saves them to the database. For more information, see `Alerts` in [datamodel.md](/docs/datamodel.md) and `server_nina.py`.
+## server_reports
+A background worker that continuously polls the RescueMate Knowledge Graph via SPARQL, and saves new social media posts and news headlines to the database. It runs on a fixed polling interval (`REQUEST_DELAY = 10` seconds). Source code is in `src/server_reports.py`, Dockerfile at `docker/Dockerfile_server_reports`.
 
-## python-server-reports
-A simple Python server that requests reports from the `python-social-media-retriever-api`, classifies them according to event type (e.g., "fire", "flood"), and saves them to the database. For more information, see `server_reports.py`.
+Requires the following environment variables (set in `.env`):
+- `SPARQL_ENDPOINT` — URL of the RescueMate SPARQL endpoint
+- `USERNAME` / `PASSWORD` — Keycloak credentials for the SPARQL endpoint
 
-## python-social-media-retriever-api
-A Python API that can be used to retriever social media data from specific social media platforms. This container is **not** contained in this project, but is from the [sems-social-media-retriever](https://github.com/semantic-systems/sems-social-media-retriever) project. For more information on setting this up, see [setup.md](/docs/setup.md) and the README file of the `sems-social-media-retriever` project.
+## server_nina
+A background worker that periodically fetches alerts from the [NINA API](https://nina.api.bund.dev/) and saves them to the database. Source code is in `src/server_nina.py`, Dockerfile at `docker/Dockerfile_server_nina`. Note: this service has a Dockerfile but is not yet included in `docker-compose.yaml`.
 
-## python-server-events
-A simple Python server that recieves POST requests with event data and saves them to the database. This server was used to recieve data about event propagation, which generated predictions of how one event (i.e. a fire, flood, etc) could spread. This server is currently unused, and it is unlikely that it will be used in the future. For more information, see `server_events.py`.
+## server_events (unused)
+A simple Python server that received POST requests with event propagation/prediction data and saved them to the database. This server is currently unused and is not included in `docker-compose.yaml`. Source code is in `src/server_events.py`.
