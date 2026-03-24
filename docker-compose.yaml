@@ -27,6 +27,18 @@ services:
       - sems_network
     restart: always
 
+  server_reports:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_server_reports
+    depends_on:
+      - postgis
+    networks:
+      - sems_network
+    env_file:
+      - .env
+    restart: always
+
   postgis:
     image: postgis/postgis
     platform: linux/amd64
