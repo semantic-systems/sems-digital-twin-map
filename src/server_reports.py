@@ -98,7 +98,7 @@ def fetch_social_media_posts(search_since: datetime):
 
     authorization_headers = {"Authorization": f"Bearer {get_keycloak_token()}"}
 
-    search_since_str = search_since.isoformat()
+    search_since_str = search_since.isoformat() + "Z"
 
     query = f"""
         PREFIX rm: <http://rescue-mate.de/resource/>
@@ -112,11 +112,11 @@ def fetch_social_media_posts(search_since: datetime):
                 schema:text ?text ;
                 schema:dateCreated ?date ;
                 rmo:hasDetectedCategory ?category ;
-                rm:predictedRelevance ?predictedRelevance ;
-                schema:url ?url ;
-                schema:author ?user .
-            ?user rm:socialMediaServiceName ?platform .
+                rm:predictedRelevance ?predictedRelevance .
+            OPTIONAL {{ ?post schema:url ?url }}
+            OPTIONAL {{ ?post schema:author ?user }}
             OPTIONAL {{ ?user schema:name ?username }}
+            OPTIONAL {{            ?user rm:socialMediaServiceName ?platform }}
             OPTIONAL {{ ?user schema:identifier ?user_identifier }}
             OPTIONAL {{
                 ?post rm:hasMentionedLocation ?location_mention .
