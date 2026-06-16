@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import requests
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from shapely import polygonize, GeometryCollection, LineString, wkt
 from shapely.geometry import mapping
@@ -98,7 +98,8 @@ def fetch_social_media_posts(search_since: datetime):
 
     authorization_headers = {"Authorization": f"Bearer {get_keycloak_token()}"}
 
-    search_since_str = search_since.isoformat() + "Z"
+    search_since_str = search_since.isoformat().replace('+00:00', 'Z')
+
 
     query = f"""
         PREFIX rm: <http://rescue-mate.de/resource/>
@@ -423,7 +424,10 @@ if __name__ == '__main__':
     # an initial sleep, because the api might not be ready yet
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)
-    start_date = datetime.now()
+    start_date = datetime.now(tz=timezone.utc)
+    print(
+        f'Starting to fetch posts from {start_date.strftime("%Y-%m-%d %H:%M:%S")} UTC'
+    )
     search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
     while True:
         try:
