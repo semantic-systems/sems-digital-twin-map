@@ -12,8 +12,9 @@ SQLAlchemy Session and return plain Python / Pydantic objects.
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import cast, or_
+from sqlalchemy import String, cast, or_
 from sqlalchemy import Text as SaText
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -291,7 +292,9 @@ def build_report_query(
         )
 
     if eff_events:
-        q = q.filter(Report.event_type.in_(eff_events))
+        q = q.filter(
+            Report.event_types.overlap(cast(eff_events, PG_ARRAY(String)))
+        )
 
     if eff_relevance:
         q = q.filter(Report.relevance.in_(eff_relevance))
@@ -353,7 +356,7 @@ def filter_by_display(
         if hide_unflagged and (r.author or "") not in flagged_authors:
             continue
 
-        effective_locs: list = user_locs_map.get(r.id) or r.locations or []
+        effective_locs: list = (user_locs_map[r.id] if r.id in user_locs_map else r.locations) or []
         is_localized = any(
             isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
         )
@@ -389,7 +392,7 @@ def build_report_dto(
     flagged_authors = flagged_authors or set()
     new_ids = new_ids or set()
 
-    effective_locs_raw = user_locs_map.get(report.id) or report.locations or []
+    effective_locs_raw = (user_locs_map[report.id] if report.id in user_locs_map else report.locations) or []
     original_locs_raw = report.original_locations or report.locations or []
 
     effective_locs = _coerce_locations(effective_locs_raw)
@@ -421,7 +424,7 @@ def build_report_dto(
         url=report.url,
         platform=report.platform,
         timestamp=report.timestamp,
-        event_type=report.event_type,
+        event_types=report.event_types or [report.event_type] if report.event_type else [],
         relevance=report.relevance,
         author=report.author,
         locations=effective_locs,
@@ -474,15 +477,16 @@ def get_reports(
         eff_relevance=eff_relevance,
         demo_mode=demo_mode,
     )
-    all_base_rows = all_base_q.with_entities(Report.id, Report.event_type, Report.platform, Report.relevance).all()
+    all_base_rows = all_base_q.with_entities(Report.id, Report.event_types, Report.platform, Report.relevance).all()
 
     event_type_totals: dict[str, int] = {}
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
-    for (rid, et, plat, rel) in all_base_rows:
+    for (rid, ets, plat, rel) in all_base_rows:
         if not show_hidden and rid in seen_ids:
             continue
-        event_type_totals[et] = event_type_totals.get(et, 0) + 1
+        for et in (ets or []):
+            event_type_totals[et] = event_type_totals.get(et, 0) + 1
         if plat:
             platform_counts[plat] = platform_counts.get(plat, 0) + 1
         if rel:
@@ -783,7 +787,7 @@ def build_dots(
 
     dots: list[dict] = []
     for r in filtered:
-        effective_locs: list = user_locs_map.get(r.id) or r.locations or []
+        effective_locs: list = (user_locs_map[r.id] if r.id in user_locs_map else r.locations) or []
         for loc in effective_locs:
             if not isinstance(loc, dict):
                 continue
@@ -810,7 +814,7 @@ def build_dots(
                     "author": r.author or "",
                     "platform": r.platform,
                     "timestamp": r.timestamp.strftime("%H:%M %d.%m.%Y"),
-                    "event_type": r.event_type,
+                    "event_types": r.event_types or ([r.event_type] if r.event_type else []),
                     "relevance": r.relevance,
                     "url": r.url,
                 }

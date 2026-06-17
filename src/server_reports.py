@@ -179,13 +179,14 @@ def fetch_social_media_posts(search_since: datetime):
                 geo_linked_entities.append(geo_linked_entity)
 
 
+            raw_category = result.get('category', {}).get('value', 'http://rescue-mate.de/resource/not_humanitarian')
             posts[post_id] = {
                 'id': result['post']['value'].split('/')[-1],
                 'text': result['text']['value'],
                 'timestamp': result['date']['value'],
                 'platform': result['platform']['value'].split('/')[-1],
                 'url': result.get('url', {"value": ""})['value'],
-                'event_type': result.get('category', {}).get('value', 'http://rescue-mate.de/resource/not_humanitarian'),
+                'event_types': [raw_category],
                 'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
                 'geo_linked_entities': geo_linked_entities,
                 'author': (
@@ -194,6 +195,9 @@ def fetch_social_media_posts(search_since: datetime):
                     result.get('user', {}).get('value', '').split('/')[-1]
                 )}
         else:
+            raw_category = result.get('category', {}).get('value', '')
+            if raw_category and raw_category not in posts[post_id]['event_types']:
+                posts[post_id]['event_types'].append(raw_category)
             geo_linked_entity = {}
             if 'location_mention_surface_form' in result:
                 geo_linked_entity['mention'] = result['location_mention_surface_form']['value']
@@ -214,7 +218,7 @@ def fetch_social_media_posts(search_since: datetime):
                         'name': result['name']['value'],
                         'geojson': wkt_to_geojson(result["wkt"]['value']),
                     }
-            if geo_linked_entity:
+            if geo_linked_entity and geo_linked_entity["mention"] not in {x["mention"] for x in posts[post_id]['geo_linked_entities']}:
                 if 'location' not in geo_linked_entity:
                     geo_linked_entity['location'] = None
                 posts[post_id]['geo_linked_entities'].append(geo_linked_entity)
@@ -293,9 +297,11 @@ def save_posts(posts: list):
             platform = f'rss/{json_post["feed"]}'
 
 
-        if json_post['event_type'] == 'http://rescue-mate.de/resource/not_humanitarian':
-            json_post['relevance'] = 'http://rescue-mate.de/resource/none'
+        raw_types = json_post.get('event_types', [])
+        mapped_types = list({event_mapping.get(et, 'Sonstiges') for et in raw_types}) or ['Sonstiges']
 
+        if 'http://rescue-mate.de/resource/not_humanitarian' in raw_types:
+            json_post['relevance'] = 'http://rescue-mate.de/resource/none'
 
         # create a new post object
         report = Report(
@@ -305,7 +311,8 @@ def save_posts(posts: list):
             platform=platform,
             timestamp=timestamp,
             relevance=relevance_mapping[json_post['relevance']],
-            event_type=event_mapping[json_post['event_type']],
+            event_type=mapped_types[0],     # legacy column — keep populated
+            event_types=mapped_types,
             locations=locations,
             original_locations=locations,
             author=json_post.get('author', ''),

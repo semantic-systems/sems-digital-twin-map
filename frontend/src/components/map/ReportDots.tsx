@@ -130,7 +130,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
         </p>
       )}
       <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>
-        {dot.event_type} · {dot.timestamp}
+        {(dot.event_types ?? []).join(', ')} · {dot.timestamp}
       </p>
       <div style={{ display: 'flex', gap: 4 }}>
         <a href={dot.url} target="_blank" rel="noopener noreferrer"
@@ -210,7 +210,7 @@ function MultiDotPopup({ dots, onSelect }: {
                 </p>
               </div>
               <span style={{ fontSize: 10, color: '#6b7280', paddingLeft: 13 }}>
-                {dot.author ? `@${dot.author} · ` : ''}{dot.platform} · {dot.event_type} · {dot.timestamp}
+                {dot.author ? `@${dot.author} · ` : ''}{dot.platform} · {(dot.event_types ?? []).join(', ')} · {dot.timestamp}
               </span>
             </div>
           ))}

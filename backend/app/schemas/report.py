@@ -34,7 +34,7 @@ class ReportDTO(BaseModel):
     url: str
     platform: str
     timestamp: datetime
-    event_type: str
+    event_types: list[str] = []
     relevance: str
     author: str | None = None
     locations: list[LocationEntry] = []

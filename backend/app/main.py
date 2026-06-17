@@ -72,6 +72,8 @@ def _init_db() -> None:
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS seen BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author_flagged BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE user_report_state ADD COLUMN IF NOT EXISTS new BOOLEAN NOT NULL DEFAULT TRUE",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS event_types VARCHAR[]",
+        "UPDATE reports SET event_types = ARRAY[event_type]::VARCHAR[] WHERE event_types IS NULL OR event_types = '{}'",
     ]
 
     for sql in statements:

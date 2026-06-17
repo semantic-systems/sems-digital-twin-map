@@ -26,7 +26,7 @@ export interface ReportDTO {
   url: string;
   platform: string;
   timestamp: string; // ISO
-  event_type: string;
+  event_types: string[];
   relevance: 'high' | 'medium' | 'low' | 'none';
   author?: string | null;
   locations: LocationEntry[];
@@ -77,7 +77,7 @@ export interface DotDTO {
   author: string;
   platform: string;
   timestamp: string;
-  event_type: string;
+  event_types: string[];
   relevance: string;
   url: string;
 }

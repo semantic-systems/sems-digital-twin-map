@@ -255,7 +255,8 @@ class Report(Base):
     url = Column(String, nullable=False)
     platform = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
-    event_type = Column(String, nullable=False)
+    event_type = Column(String, nullable=False)   # legacy — kept for migration backfill
+    event_types = Column(ARRAY(String), nullable=True)
     relevance = Column(String, nullable=False)
     locations = Column(JSON, nullable=True)
     original_locations = Column(JSON, nullable=True)   # snapshot at import time, never overwritten

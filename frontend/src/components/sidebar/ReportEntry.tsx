@@ -196,7 +196,7 @@ export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
     geoInfo.icon,
     report.author ? `@${report.author}` : null,
     formatPlatform(report.platform),
-    report.event_type,
+    (report.event_types ?? []).join(', ') || null,
     t(`rel_${report.relevance}`),
     formatTimestamp(report.timestamp),
   ]
