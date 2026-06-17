@@ -120,6 +120,15 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
       <p style={{ fontSize: 11, color: '#6b7280', marginBottom: 2 }}>
         {dot.author ? `@${dot.author} · ` : ''}{dot.platform}
       </p>
+      {(dot.location_display || dot.location_name) && (
+        <p style={{ fontSize: 11, color: '#374151', marginBottom: 2, fontWeight: 500 }}>
+          📍 {dot.location_display}
+          {dot.location_display && dot.location_name && dot.location_display !== dot.location_name && (
+            <span style={{ fontWeight: 400, color: '#6b7280' }}> · {dot.location_name}</span>
+          )}
+          {!dot.location_display && dot.location_name}
+        </p>
+      )}
       <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>
         {dot.event_type} · {dot.timestamp}
       </p>
@@ -272,7 +281,9 @@ function DetailOverlay({
 
 interface GroupMarkerProps {
   group: DotGroup;
+  groupKey: string;
   activeReportId: number | null;
+  activeGroupKeyRef: React.MutableRefObject<string | null>;
   username: string | null;
   map: L.Map;
   didSelectRef: React.MutableRefObject<boolean>;
@@ -284,7 +295,7 @@ interface GroupMarkerProps {
 }
 
 const GroupMarker = React.memo(function GroupMarker({
-  group, activeReportId, username, map,
+  group, groupKey, activeReportId, activeGroupKeyRef, username, map,
   didSelectRef,
   reports, setActiveReportId, optimisticAcknowledge,
   openDetail, closeDetail,
@@ -313,13 +324,13 @@ const GroupMarker = React.memo(function GroupMarker({
 
   // Mutable ref so stable closures always see latest values.
   const s = useRef({
-    isMulti, group, activeReportId, username, reports,
+    isMulti, group, groupKey, activeReportId, activeGroupKeyRef, username, reports,
     setActiveReportId, optimisticAcknowledge,
     didSelectRef, map,
     openDetail, closeDetail, markerRef,
   });
   s.current = {
-    isMulti, group, activeReportId, username, reports,
+    isMulti, group, groupKey, activeReportId, activeGroupKeyRef, username, reports,
     setActiveReportId, optimisticAcknowledge,
     didSelectRef, map,
     openDetail, closeDetail, markerRef,
@@ -328,10 +339,14 @@ const GroupMarker = React.memo(function GroupMarker({
   // Identity-stable event handlers — useEventHandlers never removes/re-adds them.
   const eventHandlers = useMemo(() => ({
     click: () => {
-      const { isMulti, group, activeReportId, username, reports, setActiveReportId, optimisticAcknowledge } = s.current;
+      const { isMulti, group, groupKey, activeReportId, activeGroupKeyRef, username, reports, setActiveReportId, optimisticAcknowledge } = s.current;
       if (!isMulti) {
         const dot = group.dots[0];
-        const newId = dot.report_id === activeReportId ? null : dot.report_id;
+        // Only deactivate when clicking the exact same marker that's already active.
+        // A different dot of the same report (different position) keeps the report active.
+        const isSameMarker = dot.report_id === activeReportId && activeGroupKeyRef.current === groupKey;
+        const newId = isSameMarker ? null : dot.report_id;
+        activeGroupKeyRef.current = newId !== null ? groupKey : null;
         setActiveReportId(newId);
         if (newId !== null && username) {
           const report = reports.find((r) => r.id === newId);
@@ -406,6 +421,7 @@ export function ReportDots(): React.ReactElement {
 
   const groups = useMemo(() => clusterDots(visibleDots, map), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   const didSelectRef = useRef(false);
+  const activeGroupKeyRef = useRef<string | null>(null);
 
   // Detail overlay state — separate from Leaflet popup system entirely.
   const [detailState, setDetailState] = useState<{
@@ -463,7 +479,9 @@ export function ReportDots(): React.ReactElement {
           <GroupMarker
             key={key}
             group={group}
+            groupKey={key}
             activeReportId={activeReportId}
+            activeGroupKeyRef={activeGroupKeyRef}
             username={username}
             map={map}
             didSelectRef={didSelectRef}

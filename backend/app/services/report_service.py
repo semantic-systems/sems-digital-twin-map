@@ -805,6 +805,7 @@ def build_dots(
                     "seen": r.id in seen_ids,
                     "new": r.id in new_ids,
                     "location_name": loc.get("name") or loc.get("display_name") or "",
+                    "location_display": loc.get("mention") or "",
                     "text": r.text[:300],
                     "author": r.author or "",
                     "platform": r.platform,
