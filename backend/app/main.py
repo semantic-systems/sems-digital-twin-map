@@ -18,7 +18,7 @@ def _init_db() -> None:
     Wait for PostgreSQL, then ensure all critical tables exist.
     Each statement runs in its own transaction so one failure never aborts the rest.
     """
-    from .db import _engine  # noqa: PLC0415
+    from .db import Base, _engine  # noqa: PLC0415
     from sqlalchemy import text
 
     # Wait for PostgreSQL to be ready (depends_on only waits for container start)
@@ -33,6 +33,9 @@ def _init_db() -> None:
             time.sleep(2)
     else:
         print("[startup] PostgreSQL not ready after 60s — proceeding anyway.")
+
+    Base.metadata.create_all(_engine)
+    print("[startup] All ORM tables ensured.")
 
     statements = [
         "CREATE EXTENSION IF NOT EXISTS postgis",

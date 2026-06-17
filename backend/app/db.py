@@ -86,6 +86,7 @@ def get_db() -> Generator[Session, None, None]:
 __all__ = [
     "get_db",
     "get_session",
+    "_engine",
     # re-exported models so other modules can import from a single place
     "Base",
     "Colormap",
