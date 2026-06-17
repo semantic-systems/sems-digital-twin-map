@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useUserStore } from './store/useUserStore';
 import { useFilterStore } from './store/useFilterStore';
 import { useReportStore } from './store/useReportStore';
@@ -21,6 +21,9 @@ function AppInner(): React.ReactElement {
 
   usePolling();
 
+  // Tracks the latest loadData call so stale concurrent responses are discarded.
+  const loadSeqRef = useRef(0);
+
   const buildParams = (limit: number) => ({
     username: username!,
     loc_filter: locFilter,
@@ -36,6 +39,7 @@ function AppInner(): React.ReactElement {
 
   const loadData = async (limit: number) => {
     if (!username) return;
+    const seq = ++loadSeqRef.current;
     try {
       const params = buildParams(limit);
 
@@ -44,6 +48,9 @@ function AppInner(): React.ReactElement {
         fetchReports(params),
         fetchDots(params),
       ]);
+
+      // Discard if a newer loadData started while this one was in-flight.
+      if (seq !== loadSeqRef.current) return;
 
       setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more);
       setDots(dotsRes.dots);
