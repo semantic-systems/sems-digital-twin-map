@@ -282,6 +282,8 @@ def build_report_query(
 
     if demo_mode:
         q = q.filter(Report.identifier.like("demo-%"))
+    else:
+        q = q.filter(~Report.identifier.like("demo-%"))
 
     if eff_platform:
         q = q.filter(
