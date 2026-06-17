@@ -89,24 +89,26 @@ export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
   };
 
   const handleCenter = () => {
-    const georef = effectiveLocations.find((l) => l.osm_id && l.boundingbox);
-    if (georef?.boundingbox) {
-      const bb = georef.boundingbox;
-      // boundingbox: [south, north, west, east]
-      requestFitBounds([
-        [Number(bb[0]), Number(bb[2])],
-        [Number(bb[1]), Number(bb[3])],
-      ]);
-    } else {
-      const withCoords = effectiveLocations.find((l) => l.lat && l.lon);
-      if (withCoords) {
-        const lat = Number(withCoords.lat);
-        const lon = Number(withCoords.lon);
-        requestFitBounds([
-          [lat - 0.01, lon - 0.01],
-          [lat + 0.01, lon + 0.01],
-        ]);
+    let south = Infinity, north = -Infinity, west = Infinity, east = -Infinity;
+
+    for (const l of effectiveLocations) {
+      if (l.boundingbox) {
+        // boundingbox: [south, north, west, east]
+        south = Math.min(south, Number(l.boundingbox[0]));
+        north = Math.max(north, Number(l.boundingbox[1]));
+        west  = Math.min(west,  Number(l.boundingbox[2]));
+        east  = Math.max(east,  Number(l.boundingbox[3]));
+      } else if (l.lat && l.lon) {
+        const lat = Number(l.lat), lon = Number(l.lon);
+        south = Math.min(south, lat - 0.01);
+        north = Math.max(north, lat + 0.01);
+        west  = Math.min(west,  lon - 0.01);
+        east  = Math.max(east,  lon + 0.01);
       }
+    }
+
+    if (south !== Infinity) {
+      requestFitBounds([[south, west], [north, east]]);
     }
   };
 

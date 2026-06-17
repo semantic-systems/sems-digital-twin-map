@@ -56,7 +56,7 @@ SEARCH_OPTIONAL_KEYWORDS = ['sturm', 'storm', 'flut', 'flood', 'unwetter', 'rege
 SEARCH_N_KEYWORDS = 1
 SEARCH_W_REGEX = '.*(hamburg).*'
 SEARCH_B_REGEX = '.*(berlin).*'
-SEARCH_LOOK_BACK = 24*60    # how many minutes to look back
+SEARCH_LOOK_BACK = 30    # how many minutes to look back
 
 sparql = SPARQLWrapper(SPARQL_ENDPOINT)
 
@@ -284,12 +284,12 @@ def save_posts(posts: list):
 
         platform = json_post['platform']
 
-        text_field_key = TEXT_FIELD[platform]
-        text = json_post[text_field_key]
+        text_field_key = TEXT_FIELD.get(platform, 'text')
+        text = json_post.get(text_field_key) or json_post.get('text', '')
 
         # special formatting for RSS feeds
         # i.e. instead of 'rss', save 'rss/ndr'
-        if platform == 'rss':
+        if platform == 'rss' and json_post.get('feed'):
             platform = f'rss/{json_post["feed"]}'
 
 
