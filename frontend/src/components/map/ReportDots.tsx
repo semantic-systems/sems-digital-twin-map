@@ -9,6 +9,16 @@ import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
 import type { DotDTO, ReportDTO } from '../../types';
 
+function formatTimestamp(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    });
+  } catch {
+    return iso;
+  }
+}
+
 const RELEVANCE_COLORS: Record<string, string> = {
   high: '#b91c1c',
   medium: '#ea580c',
@@ -130,7 +140,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
         </p>
       )}
       <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>
-        {(dot.event_types ?? []).join(', ')} · {dot.timestamp}
+        {(dot.event_types ?? []).join(', ')} · {formatTimestamp(dot.timestamp)}
       </p>
       <div style={{ display: 'flex', gap: 4 }}>
         <a href={dot.url} target="_blank" rel="noopener noreferrer"
@@ -210,7 +220,7 @@ function MultiDotPopup({ dots, onSelect }: {
                 </p>
               </div>
               <span style={{ fontSize: 10, color: '#6b7280', paddingLeft: 13 }}>
-                {dot.author ? `@${dot.author} · ` : ''}{dot.platform} · {(dot.event_types ?? []).join(', ')} · {dot.timestamp}
+                {dot.author ? `@${dot.author} · ` : ''}{dot.platform} · {(dot.event_types ?? []).join(', ')} · {formatTimestamp(dot.timestamp)}
               </span>
             </div>
           ))}
