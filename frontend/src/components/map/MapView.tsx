@@ -21,6 +21,7 @@ import { updateLocations, fetchDots } from '../../api/reports';
 import { ReportDots } from './ReportDots';
 import { ActiveReportPolygons } from './ActiveReportPolygons';
 import { OffscreenArrows } from './OffscreenArrows';
+import { SpatialFilterLayer } from './SpatialFilterLayer';
 import type { LocationEntry } from '../../types';
 
 // ---- PickModeHandler ----
@@ -237,6 +238,10 @@ export function MapView(): React.ReactElement {
 
       {/* Layers */}
       <LayerRenderer />
+
+      {/* Spatial area filter — rendered before event polygons so location
+          polygons always appear above the dim mask */}
+      <SpatialFilterLayer />
 
       {/* Report dots */}
       <ReportDots />

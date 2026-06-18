@@ -1,11 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { t } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
+import { useFilterStore } from '../../store/useFilterStore';
+import { pointInPolygon } from '../../utils/geo';
 import { ReportEntry } from './ReportEntry';
 
 export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { reports, activeReportId, hasMore } = useReportStore();
+  const { spatialPolygon } = useFilterStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const visibleReports = useMemo(() => {
+    if (!spatialPolygon) return reports;
+    return reports.filter((r) => {
+      const locs = r.user_state.locations ?? r.locations;
+      return locs.some(
+        (loc) =>
+          loc.lat != null &&
+          loc.lon != null &&
+          pointInPolygon(loc.lat as number, loc.lon as number, spatialPolygon),
+      );
+    });
+  }, [reports, spatialPolygon]);
 
   useEffect(() => {
     if (activeReportId === null || !scrollRef.current) return;
@@ -13,7 +29,7 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [activeReportId]);
 
-  if (reports.length === 0) {
+  if (visibleReports.length === 0) {
     return (
       <div
         style={{
@@ -43,7 +59,7 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
       }}
       className="sidebar-scroll"
     >
-      {reports.map((report) => (
+      {visibleReports.map((report) => (
         <ReportEntry key={report.id} report={report} />
       ))}
       {hasMore && (

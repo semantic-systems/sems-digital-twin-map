@@ -8,6 +8,7 @@ import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
 import type { DotDTO, ReportDTO } from '../../types';
+import { pointInPolygon } from '../../utils/geo';
 
 function formatTimestamp(iso: string): string {
   try {
@@ -418,16 +419,23 @@ export function ReportDots(): React.ReactElement {
   const map = useMap();
   const { dots, activeReportId, setActiveReportId, optimisticAcknowledge, reports } = useReportStore();
   const { username } = useUserStore();
-  const { showHidden } = useFilterStore();
+  const { showHidden, spatialPolygon } = useFilterStore();
 
   const [zoom, setZoom] = useState(() => map.getZoom());
   useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
 
   const visibleDots = useMemo(() => {
-    if (showHidden) return dots;
-    const hiddenIds = new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
-    return dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
-  }, [dots, showHidden, reports]);
+    const hiddenIds = showHidden
+      ? new Set<number>()
+      : new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
+    let result = showHidden
+      ? dots
+      : dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
+    if (spatialPolygon) {
+      result = result.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
+    }
+    return result;
+  }, [dots, showHidden, reports, spatialPolygon]);
 
   const groups = useMemo(() => clusterDots(visibleDots, map), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   const didSelectRef = useRef(false);

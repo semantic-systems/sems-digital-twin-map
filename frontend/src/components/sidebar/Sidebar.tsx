@@ -1,15 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../../i18n';
 import { useFilterStore } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
+import { pointInPolygon } from '../../utils/geo';
 import { fetchDemoStatus, resetDemo } from '../../api/demo';
 import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch } = useFilterStore();
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon } = useFilterStore();
   const { reports, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+
+  const visibleCount = useMemo(() => {
+    if (!spatialPolygon) return reports.length;
+    return reports.filter((r) => {
+      const locs = r.user_state.locations ?? r.locations;
+      return locs.some(
+        (loc) => loc.lat != null && loc.lon != null &&
+          pointInPolygon(loc.lat as number, loc.lon as number, spatialPolygon),
+      );
+    }).length;
+  }, [reports, spatialPolygon]);
   const [collapsed, setCollapsed] = useState(false);
 
   const [demoStatus, setDemoStatus] = useState<DemoStatus | null>(null);
@@ -172,7 +184,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
             </span>
           )}
           <span style={{ fontSize: 11, color: '#4b5563' }}>
-            ({reports.length})
+            ({visibleCount}{spatialPolygon ? ` / ${reports.length}` : ''})
           </span>
         </div>
 

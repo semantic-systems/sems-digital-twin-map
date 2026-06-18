@@ -56,6 +56,10 @@ export function FilterBar(): React.ReactElement {
     activeLayers,
     availableLayers,
     toggleLayer,
+    spatialPolygon,
+    spatialDrawMode,
+    setSpatialPolygon,
+    setSpatialDrawMode,
   } = useFilterStore();
 
   const { eventTypeTotals, relevanceTotals } = useReportStore();
@@ -183,6 +187,65 @@ export function FilterBar(): React.ReactElement {
             <input type="checkbox" checked={showUnflagged} onChange={(e) => setShowUnflagged(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('show_unflagged')}
           </label>
+        </div>
+
+        <Divider />
+
+        {/* Spatial area filter controls */}
+        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+          {!spatialDrawMode && !spatialPolygon && (
+            <button
+              onClick={() => setSpatialDrawMode(true)}
+              title="Bereich auf der Karte zeichnen"
+              style={{
+                fontSize: 11, padding: '2px 9px', borderRadius: 999,
+                border: '1px solid #d1d5db', background: 'transparent',
+                color: '#374151', cursor: 'pointer', fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ✏ Bereich
+            </button>
+          )}
+          {spatialDrawMode && (
+            <>
+              <span style={{ fontSize: 11, color: '#3b82f6', fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+                Klicken zum Zeichnen…
+              </span>
+              <button
+                onClick={() => setSpatialDrawMode(false)}
+                style={{
+                  fontSize: 11, padding: '2px 8px', borderRadius: 999,
+                  border: '1px solid #d1d5db', background: 'transparent',
+                  color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                Abbrechen
+              </button>
+            </>
+          )}
+          {spatialPolygon && !spatialDrawMode && (
+            <>
+              <span style={{
+                fontSize: 11, padding: '2px 8px', borderRadius: 999,
+                background: '#fffbeb', color: '#b45309',
+                border: '1px solid #fcd34d', whiteSpace: 'nowrap',
+              }}>
+                ◈ Bereich aktiv
+              </span>
+              <button
+                onClick={() => setSpatialPolygon(null)}
+                style={{
+                  fontSize: 11, padding: '2px 7px', borderRadius: 999,
+                  border: '1px solid #d1d5db', background: 'transparent',
+                  color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit',
+                }}
+                title="Bereich entfernen"
+              >
+                ✕
+              </button>
+            </>
+          )}
         </div>
       </div>
 

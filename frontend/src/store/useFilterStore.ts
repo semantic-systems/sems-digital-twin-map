@@ -42,6 +42,9 @@ interface FilterStore {
   availableLayers: LayerDTO[];
   autoUpdate: boolean;
   search: string;
+  // Spatial area filter — [lat, lon][] polygon drawn on the map
+  spatialPolygon: [number, number][] | null;
+  spatialDrawMode: boolean;
 
   setLocFilter: (v: FilterStore['locFilter']) => void;
   setRelevances: (v: string[]) => void;
@@ -59,6 +62,8 @@ interface FilterStore {
   setAvailableLayers: (layers: LayerDTO[]) => void;
   setAutoUpdate: (v: boolean) => void;
   setSearch: (v: string) => void;
+  setSpatialPolygon: (p: [number, number][] | null) => void;
+  setSpatialDrawMode: (v: boolean) => void;
 }
 
 export const useFilterStore = create<FilterStore>()(
@@ -78,6 +83,8 @@ export const useFilterStore = create<FilterStore>()(
       availableLayers: [],
       autoUpdate: false,
       search: '',
+      spatialPolygon: null,
+      spatialDrawMode: false,
 
       setLocFilter: (locFilter) => set({ locFilter }),
       setRelevances: (relevances) => set({ relevances }),
@@ -115,7 +122,17 @@ export const useFilterStore = create<FilterStore>()(
       },
       setAutoUpdate: (autoUpdate) => set({ autoUpdate }),
       setSearch: (search) => set({ search }),
+      setSpatialPolygon: (spatialPolygon) => set({ spatialPolygon, spatialDrawMode: false }),
+      setSpatialDrawMode: (spatialDrawMode) => set({ spatialDrawMode }),
     }),
-    { name: 'sems-filters-v2' },
+    {
+      name: 'sems-filters-v2',
+      // Don't persist draw mode — always start idle
+      partialize: (s) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { spatialDrawMode, ...rest } = s;
+        return rest;
+      },
+    },
   ),
 );
