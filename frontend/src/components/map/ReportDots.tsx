@@ -313,21 +313,31 @@ const GroupMarker = React.memo(function GroupMarker({
 }: GroupMarkerProps) {
   const isGroupActive = group.dots.some((d) => d.report_id === activeReportId);
   const hasNew = group.dots.some((d) => d.new);
-  const isMulti = group.dots.length > 1;
 
-  const primaryDot = useMemo(
-    () => [...group.dots].sort(
+  // Deduplicate by report_id — multiple locations from one event count as one.
+  const dedupedDots = useMemo(() => {
+    const byReport = new Map<number, DotDTO>();
+    for (const d of group.dots) {
+      const existing = byReport.get(d.report_id);
+      if (!existing || (RELEVANCE_ORDER[d.relevance] ?? 3) < (RELEVANCE_ORDER[existing.relevance] ?? 3)) {
+        byReport.set(d.report_id, d);
+      }
+    }
+    return [...byReport.values()].sort(
       (a, b) => (RELEVANCE_ORDER[a.relevance] ?? 3) - (RELEVANCE_ORDER[b.relevance] ?? 3),
-    )[0],
-    [group.dots],
-  );
+    );
+  }, [group.dots]);
+
+  const isMulti = dedupedDots.length > 1;
+
+  const primaryDot = dedupedDots[0];
 
   const color = isGroupActive ? '#3b82f6' : (RELEVANCE_COLORS[primaryDot.relevance] ?? '#6b7280');
   const size = isGroupActive ? 26 : isMulti ? 24 : 20;
 
   const icon = useMemo(
-    () => makeDotIcon({ color, size, count: group.dots.length, hasNew, isActive: isGroupActive }),
-    [color, size, group.dots.length, hasNew, isGroupActive],
+    () => makeDotIcon({ color, size, count: dedupedDots.length, hasNew, isActive: isGroupActive }),
+    [color, size, dedupedDots.length, hasNew, isGroupActive],
   );
 
   // Ref to the Leaflet Marker instance so we can reopen the popup programmatically.
@@ -335,13 +345,13 @@ const GroupMarker = React.memo(function GroupMarker({
 
   // Mutable ref so stable closures always see latest values.
   const s = useRef({
-    isMulti, group, groupKey, activeReportId, activeGroupKeyRef, username, reports,
+    isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports,
     setActiveReportId, optimisticAcknowledge,
     didSelectRef, map,
     openDetail, closeDetail, markerRef,
   });
   s.current = {
-    isMulti, group, groupKey, activeReportId, activeGroupKeyRef, username, reports,
+    isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports,
     setActiveReportId, optimisticAcknowledge,
     didSelectRef, map,
     openDetail, closeDetail, markerRef,
@@ -350,9 +360,9 @@ const GroupMarker = React.memo(function GroupMarker({
   // Identity-stable event handlers — useEventHandlers never removes/re-adds them.
   const eventHandlers = useMemo(() => ({
     click: () => {
-      const { isMulti, group, groupKey, activeReportId, activeGroupKeyRef, username, reports, setActiveReportId, optimisticAcknowledge } = s.current;
+      const { isMulti, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports, setActiveReportId, optimisticAcknowledge } = s.current;
       if (!isMulti) {
-        const dot = group.dots[0];
+        const dot = dedupedDots[0];
         // Only deactivate when clicking the exact same marker that's already active.
         // A different dot of the same report (different position) keeps the report active.
         const isSameMarker = dot.report_id === activeReportId && activeGroupKeyRef.current === groupKey;
@@ -404,8 +414,8 @@ const GroupMarker = React.memo(function GroupMarker({
     <Marker ref={markerRef} position={[group.lat, group.lon]} icon={icon} eventHandlers={eventHandlers}>
       <Popup>
         {isMulti
-          ? <MultiDotPopup dots={group.dots} onSelect={onSelect} />
-          : <DotPopup dot={group.dots[0]} />}
+          ? <MultiDotPopup dots={dedupedDots} onSelect={onSelect} />
+          : <DotPopup dot={dedupedDots[0]} />}
       </Popup>
     </Marker>
   );
