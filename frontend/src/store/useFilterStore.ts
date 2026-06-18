@@ -28,7 +28,9 @@ export function getLayerColor(layerId: number, availableLayers: LayerDTO[]): str
 }
 
 interface FilterStore {
-  locFilter: 'all' | 'localized' | 'pending' | 'unlocalized';
+  locShowLocalized: boolean;
+  locShowPending: boolean;
+  locShowUnlocalized: boolean;
   relevances: string[];
   platforms: string[];
   allPlatforms: string[];
@@ -46,7 +48,9 @@ interface FilterStore {
   spatialPolygon: [number, number][] | null;
   spatialDrawMode: boolean;
 
-  setLocFilter: (v: FilterStore['locFilter']) => void;
+  setLocShowLocalized: (v: boolean) => void;
+  setLocShowPending: (v: boolean) => void;
+  setLocShowUnlocalized: (v: boolean) => void;
   setRelevances: (v: string[]) => void;
   setPlatforms: (v: string[]) => void;
   setAllPlatforms: (v: string[]) => void;
@@ -69,7 +73,9 @@ interface FilterStore {
 export const useFilterStore = create<FilterStore>()(
   persist(
     (set, get) => ({
-      locFilter: 'all',
+      locShowLocalized: true,
+      locShowPending: true,
+      locShowUnlocalized: true,
       relevances: [...ALL_RELEVANCES_LIST],
       platforms: [],
       allPlatforms: [],
@@ -86,7 +92,9 @@ export const useFilterStore = create<FilterStore>()(
       spatialPolygon: null,
       spatialDrawMode: false,
 
-      setLocFilter: (locFilter) => set({ locFilter }),
+      setLocShowLocalized: (locShowLocalized) => set({ locShowLocalized }),
+      setLocShowPending: (locShowPending) => set({ locShowPending }),
+      setLocShowUnlocalized: (locShowUnlocalized) => set({ locShowUnlocalized }),
       setRelevances: (relevances) => set({ relevances }),
       setPlatforms: (platforms) => set({ platforms }),
       setAllPlatforms: (allPlatforms) => set({ allPlatforms }),

@@ -3,25 +3,43 @@ import { t } from '../../i18n';
 import { useFilterStore } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
 import { pointInPolygon } from '../../utils/geo';
+import type { ReportDTO } from '../../types';
+
+function reportLocType(r: ReportDTO): 'localized' | 'pending' | 'unlocalized' {
+  const locs = r.user_state.locations ?? r.locations;
+  if (locs.some((l) => l.lat != null && l.lon != null)) return 'localized';
+  if (locs.length > 0) return 'pending';
+  return 'unlocalized';
+}
 import { fetchDemoStatus, resetDemo } from '../../api/demo';
 import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon } = useFilterStore();
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
   const { reports, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
 
   const visibleCount = useMemo(() => {
-    if (!spatialPolygon) return reports.length;
-    return reports.filter((r) => {
+    const locFiltered = (!locShowLocalized || !locShowPending || !locShowUnlocalized)
+      ? reports.filter((r) => {
+          const t = reportLocType(r);
+          if (t === 'localized') return locShowLocalized;
+          if (t === 'pending') return locShowPending;
+          return locShowUnlocalized;
+        })
+      : reports;
+    if (!spatialPolygon) return locFiltered.length;
+    return locFiltered.filter((r) => {
       const locs = r.user_state.locations ?? r.locations;
+      const hasCoords = locs.some((l) => l.lat != null && l.lon != null);
+      if (!hasCoords) return true;
       return locs.some(
-        (loc) => loc.lat != null && loc.lon != null &&
-          pointInPolygon(loc.lat as number, loc.lon as number, spatialPolygon),
+        (l) => l.lat != null && l.lon != null &&
+          pointInPolygon(l.lat as number, l.lon as number, spatialPolygon),
       );
     }).length;
-  }, [reports, spatialPolygon]);
+  }, [reports, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized]);
   const [collapsed, setCollapsed] = useState(false);
 
   const [demoStatus, setDemoStatus] = useState<DemoStatus | null>(null);

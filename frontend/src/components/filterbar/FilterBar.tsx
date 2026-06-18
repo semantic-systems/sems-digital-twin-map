@@ -41,8 +41,12 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 
 export function FilterBar(): React.ReactElement {
   const {
-    locFilter,
-    setLocFilter,
+    locShowLocalized,
+    locShowPending,
+    locShowUnlocalized,
+    setLocShowLocalized,
+    setLocShowPending,
+    setLocShowUnlocalized,
     relevances,
     setRelevances,
     platforms,
@@ -65,13 +69,6 @@ export function FilterBar(): React.ReactElement {
 
   const { eventTypeTotals, relevanceTotals } = useReportStore();
   const { platformCounts } = useFilterStore();
-
-  const locOptions: { value: FilterStore_LocFilter; label: string }[] = [
-    { value: 'all', label: t('loc_all') },
-    { value: 'localized', label: t('loc_located') },
-    { value: 'pending', label: t('loc_pending') },
-    { value: 'unlocalized', label: t('loc_none') },
-  ];
 
   const toggleRelevance = (rel: string) => {
     if (relevances.includes(rel)) {
@@ -124,29 +121,19 @@ export function FilterBar(): React.ReactElement {
       {/* Row 1: Location · Relevance */}
       <div style={{ ...row, padding: '4px 12px', borderBottom: '1px solid #f3f4f6' }}>
         <SectionLabel>{t('location')}</SectionLabel>
-        <div style={{ display: 'flex', gap: 3, marginLeft: 6 }}>
-          {locOptions.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setLocFilter(value)}
-              style={{
-                fontSize: 11,
-                padding: '2px 8px',
-                borderRadius: 999,
-                border: '1px solid',
-                borderColor: locFilter === value ? '#3b82f6' : '#d1d5db',
-                background: locFilter === value ? '#3b82f6' : 'transparent',
-                color: locFilter === value ? '#fff' : '#374151',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-                fontWeight: locFilter === value ? 600 : 400,
-                transition: 'all 0.1s',
-              }}
-            >
-              {label}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: 10, marginLeft: 6, alignItems: 'center' }}>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={locShowLocalized} onChange={(e) => setLocShowLocalized(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('loc_located')}
+          </label>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={locShowPending} onChange={(e) => setLocShowPending(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('loc_pending')}
+          </label>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={locShowUnlocalized} onChange={(e) => setLocShowUnlocalized(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('loc_none')}
+          </label>
         </div>
 
         <Divider />
@@ -335,5 +322,3 @@ export function FilterBar(): React.ReactElement {
   );
 }
 
-// Local type alias to avoid TS error with locFilter
-type FilterStore_LocFilter = 'all' | 'localized' | 'pending' | 'unlocalized';

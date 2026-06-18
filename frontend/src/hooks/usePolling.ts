@@ -24,7 +24,6 @@ export function usePolling() {
       // filter has changed (loadData fired mid-flight), discard this response to
       // avoid briefly reverting the map/sidebar to stale data.
       const {
-        locFilter: snapLoc,
         platforms: snapPlatforms,
         allPlatforms: snapAllPlatforms,
         eventTypes: snapEvents,
@@ -38,7 +37,7 @@ export function usePolling() {
 
       const params = {
         username,
-        loc_filter: snapLoc,
+        loc_filter: 'all',
         platforms: snapPlatforms.length ? snapPlatforms : snapAllPlatforms,
         event_types: snapEvents,
         relevances: snapRelevances,
@@ -55,7 +54,6 @@ export function usePolling() {
       // Discard if filters changed while the request was in-flight.
       const cur = useFilterStore.getState();
       if (
-        cur.locFilter !== snapLoc ||
         cur.platforms !== snapPlatforms ||
         cur.eventTypes !== snapEvents ||
         cur.relevances !== snapRelevances ||
@@ -81,7 +79,6 @@ export function usePolling() {
         // Check again after the second await.
         const cur2 = useFilterStore.getState();
         if (
-          cur2.locFilter !== snapLoc ||
           cur2.platforms !== snapPlatforms ||
           cur2.eventTypes !== snapEvents ||
           cur2.relevances !== snapRelevances ||

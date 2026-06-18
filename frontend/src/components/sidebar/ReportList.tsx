@@ -7,21 +7,41 @@ import { ReportEntry } from './ReportEntry';
 
 export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { reports, activeReportId, hasMore } = useReportStore();
-  const { spatialPolygon } = useFilterStore();
+  const { spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const visibleReports = useMemo(() => {
-    if (!spatialPolygon) return reports;
-    return reports.filter((r) => {
-      const locs = r.user_state.locations ?? r.locations;
-      return locs.some(
-        (loc) =>
-          loc.lat != null &&
-          loc.lon != null &&
-          pointInPolygon(loc.lat as number, loc.lon as number, spatialPolygon),
-      );
-    });
-  }, [reports, spatialPolygon]);
+    let filtered = reports;
+
+    // Location-type filter (frontend — backend always returns all)
+    if (!locShowLocalized || !locShowPending || !locShowUnlocalized) {
+      filtered = filtered.filter((r) => {
+        const locs = r.user_state.locations ?? r.locations;
+        const hasCoords = locs.some((l) => l.lat != null && l.lon != null);
+        if (hasCoords) return locShowLocalized;
+        if (locs.length > 0) return locShowPending;
+        return locShowUnlocalized;
+      });
+    }
+
+    // Spatial polygon filter — Ausstehend/Keine events have no coordinates so they
+    // always pass (they can't be spatially disproven, and may well be relevant).
+    if (spatialPolygon) {
+      filtered = filtered.filter((r) => {
+        const locs = r.user_state.locations ?? r.locations;
+        const hasCoords = locs.some((l) => l.lat != null && l.lon != null);
+        if (!hasCoords) return true;
+        return locs.some(
+          (l) =>
+            l.lat != null &&
+            l.lon != null &&
+            pointInPolygon(l.lat as number, l.lon as number, spatialPolygon),
+        );
+      });
+    }
+
+    return filtered;
+  }, [reports, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized]);
 
   useEffect(() => {
     if (activeReportId === null || !scrollRef.current) return;

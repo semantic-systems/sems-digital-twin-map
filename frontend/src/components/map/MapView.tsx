@@ -65,7 +65,7 @@ function PickModeHandler(): null {
         await updateLocations(reportId, username, newLocs);
         const dotsRes = await fetchDots({
           username,
-          loc_filter: filters.locFilter,
+          loc_filter: 'all',
           platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
           event_types: filters.eventTypes,
           relevances: filters.relevances,
