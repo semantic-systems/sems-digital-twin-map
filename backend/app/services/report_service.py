@@ -801,6 +801,33 @@ def build_dots(
             except (TypeError, ValueError):
                 continue
 
+            # Compute location bounding-box area (degrees²) for frontend granularity filtering
+            loc_bbox_area: float | None = None
+            bbox = loc.get("boundingbox")
+            if bbox and len(bbox) == 4:
+                try:
+                    min_lat, max_lat, min_lon, max_lon = map(float, bbox)
+                    loc_bbox_area = (max_lat - min_lat) * (max_lon - min_lon)
+                except (TypeError, ValueError):
+                    pass
+            if loc_bbox_area is None:
+                polygon = loc.get("polygon")
+                if isinstance(polygon, dict):
+                    ptype = polygon.get("type")
+                    coords = polygon.get("coordinates")
+                    ring: list | None = None
+                    if ptype == "Polygon" and coords:
+                        ring = coords[0]
+                    elif ptype == "MultiPolygon" and coords:
+                        ring = max(coords, key=lambda p: len(p[0]))[0]
+                    if ring:
+                        try:
+                            lats = [c[1] for c in ring]
+                            lons = [c[0] for c in ring]
+                            loc_bbox_area = (max(lats) - min(lats)) * (max(lons) - min(lons))
+                        except (TypeError, IndexError):
+                            pass
+
             dots.append(
                 {
                     "report_id": r.id,
@@ -817,6 +844,7 @@ def build_dots(
                     "event_types": r.event_types or ([r.event_type] if r.event_type else []),
                     "relevance": r.relevance,
                     "url": r.url,
+                    "location_bbox_area": loc_bbox_area,
                 }
             )
 

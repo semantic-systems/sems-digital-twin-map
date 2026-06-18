@@ -3,6 +3,7 @@ import { t } from '../../i18n';
 import { useFilterStore, ALL_RELEVANCES_LIST, getLayerColor } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
 import { EventTypeChips } from './EventTypeChips';
+import { PRESET_AREAS } from '../../utils/presetAreas';
 
 const RELEVANCE_COLORS: Record<string, string> = {
   high: '#ef4444',
@@ -192,7 +193,7 @@ export function FilterBar(): React.ReactElement {
         <Divider />
 
         {/* Spatial area filter controls */}
-        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'nowrap' }}>
           {!spatialDrawMode && !spatialPolygon && (
             <button
               onClick={() => setSpatialDrawMode(true)}
@@ -244,6 +245,35 @@ export function FilterBar(): React.ReactElement {
               >
                 ✕
               </button>
+            </>
+          )}
+
+          {/* Preset area shortcuts */}
+          {!spatialDrawMode && (
+            <>
+              <Divider />
+              {PRESET_AREAS.map((area) => {
+                const isActive = area.polygon === null
+                  ? spatialPolygon === null
+                  : spatialPolygon === area.polygon;
+                return (
+                  <button
+                    key={area.key}
+                    onClick={() => setSpatialPolygon(area.polygon)}
+                    title={area.key === 'world' ? 'Alle anzeigen' : `Gebiet: ${area.label}`}
+                    style={{
+                      fontSize: 11, padding: '2px 7px', borderRadius: 999,
+                      border: `1px solid ${isActive ? '#f59e0b' : '#d1d5db'}`,
+                      background: isActive ? '#fffbeb' : 'transparent',
+                      color: isActive ? '#b45309' : '#374151',
+                      cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                      fontWeight: isActive ? 600 : 400,
+                    }}
+                  >
+                    {area.label}
+                  </button>
+                );
+              })}
             </>
           )}
         </div>

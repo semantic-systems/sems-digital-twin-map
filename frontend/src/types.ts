@@ -80,6 +80,7 @@ export interface DotDTO {
   event_types: string[];
   relevance: string;
   url: string;
+  location_bbox_area?: number | null;
 }
 
 export type GeoJsonGeometry = {

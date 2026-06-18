@@ -8,7 +8,7 @@ import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
 import type { DotDTO, ReportDTO } from '../../types';
-import { pointInPolygon } from '../../utils/geo';
+import { pointInPolygon, polygonBboxArea } from '../../utils/geo';
 
 function formatTimestamp(iso: string): string {
   try {
@@ -433,6 +433,19 @@ export function ReportDots(): React.ReactElement {
       : dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
     if (spatialPolygon) {
       result = result.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
+
+      // Drop dots whose location granularity is as large as or larger than the drawn area.
+      // E.g. a "Germany" geocode dot is confusing inside a Germany-sized spatial filter.
+      const filterArea = polygonBboxArea(spatialPolygon);
+      if (filterArea > 0) {
+        result = result.filter((d) => {
+          const locArea = d.location_bbox_area;
+          // No area info → keep (precise pin-drop or unknown)
+          if (locArea == null) return true;
+          // Strict less-than: hide when the location is the same scale as (or larger than) the filter
+          return locArea < filterArea;
+        });
+      }
     }
     return result;
   }, [dots, showHidden, reports, spatialPolygon]);
