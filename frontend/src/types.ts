@@ -81,6 +81,7 @@ export interface DotDTO {
   relevance: string;
   url: string;
   location_bbox_area?: number | null;
+  location_bbox?: [number, number, number, number] | null;
 }
 
 export type GeoJsonGeometry = {

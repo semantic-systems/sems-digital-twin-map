@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { useReportStore } from '../../store/useReportStore';
-import type { LocationEntry } from '../../types';
+import { useFilterStore } from '../../store/useFilterStore';
+import { pointInPolygon, polygonBboxArea, computeSuppressedDots } from '../../utils/geo';
 import L from 'leaflet';
 
 interface Arrow {
@@ -47,6 +48,7 @@ function clampToViewport(
 function ArrowsInner(): React.ReactElement {
   const map = useMap();
   const { activeReportId, reports, dots } = useReportStore();
+  const { showHidden, spatialPolygon } = useFilterStore();
   const [arrows, setArrows] = useState<Arrow[]>([]);
 
   const computeArrows = () => {
@@ -61,18 +63,27 @@ function ArrowsInner(): React.ReactElement {
       return;
     }
 
-    const effectiveLocs: LocationEntry[] =
-      report.user_state.locations !== undefined && report.user_state.locations !== null
-        ? report.user_state.locations
-        : report.locations;
+    // Apply the same visibility filters as ReportDots so arrows only point to
+    // dots that are actually rendered on the map.
+    let activeDots = dots.filter((d) => d.report_id === activeReportId);
+    if (!showHidden && (report.user_state.hide || report.user_state.seen)) {
+      activeDots = activeDots.filter((d) => !d.seen);
+    }
+    if (spatialPolygon) {
+      activeDots = activeDots.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
+      const filterArea = polygonBboxArea(spatialPolygon);
+      if (filterArea > 0) {
+        activeDots = activeDots.filter(
+          (d) => d.location_bbox_area == null || d.location_bbox_area < filterArea,
+        );
+      }
+    }
+    // Suppress dots whose location bbox contains another dot (spatial superset).
+    const suppressed = computeSuppressedDots(activeDots);
+    activeDots = activeDots.filter((d) => !suppressed.has(d));
 
-    const geoLocs = effectiveLocs.filter((l) => l.osm_id && l.lat && l.lon);
-    const activeDots = dots.filter((d) => d.report_id === activeReportId);
-
-    const allPoints: { lat: number; lon: number; key: string }[] = [
-      ...geoLocs.map((l, i) => ({ lat: Number(l.lat), lon: Number(l.lon), key: `loc-${i}` })),
-      ...activeDots.map((d, i) => ({ lat: d.lat, lon: d.lon, key: `dot-${i}` })),
-    ];
+    const allPoints: { lat: number; lon: number; key: string }[] =
+      activeDots.map((d, i) => ({ lat: d.lat, lon: d.lon, key: `dot-${i}` }));
 
     if (allPoints.length === 0) {
       setArrows([]);
@@ -117,7 +128,7 @@ function ArrowsInner(): React.ReactElement {
     return () => {
       map.off('move zoom', computeArrows);
     };
-  }, [activeReportId, reports, dots]);
+  }, [activeReportId, reports, dots, showHidden, spatialPolygon]);
 
   const handleArrowClick = (e: React.MouseEvent, arrow: Arrow) => {
     e.stopPropagation();

@@ -801,13 +801,15 @@ def build_dots(
             except (TypeError, ValueError):
                 continue
 
-            # Compute location bounding-box area (degrees²) for frontend granularity filtering
+            # Compute location bounding-box area (degrees²) and raw bbox for frontend filtering
             loc_bbox_area: float | None = None
+            loc_bbox: list[float] | None = None  # [minLat, maxLat, minLon, maxLon]
             bbox = loc.get("boundingbox")
             if bbox and len(bbox) == 4:
                 try:
                     min_lat, max_lat, min_lon, max_lon = map(float, bbox)
                     loc_bbox_area = (max_lat - min_lat) * (max_lon - min_lon)
+                    loc_bbox = [min_lat, max_lat, min_lon, max_lon]
                 except (TypeError, ValueError):
                     pass
             if loc_bbox_area is None:
@@ -825,6 +827,7 @@ def build_dots(
                             lats = [c[1] for c in ring]
                             lons = [c[0] for c in ring]
                             loc_bbox_area = (max(lats) - min(lats)) * (max(lons) - min(lons))
+                            loc_bbox = [min(lats), max(lats), min(lons), max(lons)]
                         except (TypeError, IndexError):
                             pass
 
@@ -845,6 +848,7 @@ def build_dots(
                     "relevance": r.relevance,
                     "url": r.url,
                     "location_bbox_area": loc_bbox_area,
+                    "location_bbox": loc_bbox,
                 }
             )
 
