@@ -9,6 +9,10 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
   const { reports, activeReportId, hasMore } = useReportStore();
   const { spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Guards against calling onLoadMore multiple times before the store reflects the new page.
+  const loadMoreGuardRef = useRef<{ forId: number | null; lastLen: number }>({ forId: null, lastLen: 0 });
+  const onLoadMoreRef = useRef(onLoadMore);
+  onLoadMoreRef.current = onLoadMore;
 
   const visibleReports = useMemo(() => {
     let filtered = reports;
@@ -44,10 +48,30 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
   }, [reports, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized]);
 
   useEffect(() => {
-    if (activeReportId === null || !scrollRef.current) return;
+    if (activeReportId === null || !scrollRef.current) {
+      loadMoreGuardRef.current = { forId: null, lastLen: 0 };
+      return;
+    }
+
     const el = scrollRef.current.querySelector<HTMLElement>(`[data-report-id="${activeReportId}"]`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, [activeReportId]);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      loadMoreGuardRef.current = { forId: null, lastLen: 0 };
+      return;
+    }
+
+    // In store but not rendered → filtered out; loading more won't help.
+    if (reports.some((r) => r.id === activeReportId)) return;
+
+    // Not loaded yet — keep paging until found or exhausted.
+    if (!hasMore) return;
+
+    const guard = loadMoreGuardRef.current;
+    if (guard.forId === activeReportId && reports.length <= guard.lastLen) return;
+
+    loadMoreGuardRef.current = { forId: activeReportId, lastLen: reports.length };
+    onLoadMoreRef.current();
+  }, [activeReportId, reports]);
 
   if (visibleReports.length === 0) {
     return (
