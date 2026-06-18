@@ -3,7 +3,7 @@ import { Polygon, Polyline, Rectangle } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import type { LocationEntry, GeoJsonGeometry } from '../../types';
-import { pointInPolygon } from '../../utils/geo';
+import { pointInPolygon, polygonBboxArea } from '../../utils/geo';
 
 function coordsToLatLng(coords: unknown[]): LatLngExpression[] {
   return (coords as [number, number][]).map(([lon, lat]) => [lat, lon]);
@@ -68,8 +68,13 @@ function computeSuppressed(locs: LocationEntry[]): Set<LocationEntry> {
       const other = items[j];
       if (!other) continue;
       if (pointInPolygon(other.center[0], other.center[1], item.ring)) {
-        suppressed.add(item.loc);
-        break;
+        // Only suppress if the other location is strictly more specific (smaller area).
+        const itemArea = polygonBboxArea(item.ring);
+        const otherArea = polygonBboxArea(other.ring);
+        if (otherArea <= itemArea) {
+          suppressed.add(item.loc);
+          break;
+        }
       }
     }
   }
