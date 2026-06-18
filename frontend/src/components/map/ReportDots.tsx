@@ -131,15 +131,20 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
       <p style={{ fontSize: 11, color: '#6b7280', marginBottom: 2 }}>
         {dot.author ? `@${dot.author} · ` : ''}{dot.platform}
       </p>
-      {(dot.location_display || dot.location_name) && (
-        <p style={{ fontSize: 11, color: '#374151', marginBottom: 2, fontWeight: 500 }}>
-          📍 {dot.location_display}
-          {dot.location_display && dot.location_name && dot.location_display !== dot.location_name && (
-            <span style={{ fontWeight: 400, color: '#6b7280' }}> · {dot.location_name}</span>
-          )}
-          {!dot.location_display && dot.location_name}
-        </p>
-      )}
+      {(dot.location_display || dot.location_name) && (() => {
+        const isCoord = (s: string) => /^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(s.trim());
+        const showName = dot.location_name &&
+          dot.location_name !== dot.location_display &&
+          !isCoord(dot.location_name);
+        return (
+          <p style={{ fontSize: 11, color: '#374151', marginBottom: 2, fontWeight: 500 }}>
+            📍 {dot.location_display || dot.location_name}
+            {dot.location_display && showName && (
+              <span style={{ fontWeight: 400, color: '#6b7280' }}> · {dot.location_name}</span>
+            )}
+          </p>
+        );
+      })()}
       <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>
         {(dot.event_types ?? []).join(', ')} · {formatTimestamp(dot.timestamp)}
       </p>
@@ -236,16 +241,13 @@ function MultiDotPopup({ dots, onSelect }: {
 // ---------------------------------------------------------------------------
 
 function DetailOverlay({
-  reportId, pos, onClose, onBack,
+  dot, pos, onClose, onBack,
 }: {
-  reportId: number;
+  dot: DotDTO;
   pos: { x: number; y: number };
   onClose: () => void;
   onBack: () => void;
 }): React.ReactElement | null {
-  // Always read the latest dot from the store so we reflect optimistic updates.
-  const { dots } = useReportStore();
-  const dot = dots.find((d) => d.report_id === reportId);
   if (!dot) return null;
 
   const headerBtn: React.CSSProperties = {
@@ -301,7 +303,7 @@ interface GroupMarkerProps {
   reports: ReportDTO[];
   setActiveReportId: (id: number | null) => void;
   optimisticAcknowledge: (id: number) => void;
-  openDetail: (reportId: number, lat: number, lon: number, reopenPopup: () => void) => void;
+  openDetail: (dot: DotDTO, lat: number, lon: number, reopenPopup: () => void) => void;
   closeDetail: () => void;
 }
 
@@ -407,7 +409,7 @@ const GroupMarker = React.memo(function GroupMarker({
       s.current.didSelectRef.current = false;
       s.current.markerRef.current?.openPopup();
     };
-    openDetail(dot.report_id, group.lat, group.lon, reopenPopup);
+    openDetail(dot, group.lat, group.lon, reopenPopup);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -479,7 +481,7 @@ export function ReportDots(): React.ReactElement {
 
   // Detail overlay state — separate from Leaflet popup system entirely.
   const [detailState, setDetailState] = useState<{
-    reportId: number; lat: number; lon: number; reopenPopup: () => void;
+    dot: DotDTO; lat: number; lon: number; reopenPopup: () => void;
   } | null>(null);
   const [detailPos, setDetailPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -495,8 +497,8 @@ export function ReportDots(): React.ReactElement {
     return () => { map.off('move zoom moveend zoomend', update); };
   }, [detailState, map]);
 
-  const openDetail = useCallback((reportId: number, lat: number, lon: number, reopenPopup: () => void) => {
-    setDetailState({ reportId, lat, lon, reopenPopup });
+  const openDetail = useCallback((dot: DotDTO, lat: number, lon: number, reopenPopup: () => void) => {
+    setDetailState({ dot, lat, lon, reopenPopup });
   }, []);
 
   // Close detail overlay and clear active marker.
@@ -514,7 +516,7 @@ export function ReportDots(): React.ReactElement {
       window.clearTimeout(t);
       map.off('click', handler);
     };
-  }, [detailState?.reportId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [detailState?.dot.report_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Back: close detail, clear active, reopen aggregate popup.
   const backToList = useCallback(() => {
@@ -549,7 +551,7 @@ export function ReportDots(): React.ReactElement {
       })}
       {detailState && detailPos && (
         <DetailOverlay
-          reportId={detailState.reportId}
+          dot={detailState.dot}
           pos={detailPos}
           onClose={closeDetail}
           onBack={backToList}
