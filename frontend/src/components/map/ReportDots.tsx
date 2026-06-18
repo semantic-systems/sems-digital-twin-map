@@ -8,7 +8,7 @@ import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
 import type { DotDTO, ReportDTO } from '../../types';
-import { pointInPolygon, polygonBboxArea, computeSuppressedDots } from '../../utils/geo';
+import { pointInPolygon, polygonBboxArea, computeSuppressedDots, computeSuppressedDotsWithLocs } from '../../utils/geo';
 
 function formatTimestamp(iso: string): string {
   try {
@@ -459,7 +459,7 @@ export function ReportDots(): React.ReactElement {
         });
       }
     }
-    // Containment suppression: for each report, hide dots whose location bbox
+    // Containment suppression: for each report, hide dots whose location polygon
     // contains another dot of the same report (i.e. they are a spatial superset).
     const byReport = new Map<number, typeof result>();
     for (const d of result) {
@@ -467,9 +467,11 @@ export function ReportDots(): React.ReactElement {
       byReport.get(d.report_id)!.push(d);
     }
     const suppressed = new Set<(typeof result)[0]>();
-    for (const group of byReport.values()) {
+    for (const [reportId, group] of byReport.entries()) {
       if (group.length > 1) {
-        for (const d of computeSuppressedDots(group)) suppressed.add(d);
+        const report = reports.find((r) => r.id === reportId);
+        const locs = report ? (report.user_state.locations ?? report.locations ?? []) : [];
+        for (const d of computeSuppressedDotsWithLocs(group, locs)) suppressed.add(d);
       }
     }
     return result.filter((d) => !suppressed.has(d));
