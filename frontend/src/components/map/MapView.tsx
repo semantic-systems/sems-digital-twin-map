@@ -223,8 +223,8 @@ function PickModeCursor(): null {
 export function MapView(): React.ReactElement {
   return (
     <MapContainer
-      center={[53.55, 9.99]}
-      zoom={12}
+      center={[51.1657, 10.4515]}
+      zoom={7}
       doubleClickZoom={false}
       zoomControl={false}
       style={{ width: '100%', height: '100%' }}
