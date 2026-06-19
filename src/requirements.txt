@@ -1,0 +1,7 @@
+requests
+shapely
+SPARQLWrapper
+sqlalchemy>=2.0
+psycopg2-binary
+geoalchemy2
+python-dotenv
