@@ -1,0 +1,225 @@
+import type { LocationEntry, DotDTO } from '../types';
+
+/** Ray-casting point-in-polygon. Polygon is an array of [lat, lon] pairs. */
+export function pointInPolygon(lat: number, lon: number, polygon: [number, number][]): boolean {
+  let inside = false;
+  const n = polygon.length;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const [yi, xi] = polygon[i];
+    const [yj, xj] = polygon[j];
+    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/** Bounding-box area in degrees² for a [lat, lon][] polygon. */
+export function polygonBboxArea(polygon: [number, number][]): number {
+  if (polygon.length === 0) return 0;
+  let minLat = polygon[0][0], maxLat = polygon[0][0];
+  let minLon = polygon[0][1], maxLon = polygon[0][1];
+  for (const [lat, lon] of polygon) {
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lon < minLon) minLon = lon;
+    if (lon > maxLon) maxLon = lon;
+  }
+  return (maxLat - minLat) * (maxLon - minLon);
+}
+
+/**
+ * For a group of dots belonging to the same report, returns dots that should be
+ * hidden because another dot at a more specific location has its centroid inside
+ * this dot's bounding box (meaning this dot's location is a spatial superset).
+ *
+ * Circular-suppression guard: when a's centroid is also inside b's bbox (mutual
+ * containment — e.g. due to an inflated KG polygon) AND b's area is not smaller
+ * than a's, we skip suppression for that pair rather than risk hiding both.
+ */
+export function computeSuppressedDots(groupDots: DotDTO[]): Set<DotDTO> {
+  const suppressed = new Set<DotDTO>();
+  for (let i = 0; i < groupDots.length; i++) {
+    const a = groupDots[i];
+    if (suppressed.has(a)) continue;
+    const bb = a.location_bbox;
+    if (!bb) continue;
+    const [minLat, maxLat, minLon, maxLon] = bb;
+    for (let j = 0; j < groupDots.length; j++) {
+      if (i === j) continue;
+      const b = groupDots[j];
+      if (b.lat >= minLat && b.lat <= maxLat && b.lon >= minLon && b.lon <= maxLon) {
+        // b's geocoded point is inside a's bbox → a is likely a spatial superset.
+        // Only skip when there is genuine mutual containment (a's point also inside
+        // b's bbox) AND b does not appear smaller — that combination signals that
+        // b has an inflated/unreliable bbox and is NOT truly more specific than a.
+        const bBb = b.location_bbox;
+        if (bBb) {
+          const aInBBox =
+            a.lat >= bBb[0] && a.lat <= bBb[1] && a.lon >= bBb[2] && a.lon <= bBb[3];
+          if (aInBBox) {
+            const aArea = a.location_bbox_area;
+            const bArea = b.location_bbox_area;
+            if (aArea != null && bArea != null && bArea >= aArea) {
+              continue; // mutual overlap, b not smaller → keep both
+            }
+          }
+        }
+        suppressed.add(a);
+        break;
+      }
+    }
+  }
+  return suppressed;
+}
+
+/**
+ * Extract the outer polygon ring from a LocationEntry as [lat, lon][] pairs.
+ * Falls back to a rectangle built from the bounding box if no polygon is stored.
+ * Returns null when neither is available.
+ */
+export function getLocationRing(loc: LocationEntry): [number, number][] | null {
+  if (loc.polygon) {
+    const { type, coordinates } = loc.polygon;
+    if (type === 'Polygon') {
+      return (coordinates[0] as [number, number][]).map(([lon, lat]) => [lat, lon]);
+    }
+    if (type === 'MultiPolygon') {
+      const rings = (coordinates as [number, number][][][]).map((p) => p[0]);
+      const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
+      return largest.map(([lon, lat]) => [lat, lon]);
+    }
+  }
+  if (Array.isArray(loc.boundingbox) && loc.boundingbox.length === 4) {
+    const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
+    return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
+  }
+  return null;
+}
+
+/**
+ * Like computeSuppressedDots, but uses the full LocationEntry polygon data
+ * for containment checks — matching the same logic used by ActiveReportPolygons.
+ * Pass the effective LocationEntry list for the report (user_state.locations ?? locations).
+ */
+export function computeSuppressedDotsWithLocs(
+  groupDots: DotDTO[],
+  locs: LocationEntry[],
+): Set<DotDTO> {
+  // Match each dot to its LocationEntry by lat/lon proximity (≈11 m tolerance).
+  const dotLocs = groupDots.map((d) => ({
+    dot: d,
+    loc:
+      locs.find(
+        (l) =>
+          l.lat != null &&
+          l.lon != null &&
+          Math.abs(Number(l.lat) - d.lat) < 1e-4 &&
+          Math.abs(Number(l.lon) - d.lon) < 1e-4,
+      ) ?? null,
+  }));
+
+  const suppressed = new Set<DotDTO>();
+
+  for (let i = 0; i < dotLocs.length; i++) {
+    const { dot: a, loc: locA } = dotLocs[i];
+    if (suppressed.has(a)) continue;
+
+    const ringA = locA ? getLocationRing(locA) : null;
+    const bbA = a.location_bbox;
+
+    for (let j = 0; j < dotLocs.length; j++) {
+      if (i === j) continue;
+      const { dot: b, loc: locB } = dotLocs[j];
+
+      // Check if b's polygon is fully contained within a's region.
+      // Using full bbox containment rather than a single-point check so that
+      // partial overlap (e.g. Görlitzer Bahnbrücken polygon partly outside Berlin)
+      // keeps both dots/polygons visible.
+      let bInsideA = false;
+      if (ringA && ringA.length >= 3) {
+        // Derive B's spatial extent: prefer polygon ring, then dot bbox, then geocoded point.
+        const ringB = locB ? getLocationRing(locB) : null;
+        let bMinLat = b.lat, bMaxLat = b.lat, bMinLon = b.lon, bMaxLon = b.lon;
+        let hasBbox = false;
+        if (ringB && ringB.length > 0) {
+          bMinLat = ringB[0][0]; bMaxLat = ringB[0][0];
+          bMinLon = ringB[0][1]; bMaxLon = ringB[0][1];
+          for (const [lat, lon] of ringB) {
+            if (lat < bMinLat) bMinLat = lat;
+            if (lat > bMaxLat) bMaxLat = lat;
+            if (lon < bMinLon) bMinLon = lon;
+            if (lon > bMaxLon) bMaxLon = lon;
+          }
+          hasBbox = true;
+        } else if (b.location_bbox) {
+          [bMinLat, bMaxLat, bMinLon, bMaxLon] = b.location_bbox;
+          hasBbox = true;
+        }
+        if (hasBbox) {
+          bInsideA =
+            pointInPolygon(bMinLat, bMinLon, ringA) &&
+            pointInPolygon(bMinLat, bMaxLon, ringA) &&
+            pointInPolygon(bMaxLat, bMinLon, ringA) &&
+            pointInPolygon(bMaxLat, bMaxLon, ringA);
+        } else {
+          // No spatial extent available — fall back to geocoded point only
+          bInsideA = pointInPolygon(b.lat, b.lon, ringA);
+        }
+      } else if (bbA) {
+        const [minLat, maxLat, minLon, maxLon] = bbA;
+        bInsideA = b.lat >= minLat && b.lat <= maxLat && b.lon >= minLon && b.lon <= maxLon;
+      }
+      if (!bInsideA) continue;
+
+      // b is inside a → a is a spatial superset → suppress a, unless circular.
+      // Circular guard: check if a's geocoded point is also inside b's region.
+      const ringB = locB ? getLocationRing(locB) : null;
+      const bbB = b.location_bbox;
+      let aInsideB = false;
+      if (ringB && ringB.length >= 3) {
+        aInsideB = pointInPolygon(a.lat, a.lon, ringB);
+      } else if (bbB) {
+        const [minLat, maxLat, minLon, maxLon] = bbB;
+        aInsideB = a.lat >= minLat && a.lat <= maxLat && a.lon >= minLon && a.lon <= maxLon;
+      }
+
+      if (aInsideB) {
+        // Mutual containment — use area to break the tie (same as computeSuppressed).
+        const aArea = locA ? locationBboxArea(locA) : a.location_bbox_area;
+        const bArea = locB ? locationBboxArea(locB) : b.location_bbox_area;
+        if (aArea != null && bArea != null && bArea > aArea) {
+          continue; // b appears larger → don't suppress a
+        }
+      }
+
+      suppressed.add(a);
+      break;
+    }
+  }
+
+  return suppressed;
+}
+
+/** Bounding-box area in degrees² from a LocationEntry. Returns null if no geometry is available. */
+export function locationBboxArea(loc: LocationEntry): number | null {
+  if (loc.polygon) {
+    const { type, coordinates } = loc.polygon;
+    let ring: number[][] | null = null;
+    if (type === 'Polygon') {
+      ring = coordinates[0] as number[][];
+    } else if (type === 'MultiPolygon') {
+      const rings = (coordinates as number[][][][]).map((p) => p[0]);
+      ring = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
+    }
+    if (ring && ring.length > 0) {
+      // GeoJSON coordinates are [lon, lat] — swap to [lat, lon]
+      return polygonBboxArea(ring.map(([lon, lat]) => [lat, lon] as [number, number]));
+    }
+  }
+  if (Array.isArray(loc.boundingbox) && loc.boundingbox.length === 4) {
+    const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
+    return (maxLat - minLat) * (maxLon - minLon);
+  }
+  return null;
+}
