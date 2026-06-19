@@ -474,7 +474,7 @@ def get_reports(
         session,
         eff_platform=None,
         eff_events=None,
-        eff_relevance=eff_relevance,
+        eff_relevance=None,
         demo_mode=demo_mode,
     )
     all_base_rows = all_base_q.with_entities(Report.id, Report.event_types, Report.platform, Report.relevance).all()
