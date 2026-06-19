@@ -7,7 +7,7 @@ WORKDIR /app
 COPY . .
 
 # Install the packages in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r src/requirements.txt
 
 # Define environment variable, used for determining the host name of the database
 ENV IN_DOCKER=true
