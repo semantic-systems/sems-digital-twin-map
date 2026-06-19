@@ -56,7 +56,7 @@ SEARCH_OPTIONAL_KEYWORDS = ['sturm', 'storm', 'flut', 'flood', 'unwetter', 'rege
 SEARCH_N_KEYWORDS = 1
 SEARCH_W_REGEX = '.*(hamburg).*'
 SEARCH_B_REGEX = '.*(berlin).*'
-SEARCH_LOOK_BACK = 4*30    # how many minutes to look back
+SEARCH_LOOK_BACK = 30    # how many minutes to look back
 
 sparql = SPARQLWrapper(SPARQL_ENDPOINT)
 
@@ -432,6 +432,7 @@ if __name__ == '__main__':
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)
     start_date = datetime.now(tz=timezone.utc)
+
     print(
         f'Starting to fetch posts from {start_date.strftime("%Y-%m-%d %H:%M:%S")} UTC'
     )
@@ -457,3 +458,5 @@ if __name__ == '__main__':
         #
         # if VERBOSE: print(f'Done! Waiting for {REQUEST_DELAY} seconds', flush=True)
         time.sleep(REQUEST_DELAY)
+        start_date = datetime.now(tz=timezone.utc)
+        search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
