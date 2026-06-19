@@ -8,7 +8,7 @@ import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
 import type { DotDTO, ReportDTO } from '../../types';
-import { pointInPolygon, polygonBboxArea, computeSuppressedDots, computeSuppressedDotsWithLocs } from '../../utils/geo';
+import { pointInPolygon, polygonBboxArea, computeSuppressedDotsWithLocs } from '../../utils/geo';
 
 function formatTimestamp(iso: string): string {
   try {

@@ -66,7 +66,7 @@ function ArrowsInner(): React.ReactElement {
     // Apply the same visibility filters as ReportDots so arrows only point to
     // dots that are actually rendered on the map.
     let activeDots = dots.filter((d) => d.report_id === activeReportId);
-    if (!showHidden && (report.user_state.hide || report.user_state.seen)) {
+    if (!showHidden && report.user_state.hide) {
       activeDots = activeDots.filter((d) => !d.seen);
     }
     if (spatialPolygon) {
