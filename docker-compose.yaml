@@ -5,8 +5,6 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    ports:
-      - "8052:8052"
     depends_on:
       - postgis
     networks:
@@ -61,7 +59,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
-      - "8080:80"
+      - "8051:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
