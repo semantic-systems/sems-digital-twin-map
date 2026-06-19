@@ -477,12 +477,13 @@ def get_reports(
         eff_relevance=None,
         demo_mode=demo_mode,
     )
-    all_base_rows = all_base_q.with_entities(Report.id, Report.event_types, Report.platform, Report.relevance).all()
+    all_base_rows = all_base_q.with_entities(Report.id, Report.event_types, Report.platform, Report.relevance, Report.locations).all()
 
     event_type_totals: dict[str, int] = {}
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
-    for (rid, ets, plat, rel) in all_base_rows:
+    location_counts: dict[str, int] = {"localized": 0, "pending": 0, "unlocalized": 0}
+    for (rid, ets, plat, rel, locs) in all_base_rows:
         if not show_hidden and rid in seen_ids:
             continue
         for et in (ets or []):
@@ -491,6 +492,13 @@ def get_reports(
             platform_counts[plat] = platform_counts.get(plat, 0) + 1
         if rel:
             relevance_totals[rel] = relevance_totals.get(rel, 0) + 1
+        locs_list = locs if isinstance(locs, list) else []
+        if locs_list and any(isinstance(loc, dict) and loc.get("osm_id") for loc in locs_list):
+            location_counts["localized"] += 1
+        elif locs_list:
+            location_counts["pending"] += 1
+        else:
+            location_counts["unlocalized"] += 1
     # Always expose the full known platform list, plus any unexpected ones from DB.
     all_platforms = sorted(platform_counts.keys())
 
@@ -525,7 +533,7 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, False
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False
 
     # Build the main query (only admitted reports)
     q = build_report_query(
@@ -601,7 +609,7 @@ def get_reports(
     pending_count = len(all_matching_ids - added_ids)
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, has_more
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more
 
 
 # ---------------------------------------------------------------------------

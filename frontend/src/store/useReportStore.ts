@@ -9,11 +9,12 @@ interface ReportStore {
   loadedAt: string | null;
   eventTypeTotals: Record<string, number>;
   relevanceTotals: Record<string, number>;
+  locationCounts: Record<string, number>;
   reloadTrigger: number;
   hasMore: boolean;
   currentLimit: number;
 
-  setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>, hasMore?: boolean) => void;
+  setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>, hasMore?: boolean, locationCounts?: Record<string, number>) => void;
   bumpReloadTrigger: () => void;
   setCurrentLimit: (n: number) => void;
   setDots: (dots: DotDTO[]) => void;
@@ -36,11 +37,12 @@ export const useReportStore = create<ReportStore>((set) => ({
   loadedAt: null,
   eventTypeTotals: {},
   relevanceTotals: {},
+  locationCounts: {},
   reloadTrigger: 0,
   hasMore: false,
   currentLimit: 50,
 
-  setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore }),
+  setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false, locationCounts = {}) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore, locationCounts }),
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
   setCurrentLimit: (currentLimit) => set({ currentLimit }),
   setDots: (dots) => set({ dots }),

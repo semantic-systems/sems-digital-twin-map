@@ -40,6 +40,7 @@ export interface ReportsResponse {
   loaded_at: string;
   event_type_totals?: Record<string, number>;
   relevance_totals?: Record<string, number>;
+  location_counts?: Record<string, number>;
   all_platforms?: string[];
   platform_counts?: Record<string, number>;
   platform_added_counts?: Record<string, number>;

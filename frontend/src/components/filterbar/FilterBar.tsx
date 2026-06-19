@@ -67,7 +67,7 @@ export function FilterBar(): React.ReactElement {
     setSpatialDrawMode,
   } = useFilterStore();
 
-  const { eventTypeTotals, relevanceTotals } = useReportStore();
+  const { eventTypeTotals, relevanceTotals, locationCounts } = useReportStore();
   const { platformCounts } = useFilterStore();
 
   const toggleRelevance = (rel: string) => {
@@ -125,14 +125,17 @@ export function FilterBar(): React.ReactElement {
           <label style={checkLabel}>
             <input type="checkbox" checked={locShowLocalized} onChange={(e) => setLocShowLocalized(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('loc_located')}
+            {(locationCounts['localized'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({locationCounts['localized']})</span>}
           </label>
           <label style={checkLabel}>
             <input type="checkbox" checked={locShowPending} onChange={(e) => setLocShowPending(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('loc_pending')}
+            {(locationCounts['pending'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({locationCounts['pending']})</span>}
           </label>
           <label style={checkLabel}>
             <input type="checkbox" checked={locShowUnlocalized} onChange={(e) => setLocShowUnlocalized(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('loc_none')}
+            {(locationCounts['unlocalized'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({locationCounts['unlocalized']})</span>}
           </label>
         </div>
 
