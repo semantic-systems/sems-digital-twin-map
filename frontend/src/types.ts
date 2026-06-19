@@ -45,6 +45,7 @@ export interface ReportsResponse {
   platform_counts?: Record<string, number>;
   platform_added_counts?: Record<string, number>;
   has_more?: boolean;
+  total_count?: number;
 }
 
 export interface LayerDTO {
@@ -130,6 +131,7 @@ export interface DotsParams {
   show_hidden?: boolean;
   show_flagged?: boolean;
   show_unflagged?: boolean;
+  search?: string;
 }
 
 export interface UserStateResponse {

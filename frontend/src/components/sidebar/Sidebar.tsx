@@ -18,7 +18,7 @@ import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
-  const { reports, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+  const { reports, totalCount, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
 
   const visibleCount = useMemo(() => {
     const locFiltered = (!locShowLocalized || !locShowPending || !locShowUnlocalized)
@@ -202,7 +202,10 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
             </span>
           )}
           <span style={{ fontSize: 11, color: '#4b5563' }}>
-            ({visibleCount}{spatialPolygon ? ` / ${reports.length}` : ''})
+            {visibleCount < totalCount || spatialPolygon
+              ? `(${visibleCount} / ${totalCount})`
+              : `(${totalCount})`
+            }
           </span>
         </div>
 

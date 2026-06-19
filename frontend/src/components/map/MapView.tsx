@@ -72,6 +72,7 @@ function PickModeHandler(): null {
           show_hidden: filters.showHidden,
           show_flagged: filters.showFlagged,
           show_unflagged: filters.showUnflagged,
+          search: filters.search || undefined,
         });
         setDots(dotsRes.dots);
       } catch (e2) {

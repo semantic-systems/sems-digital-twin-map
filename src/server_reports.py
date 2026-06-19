@@ -56,7 +56,7 @@ SEARCH_OPTIONAL_KEYWORDS = ['sturm', 'storm', 'flut', 'flood', 'unwetter', 'rege
 SEARCH_N_KEYWORDS = 1
 SEARCH_W_REGEX = '.*(hamburg).*'
 SEARCH_B_REGEX = '.*(berlin).*'
-SEARCH_LOOK_BACK = 30    # how many minutes to look back
+SEARCH_LOOK_BACK = 4*30    # how many minutes to look back
 
 sparql = SPARQLWrapper(SPARQL_ENDPOINT)
 

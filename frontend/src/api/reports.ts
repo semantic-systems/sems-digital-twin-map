@@ -22,6 +22,7 @@ function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): R
     show_flagged: p.show_flagged,
     show_unflagged: p.show_unflagged,
     ...(('since' in p) ? { since: (p as NewCountParams).since } : {}),
+    ...((p as DotsParams).search ? { search: (p as DotsParams).search } : {}),
   };
 }
 
@@ -31,7 +32,6 @@ export async function fetchReports(params: FetchReportsParams): Promise<ReportsR
   const qs = buildQuery({
     ...toBackendParams(params),
     limit: params.limit ?? BASE_LIMIT,
-    ...(params.search ? { search: params.search } : {}),
   });
   return apiFetch<ReportsResponse>(`/reports/${qs}`);
 }

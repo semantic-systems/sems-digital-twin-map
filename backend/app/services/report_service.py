@@ -533,7 +533,7 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False, 0
 
     # Build the main query (only admitted reports)
     q = build_report_query(
@@ -545,11 +545,7 @@ def get_reports(
         demo_mode=demo_mode,
         search=search,
     )
-    # Overfetch to account for Python-level filtering (show_hidden, loc_filter, etc.)
-    sql_limit = limit + 100
-    reports_orm: list[Report] = (
-        q.order_by(Report.timestamp.desc()).limit(sql_limit).all()
-    )
+    reports_orm: list[Report] = q.order_by(Report.timestamp.desc()).all()
 
     # Python-level display filtering
     hide_seen = not show_hidden
@@ -567,8 +563,8 @@ def get_reports(
         hide_unflagged=hide_unflagged,
     )
 
-    # Determine if there are more results beyond the requested limit
-    has_more = len(filtered) > limit
+    total_count = len(filtered)
+    has_more = total_count > limit
     filtered = filtered[:limit]
 
     # Build a quick lookup: report_id → UserReportState row
@@ -609,7 +605,7 @@ def get_reports(
     pending_count = len(all_matching_ids - added_ids)
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count
 
 
 # ---------------------------------------------------------------------------
@@ -750,6 +746,7 @@ def build_dots(
     show_unflagged: bool,
     demo_mode: bool,
     added_ids: set[int] | None = None,
+    search: str | None = None,
 ) -> list[dict]:
     """
     Build the list of map-dot dicts from admitted reports that have coordinates.
@@ -775,8 +772,9 @@ def build_dots(
         eff_events=eff_events,
         eff_relevance=eff_relevance,
         demo_mode=demo_mode,
+        search=search,
     )
-    reports_orm: list[Report] = q.all()
+    reports_orm: list[Report] = q.order_by(Report.timestamp.desc()).all()
 
     hide_seen = not show_hidden
     hide_flagged = not show_flagged

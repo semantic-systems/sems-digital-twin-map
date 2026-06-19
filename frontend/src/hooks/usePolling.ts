@@ -87,7 +87,7 @@ export function usePolling() {
           cur2.showUnflagged !== snapUnflagged ||
           cur2.search !== snapSearch
         ) return;
-        setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts);
+        setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count);
         if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
         if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
         if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
@@ -95,7 +95,7 @@ export function usePolling() {
         setDots(dotsRes.dots);
         setPendingNewCount(0);
       } else {
-        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more, reportsRes.location_counts);
+        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more, reportsRes.location_counts, reportsRes.total_count);
         setPendingNewCount(pendingCount);
       }
     } catch {

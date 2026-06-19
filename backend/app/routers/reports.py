@@ -49,7 +49,7 @@ def get_reports_endpoint(
 ) -> ReportsResponse:
     from ..config import settings
 
-    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more = svc.get_reports(
+    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter,
@@ -74,6 +74,7 @@ def get_reports_endpoint(
         platform_counts=platform_counts,
         platform_added_counts=platform_added_counts,
         has_more=has_more,
+        total_count=total_count,
     )
 
 
@@ -129,6 +130,7 @@ def dots_endpoint(
     show_hidden: bool = Query(False),
     show_flagged: bool = Query(True),
     show_unflagged: bool = Query(True),
+    search: str | None = Query(None),
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
     from ..config import settings
@@ -147,6 +149,7 @@ def dots_endpoint(
         show_flagged=show_flagged,
         show_unflagged=show_unflagged,
         demo_mode=settings.DEMO_MODE,
+        search=search or None,
     )
     return {"dots": dots}
 
