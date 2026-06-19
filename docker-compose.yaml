@@ -18,7 +18,7 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     ports:
-      - "8050:80"
+      - "8052:80"
     depends_on:
       - backend
     networks:
