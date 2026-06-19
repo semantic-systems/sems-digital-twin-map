@@ -67,8 +67,23 @@ function computeSuppressed(locs: LocationEntry[]): Set<LocationEntry> {
       if (i === j) continue;
       const other = items[j];
       if (!other) continue;
-      if (pointInPolygon(other.center[0], other.center[1], item.ring)) {
-        // Only suppress if the other location is strictly more specific (smaller area).
+      // Suppress item only when other's ring is fully contained within item's ring.
+      // Using bbox corners of other's ring rather than its centre so that partial
+      // overlap (e.g. bridge polygon partly outside city polygon) keeps both visible.
+      let otherMinLat = other.ring[0][0], otherMaxLat = other.ring[0][0];
+      let otherMinLon = other.ring[0][1], otherMaxLon = other.ring[0][1];
+      for (const [lat, lon] of other.ring) {
+        if (lat < otherMinLat) otherMinLat = lat;
+        if (lat > otherMaxLat) otherMaxLat = lat;
+        if (lon < otherMinLon) otherMinLon = lon;
+        if (lon > otherMaxLon) otherMaxLon = lon;
+      }
+      const fullyContained =
+        pointInPolygon(otherMinLat, otherMinLon, item.ring) &&
+        pointInPolygon(otherMinLat, otherMaxLon, item.ring) &&
+        pointInPolygon(otherMaxLat, otherMinLon, item.ring) &&
+        pointInPolygon(otherMaxLat, otherMaxLon, item.ring);
+      if (fullyContained) {
         const itemArea = polygonBboxArea(item.ring);
         const otherArea = polygonBboxArea(other.ring);
         if (otherArea <= itemArea) {
