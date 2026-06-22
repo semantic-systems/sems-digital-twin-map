@@ -301,7 +301,7 @@ def save_posts(posts: list):
         mapped_types = list({event_mapping.get(et, 'Sonstiges') for et in raw_types}) or ['Sonstiges']
 
         if 'http://rescue-mate.de/resource/not_humanitarian' in raw_types:
-            json_post['relevance'] = 'http://rescue-mate.de/resource/none'
+            continue
 
         # create a new post object
         report = Report(

@@ -4,7 +4,6 @@ import type { LayerDTO } from '../types';
 import { LAYER_COLORS } from '../constants';
 
 export const ALL_EVENT_TYPES_LIST = [
-  'Irrelevant',
   'Menschen betroffen',
   'Warnungen & Hinweise',
   'Evakuierungen & Umsiedlungen',
@@ -84,7 +83,7 @@ export const useFilterStore = create<FilterStore>()(
       showHidden: false,
       showFlagged: true,
       showUnflagged: true,
-      eventTypes: ALL_EVENT_TYPES_LIST.filter((e) => e !== 'Irrelevant'),
+      eventTypes: [...ALL_EVENT_TYPES_LIST],
       activeLayers: [],
       availableLayers: [],
       autoUpdate: false,
@@ -115,7 +114,7 @@ export const useFilterStore = create<FilterStore>()(
         set((s) => ({
           eventTypes:
             s.eventTypes.length === 1 && s.eventTypes[0] === type
-              ? ALL_EVENT_TYPES_LIST.filter((e) => e !== 'Irrelevant')
+              ? [...ALL_EVENT_TYPES_LIST]
               : [type],
         })),
       setActiveLayers: (ids) => set({ activeLayers: ids }),
