@@ -93,13 +93,13 @@ def wkt_to_geojson(wkt_str: str):
     geojson_dict = mapping(geom)
     return geojson_dict
 
-def fetch_social_media_posts(search_since: datetime):
+def fetch_social_media_posts(search_since: datetime, search_until: datetime | None = None):
     """Fetch posts from RescueMate KG."""
 
     authorization_headers = {"Authorization": f"Bearer {get_keycloak_token()}"}
 
     search_since_str = search_since.isoformat().replace('+00:00', 'Z')
-
+    until_filter = f'FILTER (?date <= "{search_until.isoformat().replace("+00:00", "Z")}"^^xsd:dateTime)' if search_until else ''
 
     query = f"""
         PREFIX rm: <http://rescue-mate.de/resource/>
@@ -134,6 +134,7 @@ def fetch_social_media_posts(search_since: datetime):
                 }}
             }}
             FILTER (?date > "{search_since_str}"^^xsd:dateTime)
+            {until_filter}
         }}
     """
 
@@ -432,6 +433,24 @@ if __name__ == '__main__':
     print(f'Waiting for the API to be ready. Sleeping for {TIMEOUT_DELAY} seconds')
     #time.sleep(30)
     start_date = datetime.now(tz=timezone.utc)
+
+    # Backfill: fetch the last 3 days in 30-minute windows with 5-minute overlap
+    BACKFILL_WINDOW = timedelta(minutes=30)
+    BACKFILL_OVERLAP = timedelta(minutes=5)
+    backfill_start = start_date - timedelta(days=3)
+    print(f'Backfilling posts from {backfill_start.strftime("%Y-%m-%d %H:%M:%S")} UTC')
+    window_start = backfill_start
+    while window_start < start_date:
+        window_end = min(window_start + BACKFILL_WINDOW, start_date)
+        print(f'Backfill window: {window_start.strftime("%H:%M")} → {window_end.strftime("%H:%M %Y-%m-%d")} UTC')
+        try:
+            posts = fetch_social_media_posts(window_start, search_until=window_end)
+            save_posts(posts)
+        except Exception as e:
+            print(f'Backfill window failed, skipping: {e}')
+        window_start += BACKFILL_WINDOW - BACKFILL_OVERLAP
+        time.sleep(2)
+    print('Backfill complete. Starting live polling.')
 
     print(
         f'Starting to fetch posts from {start_date.strftime("%Y-%m-%d %H:%M:%S")} UTC'
