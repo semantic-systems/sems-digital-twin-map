@@ -284,7 +284,7 @@ def save_posts(posts: list):
             continue
 
         # convert the time field into a datetime object
-        timestamp = datetime.fromisoformat(json_post['timestamp'])
+        timestamp = datetime.fromisoformat(json_post['timestamp'].replace('Z', '+00:00'))
 
         platform = json_post['platform']
 
