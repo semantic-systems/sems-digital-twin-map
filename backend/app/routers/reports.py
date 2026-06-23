@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..db import Report, get_db
+
+_TIME_WINDOWS = {'1h': 1, '6h': 6, '1d': 24, '3d': 72}
+
+def _since_from_window(time_window: str | None) -> datetime | None:
+    if not time_window or time_window not in _TIME_WINDOWS:
+        return None
+    return datetime.now(timezone.utc) - timedelta(hours=_TIME_WINDOWS[time_window])
 from ..schemas.report import (
     AcknowledgeRequest,
     AdmitRequest,
@@ -45,6 +53,7 @@ def get_reports_endpoint(
     show_unflagged: bool = Query(True),
     limit: int = Query(50, ge=1, le=2000),
     search: str | None = Query(None),
+    time_window: str | None = Query(None),
     session: Session = Depends(get_db),
 ) -> ReportsResponse:
     from ..config import settings
@@ -62,6 +71,7 @@ def get_reports_endpoint(
         demo_mode=settings.DEMO_MODE,
         limit=limit,
         search=search or None,
+        since=_since_from_window(time_window),
     )
     return ReportsResponse(
         reports=reports,
@@ -131,6 +141,7 @@ def dots_endpoint(
     show_flagged: bool = Query(True),
     show_unflagged: bool = Query(True),
     search: str | None = Query(None),
+    time_window: str | None = Query(None),
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
     from ..config import settings
@@ -150,6 +161,7 @@ def dots_endpoint(
         show_unflagged=show_unflagged,
         demo_mode=settings.DEMO_MODE,
         search=search or None,
+        since=_since_from_window(time_window),
     )
     return {"dots": dots}
 

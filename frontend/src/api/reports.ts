@@ -21,6 +21,7 @@ function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): R
     show_hidden: p.show_hidden,
     show_flagged: p.show_flagged,
     show_unflagged: p.show_unflagged,
+    time_window: p.time_window !== 'all' ? p.time_window : undefined,
     ...(('since' in p) ? { since: (p as NewCountParams).since } : {}),
     ...((p as DotsParams).search ? { search: (p as DotsParams).search } : {}),
   };

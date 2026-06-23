@@ -43,6 +43,7 @@ interface FilterStore {
   availableLayers: LayerDTO[];
   autoUpdate: boolean;
   search: string;
+  timeWindow: string;
   // Spatial area filter — [lat, lon][] polygon drawn on the map
   spatialPolygon: [number, number][] | null;
   spatialDrawMode: boolean;
@@ -65,6 +66,7 @@ interface FilterStore {
   setAvailableLayers: (layers: LayerDTO[]) => void;
   setAutoUpdate: (v: boolean) => void;
   setSearch: (v: string) => void;
+  setTimeWindow: (v: string) => void;
   setSpatialPolygon: (p: [number, number][] | null) => void;
   setSpatialDrawMode: (v: boolean) => void;
 }
@@ -88,6 +90,7 @@ export const useFilterStore = create<FilterStore>()(
       availableLayers: [],
       autoUpdate: false,
       search: '',
+      timeWindow: 'all',
       spatialPolygon: null,
       spatialDrawMode: false,
 
@@ -129,6 +132,7 @@ export const useFilterStore = create<FilterStore>()(
       },
       setAutoUpdate: (autoUpdate) => set({ autoUpdate }),
       setSearch: (search) => set({ search }),
+      setTimeWindow: (timeWindow) => set({ timeWindow }),
       setSpatialPolygon: (spatialPolygon) => set({ spatialPolygon, spatialDrawMode: false }),
       setSpatialDrawMode: (spatialDrawMode) => set({ spatialDrawMode }),
     }),

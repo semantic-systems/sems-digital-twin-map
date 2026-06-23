@@ -166,13 +166,15 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                     if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
                         insert = False
                 if insert:
+                    geojson = wkt_to_geojson(result["wkt"]['value'])
                     geo_linked_entity['location'] = {
                         'osm_type': result['osm_type']['value'],
                         'osm_id': int(result['osm_id']['value']),
                         'lat': lat,
                         'lon': lon,
                         'name': result['name']['value'],
-                        'geojson': wkt_to_geojson(result["wkt"]['value']),
+                        'geojson': geojson,
+                        'polygon': geojson,
                     }
             if geo_linked_entity:
                 if 'location' not in geo_linked_entity:
@@ -211,13 +213,15 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                     if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
                         insert = False
                 if insert:
+                    geojson = wkt_to_geojson(result["wkt"]['value'])
                     geo_linked_entity['location'] = {
                         'osm_type': result['osm_type']['value'],
                         'osm_id': int(result['osm_id']['value']),
                         'lat': lat,
                         'lon': lon,
                         'name': result['name']['value'],
-                        'geojson': wkt_to_geojson(result["wkt"]['value']),
+                        'geojson': geojson,
+                        'polygon': geojson,
                     }
             if geo_linked_entity and geo_linked_entity["mention"] not in {x["mention"] for x in posts[post_id]['geo_linked_entities']}:
                 if 'location' not in geo_linked_entity:

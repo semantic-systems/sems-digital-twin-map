@@ -15,7 +15,7 @@ const BASE_LIMIT = 50;
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search } =
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow } =
     useFilterStore();
   const { setReports, setDots, setPendingNewCount, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
@@ -34,6 +34,7 @@ function AppInner(): React.ReactElement {
     show_flagged: showFlagged,
     show_unflagged: showUnflagged,
     search: search || undefined,
+    time_window: timeWindow,
     limit,
   });
 
@@ -81,7 +82,7 @@ function AppInner(): React.ReactElement {
     if (!username) return;
     setCurrentLimit(BASE_LIMIT);
     loadData(BASE_LIMIT);
-  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, reloadTrigger]);
+  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, reloadTrigger]);
 
   // Load layers list once; auto-activate all layers if none are active yet (fresh deployment)
   useEffect(() => {

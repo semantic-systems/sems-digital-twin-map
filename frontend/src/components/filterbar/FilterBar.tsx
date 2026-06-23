@@ -40,6 +40,14 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 export function FilterBar(): React.ReactElement {
+  const TIME_WINDOWS = [
+    { key: '1h', label: '1h' },
+    { key: '6h', label: '6h' },
+    { key: '1d', label: '1d' },
+    { key: '3d', label: '3d' },
+    { key: 'all', label: t('all') },
+  ];
+
   const {
     locShowLocalized,
     locShowPending,
@@ -58,6 +66,8 @@ export function FilterBar(): React.ReactElement {
     setShowFlagged,
     showUnflagged,
     setShowUnflagged,
+    timeWindow,
+    setTimeWindow,
     activeLayers,
     availableLayers,
     toggleLayer,
@@ -178,6 +188,28 @@ export function FilterBar(): React.ReactElement {
             <input type="checkbox" checked={showUnflagged} onChange={(e) => setShowUnflagged(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('show_unflagged')}
           </label>
+        </div>
+
+        <Divider />
+
+        <SectionLabel>{t('time')}</SectionLabel>
+        <div style={{ display: 'flex', gap: 3, marginLeft: 6, alignItems: 'center' }}>
+          {TIME_WINDOWS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTimeWindow(key)}
+              style={{
+                fontSize: 11, padding: '2px 7px', borderRadius: 999,
+                border: `1px solid ${timeWindow === key ? '#2563eb' : '#d1d5db'}`,
+                background: timeWindow === key ? '#2563eb' : 'transparent',
+                color: timeWindow === key ? '#fff' : '#374151',
+                cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                fontWeight: timeWindow === key ? 600 : 400,
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <Divider />

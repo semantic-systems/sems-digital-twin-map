@@ -450,6 +450,7 @@ def get_reports(
     demo_mode: bool = False,
     limit: int = 50,
     search: str | None = None,
+    since: datetime | None = None,
 ) -> tuple[list[ReportDTO], int, str, dict[str, int], list[str]]:
     """
     Returns (reports, pending_count, loaded_at_iso).
@@ -472,6 +473,7 @@ def get_reports(
     # and platform filters — used for chip totals and platform list.
     all_base_q = build_report_query(
         session,
+        since=since,
         eff_platform=None,
         eff_events=None,
         eff_relevance=None,
@@ -525,6 +527,7 @@ def get_reports(
     if not added_ids:
         pending_q = build_report_query(
             session,
+            since=since,
             eff_platform=eff_platform,
             eff_events=eff_events,
             eff_relevance=eff_relevance,
@@ -538,6 +541,7 @@ def get_reports(
     # Build the main query (only admitted reports)
     q = build_report_query(
         session,
+        since=since,
         added_ids=added_ids,
         eff_platform=eff_platform,
         eff_events=eff_events,
@@ -747,6 +751,7 @@ def build_dots(
     demo_mode: bool,
     added_ids: set[int] | None = None,
     search: str | None = None,
+    since: datetime | None = None,
 ) -> list[dict]:
     """
     Build the list of map-dot dicts from admitted reports that have coordinates.
@@ -767,6 +772,7 @@ def build_dots(
 
     q = build_report_query(
         session,
+        since=since,
         added_ids=effective_added,
         eff_platform=eff_platform,
         eff_events=eff_events,
