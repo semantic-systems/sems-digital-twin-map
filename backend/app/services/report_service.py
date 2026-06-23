@@ -29,6 +29,25 @@ def _now_utc() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+def _polygon_bbox(polygon: dict) -> list[float] | None:
+    """Return [min_lat, max_lat, min_lon, max_lon] for a GeoJSON polygon/multipolygon."""
+    ptype = polygon.get("type")
+    raw = polygon.get("coordinates")
+    if not raw:
+        return None
+    if ptype == "Polygon":
+        flat = [pt for ring in raw for pt in ring]
+    elif ptype == "MultiPolygon":
+        flat = [pt for poly in raw for ring in poly for pt in ring]
+    else:
+        return None
+    if not flat:
+        return None
+    lons = [c[0] for c in flat]
+    lats = [c[1] for c in flat]
+    return [min(lats), max(lats), min(lons), max(lons)]
+
+
 def _coerce_locations(raw: Any) -> list[LocationEntry]:
     """Safely coerce a raw JSON list (from DB) to list[LocationEntry]."""
     if not raw:
@@ -853,6 +872,27 @@ def build_dots(
         Report.locations,
     ).order_by(Report.timestamp.desc()).all()
 
+    # Precompute bbox for every unique (osm_id, osm_type) referenced across all rows.
+    # This restores containment-suppression for dots after polygon was moved out of locations.
+    from sqlalchemy import tuple_
+    osm_keys: set[tuple[str, str]] = set()
+    for row in rows:
+        for loc in (row[9] or []):
+            if isinstance(loc, dict) and loc.get("osm_id") and loc.get("osm_type"):
+                osm_keys.add((str(loc["osm_id"]), str(loc["osm_type"])))
+    bbox_map: dict[tuple[str, str], list[float]] = {}
+    if osm_keys:
+        poly_rows = (
+            session.query(LocationPolygon)
+            .filter(tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(list(osm_keys)))
+            .all()
+        )
+        for pr in poly_rows:
+            if isinstance(pr.polygon, dict):
+                bb = _polygon_bbox(pr.polygon)
+                if bb:
+                    bbox_map[(pr.osm_id, pr.osm_type)] = bb
+
     dots: list[dict] = []
     for (rid, text, author, platform, timestamp, event_types, event_type, relevance, url, locs_raw) in rows:
         if hide_seen and rid in seen_ids:
@@ -879,6 +919,7 @@ def build_dots(
 
             loc_bbox_area: float | None = None
             loc_bbox: list[float] | None = None
+            # Try stored bbox first, then look up from location_polygons.
             bbox = loc.get("boundingbox")
             if bbox and len(bbox) == 4:
                 try:
@@ -887,6 +928,12 @@ def build_dots(
                     loc_bbox = [min_lat, max_lat, min_lon, max_lon]
                 except (TypeError, ValueError):
                     pass
+            if loc_bbox is None and loc.get("osm_id") and loc.get("osm_type"):
+                bb = bbox_map.get((str(loc["osm_id"]), str(loc["osm_type"])))
+                if bb:
+                    min_lat, max_lat, min_lon, max_lon = bb
+                    loc_bbox_area = (max_lat - min_lat) * (max_lon - min_lon)
+                    loc_bbox = bb
 
             dots.append(
                 {
