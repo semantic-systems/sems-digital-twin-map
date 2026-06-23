@@ -132,17 +132,27 @@ export function computeSuppressedDotsWithLocs(
       if (i === j) continue;
       const { dot: b, loc: locB } = dotLocs[j];
 
+      // Both dots resolved to the same LocationEntry (identical lat/lon within tolerance).
+      // Comparing a loc against itself produces spurious mutual suppression — skip.
+      if (locA !== null && locB === locA) continue;
+
       // Check if b's polygon is fully contained within a's region.
       // Using full bbox containment rather than a single-point check so that
       // partial overlap (e.g. Görlitzer Bahnbrücken polygon partly outside Berlin)
       // keeps both dots/polygons visible.
       let bInsideA = false;
       if (ringA && ringA.length >= 3) {
-        // Derive B's spatial extent: prefer polygon ring, then dot bbox, then geocoded point.
+        // Derive B's spatial extent. Prefer dot.location_bbox (computed from the actual
+        // polygon in location_polygons, which reflects the full geographic extent — e.g.
+        // a rail route spanning two cities). Fall back to ring from loc.boundingbox, which
+        // is only the Nominatim result's centroid bbox and may be much smaller.
         const ringB = locB ? getLocationRing(locB) : null;
         let bMinLat = b.lat, bMaxLat = b.lat, bMinLon = b.lon, bMaxLon = b.lon;
         let hasBbox = false;
-        if (ringB && ringB.length > 0) {
+        if (b.location_bbox) {
+          [bMinLat, bMaxLat, bMinLon, bMaxLon] = b.location_bbox as number[];
+          hasBbox = true;
+        } else if (ringB && ringB.length > 0) {
           bMinLat = ringB[0][0]; bMaxLat = ringB[0][0];
           bMinLon = ringB[0][1]; bMaxLon = ringB[0][1];
           for (const [lat, lon] of ringB) {
@@ -151,9 +161,6 @@ export function computeSuppressedDotsWithLocs(
             if (lon < bMinLon) bMinLon = lon;
             if (lon > bMaxLon) bMaxLon = lon;
           }
-          hasBbox = true;
-        } else if (b.location_bbox) {
-          [bMinLat, bMaxLat, bMinLon, bMaxLon] = b.location_bbox;
           hasBbox = true;
         }
         if (hasBbox) {

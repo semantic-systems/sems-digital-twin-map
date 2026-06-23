@@ -919,21 +919,24 @@ def build_dots(
 
             loc_bbox_area: float | None = None
             loc_bbox: list[float] | None = None
-            # Try stored bbox first, then look up from location_polygons.
-            bbox = loc.get("boundingbox")
-            if bbox and len(bbox) == 4:
-                try:
-                    min_lat, max_lat, min_lon, max_lon = map(float, bbox)
-                    loc_bbox_area = (max_lat - min_lat) * (max_lon - min_lon)
-                    loc_bbox = [min_lat, max_lat, min_lon, max_lon]
-                except (TypeError, ValueError):
-                    pass
-            if loc_bbox is None and loc.get("osm_id") and loc.get("osm_type"):
+            # Prefer polygon bbox from location_polygons (reflects full geographic extent,
+            # e.g. a railway route spanning multiple cities). Fall back to Nominatim
+            # boundingbox which may only cover the geocoded result's centroid area.
+            if loc.get("osm_id") and loc.get("osm_type"):
                 bb = bbox_map.get((str(loc["osm_id"]), str(loc["osm_type"])))
                 if bb:
                     min_lat, max_lat, min_lon, max_lon = bb
                     loc_bbox_area = (max_lat - min_lat) * (max_lon - min_lon)
                     loc_bbox = bb
+            if loc_bbox is None:
+                bbox = loc.get("boundingbox")
+                if bbox and len(bbox) == 4:
+                    try:
+                        min_lat, max_lat, min_lon, max_lon = map(float, bbox)
+                        loc_bbox_area = (max_lat - min_lat) * (max_lon - min_lon)
+                        loc_bbox = [min_lat, max_lat, min_lon, max_lon]
+                    except (TypeError, ValueError):
+                        pass
 
             dots.append(
                 {
