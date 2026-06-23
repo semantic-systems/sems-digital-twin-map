@@ -132,7 +132,7 @@ export function FilterBar(): React.ReactElement {
       }}
     >
       {/* Row 1: Location · Relevance */}
-      <div style={{ ...row, padding: '4px 12px', borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ ...row, padding: '4px 12px', borderBottom: '1px solid #f3f4f6', overflowX: 'auto' }}>
         <SectionLabel>{t('location')}</SectionLabel>
         <div style={{ display: 'flex', gap: 10, marginLeft: 6, alignItems: 'center' }}>
           <label style={checkLabel}>
@@ -173,24 +173,6 @@ export function FilterBar(): React.ReactElement {
               )}
             </label>
           ))}
-        </div>
-
-        <Divider />
-
-        <SectionLabel>{t('view')}</SectionLabel>
-        <div style={{ display: 'flex', gap: 10, marginLeft: 6, alignItems: 'center' }}>
-          <label style={checkLabel}>
-            <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} style={{ width: 12, height: 12 }} />
-            {t('show_hidden')}
-          </label>
-          <label style={checkLabel}>
-            <input type="checkbox" checked={showFlagged} onChange={(e) => setShowFlagged(e.target.checked)} style={{ width: 12, height: 12 }} />
-            {t('show_flagged')}
-          </label>
-          <label style={checkLabel}>
-            <input type="checkbox" checked={showUnflagged} onChange={(e) => setShowUnflagged(e.target.checked)} style={{ width: 12, height: 12 }} />
-            {t('show_unflagged')}
-          </label>
         </div>
 
         <Divider />
@@ -312,26 +294,44 @@ export function FilterBar(): React.ReactElement {
         </div>
       </div>
 
-      {/* Row 3: Platforms (conditional) */}
-      {effectivePlatforms.length > 0 && (
-        <div style={{ ...row, padding: '3px 12px', borderBottom: availableLayers.length > 0 ? '1px solid #f3f4f6' : undefined, flexWrap: 'wrap' }}>
-          <SectionLabel>{t('platform')}</SectionLabel>
-          <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-            {effectivePlatforms.map((p) => (
-              <label key={p} style={checkLabel}>
-                <input
-                  type="checkbox"
-                  checked={platforms.length === 0 || platforms.includes(p)}
-                  onChange={() => togglePlatform(p)}
-                  style={{ width: 12, height: 12 }}
-                />
-                {p}
-                <span style={{ color: '#9ca3af' }}>({fmtCount(platformCounts[p] ?? 0)})</span>
-              </label>
-            ))}
-          </div>
+      {/* Row 3: Ansicht · Platforms (conditional) */}
+      <div style={{ ...row, padding: '3px 12px', borderBottom: availableLayers.length > 0 ? '1px solid #f3f4f6' : undefined, flexWrap: 'wrap' }}>
+        <SectionLabel>{t('view')}</SectionLabel>
+        <div style={{ display: 'flex', gap: 10, marginLeft: 6, alignItems: 'center' }}>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('show_hidden')}
+          </label>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={showFlagged} onChange={(e) => setShowFlagged(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('show_flagged')}
+          </label>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={showUnflagged} onChange={(e) => setShowUnflagged(e.target.checked)} style={{ width: 12, height: 12 }} />
+            {t('show_unflagged')}
+          </label>
         </div>
-      )}
+        {effectivePlatforms.length > 0 && (
+          <>
+            <Divider />
+            <SectionLabel>{t('platform')}</SectionLabel>
+            <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+              {effectivePlatforms.map((p) => (
+                <label key={p} style={checkLabel}>
+                  <input
+                    type="checkbox"
+                    checked={platforms.length === 0 || platforms.includes(p)}
+                    onChange={() => togglePlatform(p)}
+                    style={{ width: 12, height: 12 }}
+                  />
+                  {p}
+                  <span style={{ color: '#9ca3af' }}>({fmtCount(platformCounts[p] ?? 0)})</span>
+                </label>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Row 4: Layers (conditional) */}
       {availableLayers.length > 0 && (
