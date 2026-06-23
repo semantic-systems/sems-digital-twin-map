@@ -48,6 +48,42 @@ def _polygon_bbox(polygon: dict) -> list[float] | None:
     return [min(lats), max(lats), min(lons), max(lons)]
 
 
+# Photon uses single-letter osm_type codes; Nominatim uses full words.
+# Both forms may coexist in location_polygons depending on which geocoder
+# produced the linked entity.
+_SHORT_TO_LONG: dict[str, str] = {'R': 'relation', 'N': 'node', 'W': 'way'}
+_LONG_TO_SHORT: dict[str, str] = {v: k for k, v in _SHORT_TO_LONG.items()}
+
+
+def _alt_osm_type(osm_type: str) -> str | None:
+    """Return the alternative spelling for an osm_type, or None if already canonical."""
+    return _SHORT_TO_LONG.get(osm_type) or _LONG_TO_SHORT.get(osm_type)
+
+
+def _osm_keys_with_alts(keys: set[tuple[str, str]]) -> list[tuple[str, str]]:
+    """Expand a set of (osm_id, osm_type) pairs to also include alternative spellings."""
+    expanded = set(keys)
+    for oid, otype in keys:
+        alt = _alt_osm_type(otype)
+        if alt:
+            expanded.add((oid, alt))
+    return list(expanded)
+
+
+def _best_polygon(poly_map: dict[tuple[str, str], Any], osm_id: str, osm_type: str) -> Any:
+    """
+    Look up a polygon preferring the canonical (long) form of osm_type.
+    Falls back to the short form if the canonical entry is absent.
+    """
+    canonical = _SHORT_TO_LONG.get(osm_type, osm_type)
+    short = _LONG_TO_SHORT.get(osm_type, osm_type)
+    return (
+        poly_map.get((osm_id, canonical))
+        or poly_map.get((osm_id, short))
+        or poly_map.get((osm_id, osm_type))
+    )
+
+
 def _coerce_locations(raw: Any) -> list[LocationEntry]:
     """Safely coerce a raw JSON list (from DB) to list[LocationEntry]."""
     if not raw:
@@ -74,29 +110,32 @@ def enrich_with_polygons(session: Session, locations: list) -> list:
     """
     Re-attach polygon data from location_polygons for a single report's locations.
     Used by the single-report detail endpoint so ActiveReportPolygons can render shapes.
+    Queries with both short (R/N/W) and long (relation/node/way) osm_type spellings and
+    prefers the canonical long form when both are present.
     """
     from sqlalchemy import tuple_
 
-    keyed = [
+    base_keys: set[tuple[str, str]] = {
         (str(loc["osm_id"]), str(loc["osm_type"]))
         for loc in locations
         if isinstance(loc, dict) and loc.get("osm_id") and loc.get("osm_type")
-    ]
-    if not keyed:
+    }
+    if not base_keys:
         return locations
 
     rows = (
         session.query(LocationPolygon)
-        .filter(
-            tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(keyed)
-        )
+        .filter(tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(
+            _osm_keys_with_alts(base_keys)
+        ))
         .all()
     )
     poly_map = {(r.osm_id, r.osm_type): r.polygon for r in rows}
 
     return [
-        {**loc, "polygon": poly_map[(str(loc["osm_id"]), str(loc["osm_type"]))]}
-        if isinstance(loc, dict) and (str(loc.get("osm_id", "")), str(loc.get("osm_type", ""))) in poly_map
+        {**loc, "polygon": poly}
+        if isinstance(loc, dict)
+           and (poly := _best_polygon(poly_map, str(loc.get("osm_id", "")), str(loc.get("osm_type", ""))))
         else loc
         for loc in locations
     ]
@@ -884,7 +923,9 @@ def build_dots(
     if osm_keys:
         poly_rows = (
             session.query(LocationPolygon)
-            .filter(tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(list(osm_keys)))
+            .filter(tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(
+                _osm_keys_with_alts(osm_keys)
+            ))
             .all()
         )
         for pr in poly_rows:
@@ -923,7 +964,7 @@ def build_dots(
             # e.g. a railway route spanning multiple cities). Fall back to Nominatim
             # boundingbox which may only cover the geocoded result's centroid area.
             if loc.get("osm_id") and loc.get("osm_type"):
-                bb = bbox_map.get((str(loc["osm_id"]), str(loc["osm_type"])))
+                bb = _best_polygon(bbox_map, str(loc["osm_id"]), str(loc["osm_type"]))
                 if bb:
                     min_lat, max_lat, min_lon, max_lon = bb
                     loc_bbox_area = (max_lat - min_lat) * (max_lon - min_lon)
