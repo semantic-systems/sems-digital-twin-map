@@ -269,6 +269,7 @@ def save_posts(posts: list):
         # this is the id the respective platform uses to identify the post
         identifier = json_post['id']
 
+
         entities = json_post.get('geo_linked_entities', [])
         locations = [{
             "lon": entity["location"]["lon"],

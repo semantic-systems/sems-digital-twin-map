@@ -300,6 +300,7 @@ interface GroupMarkerProps {
   username: string | null;
   map: L.Map;
   didSelectRef: React.MutableRefObject<boolean>;
+  dotClickRef: React.MutableRefObject<boolean>;
   reports: ReportDTO[];
   setActiveReportId: (id: number | null) => void;
   optimisticAcknowledge: (id: number) => void;
@@ -309,7 +310,7 @@ interface GroupMarkerProps {
 
 const GroupMarker = React.memo(function GroupMarker({
   group, groupKey, activeReportId, activeGroupKeyRef, username, map,
-  didSelectRef,
+  didSelectRef, dotClickRef,
   reports, setActiveReportId, optimisticAcknowledge,
   openDetail, closeDetail,
 }: GroupMarkerProps) {
@@ -349,20 +350,20 @@ const GroupMarker = React.memo(function GroupMarker({
   const s = useRef({
     isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports,
     setActiveReportId, optimisticAcknowledge,
-    didSelectRef, map,
+    didSelectRef, dotClickRef, map,
     openDetail, closeDetail, markerRef,
   });
   s.current = {
     isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports,
     setActiveReportId, optimisticAcknowledge,
-    didSelectRef, map,
+    didSelectRef, dotClickRef, map,
     openDetail, closeDetail, markerRef,
   };
 
   // Identity-stable event handlers — useEventHandlers never removes/re-adds them.
   const eventHandlers = useMemo(() => ({
     click: () => {
-      const { isMulti, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports, setActiveReportId, optimisticAcknowledge } = s.current;
+      const { isMulti, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, dotClickRef, setActiveReportId, optimisticAcknowledge } = s.current;
       if (!isMulti) {
         const dot = dedupedDots[0];
         // Only deactivate when clicking the exact same marker that's already active.
@@ -370,13 +371,11 @@ const GroupMarker = React.memo(function GroupMarker({
         const isSameMarker = dot.report_id === activeReportId && activeGroupKeyRef.current === groupKey;
         const newId = isSameMarker ? null : dot.report_id;
         activeGroupKeyRef.current = newId !== null ? groupKey : null;
+        dotClickRef.current = true;
         setActiveReportId(newId);
-        if (newId !== null && username) {
-          const report = reports.find((r) => r.id === newId);
-          if (report?.user_state.new) {
-            optimisticAcknowledge(newId);
-            acknowledgeReport(newId, username).catch(() => {});
-          }
+        if (newId !== null && username && dot.new) {
+          optimisticAcknowledge(newId);
+          acknowledgeReport(newId, username).catch(() => {});
         }
       }
     },
@@ -396,8 +395,9 @@ const GroupMarker = React.memo(function GroupMarker({
 
   // Stable onSelect: closes the Leaflet popup FIRST, then triggers store updates.
   const onSelect = useCallback((dot: DotDTO) => {
-    const { didSelectRef, map, setActiveReportId, username, optimisticAcknowledge, group, openDetail } = s.current;
+    const { didSelectRef, dotClickRef, map, setActiveReportId, username, optimisticAcknowledge, group, openDetail } = s.current;
     didSelectRef.current = true;
+    dotClickRef.current = true;
     map.closePopup(); // close aggregate popup before any re-renders
     setActiveReportId(dot.report_id);
     if (dot.new && username) {
@@ -479,6 +479,7 @@ export function ReportDots(): React.ReactElement {
 
   const groups = useMemo(() => clusterDots(visibleDots, map), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   const didSelectRef = useRef(false);
+  const dotClickRef = useRef(false);
   const activeGroupKeyRef = useRef<string | null>(null);
 
   // Detail overlay state — separate from Leaflet popup system entirely.
@@ -486,6 +487,17 @@ export function ReportDots(): React.ReactElement {
     dot: DotDTO; lat: number; lon: number; reopenPopup: () => void;
   } | null>(null);
   const [detailPos, setDetailPos] = useState<{ x: number; y: number } | null>(null);
+
+  // Close any open Leaflet popup (and detail overlay) when activeReportId changes
+  // from outside ReportDots (e.g. sidebar click). Skip for dot-initiated changes.
+  useEffect(() => {
+    if (dotClickRef.current) {
+      dotClickRef.current = false;
+      return;
+    }
+    map.closePopup();
+    setDetailState(null);
+  }, [activeReportId, map]);
 
   useEffect(() => {
     if (!detailState) { setDetailPos(null); return; }
@@ -543,6 +555,7 @@ export function ReportDots(): React.ReactElement {
             username={username}
             map={map}
             didSelectRef={didSelectRef}
+            dotClickRef={dotClickRef}
             reports={reports}
             setActiveReportId={setActiveReportId}
             optimisticAcknowledge={optimisticAcknowledge}
