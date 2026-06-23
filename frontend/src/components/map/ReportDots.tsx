@@ -534,12 +534,12 @@ export function ReportDots(): React.ReactElement {
 
   // Back: close detail, clear active, reopen aggregate popup.
   const backToList = useCallback(() => {
-    setDetailState((prev) => {
-      if (prev) prev.reopenPopup();
-      return null;
-    });
+    dotClickRef.current = true; // prevent useEffect from closing the just-reopened popup
+    const prevDetail = detailState;
+    setDetailState(null);
     setActiveReportId(null);
-  }, [setActiveReportId]);
+    if (prevDetail) prevDetail.reopenPopup();
+  }, [setActiveReportId, detailState]);
 
   return (
     <>
