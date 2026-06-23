@@ -74,6 +74,48 @@ def _init_db() -> None:
         "ALTER TABLE user_report_state ADD COLUMN IF NOT EXISTS new BOOLEAN NOT NULL DEFAULT TRUE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS event_types VARCHAR[]",
         "UPDATE reports SET event_types = ARRAY[event_type]::VARCHAR[] WHERE event_types IS NULL OR event_types = '{}'",
+        "CREATE INDEX IF NOT EXISTS ix_reports_timestamp ON reports (timestamp DESC)",
+        "CREATE INDEX IF NOT EXISTS ix_reports_platform ON reports (platform)",
+        "CREATE INDEX IF NOT EXISTS ix_reports_relevance ON reports (relevance)",
+        "CREATE INDEX IF NOT EXISTS ix_reports_identifier_prefix ON reports (identifier text_pattern_ops)",
+        "CREATE INDEX IF NOT EXISTS ix_reports_event_types_gin ON reports USING GIN (event_types)",
+        "CREATE INDEX IF NOT EXISTS ix_urs_report_id ON user_report_state (report_id)",
+        "CREATE INDEX IF NOT EXISTS ix_urs_username_first_seen ON user_report_state (username, first_seen_at) WHERE first_seen_at IS NOT NULL",
+        # Deduplicated polygon storage
+        """CREATE TABLE IF NOT EXISTS location_polygons (
+            osm_id VARCHAR NOT NULL,
+            osm_type VARCHAR NOT NULL,
+            polygon JSON NOT NULL,
+            PRIMARY KEY (osm_id, osm_type)
+        )""",
+        # Backfill unique polygons still present in locations (idempotent via ON CONFLICT)
+        """INSERT INTO location_polygons (osm_id, osm_type, polygon)
+           SELECT DISTINCT ON (e->>'osm_id', e->>'osm_type')
+               e->>'osm_id', e->>'osm_type', e->'polygon'
+           FROM reports, LATERAL json_array_elements(locations) AS e
+           WHERE (e->>'osm_id') IS NOT NULL
+             AND (e->>'osm_type') IS NOT NULL
+             AND (e->>'polygon') IS NOT NULL
+           ON CONFLICT (osm_id, osm_type) DO NOTHING""",
+        # Strip polygon from locations (guard makes this idempotent)
+        """UPDATE reports
+           SET locations = (
+               SELECT json_agg(
+                   (SELECT json_object_agg(k, v) FROM json_each(e) AS x(k, v) WHERE k != 'polygon')
+               )
+               FROM json_array_elements(locations) AS e
+           )
+           WHERE locations::text LIKE '%\"polygon\"%'""",
+        """UPDATE reports
+           SET original_locations = (
+               SELECT json_agg(
+                   (SELECT json_object_agg(k, v) FROM json_each(e) AS x(k, v) WHERE k != 'polygon')
+               )
+               FROM json_array_elements(original_locations) AS e
+           )
+           WHERE original_locations::text LIKE '%\"polygon\"%'""",
+        # locations_slim is now identical to locations — clear to reclaim space
+        "UPDATE reports SET locations_slim = NULL WHERE locations_slim IS NOT NULL",
     ]
 
     for sql in statements:

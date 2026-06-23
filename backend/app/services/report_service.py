@@ -12,13 +12,13 @@ SQLAlchemy Session and return plain Python / Pydantic objects.
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import String, cast, or_
+from sqlalchemy import String, cast, case, and_, or_
 from sqlalchemy import Text as SaText
 from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
-from ..db import Report, UserReportState
+from ..db import LocationPolygon, Report, UserReportState
 from ..schemas.report import LocationEntry, ReportDTO, UserStateDTO
 
 # ---------------------------------------------------------------------------
@@ -45,6 +45,42 @@ def _coerce_locations(raw: Any) -> list[LocationEntry]:
                 result.append(item)
         return result
     return []
+
+
+# ---------------------------------------------------------------------------
+# enrich_with_polygons
+# ---------------------------------------------------------------------------
+
+def enrich_with_polygons(session: Session, locations: list) -> list:
+    """
+    Re-attach polygon data from location_polygons for a single report's locations.
+    Used by the single-report detail endpoint so ActiveReportPolygons can render shapes.
+    """
+    from sqlalchemy import tuple_
+
+    keyed = [
+        (str(loc["osm_id"]), str(loc["osm_type"]))
+        for loc in locations
+        if isinstance(loc, dict) and loc.get("osm_id") and loc.get("osm_type")
+    ]
+    if not keyed:
+        return locations
+
+    rows = (
+        session.query(LocationPolygon)
+        .filter(
+            tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(keyed)
+        )
+        .all()
+    )
+    poly_map = {(r.osm_id, r.osm_type): r.polygon for r in rows}
+
+    return [
+        {**loc, "polygon": poly_map[(str(loc["osm_id"]), str(loc["osm_type"]))]}
+        if isinstance(loc, dict) and (str(loc.get("osm_id", "")), str(loc.get("osm_type", ""))) in poly_map
+        else loc
+        for loc in locations
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -479,13 +515,25 @@ def get_reports(
         eff_relevance=None,
         demo_mode=demo_mode,
     )
-    all_base_rows = all_base_q.with_entities(Report.id, Report.event_types, Report.platform, Report.relevance, Report.locations).all()
+    # locations no longer has polygon field, so text scan is cheap.
+    _locs_text = cast(Report.locations, SaText)
+    _loc_status_expr = case(
+        (_locs_text.like('%"osm_id"%'), "localized"),
+        (
+            and_(Report.locations.isnot(None), _locs_text != "[]"),
+            "pending",
+        ),
+        else_="unlocalized",
+    )
+    all_base_rows = all_base_q.with_entities(
+        Report.id, Report.event_types, Report.platform, Report.relevance, _loc_status_expr
+    ).all()
 
     event_type_totals: dict[str, int] = {}
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
     location_counts: dict[str, int] = {"localized": 0, "pending": 0, "unlocalized": 0}
-    for (rid, ets, plat, rel, locs) in all_base_rows:
+    for (rid, ets, plat, rel, loc_status) in all_base_rows:
         if not show_hidden and rid in seen_ids:
             continue
         for et in (ets or []):
@@ -494,13 +542,7 @@ def get_reports(
             platform_counts[plat] = platform_counts.get(plat, 0) + 1
         if rel:
             relevance_totals[rel] = relevance_totals.get(rel, 0) + 1
-        locs_list = locs if isinstance(locs, list) else []
-        if locs_list and any(isinstance(loc, dict) and loc.get("osm_id") for loc in locs_list):
-            location_counts["localized"] += 1
-        elif locs_list:
-            location_counts["pending"] += 1
-        else:
-            location_counts["unlocalized"] += 1
+        location_counts[loc_status] = location_counts.get(loc_status, 0) + 1
     # Always expose the full known platform list, plus any unexpected ones from DB.
     all_platforms = sorted(platform_counts.keys())
 
@@ -549,27 +591,40 @@ def get_reports(
         demo_mode=demo_mode,
         search=search,
     )
-    reports_orm: list[Report] = q.order_by(Report.timestamp.desc()).all()
 
     # Python-level display filtering
     hide_seen = not show_hidden
     hide_flagged = not show_flagged
     hide_unflagged = not show_unflagged
 
-    filtered = filter_by_display(
-        reports_orm,
-        loc_filter=loc_filter,
-        seen_ids=seen_ids,
-        flagged_authors=flagged_authors,
-        user_locs_map=user_locs_map,
-        hide_seen=hide_seen,
-        hide_flagged=hide_flagged,
-        hide_unflagged=hide_unflagged,
+    # When nothing would be filtered in Python and loc_filter='all', push LIMIT into
+    # SQL so we only load page_size ORM objects instead of every admitted report.
+    can_push_limit = (
+        not hide_seen
+        and not hide_flagged
+        and not hide_unflagged
+        and loc_filter == "all"
     )
 
-    total_count = len(filtered)
-    has_more = total_count > limit
-    filtered = filtered[:limit]
+    if can_push_limit:
+        total_count = q.count()
+        has_more = total_count > limit
+        filtered: list[Report] = q.order_by(Report.timestamp.desc()).limit(limit).all()
+    else:
+        reports_orm: list[Report] = q.order_by(Report.timestamp.desc()).all()
+        filtered = filter_by_display(
+            reports_orm,
+            loc_filter=loc_filter,
+            seen_ids=seen_ids,
+            flagged_authors=flagged_authors,
+            user_locs_map=user_locs_map,
+            hide_seen=hide_seen,
+            hide_flagged=hide_flagged,
+            hide_unflagged=hide_unflagged,
+        )
+        total_count = len(filtered)
+        has_more = total_count > limit
+        filtered = filtered[:limit]
 
     # Build a quick lookup: report_id → UserReportState row
     user_state_rows: dict[int, UserReportState] = {
@@ -780,26 +835,35 @@ def build_dots(
         demo_mode=demo_mode,
         search=search,
     )
-    reports_orm: list[Report] = q.order_by(Report.timestamp.desc()).all()
 
     hide_seen = not show_hidden
     hide_flagged = not show_flagged
     hide_unflagged = not show_unflagged
 
-    filtered = filter_by_display(
-        reports_orm,
-        loc_filter=loc_filter,
-        seen_ids=seen_ids,
-        flagged_authors=flagged_authors,
-        user_locs_map=user_locs_map,
-        hide_seen=hide_seen,
-        hide_flagged=hide_flagged,
-        hide_unflagged=hide_unflagged,
-    )
+    rows = q.with_entities(
+        Report.id,
+        Report.text,
+        Report.author,
+        Report.platform,
+        Report.timestamp,
+        Report.event_types,
+        Report.event_type,
+        Report.relevance,
+        Report.url,
+        Report.locations,
+    ).order_by(Report.timestamp.desc()).all()
 
     dots: list[dict] = []
-    for r in filtered:
-        effective_locs: list = (user_locs_map[r.id] if r.id in user_locs_map else r.locations) or []
+    for (rid, text, author, platform, timestamp, event_types, event_type, relevance, url, locs_raw) in rows:
+        if hide_seen and rid in seen_ids:
+            continue
+        if hide_flagged and (author or "") in flagged_authors:
+            continue
+        if hide_unflagged and (author or "") not in flagged_authors:
+            continue
+
+        effective_locs: list = (user_locs_map[rid] if rid in user_locs_map else locs_raw) or []
+
         for loc in effective_locs:
             if not isinstance(loc, dict):
                 continue
@@ -813,9 +877,8 @@ def build_dots(
             except (TypeError, ValueError):
                 continue
 
-            # Compute location bounding-box area (degrees²) and raw bbox for frontend filtering
             loc_bbox_area: float | None = None
-            loc_bbox: list[float] | None = None  # [minLat, maxLat, minLon, maxLon]
+            loc_bbox: list[float] | None = None
             bbox = loc.get("boundingbox")
             if bbox and len(bbox) == 4:
                 try:
@@ -824,41 +887,23 @@ def build_dots(
                     loc_bbox = [min_lat, max_lat, min_lon, max_lon]
                 except (TypeError, ValueError):
                     pass
-            if loc_bbox_area is None:
-                polygon = loc.get("polygon")
-                if isinstance(polygon, dict):
-                    ptype = polygon.get("type")
-                    coords = polygon.get("coordinates")
-                    ring: list | None = None
-                    if ptype == "Polygon" and coords:
-                        ring = coords[0]
-                    elif ptype == "MultiPolygon" and coords:
-                        ring = max(coords, key=lambda p: len(p[0]))[0]
-                    if ring:
-                        try:
-                            lats = [c[1] for c in ring]
-                            lons = [c[0] for c in ring]
-                            loc_bbox_area = (max(lats) - min(lats)) * (max(lons) - min(lons))
-                            loc_bbox = [min(lats), max(lats), min(lons), max(lons)]
-                        except (TypeError, IndexError):
-                            pass
 
             dots.append(
                 {
-                    "report_id": r.id,
+                    "report_id": rid,
                     "lat": lat_f,
                     "lon": lon_f,
-                    "seen": r.id in seen_ids,
-                    "new": r.id in new_ids,
+                    "seen": rid in seen_ids,
+                    "new": rid in new_ids,
                     "location_name": loc.get("name") or loc.get("display_name") or "",
                     "location_display": loc.get("mention") or "",
-                    "text": r.text[:300],
-                    "author": r.author or "",
-                    "platform": r.platform,
-                    "timestamp": r.timestamp.replace(tzinfo=timezone.utc).isoformat(),
-                    "event_types": r.event_types or ([r.event_type] if r.event_type else []),
-                    "relevance": r.relevance,
-                    "url": r.url,
+                    "text": (text or "")[:300],
+                    "author": author or "",
+                    "platform": platform,
+                    "timestamp": timestamp.replace(tzinfo=timezone.utc).isoformat(),
+                    "event_types": event_types or ([event_type] if event_type else []),
+                    "relevance": relevance,
+                    "url": url,
                     "location_bbox_area": loc_bbox_area,
                     "location_bbox": loc_bbox,
                 }

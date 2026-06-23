@@ -260,10 +260,22 @@ class Report(Base):
     relevance = Column(String, nullable=False)
     locations = Column(JSON, nullable=True)
     original_locations = Column(JSON, nullable=True)   # snapshot at import time, never overwritten
+    locations_slim = Column(JSON, nullable=True)        # locations minus polygon field, for fast list/dots queries
     author = Column(String, nullable=True, default='')          # username / handle of the post author
     seen = Column(Boolean, nullable=False, server_default='false')          # whether this post has been marked as seen
     author_flagged = Column(Boolean, nullable=False, server_default='false')  # whether the author has been flagged
     user_states = relationship('UserReportState', back_populates='report', cascade='all, delete-orphan')
+
+
+class LocationPolygon(Base):
+    """
+    Deduplicated polygon storage keyed by (osm_id, osm_type).
+    Reports reference polygons via osm_id/osm_type in their locations JSON.
+    """
+    __tablename__ = 'location_polygons'
+    osm_id   = Column(String, primary_key=True)
+    osm_type = Column(String, primary_key=True)
+    polygon  = Column(JSON, nullable=False)
 
 
 class UserReportState(Base):

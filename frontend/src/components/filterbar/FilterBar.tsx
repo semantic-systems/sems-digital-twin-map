@@ -12,6 +12,9 @@ const RELEVANCE_COLORS: Record<string, string> = {
   none: '#6b7280',
 };
 
+const fmtCount = (n: number) =>
+  n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, '')}k` : String(n);
+
 const Divider = () => (
   <div
     style={{
@@ -135,17 +138,17 @@ export function FilterBar(): React.ReactElement {
           <label style={checkLabel}>
             <input type="checkbox" checked={locShowLocalized} onChange={(e) => setLocShowLocalized(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('loc_located')}
-            {(locationCounts['localized'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({locationCounts['localized']})</span>}
+            {(locationCounts['localized'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({fmtCount(locationCounts['localized']!)})</span>}
           </label>
           <label style={checkLabel}>
             <input type="checkbox" checked={locShowPending} onChange={(e) => setLocShowPending(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('loc_pending')}
-            {(locationCounts['pending'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({locationCounts['pending']})</span>}
+            {(locationCounts['pending'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({fmtCount(locationCounts['pending']!)})</span>}
           </label>
           <label style={checkLabel}>
             <input type="checkbox" checked={locShowUnlocalized} onChange={(e) => setLocShowUnlocalized(e.target.checked)} style={{ width: 12, height: 12 }} />
             {t('loc_none')}
-            {(locationCounts['unlocalized'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({locationCounts['unlocalized']})</span>}
+            {(locationCounts['unlocalized'] ?? 0) > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({fmtCount(locationCounts['unlocalized']!)})</span>}
           </label>
         </div>
 
@@ -166,7 +169,7 @@ export function FilterBar(): React.ReactElement {
               />
               {t(`rel_${rel}`)}
               {(relevanceTotals[rel] ?? 0) > 0 && (
-                <span style={{ color: '#9ca3af', fontWeight: 400 }}>({relevanceTotals[rel]})</span>
+                <span style={{ color: '#9ca3af', fontWeight: 400 }}>({fmtCount(relevanceTotals[rel]!)})</span>
               )}
             </label>
           ))}
@@ -323,7 +326,7 @@ export function FilterBar(): React.ReactElement {
                   style={{ width: 12, height: 12 }}
                 />
                 {p}
-                <span style={{ color: '#9ca3af' }}>({platformCounts[p] ?? 0})</span>
+                <span style={{ color: '#9ca3af' }}>({fmtCount(platformCounts[p] ?? 0)})</span>
               </label>
             ))}
           </div>

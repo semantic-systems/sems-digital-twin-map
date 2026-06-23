@@ -253,7 +253,7 @@ def get_report_endpoint(
             .first()
         )
 
-    return svc.build_report_dto(
+    dto = svc.build_report_dto(
         report=report,
         user_state_row=user_state_row,
         user_locs_map=user_locs_map,
@@ -261,6 +261,10 @@ def get_report_endpoint(
         flagged_authors=flagged_authors,
         new_ids=new_ids,
     )
+    # Re-attach polygon data so the frontend can render area overlays.
+    enriched = svc.enrich_with_polygons(session, [loc.model_dump() for loc in dto.locations])
+    dto.locations = svc._coerce_locations(enriched)
+    return dto
 
 
 # ---------------------------------------------------------------------------

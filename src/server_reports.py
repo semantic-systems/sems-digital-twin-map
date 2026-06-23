@@ -9,7 +9,7 @@ from shapely import polygonize, GeometryCollection, LineString, wkt
 from shapely.geometry import mapping
 from SPARQLWrapper import SPARQLWrapper
 from data.connect import autoconnect_db
-from data.model import Report
+from data.model import LocationPolygon, Report
 
 import random   # can be removed later
 
@@ -277,7 +277,6 @@ def save_posts(posts: list):
             "boundingbox": None,
             "osm_type": entity["location"]["osm_type"],
             "osm_id": entity["location"]["osm_id"],
-            "polygon": entity["location"]["polygon"],
             "mention": entity["mention"]
         } if (entity["location"] is not None and "osm_id" in entity["location"]) else {"mention": entity["mention"]} for entity in entities ]
 
@@ -287,6 +286,20 @@ def save_posts(posts: list):
         # skip if the post already exists
         if existing_post:
             continue
+
+        # Upsert polygon into the shared lookup table
+        for entity in entities:
+            loc = entity.get("location")
+            if loc and loc.get("osm_id") and loc.get("osm_type") and loc.get("polygon"):
+                existing_poly = session.query(LocationPolygon).filter_by(
+                    osm_id=str(loc["osm_id"]), osm_type=loc["osm_type"]
+                ).first()
+                if not existing_poly:
+                    session.add(LocationPolygon(
+                        osm_id=str(loc["osm_id"]),
+                        osm_type=loc["osm_type"],
+                        polygon=loc["polygon"],
+                    ))
 
         # convert the time field into a datetime object
         timestamp = datetime.fromisoformat(json_post['timestamp'].replace('Z', '+00:00'))

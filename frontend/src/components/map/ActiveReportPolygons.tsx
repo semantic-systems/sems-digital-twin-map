@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Polygon, Polyline, Rectangle } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
-import type { LocationEntry, GeoJsonGeometry } from '../../types';
+import { useUserStore } from '../../store/useUserStore';
+import type { LocationEntry, GeoJsonGeometry, ReportDTO } from '../../types';
 import { pointInPolygon, polygonBboxArea } from '../../utils/geo';
 
 function coordsToLatLng(coords: unknown[]): LatLngExpression[] {
@@ -195,6 +196,18 @@ function LocationPolygon({ loc }: { loc: GeoLocation }): React.ReactElement | nu
 
 export function ActiveReportPolygons(): React.ReactElement {
   const { activeReportId, reports } = useReportStore();
+  const username = useUserStore((s) => s.username);
+  const [detailReport, setDetailReport] = useState<ReportDTO | null>(null);
+
+  useEffect(() => {
+    if (activeReportId === null) { setDetailReport(null); return; }
+    const qs = username ? `?username=${encodeURIComponent(username)}` : '';
+    fetch(`/api/v1/reports/${activeReportId}${qs}`)
+      .then((r) => r.json())
+      .then((data: ReportDTO) => setDetailReport(data))
+      .catch(() => setDetailReport(null));
+    return () => setDetailReport(null);
+  }, [activeReportId, username]);
 
   if (activeReportId === null) return <></>;
 
@@ -204,7 +217,7 @@ export function ActiveReportPolygons(): React.ReactElement {
   const effectiveLocs: LocationEntry[] =
     report.user_state.locations !== undefined && report.user_state.locations !== null
       ? report.user_state.locations
-      : report.locations;
+      : (detailReport?.locations ?? report.locations);
 
   const geoLocs = effectiveLocs.filter(isGeoLocation);
 
