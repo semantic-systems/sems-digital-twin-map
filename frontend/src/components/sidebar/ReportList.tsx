@@ -46,6 +46,13 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
     return filtered;
   }, [reports, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized]);
 
+  // Scroll to top whenever a new pinned card is set.
+  useEffect(() => {
+    if (pinnedReport) {
+      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [pinnedReport]);
+
   // When a report is selected, scroll to it if it's in the loaded page; otherwise
   // fetch it on demand and pin it at the top (avoids paging through history).
   useEffect(() => {
