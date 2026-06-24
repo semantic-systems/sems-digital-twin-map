@@ -63,7 +63,7 @@ router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 @router.get("/", response_model=ReportsResponse)
 def get_reports_endpoint(
     username: str = Query(..., description="The requesting user's name"),
-    loc_filter: str = Query("all", description="'all'|'localized'|'pending'|'unlocalized'"),
+    loc_filter: list[str] = Query(default=[]),
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
     relevances: list[str] = Query(default=[], alias="relevance"),
@@ -83,7 +83,7 @@ def get_reports_endpoint(
     reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count = svc.get_reports(
         session=session,
         username=username,
-        loc_filter=loc_filter,
+        loc_filter=loc_filter or None,
         platforms=platforms or None,
         event_types=event_types or None,
         relevances=relevances or None,
@@ -119,7 +119,7 @@ def get_reports_endpoint(
 def new_count_endpoint(
     username: str = Query(...),
     since: str = Query(..., description="ISO8601 datetime string"),
-    loc_filter: str = Query("all"),
+    loc_filter: list[str] = Query(default=[]),
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
     relevances: list[str] = Query(default=[], alias="relevance"),
@@ -140,7 +140,7 @@ def new_count_endpoint(
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
-        loc_filter=loc_filter,
+        loc_filter=loc_filter or None,
         show_hidden=show_hidden,
         show_flagged=show_flagged,
         show_unflagged=show_unflagged,
@@ -156,7 +156,7 @@ def new_count_endpoint(
 @router.get("/dots")
 def dots_endpoint(
     username: str = Query(...),
-    loc_filter: str = Query("all"),
+    loc_filter: list[str] = Query(default=[]),
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
     relevances: list[str] = Query(default=[], alias="relevance"),
@@ -181,7 +181,7 @@ def dots_endpoint(
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
-        loc_filter=loc_filter,
+        loc_filter=loc_filter or None,
         show_hidden=show_hidden,
         show_flagged=show_flagged,
         show_unflagged=show_unflagged,

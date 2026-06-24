@@ -15,7 +15,7 @@ const BASE_LIMIT = 50;
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil } =
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized } =
     useFilterStore();
   const { setReports, setDots, setPendingNewCount, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
@@ -24,9 +24,15 @@ function AppInner(): React.ReactElement {
   // Tracks the latest loadData call so stale concurrent responses are discarded.
   const loadSeqRef = useRef(0);
 
-  const buildParams = (limit: number) => ({
+  const buildParams = (limit: number) => {
+    const activeLocs = [
+      ...(locShowLocalized ? ['localized'] : []),
+      ...(locShowPending ? ['pending'] : []),
+      ...(locShowUnlocalized ? ['unlocalized'] : []),
+    ];
+    return {
     username: username!,
-    loc_filter: 'all',
+    loc_filter: activeLocs.length < 3 ? activeLocs : undefined,
     platforms: platforms.length ? platforms : allPlatforms,
     event_types: eventTypes,
     relevances,
@@ -38,7 +44,8 @@ function AppInner(): React.ReactElement {
     since: timeWindow === 'custom' ? (customSince || undefined) : undefined,
     until: timeWindow === 'custom' ? (customUntil || undefined) : undefined,
     limit,
-  });
+    };
+  };
 
   const loadData = async (limit: number) => {
     if (!username) return;
@@ -86,7 +93,7 @@ function AppInner(): React.ReactElement {
     if (!username) return;
     setCurrentLimit(BASE_LIMIT);
     loadData(BASE_LIMIT);
-  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, reloadTrigger]);
+  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, reloadTrigger]);
 
   // Load layers list once; auto-activate all layers if none are active yet (fresh deployment)
   useEffect(() => {

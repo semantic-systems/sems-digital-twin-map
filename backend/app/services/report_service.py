@@ -365,11 +365,13 @@ def build_report_query(
     eff_relevance: list[str] | None = None,
     demo_mode: bool = False,
     search: str | None = None,
-    loc_filter: str = 'all',
+    loc_filter: list[str] | None = None,
 ):
     """
     Returns a SQLAlchemy Query[Report] with all filters applied.
     Does NOT call .all() — callers may add further ordering / limits.
+    loc_filter: None or all three values means no restriction; a strict subset
+    filters to reports matching any of the listed location types.
     """
     # Upper time bound: an explicit `until` (custom range), else "now".
     q = session.query(Report).filter(Report.timestamp <= (until or _now_utc()))
@@ -404,22 +406,23 @@ def build_report_query(
             or_(Report.text.ilike(term), Report.author.ilike(term))
         )
 
+    _ALL_LOC = frozenset({'localized', 'pending', 'unlocalized'})
     locs_text = cast(Report.locations, SaText)
-    if loc_filter == 'localized':
-        q = q.filter(
-            Report.locations.isnot(None),
-            locs_text.like('%"osm_id"%'),
-        )
-    elif loc_filter == 'pending':
-        q = q.filter(
-            Report.locations.isnot(None),
-            ~locs_text.like('%"osm_id"%'),
-            locs_text != '[]',
-        )
-    elif loc_filter == 'unlocalized':
-        q = q.filter(
-            or_(Report.locations.is_(None), locs_text == '[]')
-        )
+    if loc_filter and set(loc_filter) < _ALL_LOC:
+        _loc_set = set(loc_filter)
+        conditions = []
+        if 'localized' in _loc_set:
+            conditions.append(locs_text.like('%"osm_id"%'))
+        if 'pending' in _loc_set:
+            conditions.append(and_(
+                Report.locations.isnot(None),
+                ~locs_text.like('%"osm_id"%'),
+                locs_text != '[]',
+            ))
+        if 'unlocalized' in _loc_set:
+            conditions.append(or_(Report.locations.is_(None), locs_text == '[]'))
+        if conditions:
+            q = q.filter(or_(*conditions))
 
     return q
 
@@ -430,7 +433,7 @@ def build_report_query(
 
 def filter_by_display(
     reports: list[Report],
-    loc_filter: str,
+    loc_filter: list[str] | None,
     seen_ids: set[int],
     flagged_authors: set[str],
     user_locs_map: dict[int, list],
@@ -438,10 +441,10 @@ def filter_by_display(
     hide_flagged: bool,
     hide_unflagged: bool,
 ) -> list[Report]:
-    """
-    Python-level post-query filtering.
-    loc_filter: 'all' | 'localized' | 'pending' | 'unlocalized'
-    """
+    """Python-level post-query filtering (handles user-modified locations)."""
+    _ALL_LOC = frozenset({'localized', 'pending', 'unlocalized'})
+    _loc_set = set(loc_filter) if loc_filter and set(loc_filter) < _ALL_LOC else None
+
     result: list[Report] = []
 
     for r in reports:
@@ -452,18 +455,19 @@ def filter_by_display(
         if hide_unflagged and (r.author or "") not in flagged_authors:
             continue
 
-        effective_locs: list = (user_locs_map[r.id] if r.id in user_locs_map else r.locations) or []
-        is_localized = any(
-            isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
-        )
-        has_pending = (not is_localized) and bool(effective_locs)
-
-        if loc_filter == "localized" and not is_localized:
-            continue
-        if loc_filter == "pending" and not has_pending:
-            continue
-        if loc_filter == "unlocalized" and (is_localized or has_pending):
-            continue
+        if _loc_set:
+            effective_locs: list = (user_locs_map[r.id] if r.id in user_locs_map else r.locations) or []
+            is_localized = any(
+                isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
+            )
+            has_pending = (not is_localized) and bool(effective_locs)
+            is_unlocalized = not is_localized and not has_pending
+            if not (
+                (is_localized and 'localized' in _loc_set)
+                or (has_pending and 'pending' in _loc_set)
+                or (is_unlocalized and 'unlocalized' in _loc_set)
+            ):
+                continue
 
         result.append(r)
 
@@ -536,7 +540,7 @@ def build_report_dto(
 def get_reports(
     session: Session,
     username: str,
-    loc_filter: str = "all",
+    loc_filter: list[str] | None = None,
     platforms: list[str] | None = None,
     event_types: list[str] | None = None,
     relevances: list[str] | None = None,
@@ -594,6 +598,9 @@ def get_reports(
         Report.author, _loc_status_expr,
     ).all()
 
+    _ALL_LOC_TYPES = frozenset({'localized', 'pending', 'unlocalized'})
+    _eff_loc = set(loc_filter) if (loc_filter and set(loc_filter) < _ALL_LOC_TYPES) else None
+
     event_type_totals: dict[str, int] = {}
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
@@ -613,23 +620,24 @@ def get_reports(
         )
         _passes_evt = eff_events is None or bool(set(ets or []) & set(eff_events))
         _passes_rel = eff_relevance is None or rel in eff_relevance
+        _passes_loc = _eff_loc is None or loc_status in _eff_loc
 
-        # Event type counts: apply platform + relevance (not event type filter)
-        if _passes_plat and _passes_rel:
+        # Event type counts: apply platform + relevance + loc (not event type filter)
+        if _passes_plat and _passes_rel and _passes_loc:
             for et in (ets or []):
                 event_type_totals[et] = event_type_totals.get(et, 0) + 1
 
-        # Relevance counts: apply platform + event type (not relevance filter)
-        if _passes_plat and _passes_evt:
+        # Relevance counts: apply platform + event type + loc (not relevance filter)
+        if _passes_plat and _passes_evt and _passes_loc:
             if rel:
                 relevance_totals[rel] = relevance_totals.get(rel, 0) + 1
 
-        # Platform counts: apply event type + relevance (not platform filter)
-        if _passes_evt and _passes_rel:
+        # Platform counts: apply event type + relevance + loc (not platform filter)
+        if _passes_evt and _passes_rel and _passes_loc:
             if plat:
                 platform_counts[plat] = platform_counts.get(plat, 0) + 1
 
-        # Location counts: apply all active filters
+        # Location counts: apply all other filters but NOT loc — show full distribution
         if _passes_plat and _passes_evt and _passes_rel:
             location_counts[loc_status] = location_counts.get(loc_status, 0) + 1
 
@@ -696,7 +704,7 @@ def get_reports(
         not hide_seen
         and not hide_flagged
         and not hide_unflagged
-        and loc_filter == "all"
+        and not _eff_loc
     )
 
     if can_push_limit:
@@ -771,7 +779,7 @@ def get_new_count(
     eff_platform: list[str] | None,
     eff_events: list[str] | None,
     eff_relevance: list[str] | None,
-    loc_filter: str,
+    loc_filter: list[str] | None,
     show_hidden: bool,
     show_flagged: bool,
     show_unflagged: bool,
@@ -892,7 +900,7 @@ def build_dots(
     eff_platform: list[str] | None,
     eff_events: list[str] | None,
     eff_relevance: list[str] | None,
-    loc_filter: str,
+    loc_filter: list[str] | None,
     show_hidden: bool,
     show_flagged: bool,
     show_unflagged: bool,

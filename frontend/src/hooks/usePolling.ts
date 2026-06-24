@@ -36,11 +36,20 @@ export function usePolling() {
         timeWindow: snapTimeWindow,
         customSince: snapCustomSince,
         customUntil: snapCustomUntil,
+        locShowLocalized: snapLocLocalized,
+        locShowPending: snapLocPending,
+        locShowUnlocalized: snapLocUnlocalized,
       } = filters;
+
+      const _snapActiveLocs = [
+        ...(snapLocLocalized ? ['localized'] : []),
+        ...(snapLocPending ? ['pending'] : []),
+        ...(snapLocUnlocalized ? ['unlocalized'] : []),
+      ];
 
       const params = {
         username,
-        loc_filter: 'all',
+        loc_filter: _snapActiveLocs.length < 3 ? _snapActiveLocs : undefined,
         platforms: snapPlatforms.length ? snapPlatforms : snapAllPlatforms,
         event_types: snapEvents,
         relevances: snapRelevances,
@@ -69,7 +78,10 @@ export function usePolling() {
         cur.search !== snapSearch ||
         cur.timeWindow !== snapTimeWindow ||
         cur.customSince !== snapCustomSince ||
-        cur.customUntil !== snapCustomUntil
+        cur.customUntil !== snapCustomUntil ||
+        cur.locShowLocalized !== snapLocLocalized ||
+        cur.locShowPending !== snapLocPending ||
+        cur.locShowUnlocalized !== snapLocUnlocalized
       ) return;
 
       if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
@@ -97,7 +109,10 @@ export function usePolling() {
           cur2.search !== snapSearch ||
           cur2.timeWindow !== snapTimeWindow ||
           cur2.customSince !== snapCustomSince ||
-          cur2.customUntil !== snapCustomUntil
+          cur2.customUntil !== snapCustomUntil ||
+          cur2.locShowLocalized !== snapLocLocalized ||
+          cur2.locShowPending !== snapLocPending ||
+          cur2.locShowUnlocalized !== snapLocUnlocalized
         ) return;
         setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count);
         if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);

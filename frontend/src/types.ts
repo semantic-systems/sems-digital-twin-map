@@ -95,7 +95,7 @@ export type Lang = 'de' | 'en';
 
 export interface FetchReportsParams {
   username: string;
-  loc_filter?: string;
+  loc_filter?: string[];
   platforms?: string[];
   event_types?: string[];
   relevances?: string[];
@@ -112,7 +112,7 @@ export interface FetchReportsParams {
 export interface NewCountParams {
   username: string;
   since: string;
-  loc_filter?: string;
+  loc_filter?: string[];
   platforms?: string[];
   event_types?: string[];
   relevances?: string[];
@@ -128,7 +128,7 @@ export interface NewCountResponse {
 
 export interface DotsParams {
   username: string;
-  loc_filter?: string;
+  loc_filter?: string[];
   platforms?: string[];
   event_types?: string[];
   relevances?: string[];
