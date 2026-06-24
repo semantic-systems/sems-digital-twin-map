@@ -33,7 +33,7 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
     }
 
     return filtered;
-  }, [reports, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized]);
+  }, [reports, spatialPolygon]);
 
   // Scroll to top whenever a new pinned card is set.
   useEffect(() => {
