@@ -16,19 +16,28 @@ const RELEVANCE_COLORS: Record<string, string> = {
 const fmtCount = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, '')}k` : String(n);
 
-/** ISO string → "YYYY-MM-DDTHH:mm" in local time, for a datetime-local input value. */
-const isoToLocalInput = (iso: string | null): string => {
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/** ISO string → "YYYY-MM-DD" in local time, for a date input value. */
+const isoToDateInput = (iso: string | null): string => {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
-/** datetime-local value (local time) → ISO 8601 UTC string, or null if empty/invalid. */
-const localInputToIso = (local: string): string | null => {
-  if (!local) return null;
-  const d = new Date(local);
+/** ISO string → "HH:mm" in local time, for a time input value. */
+const isoToTimeInput = (iso: string | null): string => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+/** Combine a date string ("YYYY-MM-DD") and time string ("HH:mm") into an ISO UTC string. */
+const combineDateTimeToIso = (date: string, time: string): string | null => {
+  if (!date) return null;
+  const d = new Date(`${date}T${time || '00:00'}`);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 };
 
@@ -115,20 +124,27 @@ export function FilterBar(): React.ReactElement {
   // Custom-range popover state
   const [rangeOpen, setRangeOpen] = useState(false);
   const [rangePos, setRangePos] = useState<{ x: number; y: number } | null>(null);
-  const [draftSince, setDraftSince] = useState('');
-  const [draftUntil, setDraftUntil] = useState('');
+  const [draftSinceDate, setDraftSinceDate] = useState('');
+  const [draftSinceTime, setDraftSinceTime] = useState('');
+  const [draftUntilDate, setDraftUntilDate] = useState('');
+  const [draftUntilTime, setDraftUntilTime] = useState('');
   const rangeBtnRef = useRef<HTMLButtonElement>(null);
 
   const openRangePicker = () => {
-    setDraftSince(isoToLocalInput(customSince));
-    setDraftUntil(isoToLocalInput(customUntil));
+    setDraftSinceDate(isoToDateInput(customSince));
+    setDraftSinceTime(isoToTimeInput(customSince));
+    setDraftUntilDate(isoToDateInput(customUntil));
+    setDraftUntilTime(isoToTimeInput(customUntil));
     const rect = rangeBtnRef.current?.getBoundingClientRect();
     setRangePos(rect ? { x: rect.left, y: rect.bottom + 6 } : { x: 200, y: 64 });
     setRangeOpen(true);
   };
 
   const applyRange = () => {
-    setCustomRange(localInputToIso(draftSince), localInputToIso(draftUntil));
+    setCustomRange(
+      combineDateTimeToIso(draftSinceDate, draftSinceTime),
+      combineDateTimeToIso(draftUntilDate, draftUntilTime),
+    );
     setRangeOpen(false);
   };
 
@@ -283,26 +299,42 @@ export function FilterBar(): React.ReactElement {
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-              <label style={{ fontSize: 11, color: '#374151', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {t('time_from')}
-                <input
-                  type="datetime-local"
-                  value={draftSince}
-                  max={draftUntil || undefined}
-                  onChange={(e) => setDraftSince(e.target.value)}
-                  style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit' }}
-                />
-              </label>
-              <label style={{ fontSize: 11, color: '#374151', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {t('time_to')}
-                <input
-                  type="datetime-local"
-                  value={draftUntil}
-                  min={draftSince || undefined}
-                  onChange={(e) => setDraftUntil(e.target.value)}
-                  style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit' }}
-                />
-              </label>
+              <div style={{ fontSize: 11, color: '#374151', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontWeight: 600 }}>{t('time_from')}</span>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <input
+                    type="date"
+                    value={draftSinceDate}
+                    max={draftUntilDate || undefined}
+                    onChange={(e) => setDraftSinceDate(e.target.value)}
+                    style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit', flex: 1 }}
+                  />
+                  <input
+                    type="time"
+                    value={draftSinceTime}
+                    onChange={(e) => setDraftSinceTime(e.target.value)}
+                    style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit', width: 72 }}
+                  />
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: '#374151', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontWeight: 600 }}>{t('time_to')}</span>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <input
+                    type="date"
+                    value={draftUntilDate}
+                    min={draftSinceDate || undefined}
+                    onChange={(e) => setDraftUntilDate(e.target.value)}
+                    style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit', flex: 1 }}
+                  />
+                  <input
+                    type="time"
+                    value={draftUntilTime}
+                    onChange={(e) => setDraftUntilTime(e.target.value)}
+                    style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit', width: 72 }}
+                  />
+                </div>
+              </div>
               <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 2 }}>
                 <button
                   onClick={() => setRangeOpen(false)}
@@ -316,12 +348,12 @@ export function FilterBar(): React.ReactElement {
                 </button>
                 <button
                   onClick={applyRange}
-                  disabled={!draftSince && !draftUntil}
+                  disabled={!draftSinceDate && !draftUntilDate}
                   style={{
                     fontSize: 11, padding: '3px 10px', borderRadius: 999,
                     border: '1px solid #2563eb',
-                    background: (!draftSince && !draftUntil) ? '#93c5fd' : '#2563eb',
-                    color: '#fff', cursor: (!draftSince && !draftUntil) ? 'default' : 'pointer',
+                    background: (!draftSinceDate && !draftUntilDate) ? '#93c5fd' : '#2563eb',
+                    color: '#fff', cursor: (!draftSinceDate && !draftUntilDate) ? 'default' : 'pointer',
                     fontFamily: 'inherit', fontWeight: 600,
                   }}
                 >
