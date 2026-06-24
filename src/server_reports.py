@@ -453,7 +453,7 @@ if __name__ == '__main__':
     start_date = datetime.now(tz=timezone.utc)
 
     # Backfill: fetch the last 3 days in 30-minute windows with 5-minute overlap
-    BACKFILL_WINDOW = timedelta(minutes=30)
+    BACKFILL_WINDOW = timedelta(minutes=10)
     BACKFILL_OVERLAP = timedelta(minutes=5)
     backfill_start = start_date - timedelta(days=3)
     print(f'Backfilling posts from {backfill_start.strftime("%Y-%m-%d %H:%M:%S")} UTC')
@@ -467,7 +467,7 @@ if __name__ == '__main__':
         except Exception as e:
             print(f'Backfill window failed, skipping: {e}')
         window_start += BACKFILL_WINDOW - BACKFILL_OVERLAP
-        time.sleep(2)
+        time.sleep(0.1)
     print('Backfill complete. Starting live polling.')
 
     print(
