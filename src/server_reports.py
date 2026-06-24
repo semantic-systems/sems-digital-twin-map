@@ -93,140 +93,205 @@ def wkt_to_geojson(wkt_str: str):
     geojson_dict = mapping(geom)
     return geojson_dict
 
+def _run_sparql(query: str, auth_header: str) -> list:
+    sparql.setQuery(query)
+    sparql.setReturnFormat('json')
+    sparql.setMethod('POST')
+    sparql.addCustomHttpHeader("User-Agent", USER_AGENT)
+    sparql.addCustomHttpHeader("Authorization", auth_header)
+    try:
+        return sparql.query().convert()['results']['bindings']
+    except Exception as e:
+        status = getattr(getattr(e, 'response', None), 'status', None)
+        print(f"Error fetching data from SPARQL endpoint (HTTP {status}): {e}", flush=True)
+        return []
+
+
+LOCATION_BATCH_SIZE = 50  # Virtuoso rejects VALUES clauses with too many URIs
+
+RELEVANT_CATEGORIES = ' '.join(f'<http://rescue-mate.de/resource/{c}>' for c in [
+    'affected_individual', 'caution_and_advice', 'displaced_and_evacuations',
+    'donation_and_volunteering', 'infrastructure_and_utilities_damage',
+    'injured_or_dead_people', 'missing_and_found_people', 'requests_or_needs',
+    'response_efforts', 'sympathy_and_support', 'other_emergency',
+])
+
+
 def fetch_social_media_posts(search_since: datetime, search_until: datetime | None = None):
-    """Fetch posts from RescueMate KG."""
+    """Fetch posts from RescueMate KG using two queries: posts then locations."""
 
-    authorization_headers = {"Authorization": f"Bearer {get_keycloak_token()}"}
-
+    auth_header = f"Bearer {get_keycloak_token()}"
     search_since_str = search_since.isoformat().replace('+00:00', 'Z')
     until_filter = f'FILTER (?date <= "{search_until.isoformat().replace("+00:00", "Z")}"^^xsd:dateTime)' if search_until else ''
 
-    query = f"""
+    # Query 1: post metadata only — no geometry joins
+    posts_query = f"""
         PREFIX rm: <http://rescue-mate.de/resource/>
         PREFIX rmo: <http://rescue-mate.de/ontology/>
-        PREFIX obo: <http://purl.obolibrary.org/obo/>
         PREFIX schema: <http://schema.org/>
-        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        SELECT * {{
+        SELECT ?post ?text ?date ?category ?predictedRelevance ?url ?user ?username ?platform ?user_identifier {{
+            VALUES ?category {{ {RELEVANT_CATEGORIES} }}
             ?post a rmo:SocialMediaPost ;
                 schema:text ?text ;
                 schema:dateCreated ?date ;
                 rmo:hasDetectedCategory ?category ;
                 rm:predictedRelevance ?predictedRelevance .
+            FILTER (?date > "{search_since_str}"^^xsd:dateTime)
+            {until_filter}
             OPTIONAL {{ ?post schema:url ?url }}
-            OPTIONAL {{ ?post schema:author ?user }}
-            OPTIONAL {{ ?user schema:name ?username }}
-            OPTIONAL {{            ?user rm:socialMediaServiceName ?platform }}
-            OPTIONAL {{ ?user schema:identifier ?user_identifier }}
             OPTIONAL {{
+                ?post schema:author ?user .
+                OPTIONAL {{ ?user schema:name ?username }}
+                OPTIONAL {{ ?user rm:socialMediaServiceName ?platform }}
+                OPTIONAL {{ ?user schema:identifier ?user_identifier }}
+            }}
+        }}
+    """
+
+    bindings = _run_sparql(posts_query, auth_header)
+    if not bindings:
+        return []
+
+    posts = {}
+    post_uris = {}
+    for result in bindings:
+        post_uri = result['post']['value']
+        post_id = post_uri.split('/')[-1]
+        post_uris[post_id] = post_uri
+        raw_category = result.get('category', {}).get('value', '')
+        if post_id not in posts:
+            posts[post_id] = {
+                'id': post_id,
+                'text': result['text']['value'],
+                'timestamp': result['date']['value'],
+                'platform': result.get('platform', {}).get('value', '').split('/')[-1],
+                'url': result.get('url', {'value': ''})['value'],
+                'event_types': [raw_category] if raw_category else [],
+                'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
+                'geo_linked_entities': [],
+                'author': (
+                    result.get('username', {}).get('value') or
+                    result.get('user_identifier', {}).get('value') or
+                    result.get('user', {}).get('value', '').split('/')[-1]
+                ),
+            }
+        elif raw_category and raw_category not in posts[post_id]['event_types']:
+            posts[post_id]['event_types'].append(raw_category)
+
+    if VERBOSE:
+        print(f"Query 1: {len(posts)} posts in window", flush=True)
+
+    # Query 2a: location metadata only (no geometry), batched to stay under Virtuoso's
+    # VALUES clause size limit. Fetches lat/lon so we can bbox-filter before requesting WKT.
+    post_uri_list = list(post_uris.values())
+    bbox = tuple(map(float, BOUNDING_BOX.split(','))) if BOUNDING_BOX else None
+    seen_mentions: dict[str, set] = defaultdict(set)
+    in_bbox_locs: dict[str, dict] = {}          # location_uri -> metadata
+    pending: list[tuple[str, str, str]] = []    # (post_id, mention, location_uri)
+
+    for i in range(0, len(post_uri_list), LOCATION_BATCH_SIZE):
+        batch_values = ' '.join(f'<{uri}>' for uri in post_uri_list[i:i + LOCATION_BATCH_SIZE])
+        loc_meta_query = f"""
+            PREFIX rm: <http://rescue-mate.de/resource/>
+            PREFIX obo: <http://purl.obolibrary.org/obo/>
+            PREFIX schema: <http://schema.org/>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT ?post ?location_mention_surface_form ?location ?osm_type ?osm_id ?lat ?lon ?name {{
+                VALUES ?post {{ {batch_values} }}
                 ?post rm:hasMentionedLocation ?location_mention .
                 ?location_mention schema:text ?location_mention_surface_form .
                 OPTIONAL {{
                     ?location_mention obo:IAO_0000136 ?location .
                     ?location rm:osm_type ?osm_type ;
-                        geo:hasGeometry ?geom ;
                         rm:osm_id ?osm_id ;
                         rm:latitude ?lat ;
                         rm:longitude ?lon ;
                         rdfs:label ?name .
-                    ?geom geo:asWKT ?wkt .
                 }}
             }}
-            FILTER (?date > "{search_since_str}"^^xsd:dateTime)
-            {until_filter}
-        }}
-    """
+        """
+        for result in _run_sparql(loc_meta_query, auth_header):
+            post_id = result['post']['value'].split('/')[-1]
+            mention = result.get('location_mention_surface_form', {}).get('value')
+            if not mention or mention in seen_mentions[post_id]:
+                continue
+            seen_mentions[post_id].add(mention)
 
-    sparql.setQuery(query)
-    sparql.setReturnFormat('json')
-    sparql.setMethod('POST')
-    sparql.addCustomHttpHeader("User-Agent", USER_AGENT)
-    sparql.addCustomHttpHeader("Authorization", authorization_headers["Authorization"])
-    try:
-        results = sparql.query().convert()
-    except Exception as e:
-        print(f"Error fetching data from SPARQL endpoint: {e}")
-        return []
-    posts = {}
-    for result in results['results']['bindings']:
-        post_id = result['post']['value'].split('/')[-1]
-        if post_id not in posts:
-            geo_linked_entities = []
-            geo_linked_entity = {}
-            if 'location_mention_surface_form' in result:
-                geo_linked_entity['mention'] = result['location_mention_surface_form']['value']
+            loc_uri = result.get('location', {}).get('value')
+            if not loc_uri or 'osm_id' not in result:
+                posts[post_id]['geo_linked_entities'].append({'mention': mention, 'location': None})
+                continue
 
-            if 'osm_type' in result and 'osm_id' in result:
-                lat = float(result['lat']['value'])
-                lon = float(result['lon']['value'])
-                insert = True
-                if BOUNDING_BOX:
-                    min_lon, min_lat, max_lon, max_lat = map(float, BOUNDING_BOX.split(','))
-                    if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
-                        insert = False
-                if insert:
-                    geojson = wkt_to_geojson(result["wkt"]['value'])
-                    geo_linked_entity['location'] = {
-                        'osm_type': result['osm_type']['value'],
-                        'osm_id': int(result['osm_id']['value']),
-                        'lat': lat,
-                        'lon': lon,
-                        'name': result['name']['value'],
-                        'geojson': geojson,
-                        'polygon': geojson,
-                    }
-            if geo_linked_entity:
-                if 'location' not in geo_linked_entity:
-                    geo_linked_entity['location'] = None
-                geo_linked_entities.append(geo_linked_entity)
+            lat = float(result['lat']['value'])
+            lon = float(result['lon']['value'])
+            if bbox:
+                min_lon, min_lat, max_lon, max_lat = bbox
+                if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
+                    posts[post_id]['geo_linked_entities'].append({'mention': mention, 'location': None})
+                    continue
 
+            in_bbox_locs[loc_uri] = {
+                'osm_type': result['osm_type']['value'],
+                'osm_id': int(result['osm_id']['value']),
+                'lat': lat,
+                'lon': lon,
+                'name': result['name']['value'],
+            }
+            pending.append((post_id, mention, loc_uri))
 
-            raw_category = result.get('category', {}).get('value', 'http://rescue-mate.de/resource/not_humanitarian')
-            posts[post_id] = {
-                'id': result['post']['value'].split('/')[-1],
-                'text': result['text']['value'],
-                'timestamp': result['date']['value'],
-                'platform': result['platform']['value'].split('/')[-1],
-                'url': result.get('url', {"value": ""})['value'],
-                'event_types': [raw_category],
-                'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
-                'geo_linked_entities': geo_linked_entities,
-                'author': (
-                    result.get('username', {}).get('value') or
-                    result.get('user_identifier', {}).get('value') or
-                    result.get('user', {}).get('value', '').split('/')[-1]
-                )}
+    # Query 2b: WKT for in-bbox locations — check DB cache before hitting SPARQL.
+    # LocationPolygon is populated by save_posts, so repeated locations (same OSM feature
+    # referenced across many posts) are only ever fetched from SPARQL once.
+    geojson_by_uri: dict[str, dict] = {}
+    uncached_uris: list[str] = []
+
+    if in_bbox_locs:
+        _, session = autoconnect_db()
+        try:
+            unique_osm_ids = list({str(meta['osm_id']) for meta in in_bbox_locs.values()})
+            cached_polys = {
+                (r.osm_id, r.osm_type): r.polygon
+                for r in session.query(LocationPolygon)
+                    .filter(LocationPolygon.osm_id.in_(unique_osm_ids))
+                    .all()
+            }
+        finally:
+            session.close()
+
+        for loc_uri, meta in in_bbox_locs.items():
+            cached = cached_polys.get((str(meta['osm_id']), meta['osm_type']))
+            if cached:
+                geojson_by_uri[loc_uri] = cached
+            else:
+                uncached_uris.append(loc_uri)
+
+    if uncached_uris:
+        loc_values = ' '.join(f'<{uri}>' for uri in uncached_uris)
+        wkt_query = f"""
+            PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+            SELECT ?location ?wkt {{
+                VALUES ?location {{ {loc_values} }}
+                ?location geo:hasGeometry ?geom .
+                ?geom geo:asWKT ?wkt .
+            }}
+        """
+        for result in _run_sparql(wkt_query, auth_header):
+            loc_uri = result['location']['value']
+            geojson_by_uri[loc_uri] = wkt_to_geojson(result['wkt']['value'])
+
+    if VERBOSE:
+        n_cached = len(in_bbox_locs) - len(uncached_uris)
+        print(f"Locations: {n_cached} from cache, {len(uncached_uris)} fetched from SPARQL", flush=True)
+
+    for post_id, mention, loc_uri in pending:
+        meta = in_bbox_locs[loc_uri]
+        geo_linked_entity: dict = {'mention': mention}
+        geojson = geojson_by_uri.get(loc_uri)
+        if geojson:
+            geo_linked_entity['location'] = {**meta, 'geojson': geojson, 'polygon': geojson}
         else:
-            raw_category = result.get('category', {}).get('value', '')
-            if raw_category and raw_category not in posts[post_id]['event_types']:
-                posts[post_id]['event_types'].append(raw_category)
-            geo_linked_entity = {}
-            if 'location_mention_surface_form' in result:
-                geo_linked_entity['mention'] = result['location_mention_surface_form']['value']
-            if 'osm_type' in result and 'osm_id' in result:
-                lat = float(result['lat']['value'])
-                lon = float(result['lon']['value'])
-                insert = True
-                if BOUNDING_BOX:
-                    min_lon, min_lat, max_lon, max_lat = map(float, BOUNDING_BOX.split(','))
-                    if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
-                        insert = False
-                if insert:
-                    geojson = wkt_to_geojson(result["wkt"]['value'])
-                    geo_linked_entity['location'] = {
-                        'osm_type': result['osm_type']['value'],
-                        'osm_id': int(result['osm_id']['value']),
-                        'lat': lat,
-                        'lon': lon,
-                        'name': result['name']['value'],
-                        'geojson': geojson,
-                        'polygon': geojson,
-                    }
-            if geo_linked_entity and geo_linked_entity["mention"] not in {x["mention"] for x in posts[post_id]['geo_linked_entities']}:
-                if 'location' not in geo_linked_entity:
-                    geo_linked_entity['location'] = None
-                posts[post_id]['geo_linked_entities'].append(geo_linked_entity)
+            geo_linked_entity['location'] = None
+        posts[post_id]['geo_linked_entities'].append(geo_linked_entity)
 
     if VERBOSE:
         print(f"Fetched {len(posts)} posts from SPARQL endpoint", flush=True)
@@ -260,15 +325,21 @@ def save_posts(posts: list):
 
     engine, session = autoconnect_db()
 
-    # count how many posts were saved
     counter = 0
+
+    posts = list(posts)
+    existing_ids = {
+        r.identifier
+        for r in session.query(Report.identifier).filter(
+            Report.identifier.in_([p['id'] for p in posts])
+        ).all()
+    }
 
     for json_post in posts:
 
-        # get the post identifier
-        # this is the id the respective platform uses to identify the post
         identifier = json_post['id']
-
+        if identifier in existing_ids:
+            continue
 
         entities = json_post.get('geo_linked_entities', [])
         locations = [{
@@ -280,13 +351,6 @@ def save_posts(posts: list):
             "osm_id": entity["location"]["osm_id"],
             "mention": entity["mention"]
         } if (entity["location"] is not None and "osm_id" in entity["location"]) else {"mention": entity["mention"]} for entity in entities ]
-
-        # check if the post already exists
-        existing_post = session.query(Report).filter(Report.identifier == identifier).first()
-
-        # skip if the post already exists
-        if existing_post:
-            continue
 
         # Upsert polygon into the shared lookup table
         for entity in entities:
@@ -318,9 +382,6 @@ def save_posts(posts: list):
 
         raw_types = json_post.get('event_types', [])
         mapped_types = list({event_mapping.get(et, 'Sonstiges') for et in raw_types}) or ['Sonstiges']
-
-        if 'http://rescue-mate.de/resource/not_humanitarian' in raw_types:
-            continue
 
         # create a new post object
         report = Report(
@@ -453,7 +514,7 @@ if __name__ == '__main__':
     start_date = datetime.now(tz=timezone.utc)
 
     # Backfill: fetch the last 3 days in 30-minute windows with 5-minute overlap
-    BACKFILL_WINDOW = timedelta(minutes=10)
+    BACKFILL_WINDOW = timedelta(minutes=120)
     BACKFILL_OVERLAP = timedelta(minutes=5)
     backfill_start = start_date - timedelta(days=3)
     print(f'Backfilling posts from {backfill_start.strftime("%Y-%m-%d %H:%M:%S")} UTC')
@@ -476,7 +537,7 @@ if __name__ == '__main__':
     search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
     while True:
         try:
-            posts = fetch_social_media_posts(search_since)
+            posts = list(fetch_social_media_posts(search_since))
         except Exception as e:
             print(f"Error fetching posts, retrying in next cycle: {e}")
             posts = []
@@ -485,15 +546,19 @@ if __name__ == '__main__':
         for post in posts:
             for location in post["geo_linked_entities"]:
                 if location["location"] is not None:
-                    osm_id = location["location"]["osm_id"]
-                    osm_type = location["location"]["osm_type"]
-                    # polygon = fetch_osm_polygon(osm_type, osm_id)
                     location["location"]["polygon"] = location["location"]["geojson"]
 
         saved_counter = save_posts(posts)
-        # if VERBOSE: print(f'Saved {saved_counter} posts', flush=True)
-        #
-        # if VERBOSE: print(f'Done! Waiting for {REQUEST_DELAY} seconds', flush=True)
+
+        # Advance search_since to just before the newest post we saw, so the
+        # next poll only fetches genuinely new posts instead of the full lookback window.
+        if posts:
+            latest_ts = max(
+                datetime.fromisoformat(p['timestamp'].replace('Z', '+00:00'))
+                for p in posts
+            )
+            search_since = latest_ts - timedelta(seconds=30)
+        else:
+            search_since = datetime.now(tz=timezone.utc) - timedelta(minutes=2)
+
         time.sleep(REQUEST_DELAY)
-        start_date = datetime.now(tz=timezone.utc)
-        search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
