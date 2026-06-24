@@ -9,26 +9,15 @@ import { ReportEntry } from './ReportEntry';
 
 export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { reports, activeReportId, pinnedReport, setPinnedReport, hasMore } = useReportStore();
-  const { spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
+  const { spatialPolygon } = useFilterStore();
   const { username } = useUserStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const visibleReports = useMemo(() => {
     let filtered = reports;
 
-    // Location-type filter (frontend — backend always returns all)
-    if (!locShowLocalized || !locShowPending || !locShowUnlocalized) {
-      filtered = filtered.filter((r) => {
-        const locs = r.user_state.locations ?? r.locations;
-        const hasCoords = locs.some((l) => l.lat != null && l.lon != null);
-        if (hasCoords) return locShowLocalized;
-        if (locs.length > 0) return locShowPending;
-        return locShowUnlocalized;
-      });
-    }
-
-    // Spatial polygon filter — Ausstehend/Keine events have no coordinates so they
-    // always pass (they can't be spatially disproven, and may well be relevant).
+    // Spatial polygon filter — reports with no coordinates always pass
+    // (they can't be spatially disproven, and may well be relevant).
     if (spatialPolygon) {
       filtered = filtered.filter((r) => {
         const locs = r.user_state.locations ?? r.locations;
