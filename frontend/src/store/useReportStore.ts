@@ -4,6 +4,9 @@ import type { ReportDTO, DotDTO, LocationEntry } from '../types';
 interface ReportStore {
   reports: ReportDTO[];
   dots: DotDTO[];
+  // A report fetched on demand because it wasn't in the loaded page (e.g. an old
+  // report selected via a map dot). Rendered pinned at the top of the sidebar.
+  pinnedReport: ReportDTO | null;
   activeReportId: number | null;
   pendingNewCount: number;
   loadedAt: string | null;
@@ -19,6 +22,7 @@ interface ReportStore {
   bumpReloadTrigger: () => void;
   setCurrentLimit: (n: number) => void;
   setDots: (dots: DotDTO[]) => void;
+  setPinnedReport: (report: ReportDTO | null) => void;
   setActiveReportId: (id: number | null) => void;
   setPendingNewCount: (n: number) => void;
 
@@ -33,6 +37,7 @@ interface ReportStore {
 export const useReportStore = create<ReportStore>((set) => ({
   reports: [],
   dots: [],
+  pinnedReport: null,
   activeReportId: null,
   pendingNewCount: 0,
   loadedAt: null,
@@ -48,22 +53,24 @@ export const useReportStore = create<ReportStore>((set) => ({
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
   setCurrentLimit: (currentLimit) => set({ currentLimit }),
   setDots: (dots) => set({ dots }),
+  setPinnedReport: (pinnedReport) => set({ pinnedReport }),
   setActiveReportId: (id) => set({ activeReportId: id }),
   setPendingNewCount: (n) => set({ pendingNewCount: n }),
 
   optimisticHide: (id, hide) =>
-    set((s) => ({
-      reports: s.reports.map((r) =>
-        r.id === id ? { ...r, user_state: { ...r.user_state, hide } } : r,
-      ),
-      dots: s.dots.map((d) =>
-        d.report_id === id ? { ...d, seen: hide } : d,
-      ),
-    })),
+    set((s) => {
+      const patch = (r: ReportDTO) =>
+        r.id === id ? { ...r, user_state: { ...r.user_state, hide } } : r;
+      return {
+        reports: s.reports.map(patch),
+        pinnedReport: s.pinnedReport ? patch(s.pinnedReport) : null,
+        dots: s.dots.map((d) => (d.report_id === id ? { ...d, seen: hide } : d)),
+      };
+    }),
 
   optimisticFlag: (author, flag) =>
-    set((s) => ({
-      reports: s.reports.map((r) =>
+    set((s) => {
+      const patch = (r: ReportDTO) =>
         r.author === author
           ? {
               ...r,
@@ -73,39 +80,49 @@ export const useReportStore = create<ReportStore>((set) => ({
                 flag_author: flag ? author : null,
               },
             }
-          : r,
-      ),
-    })),
+          : r;
+      return {
+        reports: s.reports.map(patch),
+        pinnedReport: s.pinnedReport ? patch(s.pinnedReport) : null,
+      };
+    }),
 
   optimisticAcknowledge: (id) =>
-    set((s) => ({
-      reports: s.reports.map((r) =>
-        r.id === id ? { ...r, user_state: { ...r.user_state, new: false } } : r,
-      ),
-      dots: s.dots.map((d) =>
-        d.report_id === id ? { ...d, new: false } : d,
-      ),
-    })),
+    set((s) => {
+      const patch = (r: ReportDTO) =>
+        r.id === id ? { ...r, user_state: { ...r.user_state, new: false } } : r;
+      return {
+        reports: s.reports.map(patch),
+        pinnedReport: s.pinnedReport ? patch(s.pinnedReport) : null,
+        dots: s.dots.map((d) => (d.report_id === id ? { ...d, new: false } : d)),
+      };
+    }),
 
   optimisticUpdateLocations: (id, locations) =>
-    set((s) => ({
-      reports: s.reports.map((r) =>
+    set((s) => {
+      const patch = (r: ReportDTO) =>
         r.id === id
           ? { ...r, locations, user_state: { ...r.user_state, locations } }
-          : r,
-      ),
-    })),
+          : r;
+      return {
+        reports: s.reports.map(patch),
+        pinnedReport: s.pinnedReport ? patch(s.pinnedReport) : null,
+      };
+    }),
 
   optimisticRestoreLocations: (id, originalLocations) =>
-    set((s) => ({
-      reports: s.reports.map((r) =>
+    set((s) => {
+      const patch = (r: ReportDTO) =>
         r.id === id
           ? {
               ...r,
               locations: originalLocations,
               user_state: { ...r.user_state, locations: null },
             }
-          : r,
-      ),
-    })),
+          : r;
+      return {
+        reports: s.reports.map(patch),
+        pinnedReport: s.pinnedReport ? patch(s.pinnedReport) : null,
+      };
+    }),
 }));

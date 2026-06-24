@@ -15,7 +15,7 @@ const BASE_LIMIT = 50;
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow } =
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil } =
     useFilterStore();
   const { setReports, setDots, setPendingNewCount, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
@@ -35,6 +35,8 @@ function AppInner(): React.ReactElement {
     show_unflagged: showUnflagged,
     search: search || undefined,
     time_window: timeWindow,
+    since: timeWindow === 'custom' ? (customSince || undefined) : undefined,
+    until: timeWindow === 'custom' ? (customUntil || undefined) : undefined,
     limit,
   });
 
@@ -72,7 +74,9 @@ function AppInner(): React.ReactElement {
   };
 
   const loadMore = () => {
-    const newLimit = currentLimit + BASE_LIMIT;
+    // Backend caps `limit` at 2000 (Query le=2000); never request beyond it.
+    const newLimit = Math.min(currentLimit + BASE_LIMIT, 2000);
+    if (newLimit === currentLimit) return;
     setCurrentLimit(newLimit);
     loadData(newLimit);
   };
@@ -82,7 +86,7 @@ function AppInner(): React.ReactElement {
     if (!username) return;
     setCurrentLimit(BASE_LIMIT);
     loadData(BASE_LIMIT);
-  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, reloadTrigger]);
+  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, reloadTrigger]);
 
   // Load layers list once; auto-activate all layers if none are active yet (fresh deployment)
   useEffect(() => {

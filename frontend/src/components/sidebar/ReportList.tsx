@@ -2,17 +2,16 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { t } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
 import { useFilterStore } from '../../store/useFilterStore';
+import { useUserStore } from '../../store/useUserStore';
+import { fetchReport } from '../../api/reports';
 import { pointInPolygon } from '../../utils/geo';
 import { ReportEntry } from './ReportEntry';
 
 export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
-  const { reports, activeReportId, hasMore } = useReportStore();
+  const { reports, activeReportId, pinnedReport, setPinnedReport, hasMore } = useReportStore();
   const { spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
+  const { username } = useUserStore();
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Guards against calling onLoadMore multiple times before the store reflects the new page.
-  const loadMoreGuardRef = useRef<{ forId: number | null; lastLen: number }>({ forId: null, lastLen: 0 });
-  const onLoadMoreRef = useRef(onLoadMore);
-  onLoadMoreRef.current = onLoadMore;
 
   const visibleReports = useMemo(() => {
     let filtered = reports;
@@ -47,33 +46,40 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
     return filtered;
   }, [reports, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized]);
 
+  // When a report is selected, scroll to it if it's in the loaded page; otherwise
+  // fetch it on demand and pin it at the top (avoids paging through history).
   useEffect(() => {
-    if (activeReportId === null || !scrollRef.current) {
-      loadMoreGuardRef.current = { forId: null, lastLen: 0 };
+    if (activeReportId === null) {
+      setPinnedReport(null);
       return;
     }
 
-    const el = scrollRef.current.querySelector<HTMLElement>(`[data-report-id="${activeReportId}"]`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      loadMoreGuardRef.current = { forId: null, lastLen: 0 };
+    // Already in the loaded list → scroll to it, clear any stale pin.
+    if (reports.some((r) => r.id === activeReportId)) {
+      setPinnedReport(null);
+      const el = scrollRef.current?.querySelector<HTMLElement>(`[data-report-id="${activeReportId}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       return;
     }
 
-    // In store but not rendered → filtered out; loading more won't help.
-    if (reports.some((r) => r.id === activeReportId)) return;
+    // Already pinned this one → nothing to do.
+    if (pinnedReport?.id === activeReportId) return;
 
-    // Not loaded yet — keep paging until found or exhausted.
-    if (!hasMore) return;
+    // Not in the loaded page → fetch it directly and pin it.
+    let cancelled = false;
+    fetchReport(activeReportId, username ?? undefined)
+      .then((r) => { if (!cancelled) setPinnedReport(r); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [activeReportId, reports, username, pinnedReport, setPinnedReport]);
 
-    const guard = loadMoreGuardRef.current;
-    if (guard.forId === activeReportId && reports.length <= guard.lastLen) return;
+  // Show the pinned card only when it isn't already part of the loaded/visible list.
+  const pinnedToShow =
+    pinnedReport && !visibleReports.some((r) => r.id === pinnedReport.id)
+      ? pinnedReport
+      : null;
 
-    loadMoreGuardRef.current = { forId: activeReportId, lastLen: reports.length };
-    onLoadMoreRef.current();
-  }, [activeReportId, reports]);
-
-  if (visibleReports.length === 0) {
+  if (visibleReports.length === 0 && !pinnedToShow) {
     return (
       <div
         style={{
@@ -103,6 +109,7 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
       }}
       className="sidebar-scroll"
     >
+      {pinnedToShow && <ReportEntry key={`pinned-${pinnedToShow.id}`} report={pinnedToShow} pinned />}
       {visibleReports.map((report) => (
         <ReportEntry key={report.id} report={report} />
       ))}

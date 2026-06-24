@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { t } from '../../i18n';
 import { useFilterStore, ALL_RELEVANCES_LIST, getLayerColor } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
@@ -14,6 +15,31 @@ const RELEVANCE_COLORS: Record<string, string> = {
 
 const fmtCount = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, '')}k` : String(n);
+
+/** ISO string → "YYYY-MM-DDTHH:mm" in local time, for a datetime-local input value. */
+const isoToLocalInput = (iso: string | null): string => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+/** datetime-local value (local time) → ISO 8601 UTC string, or null if empty/invalid. */
+const localInputToIso = (local: string): string | null => {
+  if (!local) return null;
+  const d = new Date(local);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+};
+
+/** Compact "24.06. 14:30" style label for a custom-range pill. */
+const fmtRangeLabel = (iso: string | null): string => {
+  if (!iso) return '…';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '…';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}. ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 const Divider = () => (
   <div
@@ -71,6 +97,9 @@ export function FilterBar(): React.ReactElement {
     setShowUnflagged,
     timeWindow,
     setTimeWindow,
+    customSince,
+    customUntil,
+    setCustomRange,
     activeLayers,
     availableLayers,
     toggleLayer,
@@ -82,6 +111,28 @@ export function FilterBar(): React.ReactElement {
 
   const { eventTypeTotals, relevanceTotals, locationCounts } = useReportStore();
   const { platformCounts } = useFilterStore();
+
+  // Custom-range popover state
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const [rangePos, setRangePos] = useState<{ x: number; y: number } | null>(null);
+  const [draftSince, setDraftSince] = useState('');
+  const [draftUntil, setDraftUntil] = useState('');
+  const rangeBtnRef = useRef<HTMLButtonElement>(null);
+
+  const openRangePicker = () => {
+    setDraftSince(isoToLocalInput(customSince));
+    setDraftUntil(isoToLocalInput(customUntil));
+    const rect = rangeBtnRef.current?.getBoundingClientRect();
+    setRangePos(rect ? { x: rect.left, y: rect.bottom + 6 } : { x: 200, y: 64 });
+    setRangeOpen(true);
+  };
+
+  const applyRange = () => {
+    setCustomRange(localInputToIso(draftSince), localInputToIso(draftUntil));
+    setRangeOpen(false);
+  };
+
+  const isCustomActive = timeWindow === 'custom';
 
   const toggleRelevance = (rel: string) => {
     if (relevances.includes(rel)) {
@@ -178,7 +229,7 @@ export function FilterBar(): React.ReactElement {
         <Divider />
 
         <SectionLabel>{t('time')}</SectionLabel>
-        <div style={{ display: 'flex', gap: 3, marginLeft: 6, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 3, marginLeft: 6, alignItems: 'center', position: 'relative' }}>
           {TIME_WINDOWS.map(({ key, label }) => (
             <button
               key={key}
@@ -195,6 +246,92 @@ export function FilterBar(): React.ReactElement {
               {label}
             </button>
           ))}
+
+          {/* Custom range pill */}
+          <button
+            ref={rangeBtnRef}
+            onClick={openRangePicker}
+            title={t('time_custom')}
+            style={{
+              fontSize: 11, padding: '2px 9px', borderRadius: 999,
+              border: `1px solid ${isCustomActive ? '#2563eb' : '#d1d5db'}`,
+              background: isCustomActive ? '#2563eb' : 'transparent',
+              color: isCustomActive ? '#fff' : '#374151',
+              cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+              fontWeight: isCustomActive ? 600 : 400,
+            }}
+          >
+            {isCustomActive
+              ? `${fmtRangeLabel(customSince)} – ${fmtRangeLabel(customUntil)}`
+              : `🗓 ${t('time_custom')}`}
+          </button>
+
+          {rangeOpen && ReactDOM.createPortal(
+            <>
+              {/* Click-catcher backdrop */}
+              <div
+                onClick={() => setRangeOpen(false)}
+                style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+              />
+              <div
+                style={{
+                  position: 'fixed', left: rangePos?.x ?? 200, top: rangePos?.y ?? 64, zIndex: 1000,
+                  background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.18)', padding: 12,
+                  display: 'flex', flexDirection: 'column', gap: 8, minWidth: 230,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+              <label style={{ fontSize: 11, color: '#374151', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {t('time_from')}
+                <input
+                  type="datetime-local"
+                  value={draftSince}
+                  max={draftUntil || undefined}
+                  onChange={(e) => setDraftSince(e.target.value)}
+                  style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit' }}
+                />
+              </label>
+              <label style={{ fontSize: 11, color: '#374151', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {t('time_to')}
+                <input
+                  type="datetime-local"
+                  value={draftUntil}
+                  min={draftSince || undefined}
+                  onChange={(e) => setDraftUntil(e.target.value)}
+                  style={{ fontSize: 11, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 4, fontFamily: 'inherit' }}
+                />
+              </label>
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 2 }}>
+                <button
+                  onClick={() => setRangeOpen(false)}
+                  style={{
+                    fontSize: 11, padding: '3px 10px', borderRadius: 999,
+                    border: '1px solid #d1d5db', background: 'transparent',
+                    color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  onClick={applyRange}
+                  disabled={!draftSince && !draftUntil}
+                  style={{
+                    fontSize: 11, padding: '3px 10px', borderRadius: 999,
+                    border: '1px solid #2563eb',
+                    background: (!draftSince && !draftUntil) ? '#93c5fd' : '#2563eb',
+                    color: '#fff', cursor: (!draftSince && !draftUntil) ? 'default' : 'pointer',
+                    fontFamily: 'inherit', fontWeight: 600,
+                  }}
+                >
+                  {t('apply')}
+                </button>
+              </div>
+              </div>
+            </>,
+            document.body,
+          )}
         </div>
 
         <Divider />

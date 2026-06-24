@@ -33,6 +33,9 @@ export function usePolling() {
         showUnflagged: snapUnflagged,
         search: snapSearch,
         autoUpdate: snapAutoUpdate,
+        timeWindow: snapTimeWindow,
+        customSince: snapCustomSince,
+        customUntil: snapCustomUntil,
       } = filters;
 
       const params = {
@@ -45,6 +48,9 @@ export function usePolling() {
         show_flagged: snapFlagged,
         show_unflagged: snapUnflagged,
         search: snapSearch || undefined,
+        time_window: snapTimeWindow,
+        since: snapTimeWindow === 'custom' ? (snapCustomSince || undefined) : undefined,
+        until: snapTimeWindow === 'custom' ? (snapCustomUntil || undefined) : undefined,
         limit: currentLimit,
       };
 
@@ -60,7 +66,10 @@ export function usePolling() {
         cur.showHidden !== snapHidden ||
         cur.showFlagged !== snapFlagged ||
         cur.showUnflagged !== snapUnflagged ||
-        cur.search !== snapSearch
+        cur.search !== snapSearch ||
+        cur.timeWindow !== snapTimeWindow ||
+        cur.customSince !== snapCustomSince ||
+        cur.customUntil !== snapCustomUntil
       ) return;
 
       if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
@@ -85,7 +94,10 @@ export function usePolling() {
           cur2.showHidden !== snapHidden ||
           cur2.showFlagged !== snapFlagged ||
           cur2.showUnflagged !== snapUnflagged ||
-          cur2.search !== snapSearch
+          cur2.search !== snapSearch ||
+          cur2.timeWindow !== snapTimeWindow ||
+          cur2.customSince !== snapCustomSince ||
+          cur2.customUntil !== snapCustomUntil
         ) return;
         setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count);
         if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);

@@ -1,5 +1,9 @@
 {
   "time": "Zeitraum",
+  "time_custom": "Zeitraum wählen",
+  "time_from": "Von",
+  "time_to": "Bis",
+  "apply": "Anwenden",
   "all": "Alle",
   "location": "Standort",
   "relevance": "Relevanz",
@@ -72,6 +76,8 @@
   "err_too_long": "Benutzername darf maximal 64 Zeichen lang sein.",
   "pick_prompt": "📍 Auf die Karte klicken, um einen Standort zu setzen",
   "cancel": "Abbrechen",
+  "pinned": "Angeheftet",
+  "unpin": "Lösen",
   "or": "oder",
   "search_osm_ph": "OpenStreetMap durchsuchen…",
   "no_results": "Keine Ergebnisse gefunden.",

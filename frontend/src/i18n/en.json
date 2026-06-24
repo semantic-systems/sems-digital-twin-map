@@ -1,5 +1,9 @@
 {
   "time": "Time",
+  "time_custom": "Custom range",
+  "time_from": "From",
+  "time_to": "To",
+  "apply": "Apply",
   "all": "All",
   "location": "Location",
   "relevance": "Relevance",
@@ -72,6 +76,8 @@
   "err_too_long": "Username must be at most 64 characters.",
   "pick_prompt": "📍 Click on the map to set a location",
   "cancel": "Cancel",
+  "pinned": "Pinned",
+  "unpin": "Unpin",
   "or": "or",
   "search_osm_ph": "Search OpenStreetMap…",
   "no_results": "No results found.",

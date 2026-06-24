@@ -10,6 +10,8 @@ import { LocationTag } from './LocationTag';
 
 interface ReportEntryProps {
   report: ReportDTO;
+  /** Rendered as a distinguishable "pinned" card at the top of the list. */
+  pinned?: boolean;
 }
 
 const RELEVANCE_RIGHT_BORDER: Record<string, string> = {
@@ -53,8 +55,8 @@ function formatPlatform(platform: string): string {
   return platform;
 }
 
-export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
-  const { activeReportId, setActiveReportId, optimisticHide, optimisticFlag, optimisticAcknowledge, optimisticRestoreLocations, setDots } =
+export function ReportEntry({ report, pinned = false }: ReportEntryProps): React.ReactElement {
+  const { activeReportId, setActiveReportId, setPinnedReport, optimisticHide, optimisticFlag, optimisticAcknowledge, optimisticRestoreLocations, setDots } =
     useReportStore();
   const { enterPickMode, requestFitBounds } = useMapStore();
   const { username } = useUserStore();
@@ -162,21 +164,26 @@ export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
   };
 
   const cardStyle: React.CSSProperties = {
-    background: isActive ? '#0f2044' : '#181b23',
+    background: pinned ? '#2a210a' : isActive ? '#0f2044' : '#181b23',
     borderRadius: 6,
     padding: '8px 8px 6px 10px',
     marginBottom: 6,
-    borderLeft: `4px solid ${isActive ? '#3b82f6' : leftBorder}`,
+    borderLeft: `4px solid ${pinned ? '#f59e0b' : isActive ? '#3b82f6' : leftBorder}`,
     borderRight: `3px solid ${rightBorder}`,
-    borderTop: isActive ? '1px solid #1d4ed8' : '1px solid #252836',
-    borderBottom: isActive ? '1px solid #1d4ed8' : '1px solid #252836',
+    borderTop: pinned ? '1px solid #b45309' : isActive ? '1px solid #1d4ed8' : '1px solid #252836',
+    borderBottom: pinned ? '1px solid #b45309' : isActive ? '1px solid #1d4ed8' : '1px solid #252836',
     opacity: hide ? 0.45 : 1,
-    outline: flag ? '2px solid #f97316' : isActive ? '1px solid #2563eb' : 'none',
+    outline: pinned ? '1px solid #f59e0b' : flag ? '2px solid #f97316' : isActive ? '1px solid #2563eb' : 'none',
     outlineOffset: -1,
-    boxShadow: isActive ? '0 0 0 1px #1d4ed8 inset' : 'none',
+    boxShadow: pinned ? '0 0 0 1px #b45309 inset' : isActive ? '0 0 0 1px #1d4ed8 inset' : 'none',
     transition: 'opacity 0.2s, background 0.15s',
     position: 'relative',
     cursor: 'default',
+  };
+
+  const handleUnpin = () => {
+    setActiveReportId(null);
+    setPinnedReport(null);
   };
 
   const btnBase: React.CSSProperties = {
@@ -205,6 +212,31 @@ export function ReportEntry({ report }: ReportEntryProps): React.ReactElement {
 
   return (
     <div style={cardStyle} className={isActive ? 'report-entry-active' : undefined} data-report-id={report.id}>
+      {/* Pinned header — distinguishes an on-demand-loaded report outside the current page */}
+      {pinned && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            background: '#b45309', color: '#fff', fontSize: 9, fontWeight: 700,
+            padding: '1px 6px', borderRadius: 999, letterSpacing: '0.05em',
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            📌 {t('pinned')}
+          </span>
+          <button
+            onClick={handleUnpin}
+            title={t('unpin')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#d6a35c', fontSize: 13, lineHeight: 1, padding: 0,
+              fontFamily: "'Inter', system-ui, sans-serif",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* NEW badge */}
       {isNew && (
         <span

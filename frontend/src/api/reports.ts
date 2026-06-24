@@ -1,6 +1,7 @@
 import { apiFetch, buildQuery } from './client';
 import type {
   ReportsResponse,
+  ReportDTO,
   FetchReportsParams,
   NewCountParams,
   NewCountResponse,
@@ -22,7 +23,8 @@ function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): R
     show_flagged: p.show_flagged,
     show_unflagged: p.show_unflagged,
     time_window: p.time_window !== 'all' ? p.time_window : undefined,
-    ...(('since' in p) ? { since: (p as NewCountParams).since } : {}),
+    ...(('since' in p && (p as { since?: string }).since) ? { since: (p as { since: string }).since } : {}),
+    ...(('until' in p && (p as { until?: string }).until) ? { until: (p as { until: string }).until } : {}),
     ...((p as DotsParams).search ? { search: (p as DotsParams).search } : {}),
   };
 }
@@ -45,6 +47,11 @@ export async function fetchNewCount(params: NewCountParams): Promise<NewCountRes
 export async function fetchDots(params: DotsParams): Promise<{ dots: DotDTO[] }> {
   const qs = buildQuery(toBackendParams(params));
   return apiFetch<{ dots: DotDTO[] }>(`/reports/dots${qs}`);
+}
+
+export async function fetchReport(id: number, username?: string): Promise<ReportDTO> {
+  const qs = username ? `?username=${encodeURIComponent(username)}` : '';
+  return apiFetch<ReportDTO>(`/reports/${id}${qs}`);
 }
 
 export async function fetchPlatforms(username: string): Promise<{ platforms: string[] }> {

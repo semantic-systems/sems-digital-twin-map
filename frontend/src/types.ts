@@ -105,6 +105,8 @@ export interface FetchReportsParams {
   search?: string;
   limit?: number;
   time_window?: string;
+  since?: string;
+  until?: string;
 }
 
 export interface NewCountParams {
@@ -135,6 +137,8 @@ export interface DotsParams {
   show_unflagged?: boolean;
   search?: string;
   time_window?: string;
+  since?: string;
+  until?: string;
 }
 
 export interface UserStateResponse {

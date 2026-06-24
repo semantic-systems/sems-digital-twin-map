@@ -358,6 +358,7 @@ def normalize_filters(
 def build_report_query(
     session: Session,
     since: datetime | None = None,
+    until: datetime | None = None,
     added_ids: set[int] | None = None,
     eff_platform: list[str] | None = None,
     eff_events: list[str] | None = None,
@@ -370,7 +371,8 @@ def build_report_query(
     Returns a SQLAlchemy Query[Report] with all filters applied.
     Does NOT call .all() — callers may add further ordering / limits.
     """
-    q = session.query(Report).filter(Report.timestamp <= _now_utc())
+    # Upper time bound: an explicit `until` (custom range), else "now".
+    q = session.query(Report).filter(Report.timestamp <= (until or _now_utc()))
 
     if since is not None:
         q = q.filter(Report.timestamp > since)
@@ -545,6 +547,7 @@ def get_reports(
     limit: int = 50,
     search: str | None = None,
     since: datetime | None = None,
+    until: datetime | None = None,
 ) -> tuple[list[ReportDTO], int, str, dict[str, int], list[str]]:
     """
     Returns (reports, pending_count, loaded_at_iso).
@@ -568,6 +571,7 @@ def get_reports(
     all_base_q = build_report_query(
         session,
         since=since,
+        until=until,
         eff_platform=None,
         eff_events=None,
         eff_relevance=None,
@@ -610,6 +614,8 @@ def get_reports(
         added_rows = (
             build_report_query(
                 session,
+                since=since,
+                until=until,
                 added_ids=added_ids,
                 eff_platform=None,
                 eff_events=None,
@@ -628,6 +634,7 @@ def get_reports(
         pending_q = build_report_query(
             session,
             since=since,
+            until=until,
             eff_platform=eff_platform,
             eff_events=eff_events,
             eff_relevance=eff_relevance,
@@ -642,6 +649,7 @@ def get_reports(
     q = build_report_query(
         session,
         since=since,
+        until=until,
         added_ids=added_ids,
         eff_platform=eff_platform,
         eff_events=eff_events,
@@ -865,6 +873,7 @@ def build_dots(
     added_ids: set[int] | None = None,
     search: str | None = None,
     since: datetime | None = None,
+    until: datetime | None = None,
 ) -> list[dict]:
     """
     Build the list of map-dot dicts from admitted reports that have coordinates.
@@ -886,6 +895,7 @@ def build_dots(
     q = build_report_query(
         session,
         since=since,
+        until=until,
         added_ids=effective_added,
         eff_platform=eff_platform,
         eff_events=eff_events,

@@ -14,6 +14,25 @@ def _since_from_window(time_window: str | None) -> datetime | None:
     if not time_window or time_window not in _TIME_WINDOWS:
         return None
     return datetime.now(timezone.utc) - timedelta(hours=_TIME_WINDOWS[time_window])
+
+def _parse_iso(value: str | None) -> datetime | None:
+    """Parse an ISO 8601 datetime string (accepts trailing 'Z'); None on failure/empty."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+def _resolve_time_range(
+    time_window: str | None, since: str | None, until: str | None
+) -> tuple[datetime | None, datetime | None]:
+    """A custom since/until range takes precedence over the preset time_window."""
+    custom_since = _parse_iso(since)
+    custom_until = _parse_iso(until)
+    if custom_since is not None or custom_until is not None:
+        return custom_since, custom_until
+    return _since_from_window(time_window), None
 from ..schemas.report import (
     AcknowledgeRequest,
     AdmitRequest,
@@ -54,10 +73,13 @@ def get_reports_endpoint(
     limit: int = Query(50, ge=1, le=2000),
     search: str | None = Query(None),
     time_window: str | None = Query(None),
+    since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
+    until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     session: Session = Depends(get_db),
 ) -> ReportsResponse:
     from ..config import settings
 
+    eff_since, eff_until = _resolve_time_range(time_window, since, until)
     reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count = svc.get_reports(
         session=session,
         username=username,
@@ -71,7 +93,8 @@ def get_reports_endpoint(
         demo_mode=settings.DEMO_MODE,
         limit=limit,
         search=search or None,
-        since=_since_from_window(time_window),
+        since=eff_since,
+        until=eff_until,
     )
     return ReportsResponse(
         reports=reports,
@@ -142,6 +165,8 @@ def dots_endpoint(
     show_unflagged: bool = Query(True),
     search: str | None = Query(None),
     time_window: str | None = Query(None),
+    since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
+    until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
     from ..config import settings
@@ -149,6 +174,7 @@ def dots_endpoint(
     eff_platform, eff_events, eff_relevance = svc.normalize_filters(
         platforms or None, event_types or None, relevances or None
     )
+    eff_since, eff_until = _resolve_time_range(time_window, since, until)
     dots = svc.build_dots(
         session=session,
         username=username,
@@ -161,7 +187,8 @@ def dots_endpoint(
         show_unflagged=show_unflagged,
         demo_mode=settings.DEMO_MODE,
         search=search or None,
-        since=_since_from_window(time_window),
+        since=eff_since,
+        until=eff_until,
     )
     return {"dots": dots}
 

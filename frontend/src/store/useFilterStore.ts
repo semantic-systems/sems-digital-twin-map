@@ -44,6 +44,9 @@ interface FilterStore {
   autoUpdate: boolean;
   search: string;
   timeWindow: string;
+  // Custom time range (ISO strings) — active when timeWindow === 'custom'
+  customSince: string | null;
+  customUntil: string | null;
   // Spatial area filter — [lat, lon][] polygon drawn on the map
   spatialPolygon: [number, number][] | null;
   spatialDrawMode: boolean;
@@ -67,6 +70,7 @@ interface FilterStore {
   setAutoUpdate: (v: boolean) => void;
   setSearch: (v: string) => void;
   setTimeWindow: (v: string) => void;
+  setCustomRange: (since: string | null, until: string | null) => void;
   setSpatialPolygon: (p: [number, number][] | null) => void;
   setSpatialDrawMode: (v: boolean) => void;
 }
@@ -91,6 +95,8 @@ export const useFilterStore = create<FilterStore>()(
       autoUpdate: false,
       search: '',
       timeWindow: 'all',
+      customSince: null,
+      customUntil: null,
       spatialPolygon: null,
       spatialDrawMode: false,
 
@@ -132,7 +138,10 @@ export const useFilterStore = create<FilterStore>()(
       },
       setAutoUpdate: (autoUpdate) => set({ autoUpdate }),
       setSearch: (search) => set({ search }),
-      setTimeWindow: (timeWindow) => set({ timeWindow }),
+      // Selecting a preset window clears any active custom range.
+      setTimeWindow: (timeWindow) => set({ timeWindow, customSince: null, customUntil: null }),
+      setCustomRange: (customSince, customUntil) =>
+        set({ timeWindow: 'custom', customSince, customUntil }),
       setSpatialPolygon: (spatialPolygon) => set({ spatialPolygon, spatialDrawMode: false }),
       setSpatialDrawMode: (spatialDrawMode) => set({ spatialDrawMode }),
     }),
