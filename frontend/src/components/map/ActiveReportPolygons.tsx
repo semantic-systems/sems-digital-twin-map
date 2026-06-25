@@ -201,23 +201,38 @@ export function ActiveReportPolygons(): React.ReactElement {
 
   useEffect(() => {
     if (activeReportId === null) { setDetailReport(null); return; }
+    let cancelled = false;
     const qs = username ? `?username=${encodeURIComponent(username)}` : '';
     fetch(`/api/v1/reports/${activeReportId}${qs}`)
       .then((r) => r.json())
-      .then((data: ReportDTO) => setDetailReport(data))
-      .catch(() => setDetailReport(null));
-    return () => setDetailReport(null);
+      .then((data: ReportDTO) => { if (!cancelled) setDetailReport(data); })
+      .catch(() => { if (!cancelled) setDetailReport(null); });
+    // Guard against out-of-order responses when the active report changes
+    // quickly: a stale fetch must not overwrite the current detail report.
+    return () => { cancelled = true; };
   }, [activeReportId, username]);
 
   if (activeReportId === null) return <></>;
 
-  const report = reports.find((r) => r.id === activeReportId);
-  if (!report || report.user_state.hide) return <></>;
+  // Polygon geometry is only attached by the single-report detail endpoint
+  // (the list endpoint, and therefore report.locations / user_state.locations,
+  // never carry a polygon). The detail report is also fetched independently of
+  // the sidebar list, so it exists even when the active report falls outside the
+  // list's current pagination/filters (e.g. selected via a map dot) — relying on
+  // it here is what lets those polygons render at all. While the fetch is in
+  // flight, fall back to the in-list report (no polygon data yet, so nothing
+  // draws until the detail arrives).
+  const detail =
+    detailReport && detailReport.id === activeReportId ? detailReport : null;
+  const active = detail ?? reports.find((r) => r.id === activeReportId) ?? null;
+  if (!active || active.user_state.hide) return <></>;
 
-  const effectiveLocs: LocationEntry[] =
-    report.user_state.locations !== undefined && report.user_state.locations !== null
-      ? report.user_state.locations
-      : (detailReport?.locations ?? report.locations);
+  // detail.locations already reflects any user-modified locations AND polygon
+  // enrichment, so trust it directly; only consult user_state.locations during
+  // the loading fallback (it is unenriched, so renders nothing until detail loads).
+  const effectiveLocs: LocationEntry[] = detail
+    ? detail.locations
+    : (active.user_state.locations ?? active.locations);
 
   const geoLocs = effectiveLocs.filter(isGeoLocation);
 
