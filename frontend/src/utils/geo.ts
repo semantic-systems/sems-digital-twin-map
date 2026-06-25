@@ -89,6 +89,34 @@ export function getLocationRing(loc: LocationEntry): [number, number][] | null {
       const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
       return largest.map(([lon, lat]) => [lat, lon]);
     }
+    // Point / line geometries have no area ring; use the bounding box of their
+    // coordinates so a more-specific node or street can still suppress a containing
+    // area polygon. Mirrors getPrimaryRing() in ActiveReportPolygons so the dot and
+    // polygon suppression paths agree on a feature's spatial extent.
+    if (
+      type === 'Point' ||
+      type === 'MultiPoint' ||
+      type === 'LineString' ||
+      type === 'MultiLineString'
+    ) {
+      const pts: [number, number][] =
+        type === 'Point'
+          ? [coordinates as [number, number]]
+          : type === 'MultiPoint' || type === 'LineString'
+            ? (coordinates as [number, number][])
+            : (coordinates as [number, number][][]).flat();
+      if (pts.length > 0) {
+        let minLat = pts[0][1], maxLat = pts[0][1];
+        let minLon = pts[0][0], maxLon = pts[0][0];
+        for (const [lon, lat] of pts) {
+          if (lat < minLat) minLat = lat;
+          if (lat > maxLat) maxLat = lat;
+          if (lon < minLon) minLon = lon;
+          if (lon > maxLon) maxLon = lon;
+        }
+        return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
+      }
+    }
   }
   if (Array.isArray(loc.boundingbox) && loc.boundingbox.length === 4) {
     const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
@@ -208,25 +236,12 @@ export function computeSuppressedDotsWithLocs(
   return suppressed;
 }
 
-/** Bounding-box area in degrees² from a LocationEntry. Returns null if no geometry is available. */
+/**
+ * Bounding-box area in degrees² from a LocationEntry. Returns null if no geometry
+ * is available. Derived from getLocationRing so every geometry type (polygon, line,
+ * point, bbox) is handled identically to the containment checks — a point yields 0.
+ */
 export function locationBboxArea(loc: LocationEntry): number | null {
-  if (loc.polygon) {
-    const { type, coordinates } = loc.polygon;
-    let ring: number[][] | null = null;
-    if (type === 'Polygon') {
-      ring = coordinates[0] as number[][];
-    } else if (type === 'MultiPolygon') {
-      const rings = (coordinates as number[][][][]).map((p) => p[0]);
-      ring = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
-    }
-    if (ring && ring.length > 0) {
-      // GeoJSON coordinates are [lon, lat] — swap to [lat, lon]
-      return polygonBboxArea(ring.map(([lon, lat]) => [lat, lon] as [number, number]));
-    }
-  }
-  if (Array.isArray(loc.boundingbox) && loc.boundingbox.length === 4) {
-    const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
-    return (maxLat - minLat) * (maxLon - minLon);
-  }
-  return null;
+  const ring = getLocationRing(loc);
+  return ring ? polygonBboxArea(ring) : null;
 }

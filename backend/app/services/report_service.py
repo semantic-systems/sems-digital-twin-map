@@ -30,7 +30,12 @@ def _now_utc() -> datetime:
 
 
 def _polygon_bbox(polygon: dict) -> list[float] | None:
-    """Return [min_lat, max_lat, min_lon, max_lon] for a GeoJSON polygon/multipolygon."""
+    """Return [min_lat, max_lat, min_lon, max_lon] for any GeoJSON geometry.
+
+    Handles points and lines as well as polygons so a more-specific node/street
+    dot can suppress a containing area dot (mirrors getLocationRing in the
+    frontend). A Point yields a zero-area bbox at the node.
+    """
     ptype = polygon.get("type")
     raw = polygon.get("coordinates")
     if not raw:
@@ -39,6 +44,12 @@ def _polygon_bbox(polygon: dict) -> list[float] | None:
         flat = [pt for ring in raw for pt in ring]
     elif ptype == "MultiPolygon":
         flat = [pt for poly in raw for ring in poly for pt in ring]
+    elif ptype == "Point":
+        flat = [raw]
+    elif ptype in ("MultiPoint", "LineString"):
+        flat = raw
+    elif ptype == "MultiLineString":
+        flat = [pt for line in raw for pt in line]
     else:
         return None
     if not flat:

@@ -28,6 +28,35 @@ function getPrimaryRing(loc: LocationEntry): [number, number][] | null {
       const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
       return largest.map(([lon, lat]) => [lat, lon]);
     }
+    // Geometries without an area ring (a node's Point, a street's LineString, …)
+    // still need a spatial extent so a more-specific feature can suppress a
+    // containing area polygon (e.g. a country). Use the bounding box of their
+    // coordinates as the ring; for a single Point this is a degenerate box at the
+    // node, which suppresses any polygon that contains it but renders no area.
+    if (
+      type === 'Point' ||
+      type === 'MultiPoint' ||
+      type === 'LineString' ||
+      type === 'MultiLineString'
+    ) {
+      const pts: [number, number][] =
+        type === 'Point'
+          ? [coordinates as [number, number]]
+          : type === 'MultiPoint' || type === 'LineString'
+            ? (coordinates as [number, number][])
+            : (coordinates as [number, number][][]).flat();
+      if (pts.length > 0) {
+        let minLat = pts[0][1], maxLat = pts[0][1];
+        let minLon = pts[0][0], maxLon = pts[0][0];
+        for (const [lon, lat] of pts) {
+          if (lat < minLat) minLat = lat;
+          if (lat > maxLat) maxLat = lat;
+          if (lon < minLon) minLon = lon;
+          if (lon > maxLon) maxLon = lon;
+        }
+        return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
+      }
+    }
   }
   if (loc.boundingbox && loc.boundingbox.length === 4) {
     const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
