@@ -72,6 +72,8 @@ export interface DotDTO {
   lat: number;
   lon: number;
   seen: boolean;
+  hide: boolean;
+  flag: boolean;
   new: boolean;
   location_name: string;
   location_display: string;

@@ -1059,6 +1059,8 @@ def build_dots(
                     "lat": lat_f,
                     "lon": lon_f,
                     "seen": rid in seen_ids,
+                    "hide": rid in seen_ids,
+                    "flag": (author or "") in flagged_authors,
                     "new": rid in new_ids,
                     "location_name": loc.get("name") or loc.get("display_name") or "",
                     "location_display": loc.get("mention") or "",

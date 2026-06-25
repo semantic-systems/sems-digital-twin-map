@@ -94,6 +94,12 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
   const { requestFitBounds } = useMapStore();
   const report = reports.find((r) => r.id === dot.report_id);
 
+  // The report may not be in the currently loaded list (e.g. beyond the limit or
+  // filtered out of the sidebar while still on the map). Fall back to the dot's
+  // own hide/flag state so the action buttons still render and work.
+  const hidden = report ? report.user_state.hide : dot.hide;
+  const flagged = report ? report.user_state.flag : dot.flag;
+
   const handleCenter = () => {
     const groupDots = dots.filter((d) => d.report_id === dot.report_id);
     const locs = report?.user_state.locations ?? report?.locations ?? [];
@@ -109,16 +115,16 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
   };
 
   const handleHide = async () => {
-    if (!username || !report) return;
-    const newHide = !report.user_state.hide;
+    if (!username) return;
+    const newHide = !hidden;
     optimisticHide(dot.report_id, newHide);
     try { await hideReport(dot.report_id, username, newHide); }
     catch (e) { console.error('Failed to hide:', e); }
   };
 
   const handleFlag = async () => {
-    if (!username || !dot.author || !report) return;
-    const newFlag = !report.user_state.flag;
+    if (!username || !dot.author) return;
+    const newFlag = !flagged;
     optimisticFlag(dot.author, newFlag);
     try { await flagReport(dot.report_id, username, newFlag); }
     catch (e) { console.error('Failed to flag:', e); }
@@ -128,6 +134,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
     fontSize: 11, padding: '2px 8px', borderRadius: 4,
     border: '1px solid #d1d5db', background: '#f3f4f6', color: '#374151',
     cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif",
+    whiteSpace: 'nowrap',
   };
 
   return (
@@ -164,7 +171,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
       <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8 }}>
         {(dot.event_types ?? []).join(', ')} · {formatTimestamp(dot.timestamp)}
       </p>
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         <a href={dot.url} target="_blank" rel="noopener noreferrer"
           style={{ ...btn, textDecoration: 'none', display: 'inline-block' }}>
           {t('open')}
@@ -172,17 +179,13 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
         <button onClick={handleCenter} title={t('center_title')} style={btn}>
           {t('center')}
         </button>
-        {report && (
-          <>
-            <button onClick={handleHide} style={btn}>
-              {report.user_state.hide ? t('unhide') : t('hide')}
-            </button>
-            {dot.author && (
-              <button onClick={handleFlag} style={btn}>
-                {report.user_state.flag ? t('unflag') : t('flag')}
-              </button>
-            )}
-          </>
+        <button onClick={handleHide} style={btn}>
+          {hidden ? t('unhide') : t('hide')}
+        </button>
+        {dot.author && (
+          <button onClick={handleFlag} style={btn}>
+            {flagged ? t('unflag') : t('flag')}
+          </button>
         )}
       </div>
     </div>
