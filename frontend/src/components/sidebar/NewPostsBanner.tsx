@@ -18,7 +18,7 @@ export function NewPostsBanner(): React.ReactElement {
       const effectivePlatforms = filters.platforms.length ? filters.platforms : filters.allPlatforms;
       const params = {
         username,
-        loc_filter: 'all',
+        loc_filter: undefined,
         platforms: effectivePlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,

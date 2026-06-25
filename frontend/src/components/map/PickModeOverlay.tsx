@@ -89,7 +89,7 @@ export function PickModeOverlay(): React.ReactElement | null {
       await updateLocations(pickMode.reportId, username, newLocs);
       const dotsRes = await fetchDots({
         username,
-        loc_filter: 'all',
+        loc_filter: undefined,
         platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,

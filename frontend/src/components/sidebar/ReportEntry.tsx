@@ -160,7 +160,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
       await restoreLocations(report.id, username);
       const dotsRes = await fetchDots({
         username,
-        loc_filter: 'all',
+        loc_filter: undefined,
         platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,
