@@ -245,3 +245,40 @@ export function locationBboxArea(loc: LocationEntry): number | null {
   const ring = getLocationRing(loc);
   return ring ? polygonBboxArea(ring) : null;
 }
+
+/**
+ * Compute the map bounds that frame only the *visible* (non-suppressed) dots of a
+ * single report, applying the same containment suppression as ReportDots so a
+ * superset location (e.g. a whole country) does not stretch the view. Each dot
+ * contributes its full polygon extent (location_bbox) when known, else a small box
+ * around its point. Returns [[south, west], [north, east]] or null if nothing to frame.
+ */
+export function computeVisibleReportBounds(
+  reportDots: DotDTO[],
+  locs: LocationEntry[],
+): [[number, number], [number, number]] | null {
+  let visibleDots = reportDots;
+  if (reportDots.length > 1) {
+    const suppressed = computeSuppressedDotsWithLocs(reportDots, locs);
+    visibleDots = reportDots.filter((d) => !suppressed.has(d));
+  }
+
+  let south = Infinity, north = -Infinity, west = Infinity, east = -Infinity;
+  for (const d of visibleDots) {
+    if (d.location_bbox) {
+      // location_bbox: [min_lat, max_lat, min_lon, max_lon]
+      south = Math.min(south, d.location_bbox[0]);
+      north = Math.max(north, d.location_bbox[1]);
+      west  = Math.min(west,  d.location_bbox[2]);
+      east  = Math.max(east,  d.location_bbox[3]);
+    } else {
+      south = Math.min(south, d.lat - 0.01);
+      north = Math.max(north, d.lat + 0.01);
+      west  = Math.min(west,  d.lon - 0.01);
+      east  = Math.max(east,  d.lon + 0.01);
+    }
+  }
+
+  if (south === Infinity) return null;
+  return [[south, west], [north, east]];
+}

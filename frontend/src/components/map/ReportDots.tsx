@@ -8,7 +8,8 @@ import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
 import type { DotDTO, ReportDTO } from '../../types';
-import { pointInPolygon, polygonBboxArea, computeSuppressedDotsWithLocs } from '../../utils/geo';
+import { pointInPolygon, polygonBboxArea, computeSuppressedDotsWithLocs, computeVisibleReportBounds } from '../../utils/geo';
+import { useMapStore } from '../../store/useMapStore';
 
 function formatTimestamp(iso: string): string {
   try {
@@ -89,8 +90,23 @@ function makeDotIcon({
 
 function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
   const { username } = useUserStore();
-  const { optimisticHide, optimisticFlag, reports } = useReportStore();
+  const { optimisticHide, optimisticFlag, reports, dots } = useReportStore();
+  const { requestFitBounds } = useMapStore();
   const report = reports.find((r) => r.id === dot.report_id);
+
+  const handleCenter = () => {
+    const groupDots = dots.filter((d) => d.report_id === dot.report_id);
+    const locs = report?.user_state.locations ?? report?.locations ?? [];
+    const bounds = computeVisibleReportBounds(groupDots, locs);
+    if (bounds) {
+      requestFitBounds(bounds);
+    } else if (dot.location_bbox) {
+      const [s, n, w, e] = dot.location_bbox;
+      requestFitBounds([[s, w], [n, e]]);
+    } else {
+      requestFitBounds([[dot.lat - 0.01, dot.lon - 0.01], [dot.lat + 0.01, dot.lon + 0.01]]);
+    }
+  };
 
   const handleHide = async () => {
     if (!username || !report) return;
@@ -115,7 +131,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
   };
 
   return (
-    <div style={{ maxWidth: 260, fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ maxWidth: 320, fontFamily: "'Inter', system-ui, sans-serif" }}>
       {dot.new && (
         <span style={{
           display: 'inline-block', background: '#ef4444', color: '#fff',
@@ -153,6 +169,9 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
           style={{ ...btn, textDecoration: 'none', display: 'inline-block' }}>
           {t('open')}
         </a>
+        <button onClick={handleCenter} title={t('center_title')} style={btn}>
+          {t('center')}
+        </button>
         {report && (
           <>
             <button onClick={handleHide} style={btn}>
@@ -416,7 +435,7 @@ const GroupMarker = React.memo(function GroupMarker({
     <Marker ref={markerRef} position={[group.lat, group.lon]} icon={icon} eventHandlers={eventHandlers}>
       {/* autoPan disabled: an open popup must never pull the map view towards
           itself when the user pans or zooms. */}
-      <Popup autoPan={false}>
+      <Popup autoPan={false} maxWidth={340} minWidth={300}>
         {isMulti
           ? <MultiDotPopup dots={dedupedDots} onSelect={onSelect} />
           : <DotPopup dot={dedupedDots[0]} />}
