@@ -954,6 +954,11 @@ def build_dots(
     hide_flagged = not show_flagged
     hide_unflagged = not show_unflagged
 
+    # Location-type filter is applied in Python (mirrors filter_by_display) so it
+    # respects user-modified locations from user_locs_map, just like get_reports.
+    _ALL_LOC = frozenset({'localized', 'pending', 'unlocalized'})
+    _loc_set = set(loc_filter) if loc_filter and set(loc_filter) < _ALL_LOC else None
+
     rows = q.with_entities(
         Report.id,
         Report.text,
@@ -1000,6 +1005,19 @@ def build_dots(
             continue
 
         effective_locs: list = (user_locs_map[rid] if rid in user_locs_map else locs_raw) or []
+
+        if _loc_set:
+            is_localized = any(
+                isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
+            )
+            has_pending = (not is_localized) and bool(effective_locs)
+            is_unlocalized = not is_localized and not has_pending
+            if not (
+                (is_localized and 'localized' in _loc_set)
+                or (has_pending and 'pending' in _loc_set)
+                or (is_unlocalized and 'unlocalized' in _loc_set)
+            ):
+                continue
 
         for loc in effective_locs:
             if not isinstance(loc, dict):

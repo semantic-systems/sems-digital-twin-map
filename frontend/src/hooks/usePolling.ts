@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useReportStore } from '../store/useReportStore';
-import { useFilterStore } from '../store/useFilterStore';
+import { useFilterStore, activeLocFilter } from '../store/useFilterStore';
 import { useUserStore } from '../store/useUserStore';
 import { admitAllReports, fetchReports, fetchDots } from '../api/reports';
 
@@ -41,15 +41,13 @@ export function usePolling() {
         locShowUnlocalized: snapLocUnlocalized,
       } = filters;
 
-      const _snapActiveLocs = [
-        ...(snapLocLocalized ? ['localized'] : []),
-        ...(snapLocPending ? ['pending'] : []),
-        ...(snapLocUnlocalized ? ['unlocalized'] : []),
-      ];
-
       const params = {
         username,
-        loc_filter: _snapActiveLocs.length < 3 ? _snapActiveLocs : undefined,
+        loc_filter: activeLocFilter({
+          locShowLocalized: snapLocLocalized,
+          locShowPending: snapLocPending,
+          locShowUnlocalized: snapLocUnlocalized,
+        }),
         platforms: snapPlatforms.length ? snapPlatforms : snapAllPlatforms,
         event_types: snapEvents,
         relevances: snapRelevances,

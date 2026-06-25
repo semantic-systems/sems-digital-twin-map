@@ -5,7 +5,7 @@ import { useReportStore } from '../../store/useReportStore';
 import { useMapStore } from '../../store/useMapStore';
 import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport, restoreLocations, fetchDots } from '../../api/reports';
-import { useFilterStore } from '../../store/useFilterStore';
+import { useFilterStore, activeLocFilter } from '../../store/useFilterStore';
 import { LocationTag } from './LocationTag';
 import { computeVisibleReportBounds } from '../../utils/geo';
 
@@ -160,7 +160,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
       await restoreLocations(report.id, username);
       const dotsRes = await fetchDots({
         username,
-        loc_filter: undefined,
+        loc_filter: activeLocFilter(filters),
         platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,

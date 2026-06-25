@@ -19,6 +19,22 @@ export const ALL_EVENT_TYPES_LIST = [
 
 export const ALL_RELEVANCES_LIST = ['high', 'medium', 'low', 'none'];
 
+/** Build the `loc_filter` query param from the location-type toggles.
+ *  Returns undefined when all three are on (no restriction) — matching the
+ *  backend contract where a full set means "no filter". */
+export function activeLocFilter(f: {
+  locShowLocalized: boolean;
+  locShowPending: boolean;
+  locShowUnlocalized: boolean;
+}): string[] | undefined {
+  const active = [
+    ...(f.locShowLocalized ? ['localized'] : []),
+    ...(f.locShowPending ? ['pending'] : []),
+    ...(f.locShowUnlocalized ? ['unlocalized'] : []),
+  ];
+  return active.length < 3 ? active : undefined;
+}
+
 /** Derive a stable color for a layer based on its position in availableLayers. */
 export function getLayerColor(layerId: number, availableLayers: LayerDTO[]): string {
   const idx = availableLayers.findIndex((l) => l.id === layerId);

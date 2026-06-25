@@ -4,7 +4,7 @@ import { useMapStore } from '../../store/useMapStore';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import { updateLocations, fetchDots } from '../../api/reports';
-import { useFilterStore } from '../../store/useFilterStore';
+import { useFilterStore, activeLocFilter } from '../../store/useFilterStore';
 import type { NominatimResult, LocationEntry } from '../../types';
 
 const BASE_API = '/api/v1';
@@ -89,7 +89,7 @@ export function PickModeOverlay(): React.ReactElement | null {
       await updateLocations(pickMode.reportId, username, newLocs);
       const dotsRes = await fetchDots({
         username,
-        loc_filter: undefined,
+        loc_filter: activeLocFilter(filters),
         platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,

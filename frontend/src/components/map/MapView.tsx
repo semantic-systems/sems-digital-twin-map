@@ -12,7 +12,7 @@ import {
   useMapEvents,
 } from 'react-leaflet';
 import { useMapStore } from '../../store/useMapStore';
-import { useFilterStore, getLayerColor } from '../../store/useFilterStore';
+import { useFilterStore, getLayerColor, activeLocFilter } from '../../store/useFilterStore';
 import { t } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
@@ -65,7 +65,7 @@ function PickModeHandler(): null {
         await updateLocations(reportId, username, newLocs);
         const dotsRes = await fetchDots({
           username,
-          loc_filter: undefined,
+          loc_filter: activeLocFilter(filters),
           platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
           event_types: filters.eventTypes,
           relevances: filters.relevances,

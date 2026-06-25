@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useUserStore } from './store/useUserStore';
-import { useFilterStore } from './store/useFilterStore';
+import { useFilterStore, activeLocFilter } from './store/useFilterStore';
 import { useReportStore } from './store/useReportStore';
 import { fetchReports, fetchDots } from './api/reports';
 import { fetchLayers } from './api/layers';
@@ -25,14 +25,9 @@ function AppInner(): React.ReactElement {
   const loadSeqRef = useRef(0);
 
   const buildParams = (limit: number) => {
-    const activeLocs = [
-      ...(locShowLocalized ? ['localized'] : []),
-      ...(locShowPending ? ['pending'] : []),
-      ...(locShowUnlocalized ? ['unlocalized'] : []),
-    ];
     return {
     username: username!,
-    loc_filter: activeLocs.length < 3 ? activeLocs : undefined,
+    loc_filter: activeLocFilter({ locShowLocalized, locShowPending, locShowUnlocalized }),
     platforms: platforms.length ? platforms : allPlatforms,
     event_types: eventTypes,
     relevances,

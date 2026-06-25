@@ -2,7 +2,7 @@ import React from 'react';
 import { newPostsLabel } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
-import { useFilterStore } from '../../store/useFilterStore';
+import { useFilterStore, activeLocFilter } from '../../store/useFilterStore';
 import { admitAllReports, fetchReports, fetchDots } from '../../api/reports';
 
 export function NewPostsBanner(): React.ReactElement {
@@ -18,7 +18,7 @@ export function NewPostsBanner(): React.ReactElement {
       const effectivePlatforms = filters.platforms.length ? filters.platforms : filters.allPlatforms;
       const params = {
         username,
-        loc_filter: undefined,
+        loc_filter: activeLocFilter(filters),
         platforms: effectivePlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,
