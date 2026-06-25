@@ -89,22 +89,16 @@ export function getLocationRing(loc: LocationEntry): [number, number][] | null {
       const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
       return largest.map(([lon, lat]) => [lat, lon]);
     }
-    // Point / line geometries have no area ring; use the bounding box of their
-    // coordinates so a more-specific node or street can still suppress a containing
-    // area polygon. Mirrors getPrimaryRing() in ActiveReportPolygons so the dot and
-    // polygon suppression paths agree on a feature's spatial extent.
-    if (
-      type === 'Point' ||
-      type === 'MultiPoint' ||
-      type === 'LineString' ||
-      type === 'MultiLineString'
-    ) {
+    // Lines have no area ring; use the bounding box of their coordinates (reliably
+    // [lon, lat]) so a more-specific street can still suppress a containing area
+    // polygon. Point geometries are skipped: stored point coordinates have an
+    // unreliable lat/lon order, and the dot path already locates a node via the
+    // dot's own (authoritative) lat/lon, so no ring is needed here.
+    if (type === 'LineString' || type === 'MultiLineString') {
       const pts: [number, number][] =
-        type === 'Point'
-          ? [coordinates as [number, number]]
-          : type === 'MultiPoint' || type === 'LineString'
-            ? (coordinates as [number, number][])
-            : (coordinates as [number, number][][]).flat();
+        type === 'LineString'
+          ? (coordinates as [number, number][])
+          : (coordinates as [number, number][][]).flat();
       if (pts.length > 0) {
         let minLat = pts[0][1], maxLat = pts[0][1];
         let minLon = pts[0][0], maxLon = pts[0][0];

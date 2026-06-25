@@ -28,23 +28,16 @@ function getPrimaryRing(loc: LocationEntry): [number, number][] | null {
       const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
       return largest.map(([lon, lat]) => [lat, lon]);
     }
-    // Geometries without an area ring (a node's Point, a street's LineString, …)
-    // still need a spatial extent so a more-specific feature can suppress a
-    // containing area polygon (e.g. a country). Use the bounding box of their
-    // coordinates as the ring; for a single Point this is a degenerate box at the
-    // node, which suppresses any polygon that contains it but renders no area.
-    if (
-      type === 'Point' ||
-      type === 'MultiPoint' ||
-      type === 'LineString' ||
-      type === 'MultiLineString'
-    ) {
+    // Lines have no area ring; use the bounding box of their coordinates (which
+    // are reliably [lon, lat]) so a more-specific line (e.g. a street) can suppress
+    // a containing area polygon. Point geometries are skipped here — stored point
+    // coordinates have an unreliable lat/lon order, so we use the location's own
+    // lat/lon below instead.
+    if (type === 'LineString' || type === 'MultiLineString') {
       const pts: [number, number][] =
-        type === 'Point'
-          ? [coordinates as [number, number]]
-          : type === 'MultiPoint' || type === 'LineString'
-            ? (coordinates as [number, number][])
-            : (coordinates as [number, number][][]).flat();
+        type === 'LineString'
+          ? (coordinates as [number, number][])
+          : (coordinates as [number, number][][]).flat();
       if (pts.length > 0) {
         let minLat = pts[0][1], maxLat = pts[0][1];
         let minLon = pts[0][0], maxLon = pts[0][0];
@@ -61,6 +54,14 @@ function getPrimaryRing(loc: LocationEntry): [number, number][] | null {
   if (loc.boundingbox && loc.boundingbox.length === 4) {
     const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
     return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
+  }
+  // A node / point location: build a degenerate ring at its (authoritative) lat/lon
+  // so it can suppress a containing area polygon while rendering no area itself.
+  if (loc.lat != null && loc.lon != null) {
+    const lat = Number(loc.lat), lon = Number(loc.lon);
+    if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
+      return [[lat, lon], [lat, lon], [lat, lon], [lat, lon]];
+    }
   }
   return null;
 }
