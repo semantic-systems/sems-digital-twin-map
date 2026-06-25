@@ -226,8 +226,13 @@ export function MapView(): React.ReactElement {
     <MapContainer
       center={[51.1657, 10.4515]}
       zoom={7}
+      minZoom={2}
       doubleClickZoom={false}
       zoomControl={false}
+      // Constrain panning to a single world copy so the map cannot scroll endlessly.
+      maxBounds={[[-85.06, -180], [85.06, 180]]}
+      maxBoundsViscosity={1.0}
+      worldCopyJump={false}
       style={{ width: '100%', height: '100%' }}
     >
       {/* OpenStreetMap base */}
@@ -235,6 +240,8 @@ export function MapView(): React.ReactElement {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         maxZoom={19}
+        // Do not render repeated copies of the world horizontally.
+        noWrap={true}
       />
 
       {/* Layers */}
