@@ -7,6 +7,7 @@ import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport, restoreLocations, fetchDots } from '../../api/reports';
 import { useFilterStore } from '../../store/useFilterStore';
 import { LocationTag } from './LocationTag';
+import { computeSuppressedDotsWithLocs } from '../../utils/geo';
 
 interface ReportEntryProps {
   report: ReportDTO;
@@ -56,7 +57,7 @@ function formatPlatform(platform: string): string {
 }
 
 export function ReportEntry({ report, pinned = false }: ReportEntryProps): React.ReactElement {
-  const { activeReportId, setActiveReportId, setPinnedReport, optimisticHide, optimisticFlag, optimisticAcknowledge, optimisticRestoreLocations, setDots } =
+  const { activeReportId, setActiveReportId, setPinnedReport, optimisticHide, optimisticFlag, optimisticAcknowledge, optimisticRestoreLocations, setDots, dots } =
     useReportStore();
   const { enterPickMode, requestFitBounds } = useMapStore();
   const { username } = useUserStore();
@@ -91,21 +92,50 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
   };
 
   const handleCenter = () => {
+    // Only frame the locations that are actually drawn on the map. The report's
+    // dots are subjected to the same containment suppression as ReportDots, so a
+    // superset location (e.g. the whole country) does not stretch the view.
+    const groupDots = dots.filter((d) => d.report_id === report.id);
+    let visibleDots = groupDots;
+    if (groupDots.length > 1) {
+      const locs = report.user_state.locations ?? report.locations ?? [];
+      const suppressed = computeSuppressedDotsWithLocs(groupDots, locs);
+      visibleDots = groupDots.filter((d) => !suppressed.has(d));
+    }
+
     let south = Infinity, north = -Infinity, west = Infinity, east = -Infinity;
 
-    for (const l of effectiveLocations) {
-      if (l.boundingbox) {
-        // boundingbox: [south, north, west, east]
-        south = Math.min(south, Number(l.boundingbox[0]));
-        north = Math.max(north, Number(l.boundingbox[1]));
-        west  = Math.min(west,  Number(l.boundingbox[2]));
-        east  = Math.max(east,  Number(l.boundingbox[3]));
-      } else if (l.lat && l.lon) {
-        const lat = Number(l.lat), lon = Number(l.lon);
-        south = Math.min(south, lat - 0.01);
-        north = Math.max(north, lat + 0.01);
-        west  = Math.min(west,  lon - 0.01);
-        east  = Math.max(east,  lon + 0.01);
+    for (const d of visibleDots) {
+      if (d.location_bbox) {
+        // location_bbox: [min_lat, max_lat, min_lon, max_lon]
+        south = Math.min(south, d.location_bbox[0]);
+        north = Math.max(north, d.location_bbox[1]);
+        west  = Math.min(west,  d.location_bbox[2]);
+        east  = Math.max(east,  d.location_bbox[3]);
+      } else {
+        south = Math.min(south, d.lat - 0.01);
+        north = Math.max(north, d.lat + 0.01);
+        west  = Math.min(west,  d.lon - 0.01);
+        east  = Math.max(east,  d.lon + 0.01);
+      }
+    }
+
+    // Fallback to the raw locations if no dots are loaded for this report.
+    if (south === Infinity) {
+      for (const l of effectiveLocations) {
+        if (l.boundingbox) {
+          // boundingbox: [south, north, west, east]
+          south = Math.min(south, Number(l.boundingbox[0]));
+          north = Math.max(north, Number(l.boundingbox[1]));
+          west  = Math.min(west,  Number(l.boundingbox[2]));
+          east  = Math.max(east,  Number(l.boundingbox[3]));
+        } else if (l.lat && l.lon) {
+          const lat = Number(l.lat), lon = Number(l.lon);
+          south = Math.min(south, lat - 0.01);
+          north = Math.max(north, lat + 0.01);
+          west  = Math.min(west,  lon - 0.01);
+          east  = Math.max(east,  lon + 0.01);
+        }
       }
     }
 

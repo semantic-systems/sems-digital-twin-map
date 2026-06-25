@@ -414,7 +414,9 @@ const GroupMarker = React.memo(function GroupMarker({
 
   return (
     <Marker ref={markerRef} position={[group.lat, group.lon]} icon={icon} eventHandlers={eventHandlers}>
-      <Popup>
+      {/* autoPan disabled: an open popup must never pull the map view towards
+          itself when the user pans or zooms. */}
+      <Popup autoPan={false}>
         {isMulti
           ? <MultiDotPopup dots={dedupedDots} onSelect={onSelect} />
           : <DotPopup dot={dedupedDots[0]} />}
