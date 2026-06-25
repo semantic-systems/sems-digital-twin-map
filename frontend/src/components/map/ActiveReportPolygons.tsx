@@ -4,7 +4,7 @@ import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import type { LocationEntry, GeoJsonGeometry, ReportDTO } from '../../types';
-import { pointInPolygon, polygonBboxArea } from '../../utils/geo';
+import { computeSuppressedRegions, locationExtent } from '../../utils/geo';
 
 function coordsToLatLng(coords: unknown[]): LatLngExpression[] {
   return (coords as [number, number][]).map(([lon, lat]) => [lat, lon]);
@@ -14,117 +14,6 @@ function polygonCoordsToLatLng(coords: unknown[]): LatLngExpression[][] {
   return (coords as unknown[][]).map((ring) =>
     (ring as [number, number][]).map(([lon, lat]) => [lat, lon]),
   );
-}
-
-/** Extract the largest ring from a location as [lat, lon][], or build one from its boundingbox. */
-function getPrimaryRing(loc: LocationEntry): [number, number][] | null {
-  if (loc.polygon) {
-    const { type, coordinates } = loc.polygon;
-    if (type === 'Polygon') {
-      return (coordinates[0] as [number, number][]).map(([lon, lat]) => [lat, lon]);
-    }
-    if (type === 'MultiPolygon') {
-      const rings = (coordinates as [number, number][][][]).map((p) => p[0]);
-      const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
-      return largest.map(([lon, lat]) => [lat, lon]);
-    }
-    // Lines have no area ring; use the bounding box of their coordinates (which
-    // are reliably [lon, lat]) so a more-specific line (e.g. a street) can suppress
-    // a containing area polygon. Point geometries are skipped here — stored point
-    // coordinates have an unreliable lat/lon order, so we use the location's own
-    // lat/lon below instead.
-    if (type === 'LineString' || type === 'MultiLineString') {
-      const pts: [number, number][] =
-        type === 'LineString'
-          ? (coordinates as [number, number][])
-          : (coordinates as [number, number][][]).flat();
-      if (pts.length > 0) {
-        let minLat = pts[0][1], maxLat = pts[0][1];
-        let minLon = pts[0][0], maxLon = pts[0][0];
-        for (const [lon, lat] of pts) {
-          if (lat < minLat) minLat = lat;
-          if (lat > maxLat) maxLat = lat;
-          if (lon < minLon) minLon = lon;
-          if (lon > maxLon) maxLon = lon;
-        }
-        return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
-      }
-    }
-  }
-  if (loc.boundingbox && loc.boundingbox.length === 4) {
-    const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
-    return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
-  }
-  // A node / point location: build a degenerate ring at its (authoritative) lat/lon
-  // so it can suppress a containing area polygon while rendering no area itself.
-  if (loc.lat != null && loc.lon != null) {
-    const lat = Number(loc.lat), lon = Number(loc.lon);
-    if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
-      return [[lat, lon], [lat, lon], [lat, lon], [lat, lon]];
-    }
-  }
-  return null;
-}
-
-/** Bounding-box centre of a [lat, lon][] ring. */
-function ringCenter(ring: [number, number][]): [number, number] {
-  let minLat = ring[0][0], maxLat = ring[0][0];
-  let minLon = ring[0][1], maxLon = ring[0][1];
-  for (const [lat, lon] of ring) {
-    if (lat < minLat) minLat = lat;
-    if (lat > maxLat) maxLat = lat;
-    if (lon < minLon) minLon = lon;
-    if (lon > maxLon) maxLon = lon;
-  }
-  return [(minLat + maxLat) / 2, (minLon + maxLon) / 2];
-}
-
-/**
- * Returns the subset of locs that should be hidden because a more-specific
- * sibling location's centre falls inside their polygon (i.e. they are a
- * superset of another location in the same report).
- */
-function computeSuppressed(locs: LocationEntry[]): Set<LocationEntry> {
-  const items = locs.map((loc) => {
-    const ring = getPrimaryRing(loc);
-    return ring && ring.length >= 3 ? { loc, ring, center: ringCenter(ring) } : null;
-  });
-
-  const suppressed = new Set<LocationEntry>();
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (!item || suppressed.has(item.loc)) continue;
-    for (let j = 0; j < items.length; j++) {
-      if (i === j) continue;
-      const other = items[j];
-      if (!other) continue;
-      // Suppress item only when other's ring is fully contained within item's ring.
-      // Using bbox corners of other's ring rather than its centre so that partial
-      // overlap (e.g. bridge polygon partly outside city polygon) keeps both visible.
-      let otherMinLat = other.ring[0][0], otherMaxLat = other.ring[0][0];
-      let otherMinLon = other.ring[0][1], otherMaxLon = other.ring[0][1];
-      for (const [lat, lon] of other.ring) {
-        if (lat < otherMinLat) otherMinLat = lat;
-        if (lat > otherMaxLat) otherMaxLat = lat;
-        if (lon < otherMinLon) otherMinLon = lon;
-        if (lon > otherMaxLon) otherMaxLon = lon;
-      }
-      const fullyContained =
-        pointInPolygon(otherMinLat, otherMinLon, item.ring) &&
-        pointInPolygon(otherMinLat, otherMaxLon, item.ring) &&
-        pointInPolygon(otherMaxLat, otherMinLon, item.ring) &&
-        pointInPolygon(otherMaxLat, otherMaxLon, item.ring);
-      if (fullyContained) {
-        const itemArea = polygonBboxArea(item.ring);
-        const otherArea = polygonBboxArea(other.ring);
-        if (otherArea <= itemArea) {
-          suppressed.add(item.loc);
-          break;
-        }
-      }
-    }
-  }
-  return suppressed;
 }
 
 interface GeoLocation extends LocationEntry {
@@ -271,8 +160,14 @@ export function ActiveReportPolygons(): React.ReactElement {
     (l) => l.osm_id && !l.polygon && l.boundingbox,
   );
 
-  // Hide locations that are supersets of another location in the same report.
-  const suppressed = computeSuppressed([...geoLocs, ...bbOnlyLocs]);
+  // Hide locations that are supersets of another location in the same report, using
+  // the exact same bbox-based decision as the map dots (computeSuppressedRegions).
+  // Computed over ALL effective locations — not just the renderable polygon/bbox ones —
+  // so a precise point that renders nothing can still suppress a containing polygon,
+  // matching how its dot suppresses the area dot.
+  const suppressedIdx = computeSuppressedRegions(effectiveLocs.map((l) => locationExtent(l)));
+  const suppressed = new Set<LocationEntry>();
+  suppressedIdx.forEach((i) => suppressed.add(effectiveLocs[i]));
   const visibleGeoLocs = geoLocs.filter((l) => !suppressed.has(l));
   const visibleBbLocs = bbOnlyLocs.filter((l) => !suppressed.has(l));
 
