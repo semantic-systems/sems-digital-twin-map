@@ -42,6 +42,7 @@ from ..schemas.report import (
     LocationsRequest,
     NewCountResponse,
     ReportDTO,
+    ReportsBundleResponse,
     ReportsResponse,
 )
 from pydantic import BaseModel
@@ -191,6 +192,84 @@ def dots_endpoint(
         until=eff_until,
     )
     return {"dots": dots}
+
+
+# ---------------------------------------------------------------------------
+# GET /bundle  — reports list + map dots in one round trip (must precede /{id})
+# ---------------------------------------------------------------------------
+
+@router.get("/bundle", response_model=ReportsBundleResponse)
+def bundle_endpoint(
+    username: str = Query(..., description="The requesting user's name"),
+    loc_filter: list[str] = Query(default=[]),
+    platforms: list[str] = Query(default=[], alias="platform"),
+    event_types: list[str] = Query(default=[], alias="event_type"),
+    relevances: list[str] = Query(default=[], alias="relevance"),
+    show_hidden: bool = Query(False),
+    show_flagged: bool = Query(True),
+    show_unflagged: bool = Query(True),
+    limit: int = Query(50, ge=1, le=2000),
+    search: str | None = Query(None),
+    time_window: str | None = Query(None),
+    since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
+    until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
+    session: Session = Depends(get_db),
+) -> ReportsBundleResponse:
+    from ..config import settings
+
+    eff_since, eff_until = _resolve_time_range(time_window, since, until)
+    (
+        reports, pending_count, loaded_at, event_type_totals, all_platforms,
+        platform_counts, platform_added_counts, relevance_totals, location_counts,
+        has_more, total_count,
+    ) = svc.get_reports(
+        session=session,
+        username=username,
+        loc_filter=loc_filter or None,
+        platforms=platforms or None,
+        event_types=event_types or None,
+        relevances=relevances or None,
+        show_hidden=show_hidden,
+        show_flagged=show_flagged,
+        show_unflagged=show_unflagged,
+        demo_mode=settings.DEMO_MODE,
+        limit=limit,
+        search=search or None,
+        since=eff_since,
+        until=eff_until,
+    )
+    eff_platform, eff_events, eff_relevance = svc.normalize_filters(
+        platforms or None, event_types or None, relevances or None
+    )
+    dots = svc.build_dots(
+        session=session,
+        username=username,
+        eff_platform=eff_platform,
+        eff_events=eff_events,
+        eff_relevance=eff_relevance,
+        loc_filter=loc_filter or None,
+        show_hidden=show_hidden,
+        show_flagged=show_flagged,
+        show_unflagged=show_unflagged,
+        demo_mode=settings.DEMO_MODE,
+        search=search or None,
+        since=eff_since,
+        until=eff_until,
+    )
+    return ReportsBundleResponse(
+        reports=reports,
+        pending_count=pending_count,
+        loaded_at=loaded_at,
+        event_type_totals=event_type_totals,
+        relevance_totals=relevance_totals,
+        location_counts=location_counts,
+        all_platforms=all_platforms,
+        platform_counts=platform_counts,
+        platform_added_counts=platform_added_counts,
+        has_more=has_more,
+        total_count=total_count,
+        dots=dots,
+    )
 
 
 # ---------------------------------------------------------------------------

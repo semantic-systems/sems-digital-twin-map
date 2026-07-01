@@ -111,6 +111,10 @@ export interface FetchReportsParams {
   until?: string;
 }
 
+export interface ReportsBundleResponse extends ReportsResponse {
+  dots: DotDTO[];
+}
+
 export interface NewCountParams {
   username: string;
   since: string;

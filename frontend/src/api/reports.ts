@@ -1,6 +1,7 @@
 import { apiFetch, buildQuery } from './client';
 import type {
   ReportsResponse,
+  ReportsBundleResponse,
   ReportDTO,
   FetchReportsParams,
   NewCountParams,
@@ -37,6 +38,17 @@ export async function fetchReports(params: FetchReportsParams): Promise<ReportsR
     limit: params.limit ?? BASE_LIMIT,
   });
   return apiFetch<ReportsResponse>(`/reports/${qs}`);
+}
+
+// Reports list + map dots in one request. Preferred over calling fetchReports and
+// fetchDots separately on a filter change: one round trip instead of two competing
+// for the single sync worker.
+export async function fetchReportsBundle(params: FetchReportsParams): Promise<ReportsBundleResponse> {
+  const qs = buildQuery({
+    ...toBackendParams(params),
+    limit: params.limit ?? BASE_LIMIT,
+  });
+  return apiFetch<ReportsBundleResponse>(`/reports/bundle${qs}`);
 }
 
 export async function fetchNewCount(params: NewCountParams): Promise<NewCountResponse> {

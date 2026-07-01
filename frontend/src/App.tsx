@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useUserStore } from './store/useUserStore';
 import { useFilterStore, activeLocFilter } from './store/useFilterStore';
 import { useReportStore } from './store/useReportStore';
-import { fetchReports, fetchDots } from './api/reports';
+import { fetchReportsBundle } from './api/reports';
 import { fetchLayers } from './api/layers';
 import { usePolling } from './hooks/usePolling';
 import { UsernameModal } from './components/shared/UsernameModal';
@@ -48,17 +48,14 @@ function AppInner(): React.ReactElement {
     try {
       const params = buildParams(limit);
 
-      // Fetch reports and dots in parallel
-      const [reportsRes, dotsRes] = await Promise.all([
-        fetchReports(params),
-        fetchDots(params),
-      ]);
+      // Reports + dots in a single round trip (see fetchReportsBundle).
+      const reportsRes = await fetchReportsBundle(params);
 
       // Discard if a newer loadData started while this one was in-flight.
       if (seq !== loadSeqRef.current) return;
 
       setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more, reportsRes.location_counts, reportsRes.total_count);
-      setDots(dotsRes.dots);
+      setDots(reportsRes.dots);
       setPendingNewCount(reportsRes.pending_count ?? 0);
 
       if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {

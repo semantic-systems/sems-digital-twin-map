@@ -58,6 +58,12 @@ class ReportsResponse(BaseModel):
     total_count: int = 0
 
 
+class ReportsBundleResponse(ReportsResponse):
+    """Reports list + map dots in one payload, so a filter change needs a single
+    round trip instead of two parallel requests contending on one sync worker."""
+    dots: list[dict] = []
+
+
 class NewCountResponse(BaseModel):
     count: int
 
