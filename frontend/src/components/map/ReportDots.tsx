@@ -507,7 +507,9 @@ export function ReportDots(): React.ReactElement {
       result = result.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
     }
     if (showOnlyNew) {
-      result = result.filter((d) => d.new);
+      // Keep the selected report's dots even after acknowledging cleared their
+      // new flag, so the report you just clicked stays visible on the map.
+      result = result.filter((d) => d.new || d.report_id === activeReportId);
     }
     // Containment suppression: for each report, hide dots whose location polygon
     // contains another dot of the same report (i.e. they are a spatial superset).
@@ -525,7 +527,7 @@ export function ReportDots(): React.ReactElement {
       }
     }
     return result.filter((d) => !suppressed.has(d));
-  }, [dots, showHidden, reports, spatialPolygon, showOnlyNew]);
+  }, [dots, showHidden, reports, spatialPolygon, showOnlyNew, activeReportId]);
 
   // Persists group object references across refreshes so unchanged cells don't
   // re-render (see clusterDots). Lives in a ref, not state — mutating it must not

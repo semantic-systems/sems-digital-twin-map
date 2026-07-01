@@ -14,6 +14,7 @@ import type { ReportDTO } from '../types';
  */
 export function useVisibleReports(): ReportDTO[] {
   const reports = useReportStore((s) => s.reports);
+  const activeReportId = useReportStore((s) => s.activeReportId);
   const spatialPolygon = useFilterStore((s) => s.spatialPolygon);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
 
@@ -21,7 +22,10 @@ export function useVisibleReports(): ReportDTO[] {
     let filtered = reports;
 
     if (showOnlyNew) {
-      filtered = filtered.filter((r) => r.user_state.new);
+      // Keep the selected report even after clicking it acknowledged it, so it
+      // doesn't vanish from under you while you're viewing it on the map. It
+      // drops out once you select something else.
+      filtered = filtered.filter((r) => r.user_state.new || r.id === activeReportId);
     }
 
     // Spatial polygon filter — reports with no coordinates always pass
@@ -41,5 +45,5 @@ export function useVisibleReports(): ReportDTO[] {
     }
 
     return filtered;
-  }, [reports, spatialPolygon, showOnlyNew]);
+  }, [reports, spatialPolygon, showOnlyNew, activeReportId]);
 }
