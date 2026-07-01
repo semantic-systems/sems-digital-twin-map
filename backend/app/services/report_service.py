@@ -637,9 +637,9 @@ def get_reports(
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
     location_counts: dict[str, int] = {"localized": 0, "pending": 0, "unlocalized": 0}
-    # Unseen badge: admitted reports still marked new, not hidden, high/medium
-    # relevance, that pass the active filters — counted over the WHOLE matching set
-    # (not just the loaded page) so the badge doesn't undercount.
+    # Unseen badge: admitted reports still marked new and not hidden that pass the
+    # active filters — counted over the WHOLE matching set (not just the loaded
+    # page) so the badge doesn't undercount.
     unseen_count = 0
 
     for (rid, ets, plat, rel, row_author, loc_status) in all_base_rows:
@@ -677,12 +677,11 @@ def get_reports(
         if _passes_plat and _passes_evt and _passes_rel:
             location_counts[loc_status] = location_counts.get(loc_status, 0) + 1
 
-        # Unseen badge count: passes all active filters, still new, not hidden,
-        # and high/medium relevance. (rid in new_ids implies the report is admitted.)
+        # Unseen badge count: every report that passes the active filters, is still
+        # new, and not hidden. (rid in new_ids implies the report is admitted.)
         if (
             rid in new_ids
             and rid not in seen_ids
-            and rel in ("high", "medium")
             and _passes_plat and _passes_evt and _passes_rel and _passes_loc
         ):
             unseen_count += 1

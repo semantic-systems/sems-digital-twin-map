@@ -1,13 +1,11 @@
 import { create } from 'zustand';
 import type { ReportDTO, DotDTO, LocationEntry } from '../types';
 
-// A report contributes to the unseen badge when it is high/medium relevance,
-// still new, and not hidden. Used to keep unseenCount responsive to optimistic
-// acknowledge/hide actions between server syncs.
+// A report contributes to the unseen badge when it is still new and not hidden.
+// Used to keep unseenCount responsive to optimistic acknowledge/hide actions
+// between server syncs.
 const contributesToUnseen = (r: ReportDTO): boolean =>
-  (r.relevance === 'high' || r.relevance === 'medium') &&
-  r.user_state.new &&
-  !r.user_state.hide;
+  r.user_state.new && !r.user_state.hide;
 
 interface ReportStore {
   reports: ReportDTO[];
@@ -82,10 +80,9 @@ export const useReportStore = create<ReportStore>((set) => ({
     set((s) => {
       const target = s.reports.find((r) => r.id === id)
         ?? (s.pinnedReport?.id === id ? s.pinnedReport : null);
-      // Hiding an important+new report removes it from the badge; unhiding one
-      // restores it.
+      // Hiding a new report removes it from the badge; unhiding one restores it.
       let unseenDelta = 0;
-      if (target && (target.relevance === 'high' || target.relevance === 'medium') && target.user_state.new) {
+      if (target && target.user_state.new) {
         if (hide && !target.user_state.hide) unseenDelta = -1;
         else if (!hide && target.user_state.hide) unseenDelta = 1;
       }
