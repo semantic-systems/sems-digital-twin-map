@@ -1,24 +1,20 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
 import { useFilterStore } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
-import { pointInPolygon } from '../../utils/geo';
-import type { ReportDTO } from '../../types';
-
-function reportLocType(r: ReportDTO): 'localized' | 'pending' | 'unlocalized' {
-  const locs = r.user_state.locations ?? r.locations;
-  if (locs.some((l) => l.lat != null && l.lon != null)) return 'localized';
-  if (locs.length > 0) return 'pending';
-  return 'unlocalized';
-}
+import { useVisibleReports } from '../../hooks/useVisibleReports';
 import { fetchDemoStatus, resetDemo } from '../../api/demo';
 import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, showOnlyNew, setShowOnlyNew, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, showOnlyNew, setShowOnlyNew } = useFilterStore();
   const { reports, totalCount, isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+
+  // Count exactly what the list renders (same filtered array), so the header
+  // number never disagrees with the visible entries.
+  const visibleCount = useVisibleReports().length;
 
   // Keep the input responsive on every keystroke, but debounce the store update
   // that drives the refetch so typing "fire" triggers one reload, not four.
@@ -29,27 +25,6 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
     return () => clearTimeout(id);
   }, [searchInput, search, setSearch]);
 
-  const visibleCount = useMemo(() => {
-    const newFiltered = showOnlyNew ? reports.filter((r) => r.user_state.new) : reports;
-    const locFiltered = (!locShowLocalized || !locShowPending || !locShowUnlocalized)
-      ? newFiltered.filter((r) => {
-          const t = reportLocType(r);
-          if (t === 'localized') return locShowLocalized;
-          if (t === 'pending') return locShowPending;
-          return locShowUnlocalized;
-        })
-      : newFiltered;
-    if (!spatialPolygon) return locFiltered.length;
-    return locFiltered.filter((r) => {
-      const locs = r.user_state.locations ?? r.locations;
-      const hasCoords = locs.some((l) => l.lat != null && l.lon != null);
-      if (!hasCoords) return true;
-      return locs.some(
-        (l) => l.lat != null && l.lon != null &&
-          pointInPolygon(l.lat as number, l.lon as number, spatialPolygon),
-      );
-    }).length;
-  }, [reports, spatialPolygon, showOnlyNew, locShowLocalized, locShowPending, locShowUnlocalized]);
   const [collapsed, setCollapsed] = useState(false);
 
   const [demoStatus, setDemoStatus] = useState<DemoStatus | null>(null);

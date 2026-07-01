@@ -1,43 +1,17 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { t } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
-import { useFilterStore } from '../../store/useFilterStore';
 import { useUserStore } from '../../store/useUserStore';
 import { fetchReport } from '../../api/reports';
-import { pointInPolygon } from '../../utils/geo';
+import { useVisibleReports } from '../../hooks/useVisibleReports';
 import { ReportEntry } from './ReportEntry';
 
 export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { reports, activeReportId, pinnedReport, setPinnedReport, hasMore } = useReportStore();
-  const { spatialPolygon, showOnlyNew } = useFilterStore();
   const { username } = useUserStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const visibleReports = useMemo(() => {
-    let filtered = reports;
-
-    if (showOnlyNew) {
-      filtered = filtered.filter((r) => r.user_state.new);
-    }
-
-    // Spatial polygon filter — reports with no coordinates always pass
-    // (they can't be spatially disproven, and may well be relevant).
-    if (spatialPolygon) {
-      filtered = filtered.filter((r) => {
-        const locs = r.user_state.locations ?? r.locations;
-        const hasCoords = locs.some((l) => l.lat != null && l.lon != null);
-        if (!hasCoords) return true;
-        return locs.some(
-          (l) =>
-            l.lat != null &&
-            l.lon != null &&
-            pointInPolygon(l.lat as number, l.lon as number, spatialPolygon),
-        );
-      });
-    }
-
-    return filtered;
-  }, [reports, spatialPolygon, showOnlyNew]);
+  const visibleReports = useVisibleReports();
 
   // Scroll to top whenever a new pinned card is set.
   useEffect(() => {
