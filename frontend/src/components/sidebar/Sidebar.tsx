@@ -20,6 +20,15 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
   const { reports, totalCount, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
 
+  // Keep the input responsive on every keystroke, but debounce the store update
+  // that drives the refetch so typing "fire" triggers one reload, not four.
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => {
+    if (searchInput === search) return;
+    const id = setTimeout(() => setSearch(searchInput), 500);
+    return () => clearTimeout(id);
+  }, [searchInput, search, setSearch]);
+
   const visibleCount = useMemo(() => {
     const locFiltered = (!locShowLocalized || !locShowPending || !locShowUnlocalized)
       ? reports.filter((r) => {
@@ -300,8 +309,8 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
       <div style={{ padding: '6px 10px', borderBottom: '1px solid #252836', flexShrink: 0 }}>
         <input
           type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder={t('search_reports_ph')}
           style={{
             width: '100%',
