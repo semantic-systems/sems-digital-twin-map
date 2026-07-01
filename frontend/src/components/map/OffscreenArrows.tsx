@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import { useFilterStore } from '../../store/useFilterStore';
-import { pointInPolygon, polygonBboxArea, computeSuppressedDotsWithLocs } from '../../utils/geo';
+import { pointInPolygon, computeSuppressedDotsWithLocs } from '../../utils/geo';
 import L from 'leaflet';
 
 interface Arrow {
@@ -71,12 +71,6 @@ function ArrowsInner(): React.ReactElement {
     }
     if (spatialPolygon) {
       activeDots = activeDots.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
-      const filterArea = polygonBboxArea(spatialPolygon);
-      if (filterArea > 0) {
-        activeDots = activeDots.filter(
-          (d) => d.location_bbox_area == null || d.location_bbox_area < filterArea,
-        );
-      }
     }
     // Suppress dots whose location polygon contains another dot (spatial superset).
     const locs = report
