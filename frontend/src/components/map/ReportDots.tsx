@@ -7,7 +7,7 @@ import { useFilterStore } from '../../store/useFilterStore';
 import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
-import type { DotDTO, ReportDTO } from '../../types';
+import type { DotDTO } from '../../types';
 import { pointInPolygon, computeSuppressedDotsWithLocs, computeVisibleReportBounds } from '../../utils/geo';
 import { useMapStore } from '../../store/useMapStore';
 
@@ -35,12 +35,31 @@ const RELEVANCE_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2, no
 // ---------------------------------------------------------------------------
 
 interface DotGroup {
+  key: string;
   lat: number;
   lon: number;
   dots: DotDTO[];
 }
 
-function clusterDots(dots: DotDTO[], leafletMap: L.Map, cellSize = 60): DotGroup[] {
+// Everything about a cell's dots that affects how its marker renders. If this is
+// unchanged, the cached group object is reused so React.memo(GroupMarker) skips it.
+function groupSignature(dots: DotDTO[]): string {
+  return dots
+    .map((d) => `${d.report_id}|${d.relevance}|${d.new ? 1 : 0}|${d.flag ? 1 : 0}|${d.hide ? 1 : 0}|${d.seen ? 1 : 0}`)
+    .sort()
+    .join(';');
+}
+
+// Grid-cluster dots into per-cell groups. `cache` (keyed by pixel cell) lets an
+// unchanged cell keep its previous DotGroup *reference* across refreshes — the
+// whole point of item 3: on new dots, only cells that actually changed produce a
+// new group, so untouched markers are never re-rendered or rebuilt in the DOM.
+function clusterDots(
+  dots: DotDTO[],
+  leafletMap: L.Map,
+  cache: Map<string, { sig: string; group: DotGroup }>,
+  cellSize = 60,
+): DotGroup[] {
   const cellMap = new Map<string, DotDTO[]>();
   for (const dot of dots) {
     const px = leafletMap.latLngToContainerPoint([dot.lat, dot.lon]);
@@ -48,11 +67,29 @@ function clusterDots(dots: DotDTO[], leafletMap: L.Map, cellSize = 60): DotGroup
     if (!cellMap.has(key)) cellMap.set(key, []);
     cellMap.get(key)!.push(dot);
   }
-  return Array.from(cellMap.values()).map((group) => {
+
+  const next = new Map<string, { sig: string; group: DotGroup }>();
+  const result: DotGroup[] = [];
+  for (const [key, group] of cellMap) {
+    const sig = groupSignature(group);
+    const cached = cache.get(key);
+    if (cached && cached.sig === sig) {
+      // Same cell, same rendering-relevant content → reuse the stable reference.
+      next.set(key, cached);
+      result.push(cached.group);
+      continue;
+    }
     const lat = group.reduce((s, d) => s + d.lat, 0) / group.length;
     const lon = group.reduce((s, d) => s + d.lon, 0) / group.length;
-    return { lat, lon, dots: group };
-  });
+    const g: DotGroup = { key, lat, lon, dots: group };
+    next.set(key, { sig, group: g });
+    result.push(g);
+  }
+
+  // Replace the cache contents in place so dropped cells are evicted.
+  cache.clear();
+  for (const [k, v] of next) cache.set(k, v);
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -323,7 +360,6 @@ interface GroupMarkerProps {
   map: L.Map;
   didSelectRef: React.MutableRefObject<boolean>;
   dotClickRef: React.MutableRefObject<boolean>;
-  reports: ReportDTO[];
   setActiveReportId: (id: number | null) => void;
   optimisticAcknowledge: (id: number) => void;
   openDetail: (dot: DotDTO, lat: number, lon: number, reopenPopup: () => void) => void;
@@ -333,7 +369,7 @@ interface GroupMarkerProps {
 const GroupMarker = React.memo(function GroupMarker({
   group, groupKey, activeReportId, activeGroupKeyRef, username, map,
   didSelectRef, dotClickRef,
-  reports, setActiveReportId, optimisticAcknowledge,
+  setActiveReportId, optimisticAcknowledge,
   openDetail, closeDetail,
 }: GroupMarkerProps) {
   const isGroupActive = group.dots.some((d) => d.report_id === activeReportId);
@@ -370,13 +406,13 @@ const GroupMarker = React.memo(function GroupMarker({
 
   // Mutable ref so stable closures always see latest values.
   const s = useRef({
-    isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports,
+    isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username,
     setActiveReportId, optimisticAcknowledge,
     didSelectRef, dotClickRef, map,
     openDetail, closeDetail, markerRef,
   });
   s.current = {
-    isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, reports,
+    isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username,
     setActiveReportId, optimisticAcknowledge,
     didSelectRef, dotClickRef, map,
     openDetail, closeDetail, markerRef,
@@ -488,7 +524,11 @@ export function ReportDots(): React.ReactElement {
     return result.filter((d) => !suppressed.has(d));
   }, [dots, showHidden, reports, spatialPolygon]);
 
-  const groups = useMemo(() => clusterDots(visibleDots, map), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Persists group object references across refreshes so unchanged cells don't
+  // re-render (see clusterDots). Lives in a ref, not state — mutating it must not
+  // itself trigger a render.
+  const groupCacheRef = useRef<Map<string, { sig: string; group: DotGroup }>>(new Map());
+  const groups = useMemo(() => clusterDots(visibleDots, map, groupCacheRef.current), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
   const didSelectRef = useRef(false);
   const dotClickRef = useRef(false);
   const activeGroupKeyRef = useRef<string | null>(null);
@@ -554,27 +594,23 @@ export function ReportDots(): React.ReactElement {
 
   return (
     <>
-      {groups.map((group) => {
-        const key = `${group.lat.toFixed(5)},${group.lon.toFixed(5)}`;
-        return (
-          <GroupMarker
-            key={key}
-            group={group}
-            groupKey={key}
-            activeReportId={activeReportId}
-            activeGroupKeyRef={activeGroupKeyRef}
-            username={username}
-            map={map}
-            didSelectRef={didSelectRef}
-            dotClickRef={dotClickRef}
-            reports={reports}
-            setActiveReportId={setActiveReportId}
-            optimisticAcknowledge={optimisticAcknowledge}
-            openDetail={openDetail}
-            closeDetail={closeDetail}
-          />
-        );
-      })}
+      {groups.map((group) => (
+        <GroupMarker
+          key={group.key}
+          group={group}
+          groupKey={group.key}
+          activeReportId={activeReportId}
+          activeGroupKeyRef={activeGroupKeyRef}
+          username={username}
+          map={map}
+          didSelectRef={didSelectRef}
+          dotClickRef={dotClickRef}
+          setActiveReportId={setActiveReportId}
+          optimisticAcknowledge={optimisticAcknowledge}
+          openDetail={openDetail}
+          closeDetail={closeDetail}
+        />
+      ))}
       {detailState && detailPos && (
         <DetailOverlay
           dot={detailState.dot}
