@@ -491,7 +491,7 @@ export function ReportDots(): React.ReactElement {
   const map = useMap();
   const { dots, activeReportId, setActiveReportId, optimisticAcknowledge, reports } = useReportStore();
   const { username } = useUserStore();
-  const { showHidden, spatialPolygon } = useFilterStore();
+  const { showHidden, spatialPolygon, showOnlyNew } = useFilterStore();
 
   const [zoom, setZoom] = useState(() => map.getZoom());
   useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
@@ -505,6 +505,9 @@ export function ReportDots(): React.ReactElement {
       : dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
     if (spatialPolygon) {
       result = result.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
+    }
+    if (showOnlyNew) {
+      result = result.filter((d) => d.new);
     }
     // Containment suppression: for each report, hide dots whose location polygon
     // contains another dot of the same report (i.e. they are a spatial superset).
@@ -522,7 +525,7 @@ export function ReportDots(): React.ReactElement {
       }
     }
     return result.filter((d) => !suppressed.has(d));
-  }, [dots, showHidden, reports, spatialPolygon]);
+  }, [dots, showHidden, reports, spatialPolygon, showOnlyNew]);
 
   // Persists group object references across refreshes so unchanged cells don't
   // re-render (see clusterDots). Lives in a ref, not state — mutating it must not

@@ -17,7 +17,7 @@ import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, showOnlyNew, setShowOnlyNew, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
   const { reports, totalCount, isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
 
   // Keep the input responsive on every keystroke, but debounce the store update
@@ -30,14 +30,15 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
   }, [searchInput, search, setSearch]);
 
   const visibleCount = useMemo(() => {
+    const newFiltered = showOnlyNew ? reports.filter((r) => r.user_state.new) : reports;
     const locFiltered = (!locShowLocalized || !locShowPending || !locShowUnlocalized)
-      ? reports.filter((r) => {
+      ? newFiltered.filter((r) => {
           const t = reportLocType(r);
           if (t === 'localized') return locShowLocalized;
           if (t === 'pending') return locShowPending;
           return locShowUnlocalized;
         })
-      : reports;
+      : newFiltered;
     if (!spatialPolygon) return locFiltered.length;
     return locFiltered.filter((r) => {
       const locs = r.user_state.locations ?? r.locations;
@@ -48,7 +49,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
           pointInPolygon(l.lat as number, l.lon as number, spatialPolygon),
       );
     }).length;
-  }, [reports, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized]);
+  }, [reports, spatialPolygon, showOnlyNew, locShowLocalized, locShowPending, locShowUnlocalized]);
   const [collapsed, setCollapsed] = useState(false);
 
   const [demoStatus, setDemoStatus] = useState<DemoStatus | null>(null);
@@ -342,6 +343,25 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
             boxSizing: 'border-box',
           }}
         />
+        <button
+          type="button"
+          onClick={() => setShowOnlyNew(!showOnlyNew)}
+          aria-pressed={showOnlyNew}
+          style={{
+            marginTop: 6,
+            padding: '3px 10px',
+            fontSize: 11,
+            fontWeight: 600,
+            borderRadius: 999,
+            cursor: 'pointer',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            border: `1px solid ${showOnlyNew ? '#2563eb' : '#374151'}`,
+            background: showOnlyNew ? '#1d4ed8' : 'transparent',
+            color: showOnlyNew ? '#fff' : '#9ca3af',
+          }}
+        >
+          {t('show_only_new')}
+        </button>
       </div>
 
       {/* New posts banner */}

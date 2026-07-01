@@ -9,12 +9,16 @@ import { ReportEntry } from './ReportEntry';
 
 export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { reports, activeReportId, pinnedReport, setPinnedReport, hasMore } = useReportStore();
-  const { spatialPolygon } = useFilterStore();
+  const { spatialPolygon, showOnlyNew } = useFilterStore();
   const { username } = useUserStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const visibleReports = useMemo(() => {
     let filtered = reports;
+
+    if (showOnlyNew) {
+      filtered = filtered.filter((r) => r.user_state.new);
+    }
 
     // Spatial polygon filter — reports with no coordinates always pass
     // (they can't be spatially disproven, and may well be relevant).
@@ -33,7 +37,7 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
     }
 
     return filtered;
-  }, [reports, spatialPolygon]);
+  }, [reports, spatialPolygon, showOnlyNew]);
 
   // Scroll to top whenever a new pinned card is set.
   useEffect(() => {

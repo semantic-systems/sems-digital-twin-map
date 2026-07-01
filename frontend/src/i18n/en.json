@@ -43,6 +43,7 @@
   "new_posts_many": "↑ {n} new posts",
   "new_badge": "NEW",
   "search_reports_ph": "Search reports…",
+  "show_only_new": "Only new",
   "load_more": "Load more",
   "no_reports": "No reports available.",
   "open": "Open",
