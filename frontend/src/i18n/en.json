@@ -35,6 +35,7 @@
   "loc_pending": "◎ Pending",
   "loc_none": "∅ None",
   "reports": "Reports",
+  "loading": "Loading…",
   "auto_update": "Auto-update",
   "reset_demo": "↺ Reset demo",
   "new_posts_0": "↑ 0 new posts",

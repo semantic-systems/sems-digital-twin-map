@@ -17,8 +17,12 @@ interface ReportStore {
   hasMore: boolean;
   totalCount: number;
   currentLimit: number;
+  // True while a filter/search-driven reload is in flight (App.loadData), so the
+  // UI can show a processing indicator instead of silently keeping stale results.
+  isLoading: boolean;
 
   setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>, hasMore?: boolean, locationCounts?: Record<string, number>, totalCount?: number) => void;
+  setIsLoading: (v: boolean) => void;
   bumpReloadTrigger: () => void;
   setCurrentLimit: (n: number) => void;
   setDots: (dots: DotDTO[]) => void;
@@ -48,8 +52,10 @@ export const useReportStore = create<ReportStore>((set) => ({
   hasMore: false,
   totalCount: 0,
   currentLimit: 50,
+  isLoading: false,
 
   setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false, locationCounts = {}, totalCount = 0) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore, locationCounts, totalCount }),
+  setIsLoading: (isLoading) => set({ isLoading }),
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
   setCurrentLimit: (currentLimit) => set({ currentLimit }),
   setDots: (dots) => set({ dots }),

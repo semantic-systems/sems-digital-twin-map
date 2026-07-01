@@ -18,7 +18,7 @@ import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, locShowLocalized, locShowPending, locShowUnlocalized } = useFilterStore();
-  const { reports, totalCount, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+  const { reports, totalCount, isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
 
   // Keep the input responsive on every keystroke, but debounce the store update
   // that drives the refetch so typing "fire" triggers one reload, not four.
@@ -216,6 +216,23 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
               : `(${totalCount})`
             }
           </span>
+          {isLoading && (
+            <span
+              title={t('loading')}
+              aria-label={t('loading')}
+              role="status"
+              style={{
+                width: 11,
+                height: 11,
+                borderRadius: '50%',
+                border: '2px solid #374151',
+                borderTopColor: '#3b82f6',
+                display: 'inline-block',
+                animation: 'spin 0.7s linear infinite',
+                flexShrink: 0,
+              }}
+            />
+          )}
         </div>
 
         {/* Right side: auto-update toggle */}

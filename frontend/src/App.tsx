@@ -17,7 +17,7 @@ function AppInner(): React.ReactElement {
   const { username } = useUserStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized } =
     useFilterStore();
-  const { setReports, setDots, setPendingNewCount, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
+  const { setReports, setDots, setPendingNewCount, setIsLoading, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
   usePolling();
 
@@ -45,6 +45,7 @@ function AppInner(): React.ReactElement {
   const loadData = async (limit: number) => {
     if (!username) return;
     const seq = ++loadSeqRef.current;
+    setIsLoading(true);
     try {
       const params = buildParams(limit);
 
@@ -69,6 +70,10 @@ function AppInner(): React.ReactElement {
       }
     } catch (e) {
       console.error('Failed to load reports:', e);
+    } finally {
+      // Only the newest request clears the flag; a stale one resolving late must
+      // not turn off the indicator while the current reload is still running.
+      if (seq === loadSeqRef.current) setIsLoading(false);
     }
   };
 
