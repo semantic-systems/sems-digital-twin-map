@@ -81,6 +81,30 @@ def _osm_keys_with_alts(keys: set[tuple[str, str]]) -> list[tuple[str, str]]:
     return list(expanded)
 
 
+# Max (osm_id, osm_type) pairs per polygon lookup. A single tuple-IN over every
+# location in the DB (e.g. an unfiltered "all" search → thousands of keys) produces
+# a statement Postgres rejects, so we query in chunks and merge. 500 pairs = 1000
+# bind params per statement, comfortably within limits.
+_POLYGON_LOOKUP_CHUNK = 500
+
+
+def _query_location_polygons(session: Session, keys: set[tuple[str, str]]) -> list:
+    """Fetch LocationPolygon rows for the given (osm_id, osm_type) keys (plus their
+    alternative osm_type spellings), batched to keep each IN clause small enough."""
+    from sqlalchemy import tuple_
+
+    expanded = _osm_keys_with_alts(keys)
+    rows: list = []
+    for i in range(0, len(expanded), _POLYGON_LOOKUP_CHUNK):
+        chunk = expanded[i : i + _POLYGON_LOOKUP_CHUNK]
+        rows.extend(
+            session.query(LocationPolygon)
+            .filter(tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(chunk))
+            .all()
+        )
+    return rows
+
+
 def _best_polygon(poly_map: dict[tuple[str, str], Any], osm_id: str, osm_type: str) -> Any:
     """
     Look up a polygon preferring the canonical (long) form of osm_type.
@@ -124,8 +148,6 @@ def enrich_with_polygons(session: Session, locations: list) -> list:
     Queries with both short (R/N/W) and long (relation/node/way) osm_type spellings and
     prefers the canonical long form when both are present.
     """
-    from sqlalchemy import tuple_
-
     base_keys: set[tuple[str, str]] = {
         (str(loc["osm_id"]), str(loc["osm_type"]))
         for loc in locations
@@ -134,13 +156,7 @@ def enrich_with_polygons(session: Session, locations: list) -> list:
     if not base_keys:
         return locations
 
-    rows = (
-        session.query(LocationPolygon)
-        .filter(tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(
-            _osm_keys_with_alts(base_keys)
-        ))
-        .all()
-    )
+    rows = _query_location_polygons(session, base_keys)
     poly_map = {(r.osm_id, r.osm_type): r.polygon for r in rows}
 
     return [
@@ -974,7 +990,6 @@ def build_dots(
 
     # Precompute bbox for every unique (osm_id, osm_type) referenced across all rows.
     # This restores containment-suppression for dots after polygon was moved out of locations.
-    from sqlalchemy import tuple_
     osm_keys: set[tuple[str, str]] = set()
     for row in rows:
         for loc in (row[9] or []):
@@ -982,14 +997,7 @@ def build_dots(
                 osm_keys.add((str(loc["osm_id"]), str(loc["osm_type"])))
     bbox_map: dict[tuple[str, str], list[float]] = {}
     if osm_keys:
-        poly_rows = (
-            session.query(LocationPolygon)
-            .filter(tuple_(LocationPolygon.osm_id, LocationPolygon.osm_type).in_(
-                _osm_keys_with_alts(osm_keys)
-            ))
-            .all()
-        )
-        for pr in poly_rows:
+        for pr in _query_location_polygons(session, osm_keys):
             if isinstance(pr.polygon, dict):
                 bb = _polygon_bbox(pr.polygon)
                 if bb:
