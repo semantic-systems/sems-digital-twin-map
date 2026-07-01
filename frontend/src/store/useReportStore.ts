@@ -62,7 +62,7 @@ export const useReportStore = create<ReportStore>((set) => ({
   reloadTrigger: 0,
   hasMore: false,
   totalCount: 0,
-  currentLimit: 50,
+  currentLimit: 200,
   unseenCount: 0,
   isLoading: false,
 

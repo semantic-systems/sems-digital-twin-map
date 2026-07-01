@@ -11,7 +11,7 @@ import { Sidebar } from './components/sidebar/Sidebar';
 import { MapView } from './components/map/MapView';
 import { PickModeOverlay } from './components/map/PickModeOverlay';
 
-const BASE_LIMIT = 50;
+const BASE_LIMIT = 200;
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
