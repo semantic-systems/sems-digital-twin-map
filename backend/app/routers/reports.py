@@ -76,6 +76,7 @@ def get_reports_endpoint(
     time_window: str | None = Query(None),
     since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
+    only_new: bool = Query(False),
     session: Session = Depends(get_db),
 ) -> ReportsResponse:
     from ..config import settings
@@ -96,6 +97,7 @@ def get_reports_endpoint(
         search=search or None,
         since=eff_since,
         until=eff_until,
+        only_new=only_new,
     )
     return ReportsResponse(
         reports=reports,
@@ -169,6 +171,7 @@ def dots_endpoint(
     time_window: str | None = Query(None),
     since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
+    only_new: bool = Query(False),
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
     from ..config import settings
@@ -191,6 +194,7 @@ def dots_endpoint(
         search=search or None,
         since=eff_since,
         until=eff_until,
+        only_new=only_new,
     )
     return {"dots": dots}
 
@@ -214,6 +218,7 @@ def bundle_endpoint(
     time_window: str | None = Query(None),
     since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
+    only_new: bool = Query(False),
     session: Session = Depends(get_db),
 ) -> ReportsBundleResponse:
     from ..config import settings
@@ -238,6 +243,7 @@ def bundle_endpoint(
         search=search or None,
         since=eff_since,
         until=eff_until,
+        only_new=only_new,
     )
     eff_platform, eff_events, eff_relevance = svc.normalize_filters(
         platforms or None, event_types or None, relevances or None
@@ -256,6 +262,7 @@ def bundle_endpoint(
         search=search or None,
         since=eff_since,
         until=eff_until,
+        only_new=only_new,
     )
     return ReportsBundleResponse(
         reports=reports,

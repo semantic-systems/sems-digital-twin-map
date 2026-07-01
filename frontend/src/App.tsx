@@ -15,7 +15,7 @@ const BASE_LIMIT = 50;
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized } =
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew } =
     useFilterStore();
   const { setReports, setDots, setPendingNewCount, setIsLoading, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
@@ -38,6 +38,7 @@ function AppInner(): React.ReactElement {
     time_window: timeWindow,
     since: timeWindow === 'custom' ? (customSince || undefined) : undefined,
     until: timeWindow === 'custom' ? (customUntil || undefined) : undefined,
+    only_new: showOnlyNew || undefined,
     limit,
     };
   };
@@ -90,7 +91,7 @@ function AppInner(): React.ReactElement {
     if (!username) return;
     setCurrentLimit(BASE_LIMIT);
     loadData(BASE_LIMIT);
-  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, reloadTrigger]);
+  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew, reloadTrigger]);
 
   // Load layers list once; auto-activate all layers if none are active yet (fresh deployment)
   useEffect(() => {

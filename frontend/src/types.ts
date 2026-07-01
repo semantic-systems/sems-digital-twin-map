@@ -110,6 +110,7 @@ export interface FetchReportsParams {
   time_window?: string;
   since?: string;
   until?: string;
+  only_new?: boolean;
 }
 
 export interface ReportsBundleResponse extends ReportsResponse {
@@ -146,6 +147,7 @@ export interface DotsParams {
   time_window?: string;
   since?: string;
   until?: string;
+  only_new?: boolean;
 }
 
 export interface UserStateResponse {

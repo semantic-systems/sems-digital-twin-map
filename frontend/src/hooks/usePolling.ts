@@ -8,7 +8,7 @@ const INTERVAL_MS = 10_000;
 
 export function usePolling() {
   const { username } = useUserStore();
-  const { setReports, setDots, setPendingNewCount, currentLimit } = useReportStore();
+  const { setReports, setDots, setPendingNewCount, setUnseenCount, currentLimit } = useReportStore();
   const filters = useFilterStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
   const timerRef = useRef<number | null>(null);
@@ -39,6 +39,7 @@ export function usePolling() {
         locShowLocalized: snapLocLocalized,
         locShowPending: snapLocPending,
         locShowUnlocalized: snapLocUnlocalized,
+        showOnlyNew: snapShowOnlyNew,
       } = filters;
 
       const params = {
@@ -58,6 +59,7 @@ export function usePolling() {
         time_window: snapTimeWindow,
         since: snapTimeWindow === 'custom' ? (snapCustomSince || undefined) : undefined,
         until: snapTimeWindow === 'custom' ? (snapCustomUntil || undefined) : undefined,
+        only_new: snapShowOnlyNew || undefined,
         limit: currentLimit,
       };
 
@@ -79,7 +81,8 @@ export function usePolling() {
         cur.customUntil !== snapCustomUntil ||
         cur.locShowLocalized !== snapLocLocalized ||
         cur.locShowPending !== snapLocPending ||
-        cur.locShowUnlocalized !== snapLocUnlocalized
+        cur.locShowUnlocalized !== snapLocUnlocalized ||
+        cur.showOnlyNew !== snapShowOnlyNew
       ) return;
 
       if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
@@ -110,7 +113,8 @@ export function usePolling() {
           cur2.customUntil !== snapCustomUntil ||
           cur2.locShowLocalized !== snapLocLocalized ||
           cur2.locShowPending !== snapLocPending ||
-          cur2.locShowUnlocalized !== snapLocUnlocalized
+          cur2.locShowUnlocalized !== snapLocUnlocalized ||
+          cur2.showOnlyNew !== snapShowOnlyNew
         ) return;
         setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count, reloaded.unseen_count);
         if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
@@ -125,8 +129,12 @@ export function usePolling() {
         // store optimistically. Do NOT setReports here — a poll whose query ran
         // before an in-flight acknowledge committed would otherwise overwrite that
         // report back to new=true, making the unseen badge climb again. We still
-        // refresh pending count and the metadata (platform/facet counts) above.
+        // refresh pending count and the metadata (platform/facet counts) above,
+        // and re-sync the unseen badge to the authoritative server count (a single
+        // number, safe to refresh — unlike the whole list — and it self-corrects
+        // any drift from optimistic adjustments once acknowledges have persisted).
         setPendingNewCount(pendingCount);
+        setUnseenCount(reportsRes.unseen_count ?? 0);
       }
     } catch {
       // swallow poll errors silently

@@ -34,6 +34,7 @@ interface ReportStore {
   isLoading: boolean;
 
   setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>, hasMore?: boolean, locationCounts?: Record<string, number>, totalCount?: number, unseenCount?: number) => void;
+  setUnseenCount: (n: number) => void;
   setIsLoading: (v: boolean) => void;
   bumpReloadTrigger: () => void;
   setCurrentLimit: (n: number) => void;
@@ -68,6 +69,7 @@ export const useReportStore = create<ReportStore>((set) => ({
   isLoading: false,
 
   setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false, locationCounts = {}, totalCount = 0, unseenCount = 0) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore, locationCounts, totalCount, unseenCount }),
+  setUnseenCount: (unseenCount) => set({ unseenCount }),
   setIsLoading: (isLoading) => set({ isLoading }),
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
   setCurrentLimit: (currentLimit) => set({ currentLimit }),

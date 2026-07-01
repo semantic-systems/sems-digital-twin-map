@@ -579,10 +579,15 @@ def get_reports(
     search: str | None = None,
     since: datetime | None = None,
     until: datetime | None = None,
+    only_new: bool = False,
 ) -> tuple[list[ReportDTO], int, str, dict[str, int], list[str]]:
     """
     Returns (reports, pending_count, loaded_at_iso).
     pending_count = number of reports in DB that have not yet been admitted.
+    only_new restricts the returned list (and total_count) to reports still marked
+    new, so the sidebar's "only new" view is correctly paginated server-side rather
+    than filtered after the fact over the loaded page. Facet/pending counts are left
+    at the full distribution.
     """
     (
         seen_ids,
@@ -733,6 +738,12 @@ def get_reports(
         demo_mode=demo_mode,
         search=search,
     )
+
+    # "Only new" view: restrict to reports still marked new so the page (and its
+    # total_count) contains the new reports directly instead of relying on the
+    # client to filter the loaded page.
+    if only_new:
+        q = q.filter(Report.id.in_(new_ids))
 
     # Python-level display filtering
     hide_seen = not show_hidden
@@ -950,9 +961,12 @@ def build_dots(
     search: str | None = None,
     since: datetime | None = None,
     until: datetime | None = None,
+    only_new: bool = False,
 ) -> list[dict]:
     """
     Build the list of map-dot dicts from admitted reports that have coordinates.
+    only_new restricts to reports still marked new (mirrors get_reports) so the map
+    matches the "only new" sidebar view.
     """
     (
         seen_ids,
@@ -979,6 +993,9 @@ def build_dots(
         demo_mode=demo_mode,
         search=search,
     )
+
+    if only_new:
+        q = q.filter(Report.id.in_(new_ids))
 
     hide_seen = not show_hidden
     hide_flagged = not show_flagged

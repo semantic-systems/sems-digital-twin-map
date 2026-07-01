@@ -27,6 +27,7 @@ function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): R
     ...(('since' in p && (p as { since?: string }).since) ? { since: (p as { since: string }).since } : {}),
     ...(('until' in p && (p as { until?: string }).until) ? { until: (p as { until: string }).until } : {}),
     ...((p as DotsParams).search ? { search: (p as DotsParams).search } : {}),
+    ...((p as DotsParams).only_new ? { only_new: true } : {}),
   };
 }
 
