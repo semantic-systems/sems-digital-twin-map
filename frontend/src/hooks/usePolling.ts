@@ -120,7 +120,12 @@ export function usePolling() {
         setDots(dotsRes.dots);
         setPendingNewCount(0);
       } else {
-        setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more, reportsRes.location_counts, reportsRes.total_count);
+        // Auto-update OFF: the admitted list only changes through the user's own
+        // actions (acknowledge / hide / flag / admit), which already update the
+        // store optimistically. Do NOT setReports here — a poll whose query ran
+        // before an in-flight acknowledge committed would otherwise overwrite that
+        // report back to new=true, making the unseen badge climb again. We still
+        // refresh pending count and the metadata (platform/facet counts) above.
         setPendingNewCount(pendingCount);
       }
     } catch {
