@@ -85,9 +85,13 @@ export function usePolling() {
         cur.showOnlyNew !== snapShowOnlyNew
       ) return;
 
-      if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
-      if (reportsRes.platform_counts) setPlatformCounts(reportsRes.platform_counts);
-      if (reportsRes.platform_added_counts) setPlatformAddedCounts(reportsRes.platform_added_counts);
+      // Under only_new the backend skips facet counts (returns zeros); don't let
+      // the poll overwrite the last-known panel counts with them.
+      if (!snapShowOnlyNew) {
+        if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
+        if (reportsRes.platform_counts) setPlatformCounts(reportsRes.platform_counts);
+        if (reportsRes.platform_added_counts) setPlatformAddedCounts(reportsRes.platform_added_counts);
+      }
 
       const pendingCount = reportsRes.pending_count ?? 0;
 
@@ -116,10 +120,23 @@ export function usePolling() {
           cur2.locShowUnlocalized !== snapLocUnlocalized ||
           cur2.showOnlyNew !== snapShowOnlyNew
         ) return;
-        setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count, reloaded.unseen_count);
-        if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
-        if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
-        if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
+        // only_new returns empty facet counts — preserve the last-known panel
+        // counts (pass undefined; skip the platform setters).
+        setReports(
+          reloaded.reports,
+          reloaded.loaded_at,
+          snapShowOnlyNew ? undefined : reloaded.event_type_totals,
+          snapShowOnlyNew ? undefined : reloaded.relevance_totals,
+          reloaded.has_more,
+          snapShowOnlyNew ? undefined : reloaded.location_counts,
+          reloaded.total_count,
+          reloaded.unseen_count,
+        );
+        if (!snapShowOnlyNew) {
+          if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
+          if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
+          if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
+        }
         const dotsRes = await fetchDots(params);
         setDots(dotsRes.dots);
         setPendingNewCount(0);

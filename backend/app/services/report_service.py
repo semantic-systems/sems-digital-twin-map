@@ -602,34 +602,6 @@ def get_reports(
         platforms, event_types, relevances
     )
 
-    # Cross-filtered facet counts (option B):
-    # Each dimension's count reflects all OTHER active filters but not itself,
-    # so the numbers tell you "how many results does this value add to my view".
-    # One query with no facet filters; cross-filtering is done in Python to keep
-    # DB round trips to a minimum.
-    _locs_text = cast(Report.locations, SaText)
-    _loc_status_expr = case(
-        (_locs_text.like('%"osm_id"%'), "localized"),
-        (
-            and_(Report.locations.isnot(None), _locs_text != "[]"),
-            "pending",
-        ),
-        else_="unlocalized",
-    )
-    all_base_rows = build_report_query(
-        session,
-        since=since,
-        until=until,
-        eff_platform=None,
-        eff_events=None,
-        eff_relevance=None,
-        demo_mode=demo_mode,
-        search=search,
-    ).with_entities(
-        Report.id, Report.event_types, Report.platform, Report.relevance,
-        Report.author, _loc_status_expr,
-    ).all()
-
     _ALL_LOC_TYPES = frozenset({'localized', 'pending', 'unlocalized'})
     _eff_loc = set(loc_filter) if (loc_filter and set(loc_filter) < _ALL_LOC_TYPES) else None
 
@@ -637,60 +609,90 @@ def get_reports(
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
     location_counts: dict[str, int] = {"localized": 0, "pending": 0, "unlocalized": 0}
-    # Unseen badge: admitted reports still marked new and not hidden that pass the
-    # active filters — counted over the WHOLE matching set (not just the loaded
-    # page) so the badge doesn't undercount.
+    # Unseen badge count. Under only_new we skip the full facet scan below to keep
+    # the query lean (the sidebar keeps its last-known panel counts), and instead
+    # set unseen_count = total_count afterwards — the returned list IS the new set.
     unseen_count = 0
 
-    for (rid, ets, plat, rel, row_author, loc_status) in all_base_rows:
-        if not show_hidden and rid in seen_ids:
-            continue
-        _author = row_author or ""
-        if not show_flagged and _author in flagged_authors:
-            continue
-        if not show_unflagged and _author not in flagged_authors:
-            continue
-
-        _passes_plat = eff_platform is None or (
-            plat is not None and any(plat.startswith(p) for p in eff_platform)
+    # Cross-filtered facet counts (option B):
+    # Each dimension's count reflects all OTHER active filters but not itself,
+    # so the numbers tell you "how many results does this value add to my view".
+    # One query with no facet filters; cross-filtering is done in Python to keep
+    # DB round trips to a minimum. Skipped entirely under only_new (the expensive
+    # full-set scan) — the frontend preserves its prior counts in that mode.
+    if not only_new:
+        _locs_text = cast(Report.locations, SaText)
+        _loc_status_expr = case(
+            (_locs_text.like('%"osm_id"%'), "localized"),
+            (
+                and_(Report.locations.isnot(None), _locs_text != "[]"),
+                "pending",
+            ),
+            else_="unlocalized",
         )
-        _passes_evt = eff_events is None or bool(set(ets or []) & set(eff_events))
-        _passes_rel = eff_relevance is None or rel in eff_relevance
-        _passes_loc = _eff_loc is None or loc_status in _eff_loc
+        all_base_rows = build_report_query(
+            session,
+            since=since,
+            until=until,
+            eff_platform=None,
+            eff_events=None,
+            eff_relevance=None,
+            demo_mode=demo_mode,
+            search=search,
+        ).with_entities(
+            Report.id, Report.event_types, Report.platform, Report.relevance,
+            Report.author, _loc_status_expr,
+        ).all()
 
-        # Event type counts: apply platform + relevance + loc (not event type filter)
-        if _passes_plat and _passes_rel and _passes_loc:
-            for et in (ets or []):
-                event_type_totals[et] = event_type_totals.get(et, 0) + 1
+        for (rid, ets, plat, rel, row_author, loc_status) in all_base_rows:
+            if not show_hidden and rid in seen_ids:
+                continue
+            _author = row_author or ""
+            if not show_flagged and _author in flagged_authors:
+                continue
+            if not show_unflagged and _author not in flagged_authors:
+                continue
 
-        # Relevance counts: apply platform + event type + loc (not relevance filter)
-        if _passes_plat and _passes_evt and _passes_loc:
-            if rel:
-                relevance_totals[rel] = relevance_totals.get(rel, 0) + 1
+            _passes_plat = eff_platform is None or (
+                plat is not None and any(plat.startswith(p) for p in eff_platform)
+            )
+            _passes_evt = eff_events is None or bool(set(ets or []) & set(eff_events))
+            _passes_rel = eff_relevance is None or rel in eff_relevance
+            _passes_loc = _eff_loc is None or loc_status in _eff_loc
 
-        # Platform counts: apply event type + relevance + loc (not platform filter)
-        if _passes_evt and _passes_rel and _passes_loc:
-            if plat:
-                platform_counts[plat] = platform_counts.get(plat, 0) + 1
+            # Event type counts: apply platform + relevance + loc (not event type filter)
+            if _passes_plat and _passes_rel and _passes_loc:
+                for et in (ets or []):
+                    event_type_totals[et] = event_type_totals.get(et, 0) + 1
 
-        # Location counts: apply all other filters but NOT loc — show full distribution
-        if _passes_plat and _passes_evt and _passes_rel:
-            location_counts[loc_status] = location_counts.get(loc_status, 0) + 1
+            # Relevance counts: apply platform + event type + loc (not relevance filter)
+            if _passes_plat and _passes_evt and _passes_loc:
+                if rel:
+                    relevance_totals[rel] = relevance_totals.get(rel, 0) + 1
 
-        # Unseen badge count: every report that passes the active filters, is still
-        # new, and not hidden. (rid in new_ids implies the report is admitted.)
-        if (
-            rid in new_ids
-            and rid not in seen_ids
-            and _passes_plat and _passes_evt and _passes_rel and _passes_loc
-        ):
-            unseen_count += 1
+            # Platform counts: apply event type + relevance + loc (not platform filter)
+            if _passes_evt and _passes_rel and _passes_loc:
+                if plat:
+                    platform_counts[plat] = platform_counts.get(plat, 0) + 1
+
+            # Location counts: apply all other filters but NOT loc — show full distribution
+            if _passes_plat and _passes_evt and _passes_rel:
+                location_counts[loc_status] = location_counts.get(loc_status, 0) + 1
+
+            # Unseen badge count: every report that passes the active filters, is
+            # still new, and not hidden. (rid in new_ids implies it is admitted.)
+            if (
+                rid in new_ids
+                and rid not in seen_ids
+                and _passes_plat and _passes_evt and _passes_rel and _passes_loc
+            ):
+                unseen_count += 1
 
     all_platforms = sorted(platform_counts.keys())
 
     # Count admitted posts per platform (ignoring event_type / platform filters).
     platform_added_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
-    if added_ids:
+    if not only_new and added_ids:
         added_rows = (
             build_report_query(
                 session,
@@ -814,6 +816,11 @@ def get_reports(
         .all()
     }
     pending_count = len(all_matching_ids - added_ids)
+
+    # Under only_new the facet scan (which normally computes unseen_count) was
+    # skipped; the returned list is exactly the new set, so total_count is the badge.
+    if only_new:
+        unseen_count = total_count
 
     loaded_at = datetime.now(timezone.utc).isoformat()
     return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count

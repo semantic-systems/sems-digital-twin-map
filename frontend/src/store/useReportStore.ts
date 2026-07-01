@@ -66,7 +66,20 @@ export const useReportStore = create<ReportStore>((set) => ({
   unseenCount: 0,
   isLoading: false,
 
-  setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false, locationCounts = {}, totalCount = 0, unseenCount = 0) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore, locationCounts, totalCount, unseenCount }),
+  // Facet totals (eventTypeTotals/relevanceTotals/locationCounts) are preserved
+  // when omitted (undefined) — the "only new" lean load skips recomputing them and
+  // reuses the last-known panel counts. Pass {} explicitly to actually clear them.
+  setReports: (reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore = false, locationCounts, totalCount = 0, unseenCount = 0) =>
+    set((s) => ({
+      reports,
+      loadedAt,
+      hasMore,
+      totalCount,
+      unseenCount,
+      eventTypeTotals: eventTypeTotals ?? s.eventTypeTotals,
+      relevanceTotals: relevanceTotals ?? s.relevanceTotals,
+      locationCounts: locationCounts ?? s.locationCounts,
+    })),
   setUnseenCount: (unseenCount) => set({ unseenCount }),
   setIsLoading: (isLoading) => set({ isLoading }),
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),

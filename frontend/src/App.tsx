@@ -56,18 +56,32 @@ function AppInner(): React.ReactElement {
       // Discard if a newer loadData started while this one was in-flight.
       if (seq !== loadSeqRef.current) return;
 
-      setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more, reportsRes.location_counts, reportsRes.total_count, reportsRes.unseen_count);
+      // Under "only new" the backend skips the facet scan and returns empty panel
+      // counts; keep the last-known ones by passing undefined (setReports preserves
+      // them) and skipping the platform-count setters.
+      setReports(
+        reportsRes.reports,
+        reportsRes.loaded_at,
+        showOnlyNew ? undefined : reportsRes.event_type_totals,
+        showOnlyNew ? undefined : reportsRes.relevance_totals,
+        reportsRes.has_more,
+        showOnlyNew ? undefined : reportsRes.location_counts,
+        reportsRes.total_count,
+        reportsRes.unseen_count,
+      );
       setDots(reportsRes.dots);
       setPendingNewCount(reportsRes.pending_count ?? 0);
 
-      if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {
-        setAllPlatforms(reportsRes.all_platforms);
-      }
-      if (reportsRes.platform_counts) {
-        setPlatformCounts(reportsRes.platform_counts);
-      }
-      if (reportsRes.platform_added_counts) {
-        setPlatformAddedCounts(reportsRes.platform_added_counts);
+      if (!showOnlyNew) {
+        if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {
+          setAllPlatforms(reportsRes.all_platforms);
+        }
+        if (reportsRes.platform_counts) {
+          setPlatformCounts(reportsRes.platform_counts);
+        }
+        if (reportsRes.platform_added_counts) {
+          setPlatformAddedCounts(reportsRes.platform_added_counts);
+        }
       }
     } catch (e) {
       console.error('Failed to load reports:', e);
