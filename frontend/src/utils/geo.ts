@@ -14,20 +14,6 @@ export function pointInPolygon(lat: number, lon: number, polygon: [number, numbe
   return inside;
 }
 
-/** Bounding-box area in degrees² for a [lat, lon][] polygon. */
-export function polygonBboxArea(polygon: [number, number][]): number {
-  if (polygon.length === 0) return 0;
-  let minLat = polygon[0][0], maxLat = polygon[0][0];
-  let minLon = polygon[0][1], maxLon = polygon[0][1];
-  for (const [lat, lon] of polygon) {
-    if (lat < minLat) minLat = lat;
-    if (lat > maxLat) maxLat = lat;
-    if (lon < minLon) minLon = lon;
-    if (lon > maxLon) maxLon = lon;
-  }
-  return (maxLat - minLat) * (maxLon - minLon);
-}
-
 export type Bbox = [number, number, number, number]; // [minLat, maxLat, minLon, maxLon]
 
 /**
