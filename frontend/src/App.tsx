@@ -55,7 +55,7 @@ function AppInner(): React.ReactElement {
       // Discard if a newer loadData started while this one was in-flight.
       if (seq !== loadSeqRef.current) return;
 
-      setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more, reportsRes.location_counts, reportsRes.total_count);
+      setReports(reportsRes.reports, reportsRes.loaded_at, reportsRes.event_type_totals, reportsRes.relevance_totals, reportsRes.has_more, reportsRes.location_counts, reportsRes.total_count, reportsRes.unseen_count);
       setDots(reportsRes.dots);
       setPendingNewCount(reportsRes.pending_count ?? 0);
 

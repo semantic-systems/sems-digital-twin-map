@@ -81,7 +81,7 @@ def get_reports_endpoint(
     from ..config import settings
 
     eff_since, eff_until = _resolve_time_range(time_window, since, until)
-    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count = svc.get_reports(
+    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter or None,
@@ -109,6 +109,7 @@ def get_reports_endpoint(
         platform_added_counts=platform_added_counts,
         has_more=has_more,
         total_count=total_count,
+        unseen_count=unseen_count,
     )
 
 
@@ -221,7 +222,7 @@ def bundle_endpoint(
     (
         reports, pending_count, loaded_at, event_type_totals, all_platforms,
         platform_counts, platform_added_counts, relevance_totals, location_counts,
-        has_more, total_count,
+        has_more, total_count, unseen_count,
     ) = svc.get_reports(
         session=session,
         username=username,
@@ -268,6 +269,7 @@ def bundle_endpoint(
         platform_added_counts=platform_added_counts,
         has_more=has_more,
         total_count=total_count,
+        unseen_count=unseen_count,
         dots=dots,
     )
 

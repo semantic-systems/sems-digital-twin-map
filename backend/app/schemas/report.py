@@ -56,6 +56,7 @@ class ReportsResponse(BaseModel):
     platform_added_counts: dict[str, int] = {}
     has_more: bool = False
     total_count: int = 0
+    unseen_count: int = 0
 
 
 class ReportsBundleResponse(ReportsResponse):

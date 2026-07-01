@@ -9,7 +9,7 @@ import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, showOnlyNew, setShowOnlyNew } = useFilterStore();
-  const { reports, totalCount, isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+  const { totalCount, unseenCount, isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
 
   // Keep the input responsive on every keystroke, but debounce the store update
   // that drives the refetch so typing "fire" triggers one reload, not four.
@@ -73,14 +73,8 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
     }
   }
 
-  // Count unseen high/medium reports for the notification badge
-  const unseenCount = reports.filter(
-    (r) =>
-      !r.user_state.hide &&
-      r.user_state.new &&
-      (r.relevance === 'high' || r.relevance === 'medium'),
-  ).length;
-
+  // unseenCount now comes from the store (server-computed over all matching
+  // reports, kept responsive by the optimistic acknowledge/hide adjustments).
   const showDemo = demoStatus?.demo_mode === true;
 
   if (collapsed) {

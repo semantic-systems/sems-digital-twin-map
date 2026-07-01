@@ -632,6 +632,10 @@ def get_reports(
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
     relevance_totals: dict[str, int] = {}
     location_counts: dict[str, int] = {"localized": 0, "pending": 0, "unlocalized": 0}
+    # Unseen badge: admitted reports still marked new, not hidden, high/medium
+    # relevance, that pass the active filters — counted over the WHOLE matching set
+    # (not just the loaded page) so the badge doesn't undercount.
+    unseen_count = 0
 
     for (rid, ets, plat, rel, row_author, loc_status) in all_base_rows:
         if not show_hidden and rid in seen_ids:
@@ -667,6 +671,16 @@ def get_reports(
         # Location counts: apply all other filters but NOT loc — show full distribution
         if _passes_plat and _passes_evt and _passes_rel:
             location_counts[loc_status] = location_counts.get(loc_status, 0) + 1
+
+        # Unseen badge count: passes all active filters, still new, not hidden,
+        # and high/medium relevance. (rid in new_ids implies the report is admitted.)
+        if (
+            rid in new_ids
+            and rid not in seen_ids
+            and rel in ("high", "medium")
+            and _passes_plat and _passes_evt and _passes_rel and _passes_loc
+        ):
+            unseen_count += 1
 
     all_platforms = sorted(platform_counts.keys())
 
@@ -705,7 +719,7 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False, 0
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False, 0, unseen_count
 
     # Build the main query (only admitted reports)
     q = build_report_query(
@@ -792,7 +806,7 @@ def get_reports(
     pending_count = len(all_matching_ids - added_ids)
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count
 
 
 # ---------------------------------------------------------------------------

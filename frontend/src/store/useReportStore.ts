@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import type { ReportDTO, DotDTO, LocationEntry } from '../types';
 
+// A report contributes to the unseen badge when it is high/medium relevance,
+// still new, and not hidden. Used to keep unseenCount responsive to optimistic
+// acknowledge/hide actions between server syncs.
+const contributesToUnseen = (r: ReportDTO): boolean =>
+  (r.relevance === 'high' || r.relevance === 'medium') &&
+  r.user_state.new &&
+  !r.user_state.hide;
+
 interface ReportStore {
   reports: ReportDTO[];
   dots: DotDTO[];
@@ -17,11 +25,15 @@ interface ReportStore {
   hasMore: boolean;
   totalCount: number;
   currentLimit: number;
+  // Unseen high/medium reports matching the filters, counted server-side over the
+  // WHOLE matching set (not just the loaded page). Synced only on explicit loads;
+  // the optimistic actions below keep it responsive between loads.
+  unseenCount: number;
   // True while a filter/search-driven reload is in flight (App.loadData), so the
   // UI can show a processing indicator instead of silently keeping stale results.
   isLoading: boolean;
 
-  setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>, hasMore?: boolean, locationCounts?: Record<string, number>, totalCount?: number) => void;
+  setReports: (reports: ReportDTO[], loadedAt: string, eventTypeTotals?: Record<string, number>, relevanceTotals?: Record<string, number>, hasMore?: boolean, locationCounts?: Record<string, number>, totalCount?: number, unseenCount?: number) => void;
   setIsLoading: (v: boolean) => void;
   bumpReloadTrigger: () => void;
   setCurrentLimit: (n: number) => void;
@@ -52,9 +64,10 @@ export const useReportStore = create<ReportStore>((set) => ({
   hasMore: false,
   totalCount: 0,
   currentLimit: 50,
+  unseenCount: 0,
   isLoading: false,
 
-  setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false, locationCounts = {}, totalCount = 0) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore, locationCounts, totalCount }),
+  setReports: (reports, loadedAt, eventTypeTotals = {}, relevanceTotals = {}, hasMore = false, locationCounts = {}, totalCount = 0, unseenCount = 0) => set({ reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore, locationCounts, totalCount, unseenCount }),
   setIsLoading: (isLoading) => set({ isLoading }),
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
   setCurrentLimit: (currentLimit) => set({ currentLimit }),
@@ -65,12 +78,22 @@ export const useReportStore = create<ReportStore>((set) => ({
 
   optimisticHide: (id, hide) =>
     set((s) => {
+      const target = s.reports.find((r) => r.id === id)
+        ?? (s.pinnedReport?.id === id ? s.pinnedReport : null);
+      // Hiding an important+new report removes it from the badge; unhiding one
+      // restores it.
+      let unseenDelta = 0;
+      if (target && (target.relevance === 'high' || target.relevance === 'medium') && target.user_state.new) {
+        if (hide && !target.user_state.hide) unseenDelta = -1;
+        else if (!hide && target.user_state.hide) unseenDelta = 1;
+      }
       const patch = (r: ReportDTO) =>
         r.id === id ? { ...r, user_state: { ...r.user_state, hide } } : r;
       return {
         reports: s.reports.map(patch),
         pinnedReport: s.pinnedReport ? patch(s.pinnedReport) : null,
         dots: s.dots.map((d) => (d.report_id === id ? { ...d, seen: hide } : d)),
+        unseenCount: Math.max(0, s.unseenCount + unseenDelta),
       };
     }),
 
@@ -95,12 +118,16 @@ export const useReportStore = create<ReportStore>((set) => ({
 
   optimisticAcknowledge: (id) =>
     set((s) => {
+      const target = s.reports.find((r) => r.id === id)
+        ?? (s.pinnedReport?.id === id ? s.pinnedReport : null);
+      const wasContributing = target ? contributesToUnseen(target) : false;
       const patch = (r: ReportDTO) =>
         r.id === id ? { ...r, user_state: { ...r.user_state, new: false } } : r;
       return {
         reports: s.reports.map(patch),
         pinnedReport: s.pinnedReport ? patch(s.pinnedReport) : null,
         dots: s.dots.map((d) => (d.report_id === id ? { ...d, new: false } : d)),
+        unseenCount: wasContributing ? Math.max(0, s.unseenCount - 1) : s.unseenCount,
       };
     }),
 

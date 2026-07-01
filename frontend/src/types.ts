@@ -46,6 +46,7 @@ export interface ReportsResponse {
   platform_added_counts?: Record<string, number>;
   has_more?: boolean;
   total_count?: number;
+  unseen_count?: number;
 }
 
 export interface LayerDTO {

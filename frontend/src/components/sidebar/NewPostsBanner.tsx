@@ -34,7 +34,7 @@ export function NewPostsBanner(): React.ReactElement {
         relevances: filters.relevances,
       });
       const reloaded = await fetchReports(params);
-      setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count);
+      setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count, reloaded.unseen_count);
       if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
       if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
       if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
