@@ -10,6 +10,13 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
   const { reports, activeReportId, pinnedReport, setPinnedReport, hasMore } = useReportStore();
   const { username } = useUserStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  // Keep onLoadMore in a ref so the observer effect doesn't re-subscribe every
+  // render (App.loadMore is a fresh closure each render).
+  const onLoadMoreRef = useRef(onLoadMore);
+  onLoadMoreRef.current = onLoadMore;
+  // Guards against firing another page load while one is already in flight.
+  const loadPendingRef = useRef(false);
 
   const visibleReports = useVisibleReports();
 
@@ -19,6 +26,32 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
       scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [pinnedReport]);
+
+  // Clear the in-flight guard once a page has arrived (reports grew) or there's
+  // nothing more to load.
+  useEffect(() => {
+    loadPendingRef.current = false;
+  }, [reports.length, hasMore]);
+
+  // Infinite scroll: auto-load the next page when the bottom sentinel scrolls
+  // near the viewport. Re-subscribes when reports grow so a still-visible
+  // sentinel keeps paging until the viewport is filled or hasMore is false.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const root = scrollRef.current;
+    if (!sentinel || !root || !hasMore) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadPendingRef.current) {
+          loadPendingRef.current = true;
+          onLoadMoreRef.current();
+        }
+      },
+      { root, rootMargin: '300px' },
+    );
+    obs.observe(sentinel);
+    return () => obs.disconnect();
+  }, [hasMore, reports.length]);
 
   // When a report is selected, scroll to it if it's in the loaded page; otherwise
   // fetch it on demand and pin it at the top (avoids paging through history).
@@ -88,22 +121,17 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
         <ReportEntry key={report.id} report={report} />
       ))}
       {hasMore && (
-        <div style={{ padding: '8px 4px', textAlign: 'center' }}>
-          <button
-            onClick={onLoadMore}
-            style={{
-              background: '#1a1d27',
-              border: '1px solid #374151',
-              borderRadius: 6,
-              color: '#9ca3af',
-              fontSize: 12,
-              padding: '5px 16px',
-              cursor: 'pointer',
-              fontFamily: "'Inter', system-ui, sans-serif",
-            }}
-          >
-            {t('load_more')}
-          </button>
+        <div
+          ref={sentinelRef}
+          style={{
+            padding: '10px 4px',
+            textAlign: 'center',
+            color: '#4b5563',
+            fontSize: 11,
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}
+        >
+          {t('loading')}
         </div>
       )}
     </div>

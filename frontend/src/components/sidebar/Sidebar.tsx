@@ -2,19 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
 import { useFilterStore } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
-import { useVisibleReports } from '../../hooks/useVisibleReports';
 import { fetchDemoStatus, resetDemo } from '../../api/demo';
 import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, spatialPolygon, showOnlyNew, setShowOnlyNew } = useFilterStore();
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, showOnlyNew, setShowOnlyNew } = useFilterStore();
   const { reports, totalCount, isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
-
-  // Count exactly what the list renders (same filtered array), so the header
-  // number never disagrees with the visible entries.
-  const visibleCount = useVisibleReports().length;
 
   // Keep the input responsive on every keystroke, but debounce the store update
   // that drives the refetch so typing "fire" triggers one reload, not four.
@@ -187,10 +182,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
             </span>
           )}
           <span style={{ fontSize: 11, color: '#4b5563' }}>
-            {visibleCount < totalCount || spatialPolygon
-              ? `(${visibleCount} / ${totalCount})`
-              : `(${totalCount})`
-            }
+            {`(${totalCount})`}
           </span>
           {isLoading && (
             <span
