@@ -23,15 +23,16 @@ export type Bbox = [number, number, number, number]; // [minLat, maxLat, minLon,
  * containment, so dots and polygons always agree on a location's size.
  */
 export function locationExtent(loc: LocationEntry): Bbox | null {
-  const ring = getLocationRing(loc);
-  if (ring && ring.length > 0) {
-    let minLat = ring[0][0], maxLat = ring[0][0], minLon = ring[0][1], maxLon = ring[0][1];
-    for (const [lat, lon] of ring) {
-      if (lat < minLat) minLat = lat;
-      if (lat > maxLat) maxLat = lat;
-      if (lon < minLon) minLon = lon;
-      if (lon > maxLon) maxLon = lon;
-    }
+  // Extent over the WHOLE polygon/line geometry (every ring/part), so it matches
+  // what actually renders. Point geometries are skipped — their stored coordinate
+  // order is unreliable — and covered by the authoritative lat/lon fallback below.
+  const p = loc.polygon;
+  if (p && p.type !== 'Point' && p.coordinates != null) {
+    const bbox = coordsBbox(p.coordinates);
+    if (bbox) return bbox;
+  }
+  if (Array.isArray(loc.boundingbox) && loc.boundingbox.length === 4) {
+    const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
     return [minLat, maxLat, minLon, maxLon];
   }
   if (loc.lat != null && loc.lon != null) {
@@ -74,49 +75,30 @@ export function computeSuppressedRegions(boxes: (Bbox | null)[]): Set<number> {
 }
 
 /**
- * Extract the outer polygon ring from a LocationEntry as [lat, lon][] pairs.
- * Falls back to a rectangle built from the bounding box if no polygon is stored.
- * Returns null when neither is available.
+ * Bounding box [minLat, maxLat, minLon, maxLon] over EVERY [lon, lat] coordinate
+ * pair in a GeoJSON `coordinates` value, at any nesting depth (Polygon, MultiPolygon,
+ * LineString, …). Using the whole geometry — not just the first/largest ring — is
+ * deliberate: a polygon's first ring can be an unrepresentative fragment (e.g.
+ * mis-ordered multipolygon rings), which would otherwise shrink an area's extent to
+ * a sliver and defeat containment suppression.
  */
-export function getLocationRing(loc: LocationEntry): [number, number][] | null {
-  if (loc.polygon) {
-    const { type, coordinates } = loc.polygon;
-    if (type === 'Polygon') {
-      return (coordinates[0] as [number, number][]).map(([lon, lat]) => [lat, lon]);
+function coordsBbox(coords: unknown): Bbox | null {
+  let minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
+  const walk = (node: unknown): void => {
+    if (!Array.isArray(node)) return;
+    if (typeof node[0] === 'number' && typeof node[1] === 'number') {
+      const lon = node[0] as number, lat = node[1] as number;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+      return;
     }
-    if (type === 'MultiPolygon') {
-      const rings = (coordinates as [number, number][][][]).map((p) => p[0]);
-      const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0] ?? []);
-      return largest.map(([lon, lat]) => [lat, lon]);
-    }
-    // Lines have no area ring; use the bounding box of their coordinates (reliably
-    // [lon, lat]) so a more-specific street can still suppress a containing area
-    // polygon. Point geometries are skipped: stored point coordinates have an
-    // unreliable lat/lon order, and the dot path already locates a node via the
-    // dot's own (authoritative) lat/lon, so no ring is needed here.
-    if (type === 'LineString' || type === 'MultiLineString') {
-      const pts: [number, number][] =
-        type === 'LineString'
-          ? (coordinates as [number, number][])
-          : (coordinates as [number, number][][]).flat();
-      if (pts.length > 0) {
-        let minLat = pts[0][1], maxLat = pts[0][1];
-        let minLon = pts[0][0], maxLon = pts[0][0];
-        for (const [lon, lat] of pts) {
-          if (lat < minLat) minLat = lat;
-          if (lat > maxLat) maxLat = lat;
-          if (lon < minLon) minLon = lon;
-          if (lon > maxLon) maxLon = lon;
-        }
-        return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
-      }
-    }
-  }
-  if (Array.isArray(loc.boundingbox) && loc.boundingbox.length === 4) {
-    const [minLat, maxLat, minLon, maxLon] = (loc.boundingbox as unknown[]).map(Number);
-    return [[minLat, minLon], [minLat, maxLon], [maxLat, maxLon], [maxLat, minLon]];
-  }
-  return null;
+    for (const child of node) walk(child);
+  };
+  walk(coords);
+  if (minLat === Infinity) return null;
+  return [minLat, maxLat, minLon, maxLon];
 }
 
 /**
