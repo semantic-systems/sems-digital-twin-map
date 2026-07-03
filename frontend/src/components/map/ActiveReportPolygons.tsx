@@ -25,6 +25,25 @@ function isGeoLocation(loc: LocationEntry): loc is GeoLocation {
   return Boolean(loc.osm_id && loc.polygon);
 }
 
+// Short OSM type codes (Photon) vs. long ones (Nominatim) — normalize so the same
+// entity written both ways ("R" vs "relation") collapses to one key.
+const OSM_TYPE_CANON: Record<string, string> = { R: 'relation', N: 'node', W: 'way' };
+const osmKey = (l: LocationEntry): string =>
+  `${l.osm_id}:${OSM_TYPE_CANON[l.osm_type ?? ''] ?? l.osm_type ?? ''}`;
+
+/** Drop entries that are the SAME OSM entity (all rendered entries have an osm_id),
+ * so a place referenced by two mentions isn't drawn twice. A no-op when there are
+ * no duplicates. Generic so it preserves the caller's element type. */
+function dedupByOsm<T extends LocationEntry>(locs: T[]): T[] {
+  const seen = new Set<string>();
+  return locs.filter((l) => {
+    const k = osmKey(l);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
 function LocationPolygon({ loc }: { loc: GeoLocation }): React.ReactElement | null {
   const geo = loc.polygon;
 
@@ -168,8 +187,8 @@ export function ActiveReportPolygons(): React.ReactElement {
   const suppressedIdx = computeSuppressedRegions(effectiveLocs.map((l) => locationExtent(l)));
   const suppressed = new Set<LocationEntry>();
   suppressedIdx.forEach((i) => suppressed.add(effectiveLocs[i]));
-  const visibleGeoLocs = geoLocs.filter((l) => !suppressed.has(l));
-  const visibleBbLocs = bbOnlyLocs.filter((l) => !suppressed.has(l));
+  const visibleGeoLocs = dedupByOsm(geoLocs.filter((l) => !suppressed.has(l)));
+  const visibleBbLocs = dedupByOsm(bbOnlyLocs.filter((l) => !suppressed.has(l)));
 
   return (
     <>
