@@ -12,7 +12,7 @@ import {
   useMapEvents,
 } from 'react-leaflet';
 import { useMapStore } from '../../store/useMapStore';
-import { useFilterStore, getLayerColor, activeLocFilter } from '../../store/useFilterStore';
+import { useFilterStore, getLayerColor, dotsParamsFromFilters } from '../../store/useFilterStore';
 import { t } from '../../i18n';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
@@ -63,17 +63,7 @@ function PickModeHandler(): null {
 
       try {
         await updateLocations(reportId, username, newLocs);
-        const dotsRes = await fetchDots({
-          username,
-          loc_filter: activeLocFilter(filters),
-          platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
-          event_types: filters.eventTypes,
-          relevances: filters.relevances,
-          show_hidden: filters.showHidden,
-          show_flagged: filters.showFlagged,
-          show_unflagged: filters.showUnflagged,
-          search: filters.search || undefined,
-        });
+        const dotsRes = await fetchDots(dotsParamsFromFilters(username, filters));
         setDots(dotsRes.dots);
       } catch (e2) {
         console.error('Failed to update locations via map click:', e2);

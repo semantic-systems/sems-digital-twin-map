@@ -5,7 +5,7 @@ import { useReportStore } from '../../store/useReportStore';
 import { useMapStore } from '../../store/useMapStore';
 import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport, restoreLocations, fetchDots } from '../../api/reports';
-import { useFilterStore, activeLocFilter } from '../../store/useFilterStore';
+import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
 import { LocationTag } from './LocationTag';
 import { computeVisibleReportBounds } from '../../utils/geo';
 
@@ -158,16 +158,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     optimisticRestoreLocations(report.id, report.original_locations);
     try {
       await restoreLocations(report.id, username);
-      const dotsRes = await fetchDots({
-        username,
-        loc_filter: activeLocFilter(filters),
-        platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
-        event_types: filters.eventTypes,
-        relevances: filters.relevances,
-        show_hidden: filters.showHidden,
-        show_flagged: filters.showFlagged,
-        show_unflagged: filters.showUnflagged,
-      });
+      const dotsRes = await fetchDots(dotsParamsFromFilters(username, filters));
       setDots(dotsRes.dots);
     } catch (e) {
       console.error('Failed to restore locations:', e);

@@ -4,7 +4,7 @@ import { useMapStore } from '../../store/useMapStore';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import { updateLocations, fetchDots } from '../../api/reports';
-import { useFilterStore, activeLocFilter } from '../../store/useFilterStore';
+import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
 import type { NominatimResult, LocationEntry } from '../../types';
 
 const BASE_API = '/api/v1';
@@ -87,16 +87,7 @@ export function PickModeOverlay(): React.ReactElement | null {
 
     try {
       await updateLocations(pickMode.reportId, username, newLocs);
-      const dotsRes = await fetchDots({
-        username,
-        loc_filter: activeLocFilter(filters),
-        platforms: filters.platforms.length ? filters.platforms : filters.allPlatforms,
-        event_types: filters.eventTypes,
-        relevances: filters.relevances,
-        show_hidden: filters.showHidden,
-        show_flagged: filters.showFlagged,
-        show_unflagged: filters.showUnflagged,
-      });
+      const dotsRes = await fetchDots(dotsParamsFromFilters(username, filters));
       setDots(dotsRes.dots);
     } catch (e) {
       console.error('Failed to update locations via search:', e);

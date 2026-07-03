@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { LayerDTO } from '../types';
+import type { LayerDTO, DotsParams } from '../types';
 import { LAYER_COLORS } from '../constants';
 
 export const ALL_EVENT_TYPES_LIST = [
@@ -33,6 +33,47 @@ export function activeLocFilter(f: {
     ...(f.locShowUnlocalized ? ['unlocalized'] : []),
   ];
   return active.length < 3 ? active : undefined;
+}
+
+/** Full DotsParams from the current filter state — the single source of truth for
+ *  dot refetches so location-edit refreshes (pin-set, map-drag, restore) carry the
+ *  SAME filters as the main load. Omitting any of these here makes filtered-out dots
+ *  reappear after an edit. */
+export function dotsParamsFromFilters(
+  username: string,
+  f: {
+    platforms: string[];
+    allPlatforms: string[];
+    eventTypes: string[];
+    relevances: string[];
+    showHidden: boolean;
+    showFlagged: boolean;
+    showUnflagged: boolean;
+    search: string;
+    timeWindow: string;
+    customSince: string | null;
+    customUntil: string | null;
+    showOnlyNew: boolean;
+    locShowLocalized: boolean;
+    locShowPending: boolean;
+    locShowUnlocalized: boolean;
+  },
+): DotsParams {
+  return {
+    username,
+    loc_filter: activeLocFilter(f),
+    platforms: f.platforms.length ? f.platforms : f.allPlatforms,
+    event_types: f.eventTypes,
+    relevances: f.relevances,
+    show_hidden: f.showHidden,
+    show_flagged: f.showFlagged,
+    show_unflagged: f.showUnflagged,
+    search: f.search || undefined,
+    time_window: f.timeWindow,
+    since: f.timeWindow === 'custom' ? (f.customSince || undefined) : undefined,
+    until: f.timeWindow === 'custom' ? (f.customUntil || undefined) : undefined,
+    only_new: f.showOnlyNew || undefined,
+  };
 }
 
 /** Derive a stable color for a layer based on its position in availableLayers. */
