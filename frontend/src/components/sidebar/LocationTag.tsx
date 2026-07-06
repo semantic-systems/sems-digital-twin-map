@@ -2,8 +2,9 @@ import React from 'react';
 import { t } from '../../i18n';
 import type { LocationEntry } from '../../types';
 import { useMapStore } from '../../store/useMapStore';
-import { useReportStore } from '../../store/useReportStore';
+import { useReportStore, refreshDots } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
+import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
 import { updateLocations } from '../../api/reports';
 
 interface LocationTagProps {
@@ -22,6 +23,7 @@ export function LocationTag({
   const { enterPickMode } = useMapStore();
   const { optimisticUpdateLocations } = useReportStore();
   const { username } = useUserStore();
+  const filters = useFilterStore();
 
   const isGeo = Boolean(loc.osm_id);
   const displayName = loc.mention || loc.name || (loc.lat ? `${loc.lat?.toFixed(4)}, ${loc.lon?.toFixed(4)}` : '?');
@@ -36,6 +38,10 @@ export function LocationTag({
     optimisticUpdateLocations(reportId, newLocs);
     try {
       await updateLocations(reportId, username, newLocs);
+      // Unlike PickModeOverlay/MapView's location edits, this path previously
+      // never refreshed dots — a removed location's dot would linger on the
+      // map until an unrelated reload happened to touch it.
+      await refreshDots(dotsParamsFromFilters(username, filters));
     } catch (e) {
       console.error('Failed to remove location:', e);
       // revert

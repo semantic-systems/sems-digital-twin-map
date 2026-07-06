@@ -2,13 +2,14 @@ import { useEffect, useRef } from 'react';
 import { useReportStore } from '../store/useReportStore';
 import { useFilterStore, activeLocFilter } from '../store/useFilterStore';
 import { useUserStore } from '../store/useUserStore';
-import { admitAllReports, fetchReports, fetchDots } from '../api/reports';
+import { admitAllReports, fetchReports } from '../api/reports';
+import { refreshDots } from '../store/useReportStore';
 
 const INTERVAL_MS = 10_000;
 
 export function usePolling() {
   const { username } = useUserStore();
-  const { setReports, setDots, setPendingNewCount, setUnseenCount, currentLimit } = useReportStore();
+  const { setReports, setPendingNewCount, setUnseenCount, currentLimit } = useReportStore();
   const filters = useFilterStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
   const timerRef = useRef<number | null>(null);
@@ -137,8 +138,7 @@ export function usePolling() {
           if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
           if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
         }
-        const dotsRes = await fetchDots(params);
-        setDots(dotsRes.dots);
+        await refreshDots(params);
         setPendingNewCount(0);
       } else {
         // Auto-update OFF: the admitted list only changes through the user's own

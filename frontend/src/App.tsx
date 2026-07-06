@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useUserStore } from './store/useUserStore';
 import { useFilterStore, activeLocFilter } from './store/useFilterStore';
-import { useReportStore } from './store/useReportStore';
+import { useReportStore, beginDotsRefresh, commitDotsIfCurrent } from './store/useReportStore';
 import { fetchReportsBundle } from './api/reports';
 import { fetchLayers } from './api/layers';
 import { usePolling } from './hooks/usePolling';
@@ -17,7 +17,7 @@ function AppInner(): React.ReactElement {
   const { username } = useUserStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew } =
     useFilterStore();
-  const { setReports, setDots, setPendingNewCount, setIsLoading, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
+  const { setReports, setPendingNewCount, setIsLoading, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
   usePolling();
 
@@ -46,6 +46,11 @@ function AppInner(): React.ReactElement {
   const loadData = async (limit: number) => {
     if (!username) return;
     const seq = ++loadSeqRef.current;
+    // Also claim the dots-refresh token at the START of this attempt (not after
+    // it resolves) so it participates in the SAME shared ordering guard as the
+    // standalone dots-only refreshes (location edits, auto-update poll) — see
+    // useReportStore's beginDotsRefresh/commitDotsIfCurrent.
+    const dotsToken = beginDotsRefresh();
     setIsLoading(true);
     try {
       const params = buildParams(limit);
@@ -69,7 +74,7 @@ function AppInner(): React.ReactElement {
         reportsRes.total_count,
         reportsRes.unseen_count,
       );
-      setDots(reportsRes.dots);
+      commitDotsIfCurrent(reportsRes.dots, dotsToken);
       setPendingNewCount(reportsRes.pending_count ?? 0);
 
       if (!showOnlyNew) {

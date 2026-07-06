@@ -14,10 +14,10 @@ import {
 import { useMapStore } from '../../store/useMapStore';
 import { useFilterStore, getLayerColor, dotsParamsFromFilters } from '../../store/useFilterStore';
 import { t } from '../../i18n';
-import { useReportStore } from '../../store/useReportStore';
+import { useReportStore, refreshDots } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import { fetchLayerGeoJSON } from '../../api/layers';
-import { updateLocations, fetchDots } from '../../api/reports';
+import { updateLocations } from '../../api/reports';
 import { ReportDots } from './ReportDots';
 import { ActiveReportPolygons } from './ActiveReportPolygons';
 import { OffscreenArrows } from './OffscreenArrows';
@@ -28,7 +28,7 @@ import type { LocationEntry } from '../../types';
 // ---- PickModeHandler ----
 function PickModeHandler(): null {
   const { pickMode, exitPickMode } = useMapStore();
-  const { reports, optimisticUpdateLocations, setDots } = useReportStore();
+  const { reports, optimisticUpdateLocations } = useReportStore();
   const { username } = useUserStore();
   const filters = useFilterStore();
 
@@ -64,8 +64,7 @@ function PickModeHandler(): null {
 
       try {
         await updateLocations(reportId, username, newLocs);
-        const dotsRes = await fetchDots(dotsParamsFromFilters(username, filters));
-        setDots(dotsRes.dots);
+        await refreshDots(dotsParamsFromFilters(username, filters));
       } catch (e2) {
         console.error('Failed to update locations via map click:', e2);
       }

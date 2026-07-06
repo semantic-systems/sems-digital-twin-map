@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import type { ReportDTO, DotDTO, LocationEntry } from '../types';
+import type { ReportDTO, DotDTO, LocationEntry, DotsParams } from '../types';
+import { fetchDots } from '../api/reports';
 
 // A report contributes to the unseen badge when it is still new and not hidden.
 // Used to keep unseenCount responsive to optimistic acknowledge/hide actions
@@ -171,3 +172,38 @@ export const useReportStore = create<ReportStore>((set) => ({
       };
     }),
 }));
+
+// ---------------------------------------------------------------------------
+// Shared dots-refresh ordering guard
+// ---------------------------------------------------------------------------
+//
+// Several independent places fetch and apply a fresh `dots` array: the 10s
+// auto-update poll's reload, a location edit (pin-set / map-drag) in
+// PickModeOverlay/MapView, ReportEntry's "restore locations", and App.loadData's
+// combined reports+dots bundle. Each is its own async round trip; with no shared
+// ordering guard, two overlapping refreshes (e.g. auto-update firing while a
+// location edit is in flight) let whichever response simply ARRIVES last win,
+// even if it was the one that started FIRST and is therefore stale — the same
+// class of race already fixed once for the report-acknowledge/poll interaction.
+// `dotsRequestSeq` is module-level (not store state): it's a private ordering
+// token, not UI state, so it doesn't belong in the reactive store shape.
+let dotsRequestSeq = 0;
+
+/** Call before starting a dots fetch; returns a token identifying this attempt. */
+export function beginDotsRefresh(): number {
+  return ++dotsRequestSeq;
+}
+
+/** Applies `dots` only if no newer refresh has started since `token` was issued. */
+export function commitDotsIfCurrent(dots: DotDTO[], token: number): void {
+  if (token !== dotsRequestSeq) return;
+  useReportStore.setState({ dots });
+}
+
+/** Fetch + apply in one step for the common case (no separate reports payload
+ *  arriving alongside). Prefer this over calling fetchDots + setDots directly. */
+export async function refreshDots(params: DotsParams): Promise<void> {
+  const token = beginDotsRefresh();
+  const res = await fetchDots(params);
+  commitDotsIfCurrent(res.dots, token);
+}

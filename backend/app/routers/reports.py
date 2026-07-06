@@ -37,6 +37,7 @@ from ..schemas.report import (
     AcknowledgeRequest,
     AdmitRequest,
     AdmitResponse,
+    DotsResponse,
     FlagRequest,
     HideRequest,
     LocationsRequest,
@@ -157,7 +158,7 @@ def new_count_endpoint(
 # GET /dots  — map dot positions (must be before /{report_id})
 # ---------------------------------------------------------------------------
 
-@router.get("/dots")
+@router.get("/dots", response_model=DotsResponse)
 def dots_endpoint(
     username: str = Query(...),
     loc_filter: list[str] = Query(default=[]),
@@ -173,7 +174,7 @@ def dots_endpoint(
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     only_new: bool = Query(False),
     session: Session = Depends(get_db),
-) -> dict[str, Any]:
+) -> DotsResponse:
     from ..config import settings
 
     eff_platform, eff_events, eff_relevance = svc.normalize_filters(
@@ -196,7 +197,7 @@ def dots_endpoint(
         until=eff_until,
         only_new=only_new,
     )
-    return {"dots": dots}
+    return DotsResponse(dots=dots)
 
 
 # ---------------------------------------------------------------------------

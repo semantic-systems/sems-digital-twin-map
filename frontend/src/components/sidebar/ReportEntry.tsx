@@ -1,10 +1,10 @@
 import React from 'react';
 import { t } from '../../i18n';
 import type { ReportDTO, LocationEntry } from '../../types';
-import { useReportStore } from '../../store/useReportStore';
+import { useReportStore, refreshDots } from '../../store/useReportStore';
 import { useMapStore } from '../../store/useMapStore';
 import { useUserStore } from '../../store/useUserStore';
-import { hideReport, flagReport, acknowledgeReport, restoreLocations, fetchDots } from '../../api/reports';
+import { hideReport, flagReport, acknowledgeReport, restoreLocations } from '../../api/reports';
 import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
 import { LocationTag } from './LocationTag';
 import { computeVisibleReportBounds } from '../../utils/geo';
@@ -57,7 +57,7 @@ function formatPlatform(platform: string): string {
 }
 
 export function ReportEntry({ report, pinned = false }: ReportEntryProps): React.ReactElement {
-  const { activeReportId, setActiveReportId, setPinnedReport, optimisticHide, optimisticFlag, optimisticAcknowledge, optimisticRestoreLocations, setDots, dots } =
+  const { activeReportId, setActiveReportId, setPinnedReport, optimisticHide, optimisticFlag, optimisticAcknowledge, optimisticRestoreLocations, dots } =
     useReportStore();
   const { enterPickMode, requestFitBounds } = useMapStore();
   const { username } = useUserStore();
@@ -158,8 +158,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     optimisticRestoreLocations(report.id, report.original_locations);
     try {
       await restoreLocations(report.id, username);
-      const dotsRes = await fetchDots(dotsParamsFromFilters(username, filters));
-      setDots(dotsRes.dots);
+      await refreshDots(dotsParamsFromFilters(username, filters));
     } catch (e) {
       console.error('Failed to restore locations:', e);
     }

@@ -44,6 +44,36 @@ class ReportDTO(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DotDTO(BaseModel):
+    """A single map-dot, one per geocoded location (not one per report — a
+    report with 3 locations yields 3 of these pre-clustering). Matches the dict
+    build_dots() constructs; giving it a real schema (rather than list[dict])
+    is what lets the frontend's DotDTO type be generated from this schema
+    instead of hand-maintained in parallel."""
+    report_id: int
+    lat: float
+    lon: float
+    seen: bool
+    hide: bool
+    flag: bool
+    new: bool
+    location_name: str
+    location_display: str
+    text: str
+    author: str
+    platform: str
+    timestamp: str
+    event_types: list[str] = []
+    relevance: str
+    url: str
+    location_bbox_area: float | None = None
+    location_bbox: list[float] | None = None
+
+
+class DotsResponse(BaseModel):
+    dots: list[DotDTO] = []
+
+
 class ReportsResponse(BaseModel):
     reports: list[ReportDTO]
     pending_count: int
@@ -62,7 +92,7 @@ class ReportsResponse(BaseModel):
 class ReportsBundleResponse(ReportsResponse):
     """Reports list + map dots in one payload, so a filter change needs a single
     round trip instead of two parallel requests contending on one sync worker."""
-    dots: list[dict] = []
+    dots: list[DotDTO] = []
 
 
 class NewCountResponse(BaseModel):
