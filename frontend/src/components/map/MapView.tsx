@@ -22,6 +22,7 @@ import { ReportDots } from './ReportDots';
 import { ActiveReportPolygons } from './ActiveReportPolygons';
 import { OffscreenArrows } from './OffscreenArrows';
 import { SpatialFilterLayer } from './SpatialFilterLayer';
+import { useVisibleDots } from '../../hooks/useVisibleDots';
 import type { LocationEntry } from '../../types';
 
 // ---- PickModeHandler ----
@@ -212,6 +213,11 @@ function PickModeCursor(): null {
 
 // ---- MapView ----
 export function MapView(): React.ReactElement {
+  // Computed once here and passed down, instead of ReportDots and
+  // ActiveReportPolygons each independently re-running the same filter/group/
+  // suppression pass over every dot.
+  const visibleDots = useVisibleDots();
+
   return (
     <MapContainer
       center={[51.1657, 10.4515]}
@@ -242,10 +248,10 @@ export function MapView(): React.ReactElement {
       <SpatialFilterLayer />
 
       {/* Report dots */}
-      <ReportDots />
+      <ReportDots visibleDots={visibleDots} />
 
       {/* Active report polygons */}
-      <ActiveReportPolygons />
+      <ActiveReportPolygons visibleDots={visibleDots} />
 
       {/* Offscreen arrows */}
       <OffscreenArrows />

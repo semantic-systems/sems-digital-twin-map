@@ -3,8 +3,8 @@ import { Polygon, Polyline, Rectangle } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
-import type { LocationEntry, GeoJsonGeometry, ReportDTO } from '../../types';
-import { computeSuppressedRegions, locationExtent } from '../../utils/geo';
+import type { LocationEntry, GeoJsonGeometry, ReportDTO, DotDTO } from '../../types';
+import { computeSuppressedRegions, locationExtent, filterLocationsWithVisibleDots, dedupByOsm } from '../../utils/geo';
 
 function coordsToLatLng(coords: unknown[]): LatLngExpression[] {
   return (coords as [number, number][]).map(([lon, lat]) => [lat, lon]);
@@ -23,25 +23,6 @@ interface GeoLocation extends LocationEntry {
 
 function isGeoLocation(loc: LocationEntry): loc is GeoLocation {
   return Boolean(loc.osm_id && loc.polygon);
-}
-
-// Short OSM type codes (Photon) vs. long ones (Nominatim) — normalize so the same
-// entity written both ways ("R" vs "relation") collapses to one key.
-const OSM_TYPE_CANON: Record<string, string> = { R: 'relation', N: 'node', W: 'way' };
-const osmKey = (l: LocationEntry): string =>
-  `${l.osm_id}:${OSM_TYPE_CANON[l.osm_type ?? ''] ?? l.osm_type ?? ''}`;
-
-/** Drop entries that are the SAME OSM entity (all rendered entries have an osm_id),
- * so a place referenced by two mentions isn't drawn twice. A no-op when there are
- * no duplicates. Generic so it preserves the caller's element type. */
-function dedupByOsm<T extends LocationEntry>(locs: T[]): T[] {
-  const seen = new Set<string>();
-  return locs.filter((l) => {
-    const k = osmKey(l);
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
 }
 
 function LocationPolygon({ loc }: { loc: GeoLocation }): React.ReactElement | null {
@@ -132,7 +113,7 @@ function LocationPolygon({ loc }: { loc: GeoLocation }): React.ReactElement | nu
   return null;
 }
 
-export function ActiveReportPolygons(): React.ReactElement {
+export function ActiveReportPolygons({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactElement {
   const { activeReportId, reports } = useReportStore();
   const username = useUserStore((s) => s.username);
   const [detailReport, setDetailReport] = useState<ReportDTO | null>(null);
@@ -163,14 +144,21 @@ export function ActiveReportPolygons(): React.ReactElement {
   const detail =
     detailReport && detailReport.id === activeReportId ? detailReport : null;
   const active = detail ?? reports.find((r) => r.id === activeReportId) ?? null;
-  if (!active || active.user_state.hide) return <></>;
+  if (!active) return <></>;
 
   // detail.locations already reflects any user-modified locations AND polygon
   // enrichment, so trust it directly; only consult user_state.locations during
   // the loading fallback (it is unenriched, so renders nothing until detail loads).
-  const effectiveLocs: LocationEntry[] = detail
+  const rawLocs: LocationEntry[] = detail
     ? detail.locations
     : (active.user_state.locations ?? active.locations);
+
+  // A polygon may only exist for a location that has a currently-visible dot —
+  // this is what binds the two together. It replaces the old standalone
+  // `active.user_state.hide` check and additionally makes polygons respect
+  // showHidden/the drawn spatial filter/"only new" the same way dots do, since
+  // those are exactly the filters useVisibleDots already applies.
+  const effectiveLocs = filterLocationsWithVisibleDots(rawLocs, activeReportId, visibleDots);
 
   const geoLocs = effectiveLocs.filter(isGeoLocation);
 

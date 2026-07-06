@@ -3,12 +3,11 @@ import ReactDOM from 'react-dom';
 import { Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
-import { useFilterStore } from '../../store/useFilterStore';
 import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport } from '../../api/reports';
 import { t } from '../../i18n';
 import type { DotDTO } from '../../types';
-import { pointInPolygon, computeSuppressedDotsWithLocs, computeVisibleReportBounds } from '../../utils/geo';
+import { computeVisibleReportBounds } from '../../utils/geo';
 import { useMapStore } from '../../store/useMapStore';
 
 function formatTimestamp(iso: string): string {
@@ -487,47 +486,13 @@ const GroupMarker = React.memo(function GroupMarker({
 // Main component
 // ---------------------------------------------------------------------------
 
-export function ReportDots(): React.ReactElement {
+export function ReportDots({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactElement {
   const map = useMap();
-  const { dots, activeReportId, setActiveReportId, optimisticAcknowledge, reports } = useReportStore();
+  const { activeReportId, setActiveReportId, optimisticAcknowledge } = useReportStore();
   const { username } = useUserStore();
-  const { showHidden, spatialPolygon, showOnlyNew } = useFilterStore();
 
   const [zoom, setZoom] = useState(() => map.getZoom());
   useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
-
-  const visibleDots = useMemo(() => {
-    const hiddenIds = showHidden
-      ? new Set<number>()
-      : new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
-    let result = showHidden
-      ? dots
-      : dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
-    if (spatialPolygon) {
-      result = result.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
-    }
-    if (showOnlyNew) {
-      // Keep the selected report's dots even after acknowledging cleared their
-      // new flag, so the report you just clicked stays visible on the map.
-      result = result.filter((d) => d.new || d.report_id === activeReportId);
-    }
-    // Containment suppression: for each report, hide dots whose location polygon
-    // contains another dot of the same report (i.e. they are a spatial superset).
-    const byReport = new Map<number, typeof result>();
-    for (const d of result) {
-      if (!byReport.has(d.report_id)) byReport.set(d.report_id, []);
-      byReport.get(d.report_id)!.push(d);
-    }
-    const suppressed = new Set<(typeof result)[0]>();
-    for (const [reportId, group] of byReport.entries()) {
-      if (group.length > 1) {
-        const report = reports.find((r) => r.id === reportId);
-        const locs = report ? (report.user_state.locations ?? report.locations ?? []) : [];
-        for (const d of computeSuppressedDotsWithLocs(group, locs)) suppressed.add(d);
-      }
-    }
-    return result.filter((d) => !suppressed.has(d));
-  }, [dots, showHidden, reports, spatialPolygon, showOnlyNew, activeReportId]);
 
   // Persists group object references across refreshes so unchanged cells don't
   // re-render (see clusterDots). Lives in a ref, not state — mutating it must not

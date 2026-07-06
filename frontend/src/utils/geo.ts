@@ -14,6 +14,25 @@ export function pointInPolygon(lat: number, lon: number, polygon: [number, numbe
   return inside;
 }
 
+// Short OSM type codes (Photon) vs. long ones (Nominatim) — normalize so the same
+// entity written both ways ("R" vs "relation") collapses to one key.
+const OSM_TYPE_CANON: Record<string, string> = { R: 'relation', N: 'node', W: 'way' };
+export const osmKey = (l: LocationEntry): string =>
+  `${l.osm_id}:${OSM_TYPE_CANON[l.osm_type ?? ''] ?? l.osm_type ?? ''}`;
+
+/** Drop entries that are the SAME OSM entity (all rendered entries have an osm_id),
+ * so a place referenced by two mentions isn't drawn twice. A no-op when there are
+ * no duplicates. Generic so it preserves the caller's element type. */
+export function dedupByOsm<T extends LocationEntry>(locs: T[]): T[] {
+  const seen = new Set<string>();
+  return locs.filter((l) => {
+    const k = osmKey(l);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
 export type Bbox = [number, number, number, number]; // [minLat, maxLat, minLon, maxLon]
 
 /**
@@ -101,6 +120,37 @@ function coordsBbox(coords: unknown): Bbox | null {
   return [minLat, maxLat, minLon, maxLon];
 }
 
+/** ~11 m — the lat/lon proximity tolerance used to match a LocationEntry to the
+ *  dot built from it (build_dots sets dot.lat/lon directly from loc.lat/lon). */
+const LOCATION_DOT_MATCH_TOLERANCE = 1e-4;
+
+function locationMatchesDot(loc: LocationEntry, d: DotDTO): boolean {
+  return (
+    loc.lat != null &&
+    loc.lon != null &&
+    Math.abs(Number(loc.lat) - d.lat) < LOCATION_DOT_MATCH_TOLERANCE &&
+    Math.abs(Number(loc.lon) - d.lon) < LOCATION_DOT_MATCH_TOLERANCE
+  );
+}
+
+/**
+ * Restricts a report's locations to those with a corresponding LIVE dot in
+ * `visibleDots` (same report_id, matching lat/lon). A polygon can only be attached
+ * to an existing, currently-visible dot — so a location whose dot was filtered out
+ * (hidden, outside the drawn spatial filter, "only new", etc.) is excluded here
+ * before any polygon rendering or containment suppression runs. This is what binds
+ * polygon visibility to dot visibility instead of the two being decided separately.
+ */
+export function filterLocationsWithVisibleDots(
+  locs: LocationEntry[],
+  reportId: number,
+  visibleDots: DotDTO[],
+): LocationEntry[] {
+  const reportDots = visibleDots.filter((d) => d.report_id === reportId);
+  if (reportDots.length === 0) return [];
+  return locs.filter((loc) => reportDots.some((d) => locationMatchesDot(loc, d)));
+}
+
 /**
  * Returns the dots hidden by containment suppression. Each dot's spatial extent is
  * the polygon-derived `location_bbox` when available, else its matched location's
@@ -114,14 +164,7 @@ export function computeSuppressedDotsWithLocs(
 ): Set<DotDTO> {
   const boxes: (Bbox | null)[] = groupDots.map((d) => {
     if (d.location_bbox) return d.location_bbox;
-    // Match the dot to its LocationEntry by lat/lon proximity (≈11 m tolerance).
-    const loc = locs.find(
-      (l) =>
-        l.lat != null &&
-        l.lon != null &&
-        Math.abs(Number(l.lat) - d.lat) < 1e-4 &&
-        Math.abs(Number(l.lon) - d.lon) < 1e-4,
-    );
+    const loc = locs.find((l) => locationMatchesDot(l, d));
     const ext = loc ? locationExtent(loc) : null;
     return ext ?? [d.lat, d.lat, d.lon, d.lon];
   });
