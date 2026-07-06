@@ -34,7 +34,17 @@ const RELEVANCE_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2, no
 // ---------------------------------------------------------------------------
 
 interface DotGroup {
+  // Pixel-cell bucket key (e.g. "12,7") — used ONLY internally by clusterDots'
+  // cache Map. It is inherently zoom-dependent (a fixed lat/lon falls in a
+  // different pixel cell at every zoom level), so it must NEVER be used as a
+  // React key or GroupMarker's groupKey — doing so once caused every marker to
+  // fully unmount/remount (closing any open popup) on every zoom change.
   key: string;
+  // Stable geographic identity ("lat.toFixed(5),lon.toFixed(5)") — used for
+  // React's key and groupKey. As long as a cell's dot membership doesn't change
+  // across a zoom step, this stays identical, so the marker (and its popup)
+  // survives the zoom.
+  identityKey: string;
   lat: number;
   lon: number;
   dots: DotDTO[];
@@ -80,7 +90,8 @@ function clusterDots(
     }
     const lat = group.reduce((s, d) => s + d.lat, 0) / group.length;
     const lon = group.reduce((s, d) => s + d.lon, 0) / group.length;
-    const g: DotGroup = { key, lat, lon, dots: group };
+    const identityKey = `${lat.toFixed(5)},${lon.toFixed(5)}`;
+    const g: DotGroup = { key, identityKey, lat, lon, dots: group };
     next.set(key, { sig, group: g });
     result.push(g);
   }
@@ -566,9 +577,9 @@ export function ReportDots({ visibleDots }: { visibleDots: DotDTO[] }): React.Re
     <>
       {groups.map((group) => (
         <GroupMarker
-          key={group.key}
+          key={group.identityKey}
           group={group}
-          groupKey={group.key}
+          groupKey={group.identityKey}
           activeReportId={activeReportId}
           activeGroupKeyRef={activeGroupKeyRef}
           username={username}
