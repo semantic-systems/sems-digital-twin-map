@@ -1,12 +1,12 @@
 import React from 'react';
 import { newPostsLabel } from '../../i18n';
-import { useReportStore } from '../../store/useReportStore';
+import { useReportStore, refreshDots } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
-import { useFilterStore, activeLocFilter } from '../../store/useFilterStore';
-import { admitAllReports, fetchReports, fetchDots } from '../../api/reports';
+import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
+import { admitAllReports, fetchReports } from '../../api/reports';
 
 export function NewPostsBanner(): React.ReactElement {
-  const { pendingNewCount, setPendingNewCount, setReports, setDots } = useReportStore();
+  const { pendingNewCount, setPendingNewCount, setReports } = useReportStore();
   const { username } = useUserStore();
   const filters = useFilterStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
@@ -16,16 +16,10 @@ export function NewPostsBanner(): React.ReactElement {
 
     try {
       const effectivePlatforms = filters.platforms.length ? filters.platforms : filters.allPlatforms;
-      const params = {
-        username,
-        loc_filter: activeLocFilter(filters),
-        platforms: effectivePlatforms,
-        event_types: filters.eventTypes,
-        relevances: filters.relevances,
-        show_hidden: filters.showHidden,
-        show_flagged: filters.showFlagged,
-        show_unflagged: filters.showUnflagged,
-      };
+      // Shared builder: previously this hand-built params object omitted
+      // time_window/search/only_new entirely, so admitting new posts could
+      // reload a wider set of reports/dots than the active filters allowed.
+      const params = dotsParamsFromFilters(username, filters);
 
       // Admit only filter-matching pending reports
       await admitAllReports(username, {
@@ -38,8 +32,7 @@ export function NewPostsBanner(): React.ReactElement {
       if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
       if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
       if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
-      const dotsRes = await fetchDots(params);
-      setDots(dotsRes.dots);
+      await refreshDots(params);
       setPendingNewCount(0);
     } catch (e) {
       console.error('Failed to admit reports:', e);
