@@ -122,6 +122,13 @@ function ArrowsInner({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactEle
           key={arrow.key}
           onClick={(e) => handleArrowClick(e, arrow)}
           title="Click to navigate"
+          // Lets ReportDots' "close detail overlay on click outside" handler
+          // recognize this as one of our own controls rather than a click on
+          // the bare map — React's e.stopPropagation() alone can't prevent that
+          // handler from firing, since it's a native Leaflet listener on the
+          // map container, which sees the click BEFORE it bubbles up to where
+          // React's own synthetic dispatch happens.
+          data-offscreen-arrow="true"
           style={{
             position: 'fixed',
             left: arrow.x,

@@ -553,10 +553,22 @@ export function ReportDots({ visibleDots }: { visibleDots: DotDTO[] }): React.Re
     setActiveReportId(null);
   }, [setActiveReportId]);
 
-  // Close detail overlay when clicking on the map outside it.
+  // Close detail overlay when clicking on the map outside it. Leaflet's own
+  // 'click' listener on the map container fires BEFORE React's synthetic click
+  // dispatch for any DOM node nested inside it (React's delegated listener
+  // sits higher, at the app root) — so a click on one of our own floating
+  // controls (e.g. an offscreen-navigation arrow) reaches this handler too,
+  // and calling stopPropagation() inside that control's own onClick is too
+  // late to prevent it. Checking the actual click target here — instead of
+  // relying on propagation — is what correctly distinguishes "clicked the
+  // bare map" from "clicked one of our own overlays".
   useEffect(() => {
     if (!detailState) return;
-    const handler = () => closeDetail();
+    const handler = (e: L.LeafletMouseEvent) => {
+      const target = e.originalEvent?.target as HTMLElement | null;
+      if (target?.closest('[data-offscreen-arrow]')) return;
+      closeDetail();
+    };
     const t = window.setTimeout(() => { map.on('click', handler); }, 0);
     return () => {
       window.clearTimeout(t);
