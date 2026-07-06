@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import type { DotDTO } from '../../types';
@@ -42,6 +42,71 @@ function clampToViewport(
   else if (dy < 0) t = Math.min(t, (minY - cy) / dy);
 
   return { x: cx + dx * t, y: cy + dy * t };
+}
+
+/**
+ * A single offscreen-navigation arrow. Every dot marker on the map has a native
+ * Leaflet Popup, and Leaflet has its OWN built-in "close the popup when the user
+ * clicks elsewhere on the map" behavior — completely separate from any of our
+ * own React click handlers, and not something React's e.stopPropagation() can
+ * prevent (React's synthetic dispatch and Leaflet's internal click detection
+ * are two independent systems reacting to the same bubbling native event;
+ * Leaflet's own container-level listener sees it first). The only thing that
+ * actually stops a click here from being treated as "a click on the map" —
+ * which would close whatever popup/detail overlay is open and immediately
+ * deselect the active report — is Leaflet's own `L.DomEvent.disableClickPropagation`,
+ * applied directly to this element's DOM node. Once that's in place, a plain
+ * React onClick would never fire either (it also depends on the event bubbling
+ * to the app root), so navigation is wired as a native listener on the same node.
+ */
+function ArrowMarker({ arrow, onNavigate }: { arrow: Arrow; onNavigate: (arrow: Arrow) => void }): React.ReactElement {
+  const elRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = elRef.current;
+    if (!el) return;
+    L.DomEvent.disableClickPropagation(el);
+    const handleClick = () => onNavigate(arrow);
+    el.addEventListener('click', handleClick);
+    return () => el.removeEventListener('click', handleClick);
+  }, [arrow, onNavigate]);
+
+  return (
+    <div
+      ref={elRef}
+      title="Click to navigate"
+      style={{
+        position: 'fixed',
+        left: arrow.x,
+        top: arrow.y,
+        transform: 'translate(-50%, -50%)',
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        background: '#f97316',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.35)',
+        pointerEvents: 'auto',
+        cursor: 'pointer',
+        zIndex: 490,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {/* Triangle pointing up, rotated to bearing */}
+      <div
+        style={{
+          width: 0,
+          height: 0,
+          borderLeft: '7px solid transparent',
+          borderRight: '7px solid transparent',
+          borderBottom: '13px solid white',
+          transform: `rotate(${arrow.bearing}deg)`,
+          flexShrink: 0,
+        }}
+      />
+    </div>
+  );
 }
 
 function ArrowsInner({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactElement {
@@ -110,56 +175,14 @@ function ArrowsInner({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactEle
     };
   }, [activeReportId, visibleDots]);
 
-  const handleArrowClick = (e: React.MouseEvent, arrow: Arrow) => {
-    e.stopPropagation();
+  const handleNavigate = (arrow: Arrow) => {
     map.setView([arrow.lat, arrow.lon], Math.max(map.getZoom(), 14), { animate: false });
   };
 
   return (
     <>
       {arrows.map((arrow) => (
-        <div
-          key={arrow.key}
-          onClick={(e) => handleArrowClick(e, arrow)}
-          title="Click to navigate"
-          // Lets ReportDots' "close detail overlay on click outside" handler
-          // recognize this as one of our own controls rather than a click on
-          // the bare map — React's e.stopPropagation() alone can't prevent that
-          // handler from firing, since it's a native Leaflet listener on the
-          // map container, which sees the click BEFORE it bubbles up to where
-          // React's own synthetic dispatch happens.
-          data-offscreen-arrow="true"
-          style={{
-            position: 'fixed',
-            left: arrow.x,
-            top: arrow.y,
-            transform: 'translate(-50%, -50%)',
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: '#f97316',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.35)',
-            pointerEvents: 'auto',
-            cursor: 'pointer',
-            zIndex: 490,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {/* Triangle pointing up, rotated to bearing */}
-          <div
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: '7px solid transparent',
-              borderRight: '7px solid transparent',
-              borderBottom: '13px solid white',
-              transform: `rotate(${arrow.bearing}deg)`,
-              flexShrink: 0,
-            }}
-          />
-        </div>
+        <ArrowMarker key={arrow.key} arrow={arrow} onNavigate={handleNavigate} />
       ))}
     </>
   );
