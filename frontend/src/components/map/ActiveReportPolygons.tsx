@@ -4,7 +4,7 @@ import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import type { LocationEntry, GeoJsonGeometry, ReportDTO, DotDTO } from '../../types';
-import { computeSuppressedRegions, locationExtent, filterLocationsWithVisibleDots, dedupByOsm } from '../../utils/geo';
+import { computeSuppressedRegions, locationExtent, filterLocationsWithVisibleDots, dedupByOsm, osmKey } from '../../utils/geo';
 
 function coordsToLatLng(coords: unknown[]): LatLngExpression[] {
   return (coords as [number, number][]).map(([lon, lat]) => [lat, lon]);
@@ -23,6 +23,36 @@ interface GeoLocation extends LocationEntry {
 
 function isGeoLocation(loc: LocationEntry): loc is GeoLocation {
   return Boolean(loc.osm_id && loc.polygon);
+}
+
+/**
+ * Fills in polygon geometry from the lazily-fetched detail report, WITHOUT
+ * treating detail as the authoritative location list. `rawLocs` (always derived
+ * from the live `reports` store) already reflects any in-progress edit the
+ * moment it's made; `detail` only ever gets refreshed when activeReportId/
+ * username changes, so it can be stale relative to an edit on the report
+ * that's already active. Previously `detail.locations` was used outright when
+ * present, which showed pre-edit locations until the report was deselected and
+ * reselected. Matching by normalized OSM entity (not array position) means a
+ * freshly-picked location's own polygon (PickModeOverlay attaches one directly
+ * from the Nominatim result) is never overwritten, and other locations still
+ * get their polygon filled in from the cached detail fetch once it's loaded.
+ */
+function mergeDetailPolygons(
+  rawLocs: LocationEntry[],
+  detail: ReportDTO | null,
+  activeReportId: number,
+): LocationEntry[] {
+  if (!detail || detail.id !== activeReportId) return rawLocs;
+  const polyByKey = new Map<string, GeoJsonGeometry>();
+  for (const l of detail.locations) {
+    if (l.polygon && l.osm_id) polyByKey.set(osmKey(l), l.polygon);
+  }
+  return rawLocs.map((l) => {
+    if (l.polygon || !l.osm_id) return l;
+    const poly = polyByKey.get(osmKey(l));
+    return poly ? { ...l, polygon: poly } : l;
+  });
 }
 
 function LocationPolygon({ loc }: { loc: GeoLocation }): React.ReactElement | null {
@@ -135,23 +165,26 @@ export function ActiveReportPolygons({ visibleDots }: { visibleDots: DotDTO[] })
 
   // Polygon geometry is only attached by the single-report detail endpoint
   // (the list endpoint, and therefore report.locations / user_state.locations,
-  // never carry a polygon). The detail report is also fetched independently of
-  // the sidebar list, so it exists even when the active report falls outside the
-  // list's current pagination/filters (e.g. selected via a map dot) — relying on
-  // it here is what lets those polygons render at all. While the fetch is in
-  // flight, fall back to the in-list report (no polygon data yet, so nothing
-  // draws until the detail arrives).
+  // never carry a polygon). The detail report is fetched independently of the
+  // sidebar list, so it exists even when the active report falls outside the
+  // list's current pagination/filters (e.g. selected via a map dot).
   const detail =
     detailReport && detailReport.id === activeReportId ? detailReport : null;
-  const active = detail ?? reports.find((r) => r.id === activeReportId) ?? null;
+  // `active` always comes from the live `reports` store when the report is
+  // loaded there — NOT from `detail` — so it reflects an in-progress location
+  // edit immediately. Falling back to `detail` only covers a report selected
+  // via a map dot that fell outside the list's current page.
+  const active = reports.find((r) => r.id === activeReportId) ?? detail ?? null;
   if (!active) return <></>;
 
-  // detail.locations already reflects any user-modified locations AND polygon
-  // enrichment, so trust it directly; only consult user_state.locations during
-  // the loading fallback (it is unenriched, so renders nothing until detail loads).
-  const rawLocs: LocationEntry[] = detail
-    ? detail.locations
-    : (active.user_state.locations ?? active.locations);
+  // The location list itself is always the live one; `detail` (once loaded)
+  // only contributes polygon geometry for locations that don't already carry
+  // their own (see mergeDetailPolygons).
+  const rawLocs: LocationEntry[] = mergeDetailPolygons(
+    active.user_state.locations ?? active.locations,
+    detail,
+    activeReportId,
+  );
 
   // A polygon may only exist for a location that has a currently-visible dot —
   // this is what binds the two together. It replaces the old standalone

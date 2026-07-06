@@ -254,7 +254,7 @@ export function MapView(): React.ReactElement {
       <ActiveReportPolygons visibleDots={visibleDots} />
 
       {/* Offscreen arrows */}
-      <OffscreenArrows />
+      <OffscreenArrows visibleDots={visibleDots} />
 
       {/* Handlers */}
       <PickModeHandler />

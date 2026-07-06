@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { useReportStore } from '../../store/useReportStore';
-import { useFilterStore } from '../../store/useFilterStore';
-import { pointInPolygon, computeSuppressedDotsWithLocs } from '../../utils/geo';
+import type { DotDTO } from '../../types';
 import L from 'leaflet';
 
 interface Arrow {
@@ -45,10 +44,9 @@ function clampToViewport(
   return { x: cx + dx * t, y: cy + dy * t };
 }
 
-function ArrowsInner(): React.ReactElement {
+function ArrowsInner({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactElement {
   const map = useMap();
-  const { activeReportId, reports, dots } = useReportStore();
-  const { showHidden, spatialPolygon } = useFilterStore();
+  const { activeReportId } = useReportStore();
   const [arrows, setArrows] = useState<Arrow[]>([]);
 
   const computeArrows = () => {
@@ -57,27 +55,12 @@ function ArrowsInner(): React.ReactElement {
       return;
     }
 
-    const report = reports.find((r) => r.id === activeReportId);
-    if (!report) {
-      setArrows([]);
-      return;
-    }
-
-    // Apply the same visibility filters as ReportDots so arrows only point to
-    // dots that are actually rendered on the map.
-    let activeDots = dots.filter((d) => d.report_id === activeReportId);
-    if (!showHidden && report.user_state.hide) {
-      activeDots = activeDots.filter((d) => !d.seen);
-    }
-    if (spatialPolygon) {
-      activeDots = activeDots.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
-    }
-    // Suppress dots whose location polygon contains another dot (spatial superset).
-    const locs = report
-      ? (report.user_state.locations ?? report.locations ?? [])
-      : [];
-    const suppressed = computeSuppressedDotsWithLocs(activeDots, locs);
-    activeDots = activeDots.filter((d) => !suppressed.has(d));
+    // visibleDots is the SAME filtered/suppressed set ReportDots and
+    // ActiveReportPolygons render from (seen/hidden respecting showHidden, the
+    // drawn spatial filter, "only new", containment suppression) — arrows only
+    // ever point at a dot that's actually shown on the map, and this can't drift
+    // out of sync since it's one shared computation, not a re-implementation.
+    const activeDots = visibleDots.filter((d) => d.report_id === activeReportId);
 
     const allPoints: { lat: number; lon: number; key: string }[] =
       activeDots.map((d, i) => ({ lat: d.lat, lon: d.lon, key: `dot-${i}` }));
@@ -125,7 +108,7 @@ function ArrowsInner(): React.ReactElement {
     return () => {
       map.off('move zoom', computeArrows);
     };
-  }, [activeReportId, reports, dots, showHidden, spatialPolygon]);
+  }, [activeReportId, visibleDots]);
 
   const handleArrowClick = (e: React.MouseEvent, arrow: Arrow) => {
     e.stopPropagation();
@@ -175,6 +158,6 @@ function ArrowsInner(): React.ReactElement {
   );
 }
 
-export function OffscreenArrows(): React.ReactElement {
-  return <ArrowsInner />;
+export function OffscreenArrows({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactElement {
+  return <ArrowsInner visibleDots={visibleDots} />;
 }
