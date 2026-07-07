@@ -1003,7 +1003,9 @@ def build_dots(
     if only_new:
         q = q.filter(Report.id.in_(new_ids))
 
-    hide_seen = not show_hidden
+    # Unlike get_reports, dots never surface hidden reports on the map — show_hidden
+    # only lets the sidebar list display them (greyed out), it doesn't apply here.
+    hide_seen = True
     hide_flagged = not show_flagged
     hide_unflagged = not show_unflagged
 

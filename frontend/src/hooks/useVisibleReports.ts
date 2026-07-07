@@ -17,9 +17,18 @@ export function useVisibleReports(): ReportDTO[] {
   const activeReportId = useReportStore((s) => s.activeReportId);
   const spatialPolygon = useFilterStore((s) => s.spatialPolygon);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
+  const showHidden = useFilterStore((s) => s.showHidden);
 
   return useMemo(() => {
     let filtered = reports;
+
+    // With "show hidden" off, hiding a report should remove it from the list right
+    // away (optimistically) rather than waiting for the next server reload — the
+    // server already excludes hidden reports from `reports` in that mode, this just
+    // covers the gap for a report hidden during the current session.
+    if (!showHidden) {
+      filtered = filtered.filter((r) => !r.user_state.hide);
+    }
 
     if (showOnlyNew) {
       // Keep the selected report even after clicking it acknowledged it, so it
@@ -45,5 +54,5 @@ export function useVisibleReports(): ReportDTO[] {
     }
 
     return filtered;
-  }, [reports, spatialPolygon, showOnlyNew, activeReportId]);
+  }, [reports, spatialPolygon, showOnlyNew, activeReportId, showHidden]);
 }
