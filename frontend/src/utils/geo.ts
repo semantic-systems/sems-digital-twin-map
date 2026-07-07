@@ -33,6 +33,13 @@ export function dedupByOsm<T extends LocationEntry>(locs: T[]): T[] {
   });
 }
 
+/** A location is "confirmed" once it has real coordinates — either geocoded via
+ * OSM (osm_id) or pinned directly on the map (lat/lon only). Only a bare mention
+ * with neither is still "pending". */
+export function isLocationConfirmed(loc: LocationEntry): boolean {
+  return Boolean(loc.osm_id) || (loc.lat != null && loc.lon != null);
+}
+
 export type Bbox = [number, number, number, number]; // [minLat, maxLat, minLon, maxLon]
 
 /**
