@@ -5,27 +5,25 @@ import { pointInPolygon, computeSuppressedDotsWithLocs } from '../utils/geo';
 import type { DotDTO } from '../types';
 
 /**
- * The dots actually shown on the map, after every active filter: seen/hidden
- * (respecting showHidden), the drawn spatial filter, "only new", and containment
- * suppression. Single source of truth so anything that draws per-location map
- * overlays (dots, polygons) reads the SAME visibility decision — a location whose
- * dot doesn't survive here can't independently keep its polygon on screen either.
+ * The dots actually shown on the map, after every active filter: always excluding
+ * hidden reports (showHidden only affects the sidebar list, never the map), the
+ * drawn spatial filter, "only new", and containment suppression. Single source of
+ * truth so anything that draws per-location map overlays (dots, polygons) reads
+ * the SAME visibility decision — a location whose dot doesn't survive here can't
+ * independently keep its polygon on screen either.
  */
 export function useVisibleDots(): DotDTO[] {
   const dots = useReportStore((s) => s.dots);
   const activeReportId = useReportStore((s) => s.activeReportId);
   const reports = useReportStore((s) => s.reports);
-  const showHidden = useFilterStore((s) => s.showHidden);
   const spatialPolygon = useFilterStore((s) => s.spatialPolygon);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
 
   return useMemo(() => {
-    const hiddenIds = showHidden
-      ? new Set<number>()
-      : new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
-    let result = showHidden
-      ? dots
-      : dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
+    // Hidden reports never get a dot, regardless of showHidden — that filter only
+    // reveals them (greyed) in the sidebar list, never on the map.
+    const hiddenIds = new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
+    let result = dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
     if (spatialPolygon) {
       result = result.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
     }
@@ -50,5 +48,5 @@ export function useVisibleDots(): DotDTO[] {
       }
     }
     return result.filter((d) => !suppressed.has(d));
-  }, [dots, showHidden, reports, spatialPolygon, showOnlyNew, activeReportId]);
+  }, [dots, reports, spatialPolygon, showOnlyNew, activeReportId]);
 }

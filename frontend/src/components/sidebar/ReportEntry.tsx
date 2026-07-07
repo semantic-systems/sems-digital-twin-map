@@ -131,6 +131,11 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     optimisticHide(report.id, newHide);
     try {
       await hideReport(report.id, username, newHide);
+      // Dots for hidden reports are never fetched at all (not just filtered client
+      // side), so unhiding needs a real refetch to bring its dot back — flipping
+      // the local `seen` flag alone only works if the dot happened to already be
+      // loaded from before it was hidden.
+      await refreshDots(dotsParamsFromFilters(username, filters));
     } catch (e) {
       console.error('Failed to hide:', e);
       optimisticHide(report.id, hide);
