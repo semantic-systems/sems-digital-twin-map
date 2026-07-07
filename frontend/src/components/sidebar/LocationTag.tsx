@@ -6,6 +6,7 @@ import { useReportStore, refreshDots } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
 import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
 import { updateLocations } from '../../api/reports';
+import { isLocationConfirmed } from '../../utils/geo';
 
 interface LocationTagProps {
   loc: LocationEntry;
@@ -25,7 +26,7 @@ export function LocationTag({
   const { username } = useUserStore();
   const filters = useFilterStore();
 
-  const isGeo = Boolean(loc.osm_id);
+  const isGeo = isLocationConfirmed(loc);
   const displayName = loc.mention || loc.name || (loc.lat ? `${loc.lat?.toFixed(4)}, ${loc.lon?.toFixed(4)}` : '?');
 
   const handleReassign = () => {

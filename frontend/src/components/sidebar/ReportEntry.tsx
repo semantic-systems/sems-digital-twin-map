@@ -7,7 +7,7 @@ import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport, restoreLocations } from '../../api/reports';
 import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
 import { LocationTag } from './LocationTag';
-import { computeVisibleReportBounds } from '../../utils/geo';
+import { computeVisibleReportBounds, isLocationConfirmed } from '../../utils/geo';
 
 interface ReportEntryProps {
   report: ReportDTO;
@@ -23,13 +23,13 @@ const RELEVANCE_RIGHT_BORDER: Record<string, string> = {
 };
 
 function getGeoIcon(locations: LocationEntry[]): { icon: string; title: string } {
-  if (locations.some((l) => l.osm_id)) return { icon: '📍', title: t('geo_title') };
+  if (locations.some(isLocationConfirmed)) return { icon: '📍', title: t('geo_title') };
   if (locations.length > 0) return { icon: '◎', title: t('pending_title') };
   return { icon: '·', title: t('no_loc_title') };
 }
 
 function getLeftBorderColor(locations: LocationEntry[]): string {
-  if (locations.some((l) => l.osm_id)) return '#22c55e';
+  if (locations.some(isLocationConfirmed)) return '#22c55e';
   if (locations.length > 0) return '#f97316';
   return '#374151';
 }
