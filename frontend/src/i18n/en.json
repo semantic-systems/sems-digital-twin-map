@@ -95,5 +95,8 @@
   "layer_Bus Stops": "Bus Stops",
   "layer_Ferry Stops": "Ferry Stops",
   "layer_Events": "Events",
-  "layer_Predictions": "Predictions"
+  "layer_Predictions": "Predictions",
+  "help": "Help",
+  "help_title": "Open the manual",
+  "close": "Close"
 }

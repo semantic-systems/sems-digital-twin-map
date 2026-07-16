@@ -10,6 +10,7 @@ import { FilterBar } from './components/filterbar/FilterBar';
 import { Sidebar } from './components/sidebar/Sidebar';
 import { MapView } from './components/map/MapView';
 import { PickModeOverlay } from './components/map/PickModeOverlay';
+import { HelpButton } from './components/shared/HelpModal';
 
 const BASE_LIMIT = 200;
 
@@ -136,10 +137,11 @@ function AppInner(): React.ReactElement {
         overflow: 'hidden',
       }}
     >
+      <HelpButton />
       <FilterBar />
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Sidebar onLoadMore={loadMore} />
-        <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+        <div data-app-region="map" style={{ flex: 1, position: 'relative', minWidth: 0 }}>
           <MapView />
           <PickModeOverlay />
         </div>

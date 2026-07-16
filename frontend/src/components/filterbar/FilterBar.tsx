@@ -189,6 +189,7 @@ export function FilterBar(): React.ReactElement {
 
   return (
     <div
+      data-app-region="filterbar"
       style={{
         background: '#ffffff',
         borderBottom: '1px solid #e5e7eb',

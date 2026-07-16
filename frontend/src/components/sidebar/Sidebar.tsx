@@ -122,6 +122,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
 
   return (
     <div
+      data-app-region="sidebar"
       style={{
         width: 380,
         flexShrink: 0,

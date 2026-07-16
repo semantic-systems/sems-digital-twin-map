@@ -95,5 +95,8 @@
   "layer_Bus Stops": "Bushaltestellen",
   "layer_Ferry Stops": "Fährhaltestellen",
   "layer_Events": "Ereignisse",
-  "layer_Predictions": "Vorhersagen"
+  "layer_Predictions": "Vorhersagen",
+  "help": "Hilfe",
+  "help_title": "Anleitung öffnen",
+  "close": "Schließen"
 }
