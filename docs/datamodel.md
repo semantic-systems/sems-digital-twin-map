@@ -122,12 +122,29 @@ A Colormap has the following attributes:
 Alert objects represent [NINA API alerts](https://nina.api.bund.dev/), which are displayed in the NINA Warnings tab. While we store every field of an alert, we only display the `timestamp`, `event`, `urgency`, `sender_name`, `headline`, and `description` fields in the frontend. Refer to the [NINA API documentation](https://nina.api.bund.dev/) for more information on the fields.
 
 ## Report
-Report objects represent social media posts or news headlines that are displayed in the left sidebar of the map. You can find more information on reports in [servers.md](/docs/servers.md). A Report has the following attributes:
+Report objects represent social media posts or news headlines that are displayed in the left sidebar of the map. They are populated by the `server_reports` background worker. You can find more information in [servers.md](/docs/servers.md). A Report has the following attributes:
 - `id`: Primary key of the Report. Is set automatically by the database.
-- `identifier`: The unique identifier that the platform uses to identify the post. This field is used to prevent duplicate reports from being saved and displayed.
-- `text`: The text of the post or headline that is displayed.
-- `url`: The URL to the post or news article.
-- `timestamp`: The timestamp of the post.
-- `source`: The source of the post (i.e. Mastodon, Reddit, etc). Reports from RSS feeds are displayed as `rss/<feed_name>`, where `<feed_name>` is the name of the feed.
+- `identifier`: The unique identifier that the platform uses to identify the post. Used to prevent duplicate reports.
+- `text`: The text of the post or headline.
+- `url`: The URL to the original post or news article.
+- `platform`: The source platform (e.g. `mastodon`, `bluesky`, `reddit`). RSS feeds are stored as `rss/<feed_name>`.
 - `timestamp`: The timestamp of when the post/article was published.
-- `event_type`: The classified event type of the post. This field is used to filter reports by event type in the frontend.
+- `event_type`: The classified event type of the post (e.g. `Warnungen & Hinweise`, `Infrastruktur-Schäden`). Used to filter reports in the frontend.
+- `relevance`: Predicted relevance of the post (`high`, `medium`, `low`, `none`).
+- `locations`: A JSON array of geo-linked location objects associated with the post. Can be modified per-user via `UserReportState`.
+- `original_locations`: Snapshot of the locations at import time. Never overwritten.
+- `author`: Username or handle of the post author.
+- `seen`: Whether the post has been marked as seen (legacy field, superseded by `UserReportState.hide`).
+- `author_flagged`: Whether the author has been flagged (legacy field, superseded by `UserReportState.flag`).
+
+## UserReportState
+Stores per-user mutable state for a single report. This replaces the old browser-local state and allows multiple users to independently manage their view of reports.
+- `id`: Primary key.
+- `username`: The username this state belongs to.
+- `report_id`: Foreign key to the `Report`.
+- `hide`: Whether the user has hidden/seen this report.
+- `flag`: Whether the user has flagged the author of this report.
+- `flag_author`: Denormalised author string stored when `flag=True`.
+- `locations`: User-overridden locations for this report (overrides `Report.locations` for this user).
+- `first_seen_at`: Timestamp of when the report was first admitted to this user's sidebar. `NULL` means not yet admitted.
+- `new`: `True` until the user explicitly acknowledges the report.
