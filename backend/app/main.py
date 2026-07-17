@@ -126,6 +126,39 @@ def _init_db() -> None:
         except Exception as exc:  # noqa: BLE001
             print(f"[startup] SKIP: {exc!s:.100}")
 
+    # Seed a permanent example report for the onboarding tour (idempotent — the
+    # WHERE NOT EXISTS guard means this only ever inserts once). It's excluded
+    # from all normal listings via the 'tour-example' identifier filter in
+    # report_service.build_report_query, and fetched on demand by
+    # GET /api/v1/reports/tour-example. Bound params (not the statements-list
+    # string-interpolation pattern above) because the JSON payload's own ':'
+    # characters would otherwise be misread as SQLAlchemy bind-param markers.
+    import json  # noqa: PLC0415
+
+    try:
+        with _engine.begin() as conn:
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO reports (identifier, text, url, platform, timestamp, event_type, event_types, relevance, locations, original_locations, author, seen, author_flagged)
+                    SELECT 'tour-example', :report_text, '#', 'twitter', NOW(), :event_type, ARRAY[:event_type]::VARCHAR[], 'high', CAST(:locations AS JSON), CAST(:locations AS JSON), :author, FALSE, FALSE
+                    WHERE NOT EXISTS (SELECT 1 FROM reports WHERE identifier = 'tour-example')
+                    """
+                ),
+                {
+                    "report_text": "🚨 Wasserrohrbruch in der Innenstadt – Straße gesperrt, Anwohner suchen Hilfe.",
+                    "event_type": "Infrastruktur-Schäden",
+                    "author": "beispiel_nutzer",
+                    "locations": json.dumps([
+                        {"name": "Hamburg", "display_name": "Hamburg, Deutschland", "lat": 53.5438, "lon": 9.9857},
+                        {"name": "Berlin", "display_name": "Berlin, Deutschland", "lat": 52.52, "lon": 13.405},
+                    ]),
+                },
+            )
+        print("[startup] OK: seeded tour-example report")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[startup] SKIP: tour-example seed: {exc!s:.100}")
+
     print("[startup] DB init complete.")
 
 

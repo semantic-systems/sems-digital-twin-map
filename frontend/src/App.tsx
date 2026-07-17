@@ -11,6 +11,7 @@ import { Sidebar } from './components/sidebar/Sidebar';
 import { MapView } from './components/map/MapView';
 import { PickModeOverlay } from './components/map/PickModeOverlay';
 import { HelpButton } from './components/shared/HelpModal';
+import { maybeAutoStartTour } from './tour/tour';
 
 const BASE_LIMIT = 200;
 
@@ -125,6 +126,12 @@ function AppInner(): React.ReactElement {
         }
       })
       .catch(() => {});
+  }, []);
+
+  // First-time onboarding: walk new users through the map, list, search and
+  // filters once. Replayable anytime via "Take a tour" in the help modal.
+  useEffect(() => {
+    maybeAutoStartTour();
   }, []);
 
   return (

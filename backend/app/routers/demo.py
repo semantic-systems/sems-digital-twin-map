@@ -120,9 +120,12 @@ async def demo_reset(session: Session = Depends(get_db)) -> dict[str, Any]:
     # Cancel any in-progress trickle
     _cancel_trickle()
 
-    # Wipe all data
+    # Wipe all data — except the onboarding tour's permanent example report,
+    # which is only ever seeded once at startup (see main.py::_init_db). An
+    # unscoped delete here previously wiped it along with everything else,
+    # permanently 404ing GET /reports/tour-example until the backend restarted.
     session.query(UserReportState).delete()
-    session.query(Report).delete()
+    session.query(Report).filter(~Report.identifier.like("tour-example%")).delete(synchronize_session=False)
     session.commit()
 
     # Reset counters

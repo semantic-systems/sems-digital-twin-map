@@ -37,6 +37,7 @@
   "reports": "Berichte",
   "loading": "Lädt…",
   "auto_update": "Autom. Aktualisierung",
+  "recommended": "empfohlen",
   "reset_demo": "↺ Demo zurücksetzen",
   "new_posts_0": "↑ 0 neue Beiträge",
   "new_posts_one": "↑ {n} neuer Beitrag",
@@ -98,5 +99,10 @@
   "layer_Predictions": "Vorhersagen",
   "help": "Hilfe",
   "help_title": "Anleitung öffnen",
-  "close": "Schließen"
+  "close": "Schließen",
+  "take_tour": "Tour starten",
+  "tour_back": "Zurück",
+  "tour_next": "Weiter",
+  "tour_done": "Fertig",
+  "tour_example_badge": "Beispiel"
 }

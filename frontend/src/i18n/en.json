@@ -37,6 +37,7 @@
   "reports": "Reports",
   "loading": "Loading…",
   "auto_update": "Auto-update",
+  "recommended": "recommended",
   "reset_demo": "↺ Reset demo",
   "new_posts_0": "↑ 0 new posts",
   "new_posts_one": "↑ {n} new post",
@@ -98,5 +99,10 @@
   "layer_Predictions": "Predictions",
   "help": "Help",
   "help_title": "Open the manual",
-  "close": "Close"
+  "close": "Close",
+  "take_tour": "Take a tour",
+  "tour_back": "Back",
+  "tour_next": "Next",
+  "tour_done": "Done",
+  "tour_example_badge": "Example"
 }

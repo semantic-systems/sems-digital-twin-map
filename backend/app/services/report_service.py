@@ -411,6 +411,11 @@ def build_report_query(
     else:
         q = q.filter(~Report.identifier.like("demo-%"))
 
+    # The onboarding tour's example report is never part of normal browsing,
+    # regardless of demo_mode — it's only ever fetched directly by identifier
+    # via get_tour_example / GET /api/v1/reports/tour-example.
+    q = q.filter(~Report.identifier.like("tour-example%"))
+
     if eff_platform:
         q = q.filter(
             or_(*[Report.platform.like(f"{p}%") for p in eff_platform])
@@ -824,6 +829,50 @@ def get_reports(
 
     loaded_at = datetime.now(timezone.utc).isoformat()
     return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count
+
+
+# ---------------------------------------------------------------------------
+# get_tour_example
+# ---------------------------------------------------------------------------
+
+def get_tour_example(session: Session, username: str) -> ReportDTO:
+    """
+    Fetch the permanent onboarding-tour example report (seeded once at startup —
+    see main.py::_init_db), admitting it for `username` so hide/flag/acknowledge/
+    location-edit all work exactly like a real report — no special-casing needed
+    anywhere else. Its timestamp is refreshed to "now" on every fetch so it always
+    reads as a recent post, and its per-user state is reset to defaults (not
+    hidden/flagged, both locations restored) so a tour replay — or someone else's
+    tour, if hide/flag ever leaked to a shared demo environment — always starts
+    from the same clean demo, regardless of what a previous run clicked. Raises
+    LookupError if the seed is somehow missing (the router turns that into a
+    404 rather than silently returning nothing).
+    """
+    report: Report | None = (
+        session.query(Report).filter(Report.identifier == "tour-example").first()
+    )
+    if report is None:
+        raise LookupError("tour-example report is not seeded")
+
+    report.timestamp = _now_utc()
+    session.commit()
+
+    bulk_admit_reports(username, [report.id], session)
+    upsert_user_state(
+        username, report.id, session,
+        hide=False, flag=False, flag_author=None, new=True, locations=None,
+    )
+
+    user_state_row = (
+        session.query(UserReportState)
+        .filter(
+            UserReportState.username == username,
+            UserReportState.report_id == report.id,
+        )
+        .first()
+    )
+
+    return build_report_dto(report, user_state_row=user_state_row)
 
 
 # ---------------------------------------------------------------------------

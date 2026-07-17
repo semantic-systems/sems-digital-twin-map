@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { useReportStore } from '../store/useReportStore';
 import { useFilterStore } from '../store/useFilterStore';
+import { useTourStore } from '../store/useTourStore';
 import { pointInPolygon } from '../utils/geo';
+import { exampleMatchesFilters } from '../tour/exampleReport';
 import type { ReportDTO } from '../types';
 
 /**
@@ -18,16 +20,33 @@ export function useVisibleReports(): ReportDTO[] {
   const spatialPolygon = useFilterStore((s) => s.spatialPolygon);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
   const showHidden = useFilterStore((s) => s.showHidden);
+  const activeExampleReportId = useTourStore((s) => s.activeExampleReportId);
+  const filterState = useFilterStore();
 
   return useMemo(() => {
     let filtered = reports;
+
+    // The example is always kept as a member of `reports` (see setReports) so
+    // it can reappear the moment a search/filter change would match it again
+    // — but it should only actually be VISIBLE when it currently does. It's
+    // excluded from every real query, so the server can never do this filtering
+    // for it the way it does for every other report; this replicates that here.
+    if (activeExampleReportId !== null) {
+      filtered = filtered.filter((r) => r.id !== activeExampleReportId || exampleMatchesFilters(r, filterState));
+    }
 
     // With "show hidden" off, hiding a report should remove it from the list right
     // away (optimistically) rather than waiting for the next server reload — the
     // server already excludes hidden reports from `reports` in that mode, this just
     // covers the gap for a report hidden during the current session.
+    //
+    // Exception: the onboarding tour's example report stays in the list even if
+    // hidden while the tour has it loaded. It still dims (ReportEntry already
+    // does that for hide=true), but it can't disappear from the DOM — if it did,
+    // whatever tour step is still pointing at it would lose its target and the
+    // popover would jump to a fallback "centered" position mid-step.
     if (!showHidden) {
-      filtered = filtered.filter((r) => !r.user_state.hide);
+      filtered = filtered.filter((r) => !r.user_state.hide || r.id === activeExampleReportId);
     }
 
     if (showOnlyNew) {
@@ -54,5 +73,5 @@ export function useVisibleReports(): ReportDTO[] {
     }
 
     return filtered;
-  }, [reports, spatialPolygon, showOnlyNew, activeReportId, showHidden]);
+  }, [reports, spatialPolygon, showOnlyNew, activeReportId, showHidden, activeExampleReportId, filterState]);
 }

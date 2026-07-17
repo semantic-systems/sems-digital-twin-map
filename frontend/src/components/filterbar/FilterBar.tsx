@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { t } from '../../i18n';
 import { useFilterStore, ALL_RELEVANCES_LIST, getLayerColor } from '../../store/useFilterStore';
-import { useReportStore } from '../../store/useReportStore';
+import { useEffectiveFacetTotals } from '../../hooks/useEffectiveFacetTotals';
 import { EventTypeChips } from './EventTypeChips';
 import { PRESET_AREAS } from '../../utils/presetAreas';
 
@@ -118,8 +118,7 @@ export function FilterBar(): React.ReactElement {
     setSpatialDrawMode,
   } = useFilterStore();
 
-  const { eventTypeTotals, relevanceTotals, locationCounts } = useReportStore();
-  const { platformCounts } = useFilterStore();
+  const { eventTypeTotals, relevanceTotals, locationCounts, platformCounts } = useEffectiveFacetTotals();
 
   // Custom-range popover state
   const [rangeOpen, setRangeOpen] = useState(false);

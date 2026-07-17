@@ -67,6 +67,11 @@ export async function fetchReport(id: number, username?: string): Promise<Report
   return apiFetch<ReportDTO>(`/reports/${id}${qs}`);
 }
 
+/** The onboarding tour's permanent example report (see tour/exampleReport.ts). */
+export async function fetchTourExample(username: string): Promise<ReportDTO> {
+  return apiFetch<ReportDTO>(`/reports/tour-example?username=${encodeURIComponent(username)}`);
+}
+
 export async function fetchPlatforms(username: string): Promise<{ platforms: string[] }> {
   return apiFetch<{ platforms: string[] }>(`/reports/platforms?username=${encodeURIComponent(username)}`);
 }

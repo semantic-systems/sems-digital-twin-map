@@ -335,6 +335,22 @@ def admit_all_endpoint(
 
 
 # ---------------------------------------------------------------------------
+# GET /tour-example  — the onboarding tour's permanent example report
+# (must precede /{report_id} — a literal segment, not an int path param)
+# ---------------------------------------------------------------------------
+
+@router.get("/tour-example", response_model=ReportDTO)
+def tour_example_endpoint(
+    username: str = Query(..., description="The requesting user's name"),
+    session: Session = Depends(get_db),
+) -> ReportDTO:
+    try:
+        return svc.get_tour_example(session=session, username=username)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+# ---------------------------------------------------------------------------
 # GET /{report_id}
 # ---------------------------------------------------------------------------
 

@@ -12,11 +12,13 @@
     "gen:types": "openapi-typescript ../backend/openapi.json -o src/api/schema.d.ts"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.8.0",
     "@types/leaflet": "^1.9.21",
     "leaflet": "^1.9.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-leaflet": "^5.0.0",
+    "shepherd.js": "^15.2.2",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

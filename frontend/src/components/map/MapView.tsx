@@ -88,6 +88,24 @@ function FitBoundsHandler(): null {
   return null;
 }
 
+// ---- ClosePopupHandler ----
+// Lets code outside the map's React tree (the onboarding tour) close whatever
+// Leaflet popup is open — e.g. one a user opened by clicking a dot mid-tour —
+// without needing a raw handle to the Leaflet map instance.
+function ClosePopupHandler(): null {
+  const map = useMap();
+  const { closePopupRequest } = useMapStore();
+  const seenRef = useRef(closePopupRequest);
+
+  useEffect(() => {
+    if (closePopupRequest === seenRef.current) return;
+    seenRef.current = closePopupRequest;
+    map.closePopup();
+  }, [closePopupRequest, map]);
+
+  return null;
+}
+
 // ---- LayerRenderer ----
 interface LayerData {
   id: number;
@@ -258,6 +276,7 @@ export function MapView(): React.ReactElement {
       {/* Handlers */}
       <PickModeHandler />
       <FitBoundsHandler />
+      <ClosePopupHandler />
       <PickModeCursor />
 
       {/* Controls */}

@@ -9,6 +9,8 @@ import { t } from '../../i18n';
 import type { DotDTO } from '../../types';
 import { computeVisibleReportBounds } from '../../utils/geo';
 import { useMapStore } from '../../store/useMapStore';
+import { useTourStore } from '../../store/useTourStore';
+import { EXAMPLE_IDENTIFIER } from '../../tour/constants';
 
 function formatTimestamp(iso: string): string {
   try {
@@ -67,12 +69,27 @@ function clusterDots(
   dots: DotDTO[],
   leafletMap: L.Map,
   cache: Map<string, { sig: string; group: DotGroup }>,
+  exampleReportId: number | null,
   cellSize = 60,
 ): DotGroup[] {
   const cellMap = new Map<string, DotDTO[]>();
   for (const dot of dots) {
-    const px = leafletMap.latLngToContainerPoint([dot.lat, dot.lon]);
-    const key = `${Math.floor(px.x / cellSize)},${Math.floor(px.y / cellSize)}`;
+    let key: string;
+    if (exampleReportId !== null && dot.report_id === exampleReportId) {
+      // Always its own isolated cell, keyed per-location (not just per-report,
+      // since the example has two) so Hamburg and Berlin never merge into one
+      // "2" marker either. Letting it cluster with a nearby real dot the
+      // normal pixel-cell way would make its group's identity — and so its
+      // React key, and so the underlying Leaflet marker DOM element — shift
+      // whenever that real dot joins or leaves the cluster across a zoom
+      // change. The tour's own auto-centering (the "dot" step) does exactly
+      // that, and a step still attached to the old, now-detached marker
+      // collapses its tooltip to a 0,0 fallback position.
+      key = `example-${dot.report_id}-${dot.lat}-${dot.lon}`;
+    } else {
+      const px = leafletMap.latLngToContainerPoint([dot.lat, dot.lon]);
+      key = `${Math.floor(px.x / cellSize)},${Math.floor(px.y / cellSize)}`;
+    }
     if (!cellMap.has(key)) cellMap.set(key, []);
     cellMap.get(key)!.push(dot);
   }
@@ -107,9 +124,9 @@ function clusterDots(
 // ---------------------------------------------------------------------------
 
 function makeDotIcon({
-  color, size, count, hasNew, isActive,
+  color, size, count, hasNew, isActive, dataTour,
 }: {
-  color: string; size: number; count: number; hasNew: boolean; isActive: boolean;
+  color: string; size: number; count: number; hasNew: boolean; isActive: boolean; dataTour?: string;
 }): L.DivIcon {
   const borderWidth = isActive ? 3 : 2;
   const countBadge = count > 1
@@ -119,7 +136,7 @@ function makeDotIcon({
     ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:${Math.round(size * 0.55)}px;font-weight:900;color:#fff;font-family:'Inter',sans-serif;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.4);">!</div>`
     : '';
   return L.divIcon({
-    html: `<div style="position:relative;width:${size}px;height:${size}px;">
+    html: `<div${dataTour ? ` data-tour="${dataTour}"` : ''} style="position:relative;width:${size}px;height:${size}px;">
       <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${borderWidth}px solid #ffffff;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,0.45);"></div>
       ${exclamation}
       ${countBadge}
@@ -374,13 +391,15 @@ interface GroupMarkerProps {
   optimisticAcknowledge: (id: number) => void;
   openDetail: (dot: DotDTO, lat: number, lon: number, reopenPopup: () => void) => void;
   closeDetail: () => void;
+  /** The onboarding tour's example report's real id, if it's currently loaded — see exampleReport.ts. */
+  exampleReportId: number | null;
 }
 
 const GroupMarker = React.memo(function GroupMarker({
   group, groupKey, activeReportId, activeGroupKeyRef, username, map,
   didSelectRef, dotClickRef,
   setActiveReportId, optimisticAcknowledge,
-  openDetail, closeDetail,
+  openDetail, closeDetail, exampleReportId,
 }: GroupMarkerProps) {
   const isGroupActive = group.dots.some((d) => d.report_id === activeReportId);
   const hasNew = group.dots.some((d) => d.new);
@@ -406,9 +425,13 @@ const GroupMarker = React.memo(function GroupMarker({
   const color = isGroupActive ? '#3b82f6' : (RELEVANCE_COLORS[primaryDot.relevance] ?? '#6b7280');
   const size = isGroupActive ? 26 : isMulti ? 24 : 20;
 
+  // Tag the onboarding tour's example dot (and only that dot) so the tour can
+  // point at a real, live marker instead of a decorative stand-in.
+  const isExampleGroup = exampleReportId !== null && group.dots.some((d) => d.report_id === exampleReportId);
+
   const icon = useMemo(
-    () => makeDotIcon({ color, size, count: dedupedDots.length, hasNew, isActive: isGroupActive }),
-    [color, size, dedupedDots.length, hasNew, isGroupActive],
+    () => makeDotIcon({ color, size, count: dedupedDots.length, hasNew, isActive: isGroupActive, dataTour: isExampleGroup ? 'tour-example-dot' : undefined }),
+    [color, size, dedupedDots.length, hasNew, isGroupActive, isExampleGroup],
   );
 
   // Ref to the Leaflet Marker instance so we can reopen the popup programmatically.
@@ -418,22 +441,32 @@ const GroupMarker = React.memo(function GroupMarker({
   const s = useRef({
     isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username,
     setActiveReportId, optimisticAcknowledge,
-    didSelectRef, dotClickRef, map,
+    didSelectRef, dotClickRef, map, exampleReportId,
     openDetail, closeDetail, markerRef,
   });
   s.current = {
     isMulti, group, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username,
     setActiveReportId, optimisticAcknowledge,
-    didSelectRef, dotClickRef, map,
+    didSelectRef, dotClickRef, map, exampleReportId,
     openDetail, closeDetail, markerRef,
   };
 
   // Identity-stable event handlers — useEventHandlers never removes/re-adds them.
   const eventHandlers = useMemo(() => ({
     click: () => {
-      const { isMulti, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, dotClickRef, setActiveReportId, optimisticAcknowledge } = s.current;
+      const { isMulti, dedupedDots, groupKey, activeReportId, activeGroupKeyRef, username, dotClickRef, setActiveReportId, optimisticAcknowledge, exampleReportId } = s.current;
       if (!isMulti) {
         const dot = dedupedDots[0];
+        // While the tour's "dot" step is showing, clicking the example dot
+        // still opens its Leaflet popup natively — but selecting it here
+        // would restyle this marker (bigger, blue, "!" gone), and Leaflet
+        // swaps in a new icon DOM element for that, invalidating the tour's
+        // cached reference to this one (its tooltip collapses to a 0,0
+        // fallback position). The tour selects it for real moments later,
+        // on the next step, once that restyle can't strand anything.
+        if (dot.report_id === exampleReportId && useTourStore.getState().dotStepActive) {
+          return;
+        }
         // Only deactivate when clicking the exact same marker that's already active.
         // A different dot of the same report (different position) keeps the report active.
         const isSameMarker = dot.report_id === activeReportId && activeGroupKeyRef.current === groupKey;
@@ -455,7 +488,17 @@ const GroupMarker = React.memo(function GroupMarker({
       }
     },
     popupclose: () => {
-      const { didSelectRef, setActiveReportId } = s.current;
+      const { didSelectRef, setActiveReportId, dedupedDots, exampleReportId } = s.current;
+      // Same suppression as the click handler: while the example dot's own
+      // selection is being held off during the tour's "dot" step, its popup
+      // closing (e.g. the tour advancing) must not deselect whatever report
+      // — the tour's example or an unrelated one the user already had open —
+      // is actually selected right now.
+      const isExampleDot = dedupedDots.some((d) => d.report_id === exampleReportId);
+      if (isExampleDot && useTourStore.getState().dotStepActive) {
+        didSelectRef.current = false;
+        return;
+      }
       if (!didSelectRef.current) setActiveReportId(null);
       didSelectRef.current = false;
     },
@@ -499,8 +542,13 @@ const GroupMarker = React.memo(function GroupMarker({
 
 export function ReportDots({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactElement {
   const map = useMap();
-  const { activeReportId, setActiveReportId, optimisticAcknowledge } = useReportStore();
+  const { activeReportId, setActiveReportId, optimisticAcknowledge, reports } = useReportStore();
   const { username } = useUserStore();
+
+  const exampleReportId = useMemo(
+    () => reports.find((r) => r.identifier === EXAMPLE_IDENTIFIER)?.id ?? null,
+    [reports],
+  );
 
   const [zoom, setZoom] = useState(() => map.getZoom());
   useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
@@ -509,7 +557,7 @@ export function ReportDots({ visibleDots }: { visibleDots: DotDTO[] }): React.Re
   // re-render (see clusterDots). Lives in a ref, not state — mutating it must not
   // itself trigger a render.
   const groupCacheRef = useRef<Map<string, { sig: string; group: DotGroup }>>(new Map());
-  const groups = useMemo(() => clusterDots(visibleDots, map, groupCacheRef.current), [visibleDots, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
+  const groups = useMemo(() => clusterDots(visibleDots, map, groupCacheRef.current, exampleReportId), [visibleDots, zoom, exampleReportId]); // eslint-disable-line react-hooks/exhaustive-deps
   const didSelectRef = useRef(false);
   const dotClickRef = useRef(false);
   const activeGroupKeyRef = useRef<string | null>(null);
@@ -602,6 +650,7 @@ export function ReportDots({ visibleDots }: { visibleDots: DotDTO[] }): React.Re
           optimisticAcknowledge={optimisticAcknowledge}
           openDetail={openDetail}
           closeDetail={closeDetail}
+          exampleReportId={exampleReportId}
         />
       ))}
       {detailState && detailPos && (

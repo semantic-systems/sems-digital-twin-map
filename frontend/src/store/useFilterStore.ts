@@ -152,7 +152,11 @@ export const useFilterStore = create<FilterStore>()(
       eventTypes: [...ALL_EVENT_TYPES_LIST],
       activeLayers: [],
       availableLayers: [],
-      autoUpdate: false,
+      // Recommended default — new reports merge in automatically rather than
+      // sitting behind the "N new posts" bar. Only affects users with no
+      // persisted filter state yet (see the persist() config below); anyone
+      // who already toggled this explicitly keeps their own choice.
+      autoUpdate: true,
       search: '',
       timeWindow: 'all',
       customSince: null,

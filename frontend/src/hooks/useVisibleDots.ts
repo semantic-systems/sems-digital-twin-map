@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useReportStore } from '../store/useReportStore';
 import { useFilterStore } from '../store/useFilterStore';
 import { pointInPolygon, computeSuppressedDotsWithLocs } from '../utils/geo';
+import { EXAMPLE_IDENTIFIER as TOUR_EXAMPLE_IDENTIFIER, deriveExampleDots, exampleMatchesFilters } from '../tour/exampleReport';
 import type { DotDTO } from '../types';
 
 /**
@@ -18,6 +19,7 @@ export function useVisibleDots(): DotDTO[] {
   const reports = useReportStore((s) => s.reports);
   const spatialPolygon = useFilterStore((s) => s.spatialPolygon);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
+  const filterState = useFilterStore();
 
   return useMemo(() => {
     // Hidden reports never get a dot, regardless of showHidden — that filter only
@@ -47,6 +49,22 @@ export function useVisibleDots(): DotDTO[] {
         for (const d of computeSuppressedDotsWithLocs(group, locs)) suppressed.add(d);
       }
     }
-    return result.filter((d) => !suppressed.has(d));
-  }, [dots, reports, spatialPolygon, showOnlyNew, activeReportId]);
+    const visible = result.filter((d) => !suppressed.has(d));
+
+    // The tour's example report's dots are derived fresh here from its own
+    // locations, never stored in `dots` itself — that array gets wholesale
+    // replaced by any real refreshDots() call (including the one the
+    // location-edit flow triggers on its own success), which would otherwise
+    // wipe them the moment a location is actually placed. Deriving live also
+    // means a newly-placed location shows up immediately, same as a real report.
+    // It's always kept as a `reports` member regardless of filters (see
+    // setReports), so — same as useVisibleReports — matching is checked here too.
+    const example = reports.find((r) => r.identifier === TOUR_EXAMPLE_IDENTIFIER);
+    if (!example || example.user_state.hide || !exampleMatchesFilters(example, filterState)) return visible;
+    let exampleDots = deriveExampleDots(example);
+    if (spatialPolygon) {
+      exampleDots = exampleDots.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
+    }
+    return [...visible, ...exampleDots];
+  }, [dots, reports, spatialPolygon, showOnlyNew, activeReportId, filterState]);
 }

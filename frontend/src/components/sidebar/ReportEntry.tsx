@@ -217,7 +217,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     .join(' · ');
 
   return (
-    <div style={cardStyle} className={isActive ? 'report-entry-active' : undefined} data-report-id={report.id}>
+    <div style={cardStyle} className={isActive ? 'report-entry-active' : undefined} data-report-id={report.id} data-report-identifier={report.identifier}>
       {/* Pinned header — distinguishes an on-demand-loaded report outside the current page */}
       {pinned && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
@@ -304,7 +304,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
       </button>
 
       {/* Action row */}
-      <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
+      <div data-tour="report-actions" style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
         <a
           href={report.url}
           target="_blank"
@@ -415,6 +415,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
       {/* Add location button */}
       <div style={{ display: 'flex', gap: 4, marginTop: 5, flexWrap: 'wrap' }}>
         <button
+          data-tour="report-add-location"
           onClick={handleAddLocation}
           title={t('add_location_title')}
           style={{

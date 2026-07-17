@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
 import { useFilterStore } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
+import { useEffectiveFacetTotals } from '../../hooks/useEffectiveFacetTotals';
 import { fetchDemoStatus, resetDemo } from '../../api/demo';
 import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
@@ -9,7 +10,8 @@ import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, showOnlyNew, setShowOnlyNew } = useFilterStore();
-  const { totalCount, unseenCount, isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+  const { isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+  const { totalCount, unseenCount } = useEffectiveFacetTotals();
 
   // Keep the input responsive on every keystroke, but debounce the store update
   // that drives the refetch so typing "fire" triggers one reload, not four.
@@ -200,6 +202,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
 
         {/* Right side: auto-update toggle */}
         <label
+          data-tour="auto-update-toggle"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -216,6 +219,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
             style={{ width: 12, height: 12, accentColor: '#3b82f6' }}
           />
           {t('auto_update')}
+          <span style={{ fontSize: 9, color: '#4b5563' }}>({t('recommended')})</span>
         </label>
       </div>
 
@@ -286,7 +290,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
       )}
 
       {/* Search */}
-      <div style={{ padding: '6px 10px', borderBottom: '1px solid #252836', flexShrink: 0 }}>
+      <div data-tour="search-box" style={{ padding: '6px 10px', borderBottom: '1px solid #252836', flexShrink: 0 }}>
         <input
           type="text"
           value={searchInput}

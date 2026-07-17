@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { ReportDTO, DotDTO, LocationEntry, DotsParams } from '../types';
 import { fetchDots } from '../api/reports';
+import { useTourStore } from './useTourStore';
 
 // A report contributes to the unseen badge when it is still new and not hidden.
 // Used to keep unseenCount responsive to optimistic acknowledge/hide actions
@@ -42,6 +43,17 @@ interface ReportStore {
   setActiveReportId: (id: number | null) => void;
   setPendingNewCount: (n: number) => void;
 
+  // The onboarding tour's example report (see tour/exampleReport.ts) — a real
+  // `reports` entry so every real handler (hide/flag/acknowledge/place-a-location)
+  // works natively with zero special-casing. Its map dots are deliberately NOT
+  // stored here — useVisibleDots derives them live from this report's own
+  // locations instead (see exampleReport.ts's deriveExampleDots), because
+  // `dots` gets wholesale-replaced by any real refreshDots() call (including
+  // the one the location-edit flow itself triggers on success), which would
+  // otherwise wipe the example's dots the moment a location is actually placed.
+  addExampleReport: (report: ReportDTO) => void;
+  removeExampleReport: (id: number) => void;
+
   // optimistic updates
   optimisticHide: (id: number, hide: boolean) => void;
   optimisticFlag: (author: string, flag: boolean) => void;
@@ -71,16 +83,36 @@ export const useReportStore = create<ReportStore>((set) => ({
   // when omitted (undefined) — the "only new" lean load skips recomputing them and
   // reuses the last-known panel counts. Pass {} explicitly to actually clear them.
   setReports: (reports, loadedAt, eventTypeTotals, relevanceTotals, hasMore = false, locationCounts, totalCount = 0, unseenCount = 0) =>
-    set((s) => ({
-      reports,
-      loadedAt,
-      hasMore,
-      totalCount,
-      unseenCount,
-      eventTypeTotals: eventTypeTotals ?? s.eventTypeTotals,
-      relevanceTotals: relevanceTotals ?? s.relevanceTotals,
-      locationCounts: locationCounts ?? s.locationCounts,
-    })),
+    set((s) => {
+      // The tour's example report is deliberately excluded from every real
+      // query (backend report_service.build_report_query), so a real reload
+      // — including one the tour's own "search"/"filter bar" steps actively
+      // invite the user to trigger — would otherwise silently drop it out of
+      // `reports` entirely. Always re-attach it here regardless of whether it
+      // currently matches the active filters (carrying forward whatever the
+      // user has done to it — hide/flag/a new location — not the pre-load
+      // snapshot): this is the only place the object itself is kept, so
+      // dropping it here for not matching would lose it for good — a later
+      // filter change that WOULD match it again would have nothing left to
+      // bring back. Whether it's actually visible right now is decided at
+      // read time instead (useVisibleReports/useVisibleDots), same as every
+      // other filter already works.
+      const exampleId = useTourStore.getState().activeExampleReportId;
+      const example = exampleId !== null ? s.reports.find((r) => r.id === exampleId) : undefined;
+      const withExample = example && !reports.some((r) => r.id === exampleId)
+        ? [example, ...reports]
+        : reports;
+      return {
+        reports: withExample,
+        loadedAt,
+        hasMore,
+        totalCount,
+        unseenCount,
+        eventTypeTotals: eventTypeTotals ?? s.eventTypeTotals,
+        relevanceTotals: relevanceTotals ?? s.relevanceTotals,
+        locationCounts: locationCounts ?? s.locationCounts,
+      };
+    }),
   setUnseenCount: (unseenCount) => set({ unseenCount }),
   setIsLoading: (isLoading) => set({ isLoading }),
   bumpReloadTrigger: () => set((s) => ({ reloadTrigger: s.reloadTrigger + 1 })),
@@ -89,6 +121,16 @@ export const useReportStore = create<ReportStore>((set) => ({
   setPinnedReport: (pinnedReport) => set({ pinnedReport }),
   setActiveReportId: (id) => set({ activeReportId: id }),
   setPendingNewCount: (n) => set({ pendingNewCount: n }),
+
+  addExampleReport: (report) =>
+    set((s) => ({
+      reports: [report, ...s.reports.filter((r) => r.id !== report.id)],
+    })),
+  removeExampleReport: (id) =>
+    set((s) => ({
+      reports: s.reports.filter((r) => r.id !== id),
+      pinnedReport: s.pinnedReport?.id === id ? null : s.pinnedReport,
+    })),
 
   optimisticHide: (id, hide) =>
     set((s) => {
