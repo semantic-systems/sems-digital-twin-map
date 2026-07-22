@@ -9,3 +9,12 @@ cache/
 
 # ignore the .env file
 .env
+# macOS
+.DS_Store
+
+# JetBrains IDEs
+.idea/
+
+# local virtualenvs
+venv/
+venv2/
