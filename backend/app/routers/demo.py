@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -53,7 +53,9 @@ async def _trickle_worker(records: list[dict]) -> None:
                         text=rd["text"],
                         url=rd["url"],
                         platform=rd["platform"],
-                        timestamp=datetime.utcnow(),
+                        # naive UTC, matching the reports.timestamp column and
+                        # report_service._now_utc()
+                        timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                         event_type=rd.get("event_type") or (rd.get("event_types") or ["Sonstiges"])[0],
                         event_types=rd.get("event_types") or ([rd["event_type"]] if rd.get("event_type") else ["Sonstiges"]),
                         relevance=rd["relevance"],
