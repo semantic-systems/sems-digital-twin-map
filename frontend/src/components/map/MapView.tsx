@@ -112,15 +112,28 @@ interface LayerData {
   geojson: object | null;
 }
 
+// Layer feature properties come from ingested external data and end up in
+// bindPopup/dangerouslySetInnerHTML — escape them so a property value carrying
+// markup can never execute in the app's origin.
+function escapeHtml(value: unknown): string {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 function buildPopupHtml(props: Record<string, unknown> | null, layerName: string): string {
-  if (!props) return `<div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;">${layerName}</div>`;
+  const safeName = escapeHtml(layerName);
+  if (!props) return `<div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;">${safeName}</div>`;
   const entries = Object.entries(props).filter(([k]) => !k.startsWith('_'));
-  if (entries.length === 0) return `<div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;">${layerName}</div>`;
+  if (entries.length === 0) return `<div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;">${safeName}</div>`;
   const rows = entries
-    .map(([k, v]) => `<tr><td style="padding:2px 8px 2px 0;color:#6b7280;white-space:nowrap;">${k}</td><td style="padding:2px 0;color:#111827;">${v}</td></tr>`)
+    .map(([k, v]) => `<tr><td style="padding:2px 8px 2px 0;color:#6b7280;white-space:nowrap;">${escapeHtml(k)}</td><td style="padding:2px 0;color:#111827;">${escapeHtml(v)}</td></tr>`)
     .join('');
   return `<div style="font-family:'Inter',sans-serif;font-size:12px;min-width:160px;">
-    <div style="font-weight:600;margin-bottom:6px;">${layerName}</div>
+    <div style="font-weight:600;margin-bottom:6px;">${safeName}</div>
     <table style="border-collapse:collapse;width:100%">${rows}</table>
   </div>`;
 }
