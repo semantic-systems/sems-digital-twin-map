@@ -1023,25 +1023,25 @@ def get_reports(
     ]
 
     # Pending count = reports that match filters (incl. loc_filter) but are NOT yet
-    # admitted. Meaningless under only_issues (nothing needs admission there).
-    if only_issues:
-        pending_count = 0
-    else:
-        all_matching_ids: set[int] = {
-            row[0]
-            for row in build_report_query(
-                session,
-                eff_platform=eff_platform,
-                eff_events=eff_events,
-                eff_relevance=eff_relevance,
-                demo_mode=demo_mode,
-                loc_filter=loc_filter,
-                only_issues=only_issues,
-            )
-            .with_entities(Report.id)
-            .all()
-        }
-        pending_count = len(all_matching_ids - added_ids)
+    # admitted. Always computed against the REPORTS view (only_issues=False), even
+    # when the Issues tab is active: admission is a Reports-view concept, and the
+    # auto-update poll relies on this number to decide when to admit — hardcoding
+    # it to 0 under only_issues (as before) silently paused auto-admission for as
+    # long as the Issues tab stayed open, letting new reports pile up un-admitted.
+    all_matching_ids: set[int] = {
+        row[0]
+        for row in build_report_query(
+            session,
+            eff_platform=eff_platform,
+            eff_events=eff_events,
+            eff_relevance=eff_relevance,
+            demo_mode=demo_mode,
+            loc_filter=loc_filter,
+        )
+        .with_entities(Report.id)
+        .all()
+    }
+    pending_count = len(all_matching_ids - added_ids)
 
     # Under only_new/only_issues the facet scan (which normally computes unseen_count)
     # was skipped; the returned list is exactly the matching set, so total_count is the badge.
