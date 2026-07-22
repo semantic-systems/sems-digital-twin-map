@@ -91,7 +91,7 @@ def get_reports_endpoint(
     from ..config import settings
 
     eff_since, eff_until = _resolve_time_range(time_window, since, until)
-    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count = svc.get_reports(
+    res = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter or None,
@@ -110,21 +110,21 @@ def get_reports_endpoint(
         only_issues=only_issues,
     )
     return ReportsResponse(
-        reports=reports,
-        pending_count=pending_count,
-        loaded_at=loaded_at,
-        event_type_totals=event_type_totals,
-        relevance_totals=relevance_totals,
-        location_counts=location_counts,
-        all_platforms=all_platforms,
-        platform_counts=platform_counts,
-        platform_added_counts=platform_added_counts,
-        has_more=has_more,
-        total_count=total_count,
-        unseen_count=unseen_count,
-        processing_status_totals=processing_status_totals,
-        reports_total_count=reports_total_count,
-        reports_unseen_count=reports_unseen_count,
+        reports=res.reports,
+        pending_count=res.pending_count,
+        loaded_at=res.loaded_at,
+        event_type_totals=res.event_type_totals,
+        relevance_totals=res.relevance_totals,
+        location_counts=res.location_counts,
+        all_platforms=res.all_platforms,
+        platform_counts=res.platform_counts,
+        platform_added_counts=res.platform_added_counts,
+        has_more=res.has_more,
+        total_count=res.total_count,
+        unseen_count=res.unseen_count,
+        processing_status_totals=res.processing_status_totals,
+        reports_total_count=res.reports_total_count,
+        reports_unseen_count=res.reports_unseen_count,
     )
 
 
@@ -240,11 +240,7 @@ def bundle_endpoint(
     from ..config import settings
 
     eff_since, eff_until = _resolve_time_range(time_window, since, until)
-    (
-        reports, pending_count, loaded_at, event_type_totals, all_platforms,
-        platform_counts, platform_added_counts, relevance_totals, location_counts,
-        has_more, total_count, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count,
-    ) = svc.get_reports(
+    res = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter or None,
@@ -283,21 +279,21 @@ def bundle_endpoint(
         only_issues=only_issues,
     )
     return ReportsBundleResponse(
-        reports=reports,
-        pending_count=pending_count,
-        loaded_at=loaded_at,
-        event_type_totals=event_type_totals,
-        relevance_totals=relevance_totals,
-        location_counts=location_counts,
-        all_platforms=all_platforms,
-        platform_counts=platform_counts,
-        platform_added_counts=platform_added_counts,
-        has_more=has_more,
-        total_count=total_count,
-        unseen_count=unseen_count,
-        processing_status_totals=processing_status_totals,
-        reports_total_count=reports_total_count,
-        reports_unseen_count=reports_unseen_count,
+        reports=res.reports,
+        pending_count=res.pending_count,
+        loaded_at=res.loaded_at,
+        event_type_totals=res.event_type_totals,
+        relevance_totals=res.relevance_totals,
+        location_counts=res.location_counts,
+        all_platforms=res.all_platforms,
+        platform_counts=res.platform_counts,
+        platform_added_counts=res.platform_added_counts,
+        has_more=res.has_more,
+        total_count=res.total_count,
+        unseen_count=res.unseen_count,
+        processing_status_totals=res.processing_status_totals,
+        reports_total_count=res.reports_total_count,
+        reports_unseen_count=res.reports_unseen_count,
         dots=dots,
     )
 

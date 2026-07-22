@@ -9,6 +9,7 @@ and src/app/layout/map/sidebar.py into plain functions that accept a
 SQLAlchemy Session and return plain Python / Pydantic objects.
 """
 
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
@@ -674,6 +675,28 @@ def build_report_dto(
 # get_reports
 # ---------------------------------------------------------------------------
 
+@dataclass
+class ReportsResult:
+    """Everything the reports/bundle endpoints need from one get_reports call.
+    Named fields instead of the previous 15-tuple, whose every extension meant
+    editing all return/call sites positionally in lockstep."""
+    reports: list[ReportDTO] = field(default_factory=list)
+    pending_count: int = 0
+    loaded_at: str = ""
+    event_type_totals: dict[str, int] = field(default_factory=dict)
+    all_platforms: list[str] = field(default_factory=list)
+    platform_counts: dict[str, int] = field(default_factory=dict)
+    platform_added_counts: dict[str, int] = field(default_factory=dict)
+    relevance_totals: dict[str, int] = field(default_factory=dict)
+    location_counts: dict[str, int] = field(default_factory=dict)
+    has_more: bool = False
+    total_count: int = 0
+    unseen_count: int = 0
+    processing_status_totals: dict[str, int] = field(default_factory=dict)
+    reports_total_count: int = 0
+    reports_unseen_count: int = 0
+
+
 def get_reports(
     session: Session,
     username: str,
@@ -691,9 +714,8 @@ def get_reports(
     until: datetime | None = None,
     only_new: bool = False,
     only_issues: bool = False,
-) -> tuple[list[ReportDTO], int, str, dict[str, int], list[str]]:
+) -> ReportsResult:
     """
-    Returns (reports, pending_count, loaded_at_iso).
     pending_count = number of reports in DB that have not yet been admitted.
     only_new restricts the returned list (and total_count) to reports still marked
     new, so the sidebar's "only new" view is correctly paginated server-side rather
@@ -947,7 +969,20 @@ def get_reports(
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False, 0, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count
+        return ReportsResult(
+            pending_count=pending_count,
+            loaded_at=loaded_at,
+            event_type_totals=event_type_totals,
+            all_platforms=all_platforms,
+            platform_counts=platform_counts,
+            platform_added_counts=platform_added_counts,
+            relevance_totals=relevance_totals,
+            location_counts=location_counts,
+            unseen_count=unseen_count,
+            processing_status_totals=processing_status_totals,
+            reports_total_count=reports_total_count,
+            reports_unseen_count=reports_unseen_count,
+        )
 
     # Build the main query (only admitted reports — except only_issues, which
     # shows every matching report regardless of admission state)
@@ -1063,7 +1098,23 @@ def get_reports(
         unseen_count = total_count
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count
+    return ReportsResult(
+        reports=dtos,
+        pending_count=pending_count,
+        loaded_at=loaded_at,
+        event_type_totals=event_type_totals,
+        all_platforms=all_platforms,
+        platform_counts=platform_counts,
+        platform_added_counts=platform_added_counts,
+        relevance_totals=relevance_totals,
+        location_counts=location_counts,
+        has_more=has_more,
+        total_count=total_count,
+        unseen_count=unseen_count,
+        processing_status_totals=processing_status_totals,
+        reports_total_count=reports_total_count,
+        reports_unseen_count=reports_unseen_count,
+    )
 
 
 # ---------------------------------------------------------------------------
