@@ -114,20 +114,38 @@ def _run_sparql(query: str, auth_header: str) -> list:
         return []
 
 
+# Geometry URIs whose WKT fetch failed even in isolation (single-URI query),
+# remembered for the process lifetime. Without this, a permanently broken
+# geometry gets re-tried — and its batch re-bisected — on EVERY ingestion cycle
+# for as long as any post in the search window references it, spamming the log
+# with the same failure. Reset on restart, so a transient server-side problem
+# still gets another chance eventually.
+_unfetchable_geometry_uris: set = set()
+
+
 def _fetch_wkt_batch(uris: list, auth_header: str) -> dict:
-    """Fetch WKT geometries for a batch of location URIs. One oversized/malformed
-    geometry in the batch (e.g. Virtuoso 'SR578: expected result length of wide
-    string is too large' on a huge MULTIPOLYGON) fails the whole VALUES query, so
-    on failure we bisect the batch and retry each half independently — isolating
-    and skipping just the offending URI(s) instead of losing every geometry in
-    the batch."""
+    """Fetch WKT geometries for a batch of location URIs.
+
+    The WKT is selected as STR(?wkt), not raw ?wkt: Virtuoso's result-set
+    serializer for virtrdf:Geometry-typed literals fails with 'SR578: The
+    expected result length of wide string is too large' on large geometries
+    (observed on a 4.3 MB MULTIPOLYGON) and 500s the whole response. STR()
+    coerces the literal to a plain string inside the engine, bypassing that
+    serializer — verified against the live endpoint: the same URI that 500s
+    as raw ?wkt returns its full WKT via STR(?wkt).
+
+    Should a query still fail for another reason, one bad URI fails the whole
+    VALUES batch, so on failure we bisect and retry each half independently —
+    isolating and skipping just the offending URI(s) (remembered in
+    _unfetchable_geometry_uris) instead of losing every geometry in the batch."""
+    uris = [u for u in uris if u not in _unfetchable_geometry_uris]
     if not uris:
         return {}
 
     loc_values = ' '.join(f'<{uri}>' for uri in uris)
     wkt_query = f"""
         PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-        SELECT ?location ?wkt {{
+        SELECT ?location (STR(?wkt) AS ?wkt_str) {{
             GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
                 VALUES ?location {{ {loc_values} }}
                 ?location geo:hasGeometry ?geom .
@@ -139,7 +157,8 @@ def _fetch_wkt_batch(uris: list, auth_header: str) -> dict:
         bindings = _run_sparql_raise(wkt_query, auth_header)
     except Exception as e:
         if len(uris) == 1:
-            print(f"Skipping unfetchable geometry for {uris[0]}: {e}", flush=True)
+            _unfetchable_geometry_uris.add(uris[0])
+            print(f"Skipping unfetchable geometry for {uris[0]} (won't retry until restart): {e}", flush=True)
             return {}
         mid = len(uris) // 2
         result = _fetch_wkt_batch(uris[:mid], auth_header)
@@ -150,7 +169,7 @@ def _fetch_wkt_batch(uris: list, auth_header: str) -> dict:
     for binding in bindings:
         loc_uri = binding['location']['value']
         try:
-            result[loc_uri] = wkt_to_geojson(binding['wkt']['value'])
+            result[loc_uri] = wkt_to_geojson(binding['wkt_str']['value'])
         except Exception as e:
             print(f"Skipping unparsable WKT for {loc_uri}: {e}", flush=True)
     return result

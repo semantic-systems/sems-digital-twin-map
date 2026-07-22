@@ -54,7 +54,9 @@ export function dotsParamsFromFilters(
     customSince: string | null;
     customUntil: string | null;
     showOnlyNew: boolean;
-    showIssuesView: boolean;
+    // Optional so pre-Issues-tab callers/tests that build this shape by hand
+    // (e.g. useFilterStore.test.ts fixtures) remain valid; undefined = false.
+    showIssuesView?: boolean;
     locShowLocalized: boolean;
     locShowPending: boolean;
     locShowUnlocalized: boolean;
