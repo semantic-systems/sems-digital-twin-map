@@ -94,15 +94,11 @@ export function usePolling() {
         cur.showIssuesView !== snapShowIssuesView
       ) return;
 
-      // Under only_new/only_issues the backend skips facet counts (returns zeros);
-      // don't let the poll overwrite the last-known panel counts with them (mirrors
-      // App.tsx's isLeanView).
-      const snapIsLeanView = snapShowOnlyNew || snapShowIssuesView;
-      if (!snapIsLeanView) {
-        if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
-        if (reportsRes.platform_counts) setPlatformCounts(reportsRes.platform_counts);
-        if (reportsRes.platform_added_counts) setPlatformAddedCounts(reportsRes.platform_added_counts);
-      }
+      // Facet fields are null under lean views ("not computed, keep what you
+      // had" — explicit in the API contract); the guards below skip null.
+      if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
+      if (reportsRes.platform_counts) setPlatformCounts(reportsRes.platform_counts);
+      if (reportsRes.platform_added_counts) setPlatformAddedCounts(reportsRes.platform_added_counts);
 
       const pendingCount = reportsRes.pending_count ?? 0;
 
@@ -135,23 +131,20 @@ export function usePolling() {
           cur2.showOnlyNew !== snapShowOnlyNew ||
           cur2.showIssuesView !== snapShowIssuesView
         ) return;
-        // only_new/only_issues return empty facet counts — preserve the last-known
-        // panel counts (pass undefined; skip the platform setters).
+        // Null facets under lean views are preserved by setReports/the guards.
         setReports(
           reloaded.reports,
           reloaded.loaded_at,
-          snapIsLeanView ? undefined : reloaded.event_type_totals,
-          snapIsLeanView ? undefined : reloaded.relevance_totals,
+          reloaded.event_type_totals ?? undefined,
+          reloaded.relevance_totals ?? undefined,
           reloaded.has_more,
-          snapIsLeanView ? undefined : reloaded.location_counts,
+          reloaded.location_counts ?? undefined,
           reloaded.total_count,
           reloaded.unseen_count,
         );
-        if (!snapIsLeanView) {
-          if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
-          if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
-          if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
-        }
+        if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
+        if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
+        if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
         await refreshDots(params);
         setPendingNewCount(0);
       } else {

@@ -48,15 +48,18 @@ export interface ReportsResponse {
   reports: ReportDTO[];
   pending_count: number;
   loaded_at: string;
-  event_type_totals?: Record<string, number>;
-  relevance_totals?: Record<string, number>;
-  location_counts?: Record<string, number>;
+  /** Facet fields are null under the lean views (only_new/only_issues), where
+   * the backend skips the facet scan: null = "not computed, keep what you had",
+   * {} = a real empty result. */
+  event_type_totals?: Record<string, number> | null;
+  relevance_totals?: Record<string, number> | null;
+  location_counts?: Record<string, number> | null;
   processing_status_totals?: Record<string, number>;
   reports_total_count?: number;
   reports_unseen_count?: number;
-  all_platforms?: string[];
-  platform_counts?: Record<string, number>;
-  platform_added_counts?: Record<string, number>;
+  all_platforms?: string[] | null;
+  platform_counts?: Record<string, number> | null;
+  platform_added_counts?: Record<string, number> | null;
   has_more?: boolean;
   total_count?: number;
   unseen_count?: number;

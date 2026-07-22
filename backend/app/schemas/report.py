@@ -85,9 +85,15 @@ class ReportsResponse(BaseModel):
     reports: list[ReportDTO]
     pending_count: int
     loaded_at: str  # ISO 8601
-    event_type_totals: dict[str, int] = {}
-    relevance_totals: dict[str, int] = {}
-    location_counts: dict[str, int] = {}
+    # Facet fields are None (not empty dicts) under the lean views
+    # (only_new/only_issues), where the expensive facet scan is skipped —
+    # None means "not computed this request, keep what you had", while {} is a
+    # real result meaning "nothing matches". Making that distinction part of
+    # the schema replaces the old implicit convention (zeros + the client just
+    # having to know not to apply them), which was silently violated twice.
+    event_type_totals: dict[str, int] | None = None
+    relevance_totals: dict[str, int] | None = None
+    location_counts: dict[str, int] | None = None
     processing_status_totals: dict[str, int] = {}
     # Reports-view totals, always computed regardless of which tab is active (the
     # Issues-view counterpart is processing_status_totals' sum) — see
@@ -96,9 +102,10 @@ class ReportsResponse(BaseModel):
     # on each tab pill.
     reports_total_count: int = 0
     reports_unseen_count: int = 0
-    all_platforms: list[str] = []
-    platform_counts: dict[str, int] = {}
-    platform_added_counts: dict[str, int] = {}
+    # None under lean views, same convention as the facet fields above.
+    all_platforms: list[str] | None = None
+    platform_counts: dict[str, int] | None = None
+    platform_added_counts: dict[str, int] | None = None
     has_more: bool = False
     total_count: int = 0
     unseen_count: int = 0

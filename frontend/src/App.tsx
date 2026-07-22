@@ -64,17 +64,16 @@ function AppInner(): React.ReactElement {
       // Discard if a newer loadData started while this one was in-flight.
       if (seq !== loadSeqRef.current) return;
 
-      // Under "only new"/"issues" the backend skips the facet scan and returns empty
-      // panel counts; keep the last-known ones by passing undefined (setReports
-      // preserves them) and skipping the platform-count setters.
-      const isLeanView = showOnlyNew || showIssuesView;
+      // Facet fields are null under the lean views ("not computed, keep what
+      // you had" — an explicit part of the API contract now); setReports
+      // preserves on nullish, and the platform setters are guarded the same way.
       setReports(
         reportsRes.reports,
         reportsRes.loaded_at,
-        isLeanView ? undefined : reportsRes.event_type_totals,
-        isLeanView ? undefined : reportsRes.relevance_totals,
+        reportsRes.event_type_totals ?? undefined,
+        reportsRes.relevance_totals ?? undefined,
         reportsRes.has_more,
-        isLeanView ? undefined : reportsRes.location_counts,
+        reportsRes.location_counts ?? undefined,
         reportsRes.total_count,
         reportsRes.unseen_count,
       );
@@ -91,16 +90,14 @@ function AppInner(): React.ReactElement {
       setReportsTotalCount(reportsRes.reports_total_count ?? 0);
       setReportsUnseenCount(reportsRes.reports_unseen_count ?? 0);
 
-      if (!isLeanView) {
-        if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {
-          setAllPlatforms(reportsRes.all_platforms);
-        }
-        if (reportsRes.platform_counts) {
-          setPlatformCounts(reportsRes.platform_counts);
-        }
-        if (reportsRes.platform_added_counts) {
-          setPlatformAddedCounts(reportsRes.platform_added_counts);
-        }
+      if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {
+        setAllPlatforms(reportsRes.all_platforms);
+      }
+      if (reportsRes.platform_counts) {
+        setPlatformCounts(reportsRes.platform_counts);
+      }
+      if (reportsRes.platform_added_counts) {
+        setPlatformAddedCounts(reportsRes.platform_added_counts);
       }
     } catch (e) {
       console.error('Failed to load reports:', e);

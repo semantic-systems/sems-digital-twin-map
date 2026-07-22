@@ -34,7 +34,7 @@ export function NewPostsBanner(): React.ReactElement {
       // Preserve the user's loaded page size — without limit this fell back to
       // the 200 default, collapsing the list after someone had paged deeper.
       const reloaded = await fetchReports({ ...params, limit: currentLimit });
-      setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count, reloaded.unseen_count);
+      setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals ?? undefined, reloaded.relevance_totals ?? undefined, reloaded.has_more, reloaded.location_counts ?? undefined, reloaded.total_count, reloaded.unseen_count);
       if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
       if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
       if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);

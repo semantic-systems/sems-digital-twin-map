@@ -713,16 +713,20 @@ def build_report_dto(
 class ReportsResult:
     """Everything the reports/bundle endpoints need from one get_reports call.
     Named fields instead of the previous 15-tuple, whose every extension meant
-    editing all return/call sites positionally in lockstep."""
+    editing all return/call sites positionally in lockstep.
+
+    The facet/platform fields are None under the lean views (only_new /
+    only_issues) where the facet scan is skipped: None = "not computed, keep
+    what you had", {} = a real empty result. See ReportsResponse."""
     reports: list[ReportDTO] = field(default_factory=list)
     pending_count: int = 0
     loaded_at: str = ""
-    event_type_totals: dict[str, int] = field(default_factory=dict)
-    all_platforms: list[str] = field(default_factory=list)
-    platform_counts: dict[str, int] = field(default_factory=dict)
-    platform_added_counts: dict[str, int] = field(default_factory=dict)
-    relevance_totals: dict[str, int] = field(default_factory=dict)
-    location_counts: dict[str, int] = field(default_factory=dict)
+    event_type_totals: dict[str, int] | None = None
+    all_platforms: list[str] | None = None
+    platform_counts: dict[str, int] | None = None
+    platform_added_counts: dict[str, int] | None = None
+    relevance_totals: dict[str, int] | None = None
+    location_counts: dict[str, int] | None = None
     has_more: bool = False
     total_count: int = 0
     unseen_count: int = 0
@@ -876,24 +880,33 @@ def get_reports(
     # and build_report_query's is_location_failure for the full rationale).
     _eff_loc = effective_loc_set(loc_filter)
 
-    event_type_totals: dict[str, int] = {}
-    platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
-    relevance_totals: dict[str, int] = {}
-    location_counts: dict[str, int] = {"localized": 0, "pending": 0, "unlocalized": 0}
-    # Unseen badge count. Under only_new we skip the full facet scan below to keep
-    # the query lean (the sidebar keeps its last-known panel counts), and instead
-    # set unseen_count = total_count afterwards — the returned list IS the new set.
+    # Facets stay None under the lean views (see ReportsResult) — the skipped
+    # scan is now an explicit "not computed" in the contract, not zeros the
+    # client has to know to ignore.
+    lean_view = only_new or only_issues
+    event_type_totals: dict[str, int] | None = None
+    platform_counts: dict[str, int] | None = None
+    relevance_totals: dict[str, int] | None = None
+    location_counts: dict[str, int] | None = None
+    all_platforms: list[str] | None = None
+    platform_added_counts: dict[str, int] | None = None
+    # Unseen badge count. Under lean views we skip the full facet scan below and
+    # instead set unseen_count = total_count afterwards — the returned list IS
+    # the new/issues set.
     unseen_count = 0
 
     # Cross-filtered facet counts (option B):
     # Each dimension's count reflects all OTHER active filters but not itself,
     # so the numbers tell you "how many results does this value add to my view".
     # One query with no facet filters; cross-filtering is done in Python to keep
-    # DB round trips to a minimum. Skipped entirely under only_new/only_issues (the
-    # expensive full-set scan) — the frontend preserves its prior counts in that mode.
-    # event_type/relevance facets are meaningless under only_issues anyway (see
-    # build_report_query), so there is nothing useful for this block to compute there.
-    if not only_new and not only_issues:
+    # DB round trips to a minimum. Skipped entirely under lean views (the
+    # expensive full-set scan); event_type/relevance facets are meaningless under
+    # only_issues anyway (see build_report_query).
+    if not lean_view:
+        event_type_totals = {}
+        platform_counts = {p: 0 for p in ALL_PLATFORMS}
+        relevance_totals = {}
+        location_counts = {"localized": 0, "pending": 0, "unlocalized": 0}
         _locs_text = cast(Report.locations, SaText)
         _loc_status_expr = case(
             (_locs_text.like('%"osm_id"%'), "localized"),
@@ -962,29 +975,29 @@ def get_reports(
             ):
                 unseen_count += 1
 
-    all_platforms = sorted(platform_counts.keys())
+        all_platforms = sorted(platform_counts.keys())
 
     # Count admitted posts per platform (ignoring event_type / platform filters).
-    platform_added_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
-    if not only_new and watermark:
-        added_rows = (
-            build_report_query(
-                session,
-                since=since,
-                until=until,
-                admitted_up_to=watermark,
-                eff_platform=None,
-                eff_events=None,
-                eff_relevance=eff_relevance,
-                demo_mode=demo_mode,
-                only_issues=only_issues,
+    if not lean_view:
+        platform_added_counts = {p: 0 for p in ALL_PLATFORMS}
+        if watermark:
+            added_rows = (
+                build_report_query(
+                    session,
+                    since=since,
+                    until=until,
+                    admitted_up_to=watermark,
+                    eff_platform=None,
+                    eff_events=None,
+                    eff_relevance=eff_relevance,
+                    demo_mode=demo_mode,
+                )
+                .with_entities(Report.platform)
+                .all()
             )
-            .with_entities(Report.platform)
-            .all()
-        )
-        for (plat,) in added_rows:
-            if plat:
-                platform_added_counts[plat] = platform_added_counts.get(plat, 0) + 1
+            for (plat,) in added_rows:
+                if plat:
+                    platform_added_counts[plat] = platform_added_counts.get(plat, 0) + 1
 
     # If the sidebar is empty (nothing admitted yet), return [] and count pending.
     # only_issues bypasses admission entirely — it's a diagnostic view over every
@@ -1125,7 +1138,7 @@ def get_reports(
 
     # Under only_new/only_issues the facet scan (which normally computes unseen_count)
     # was skipped; the returned list is exactly the matching set, so total_count is the badge.
-    if only_new or only_issues:
+    if lean_view:
         unseen_count = total_count
 
     loaded_at = datetime.now(timezone.utc).isoformat()

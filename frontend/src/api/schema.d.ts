@@ -601,27 +601,18 @@ export interface components {
             pending_count: number;
             /** Loaded At */
             loaded_at: string;
-            /**
-             * Event Type Totals
-             * @default {}
-             */
-            event_type_totals: {
+            /** Event Type Totals */
+            event_type_totals?: {
                 [key: string]: number;
-            };
-            /**
-             * Relevance Totals
-             * @default {}
-             */
-            relevance_totals: {
+            } | null;
+            /** Relevance Totals */
+            relevance_totals?: {
                 [key: string]: number;
-            };
-            /**
-             * Location Counts
-             * @default {}
-             */
-            location_counts: {
+            } | null;
+            /** Location Counts */
+            location_counts?: {
                 [key: string]: number;
-            };
+            } | null;
             /**
              * Processing Status Totals
              * @default {}
@@ -639,25 +630,16 @@ export interface components {
              * @default 0
              */
             reports_unseen_count: number;
-            /**
-             * All Platforms
-             * @default []
-             */
-            all_platforms: string[];
-            /**
-             * Platform Counts
-             * @default {}
-             */
-            platform_counts: {
+            /** All Platforms */
+            all_platforms?: string[] | null;
+            /** Platform Counts */
+            platform_counts?: {
                 [key: string]: number;
-            };
-            /**
-             * Platform Added Counts
-             * @default {}
-             */
-            platform_added_counts: {
+            } | null;
+            /** Platform Added Counts */
+            platform_added_counts?: {
                 [key: string]: number;
-            };
+            } | null;
             /**
              * Has More
              * @default false
@@ -687,27 +669,18 @@ export interface components {
             pending_count: number;
             /** Loaded At */
             loaded_at: string;
-            /**
-             * Event Type Totals
-             * @default {}
-             */
-            event_type_totals: {
+            /** Event Type Totals */
+            event_type_totals?: {
                 [key: string]: number;
-            };
-            /**
-             * Relevance Totals
-             * @default {}
-             */
-            relevance_totals: {
+            } | null;
+            /** Relevance Totals */
+            relevance_totals?: {
                 [key: string]: number;
-            };
-            /**
-             * Location Counts
-             * @default {}
-             */
-            location_counts: {
+            } | null;
+            /** Location Counts */
+            location_counts?: {
                 [key: string]: number;
-            };
+            } | null;
             /**
              * Processing Status Totals
              * @default {}
@@ -725,25 +698,16 @@ export interface components {
              * @default 0
              */
             reports_unseen_count: number;
-            /**
-             * All Platforms
-             * @default []
-             */
-            all_platforms: string[];
-            /**
-             * Platform Counts
-             * @default {}
-             */
-            platform_counts: {
+            /** All Platforms */
+            all_platforms?: string[] | null;
+            /** Platform Counts */
+            platform_counts?: {
                 [key: string]: number;
-            };
-            /**
-             * Platform Added Counts
-             * @default {}
-             */
-            platform_added_counts: {
+            } | null;
+            /** Platform Added Counts */
+            platform_added_counts?: {
                 [key: string]: number;
-            };
+            } | null;
             /**
              * Has More
              * @default false

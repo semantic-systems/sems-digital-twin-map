@@ -2116,28 +2116,46 @@
             "title": "Loaded At"
           },
           "event_type_totals": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Event Type Totals",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Type Totals"
           },
           "relevance_totals": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Relevance Totals",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relevance Totals"
           },
           "location_counts": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Location Counts",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Counts"
           },
           "processing_status_totals": {
             "additionalProperties": {
@@ -2158,28 +2176,46 @@
             "default": 0
           },
           "all_platforms": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "All Platforms",
-            "default": []
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "All Platforms"
           },
           "platform_counts": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Platform Counts",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Counts"
           },
           "platform_added_counts": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Platform Added Counts",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Added Counts"
           },
           "has_more": {
             "type": "boolean",
@@ -2232,28 +2268,46 @@
             "title": "Loaded At"
           },
           "event_type_totals": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Event Type Totals",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Type Totals"
           },
           "relevance_totals": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Relevance Totals",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relevance Totals"
           },
           "location_counts": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Location Counts",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Counts"
           },
           "processing_status_totals": {
             "additionalProperties": {
@@ -2274,28 +2328,46 @@
             "default": 0
           },
           "all_platforms": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "All Platforms",
-            "default": []
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "All Platforms"
           },
           "platform_counts": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Platform Counts",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Counts"
           },
           "platform_added_counts": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Platform Added Counts",
-            "default": {}
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Added Counts"
           },
           "has_more": {
             "type": "boolean",
