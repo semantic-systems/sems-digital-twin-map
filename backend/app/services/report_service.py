@@ -290,29 +290,33 @@ def bulk_admit_reports(
 
     now = _now_utc()
 
-    from sqlalchemy import func
-
-    for rid in existing_ids:
-        stmt = pg_insert(UserReportState).values(
-            username=username,
-            report_id=rid,
-            hide=False,
-            flag=False,
-            first_seen_at=now,
-            new=True,
-        )
-        # On conflict: preserve existing first_seen_at if already set;
-        # do NOT overwrite hide or flag so user choices are retained.
-        stmt = stmt.on_conflict_do_update(
-            constraint="uq_user_report",
-            set_={
-                "first_seen_at": func.coalesce(
-                    UserReportState.__table__.c.first_seen_at,
-                    stmt.excluded.first_seen_at,
-                ),
-            },
-        )
-        session.execute(stmt)
+    # Single multi-row upsert instead of one statement per report — admitting a
+    # large backlog previously issued thousands of sequential INSERTs.
+    # existing_ids is unique (Report.id is the PK), which ON CONFLICT DO UPDATE
+    # requires: duplicate keys in one statement would error.
+    stmt = pg_insert(UserReportState).values([
+        {
+            "username": username,
+            "report_id": rid,
+            "hide": False,
+            "flag": False,
+            "first_seen_at": now,
+            "new": True,
+        }
+        for rid in existing_ids
+    ])
+    # On conflict: preserve existing first_seen_at if already set;
+    # do NOT overwrite hide or flag so user choices are retained.
+    stmt = stmt.on_conflict_do_update(
+        constraint="uq_user_report",
+        set_={
+            "first_seen_at": func.coalesce(
+                UserReportState.__table__.c.first_seen_at,
+                stmt.excluded.first_seen_at,
+            ),
+        },
+    )
+    session.execute(stmt)
 
     session.commit()
     return existing_ids
@@ -1168,15 +1172,30 @@ def toggle_flag(
         row[0]
         for row in session.query(Report.id).filter(Report.author == author).all()
     ]
+    if not report_ids:
+        return 0
 
-    for rid in report_ids:
-        upsert_user_state(
-            username,
-            rid,
-            session,
-            flag=flag,
-            flag_author=author if flag else None,
-        )
+    # Single multi-row upsert with one commit — the previous per-report
+    # upsert_user_state loop committed once per report, so flagging a prolific
+    # author meant hundreds of sequential round trips.
+    stmt = pg_insert(UserReportState).values([
+        {
+            "username": username,
+            "report_id": rid,
+            "flag": flag,
+            "flag_author": author if flag else None,
+        }
+        for rid in report_ids
+    ])
+    stmt = stmt.on_conflict_do_update(
+        constraint="uq_user_report",
+        set_={
+            "flag": stmt.excluded.flag,
+            "flag_author": stmt.excluded.flag_author,
+        },
+    )
+    session.execute(stmt)
+    session.commit()
 
     return len(report_ids)
 
