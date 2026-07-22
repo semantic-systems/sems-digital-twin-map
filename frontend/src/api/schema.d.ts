@@ -38,6 +38,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/version": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Version Endpoint
+         * @description Poll target: the frontend refetches the full bundle only when this
+         *     token changes — see report_service.get_change_token.
+         */
+        get: operations["version_endpoint_api_v1_reports_version_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/dots": {
         parameters: {
             query?: never;
@@ -84,10 +105,9 @@ export interface paths {
         /**
          * Admit All Endpoint
          * @description Admission is a per-user watermark over ingestion order (see UserAdmission):
-         *     admit-all simply advances it to the current max report id. The filter
-         *     fields in the body are accepted for request-shape compatibility but no
-         *     longer scope admission — filters control what the user SEES, the watermark
-         *     controls the "nothing appears without an explicit admit" property.
+         *     admit-all simply advances it to the current max report id. Filters control
+         *     what the user SEES; the watermark controls the "nothing appears without an
+         *     explicit admit" property.
          */
         post: operations["admit_all_endpoint_api_v1_reports_admit_all_post"];
         delete?: never;
@@ -773,27 +793,18 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /**
+         * VersionResponse
+         * @description Opaque change token — see report_service.get_change_token.
+         */
+        VersionResponse: {
+            /** Token */
+            token: string;
+        };
         /** _AdmitAllRequest */
         _AdmitAllRequest: {
             /** Username */
             username: string;
-            /** Platforms */
-            platforms?: string[] | null;
-            /** Event Types */
-            event_types?: string[] | null;
-            /** Relevances */
-            relevances?: string[] | null;
-            /**
-             * Only Issues
-             * @default false
-             */
-            only_issues: boolean;
-            /** Time Window */
-            time_window?: string | null;
-            /** Since */
-            since?: string | null;
-            /** Until */
-            until?: string | null;
         };
         /** _RestoreBody */
         _RestoreBody: {
@@ -885,6 +896,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NewCountResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    version_endpoint_api_v1_reports_version_get: {
+        parameters: {
+            query: {
+                username: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionResponse"];
                 };
             };
             /** @description Validation Error */

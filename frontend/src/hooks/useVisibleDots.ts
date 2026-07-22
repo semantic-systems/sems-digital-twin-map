@@ -53,7 +53,7 @@ export function useVisibleDots(): DotDTO[] {
 
     // The tour's example report's dots are derived fresh here from its own
     // locations, never stored in `dots` itself — that array gets wholesale
-    // replaced by any real refreshDots() call (including the one the
+    // replaced by every bundle query result (including the one the
     // location-edit flow triggers on its own success), which would otherwise
     // wipe them the moment a location is actually placed. Deriving live also
     // means a newly-placed location shows up immediately, same as a real report.

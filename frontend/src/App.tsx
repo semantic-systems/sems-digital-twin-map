@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useUserStore } from './store/useUserStore';
-import { useFilterStore, activeLocFilter } from './store/useFilterStore';
-import { useReportStore, beginDotsRefresh, commitDotsIfCurrent } from './store/useReportStore';
-import { fetchReportsBundle } from './api/reports';
+import { useFilterStore, dotsParamsFromFilters } from './store/useFilterStore';
+import { useReportStore } from './store/useReportStore';
+import { fetchReportsBundle, fetchVersion, admitAllReports } from './api/reports';
 import { fetchLayers } from './api/layers';
-import { usePolling } from './hooks/usePolling';
+import { invalidateBundle } from './queryClient';
 import { UsernameModal } from './components/shared/UsernameModal';
 import { FilterBar } from './components/filterbar/FilterBar';
 import { Sidebar } from './components/sidebar/Sidebar';
@@ -14,114 +15,148 @@ import { HelpButton } from './components/shared/HelpModal';
 import { maybeAutoStartTour } from './tour/tour';
 
 const BASE_LIMIT = 200;
+const VERSION_POLL_MS = 10_000;
+// Returning to a recently-viewed filter combination reuses the cached bundle;
+// anything older than this refetches (also covers time-window aging on
+// window-focus refetches, which a pure change-token poll can't see).
+const BUNDLE_STALE_MS = 30_000;
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setProcessingStatusTotals, setReportsTotalCount, setReportsUnseenCount, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew, showIssuesView } =
-    useFilterStore();
-  const { setReports, setPendingNewCount, setIsLoading, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
+  const filterState = useFilterStore();
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setProcessingStatusTotals, setReportsTotalCount, setReportsUnseenCount, setAvailableLayers, setActiveLayers, activeLayers, autoUpdate } = filterState;
+  const { setReports, setDots, setPendingNewCount, setIsLoading, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
-  usePolling();
+  // dotsParamsFromFilters is the single source of truth for turning filter
+  // state into request params (also used by tests). filterKey (a stable string,
+  // unlike filterState which gets a new object identity on every store change
+  // whether relevant or not) drives the "reset to page 1" effect below without
+  // an infinite loop — it deliberately excludes limit.
+  const paramsBase = useMemo(
+    () => dotsParamsFromFilters(username!, filterState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [username, filterState],
+  );
+  const filterKey = JSON.stringify(paramsBase);
+  // params doubles as the bundle query key, which is what makes stale-response
+  // handling automatic: data is only ever delivered for the key it was fetched under.
+  const params = useMemo(
+    () => ({ ...paramsBase, limit: currentLimit }),
+    [paramsBase, currentLimit],
+  );
 
-  // Tracks the latest loadData call so stale concurrent responses are discarded.
-  const loadSeqRef = useRef(0);
+  // Reports + dots in a single round trip. No refetch interval here — the
+  // version poll below invalidates this query when something actually changed,
+  // and every user mutation calls invalidateBundle() (see queryClient.ts).
+  const bundleQuery = useQuery({
+    queryKey: ['bundle', params],
+    queryFn: () => fetchReportsBundle(params),
+    enabled: !!username,
+    placeholderData: keepPreviousData,
+    staleTime: BUNDLE_STALE_MS,
+  });
 
-  const buildParams = (limit: number) => {
-    return {
-    username: username!,
-    loc_filter: activeLocFilter({ locShowLocalized, locShowPending, locShowUnlocalized }),
-    platforms: platforms.length ? platforms : allPlatforms,
-    event_types: eventTypes,
-    relevances,
-    show_hidden: showHidden,
-    show_flagged: showFlagged,
-    show_unflagged: showUnflagged,
-    search: search || undefined,
-    time_window: timeWindow,
-    since: timeWindow === 'custom' ? (customSince || undefined) : undefined,
-    until: timeWindow === 'custom' ? (customUntil || undefined) : undefined,
-    only_new: showOnlyNew || undefined,
-    only_issues: showIssuesView || undefined,
-    limit,
-    };
-  };
-
-  const loadData = async (limit: number) => {
-    if (!username) return;
-    const seq = ++loadSeqRef.current;
-    // Also claim the dots-refresh token at the START of this attempt (not after
-    // it resolves) so it participates in the SAME shared ordering guard as the
-    // standalone dots-only refreshes (location edits, auto-update poll) — see
-    // useReportStore's beginDotsRefresh/commitDotsIfCurrent.
-    const dotsToken = beginDotsRefresh();
-    setIsLoading(true);
-    try {
-      const params = buildParams(limit);
-
-      // Reports + dots in a single round trip (see fetchReportsBundle).
-      const reportsRes = await fetchReportsBundle(params);
-
-      // Discard if a newer loadData started while this one was in-flight.
-      if (seq !== loadSeqRef.current) return;
-
-      // Facet fields are null under the lean views ("not computed, keep what
-      // you had" — an explicit part of the API contract now); setReports
-      // preserves on nullish, and the platform setters are guarded the same way.
-      setReports(
-        reportsRes.reports,
-        reportsRes.loaded_at,
-        reportsRes.event_type_totals ?? undefined,
-        reportsRes.relevance_totals ?? undefined,
-        reportsRes.has_more,
-        reportsRes.location_counts ?? undefined,
-        reportsRes.total_count,
-        reportsRes.unseen_count,
-      );
-      commitDotsIfCurrent(reportsRes.dots, dotsToken);
-      setPendingNewCount(reportsRes.pending_count ?? 0);
-      // processing_status_totals (Issues-view total, via its sum) and
-      // reports_total_count/reports_unseen_count (Reports-view totals) are always
-      // computed server-side regardless of the active tab — see
-      // report_service.get_reports — so both tab pills AND the combined header
-      // (Sidebar.tsx) stay live no matter which tab is currently open.
-      if (reportsRes.processing_status_totals) {
-        setProcessingStatusTotals(reportsRes.processing_status_totals);
-      }
-      setReportsTotalCount(reportsRes.reports_total_count ?? 0);
-      setReportsUnseenCount(reportsRes.reports_unseen_count ?? 0);
-
-      if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {
-        setAllPlatforms(reportsRes.all_platforms);
-      }
-      if (reportsRes.platform_counts) {
-        setPlatformCounts(reportsRes.platform_counts);
-      }
-      if (reportsRes.platform_added_counts) {
-        setPlatformAddedCounts(reportsRes.platform_added_counts);
-      }
-    } catch (e) {
-      console.error('Failed to load reports:', e);
-    } finally {
-      // Only the newest request clears the flag; a stale one resolving late must
-      // not turn off the indicator while the current reload is still running.
-      if (seq === loadSeqRef.current) setIsLoading(false);
+  // Push fresh bundle data into the zustand stores all components read from.
+  // Facet fields are null under the lean views ("not computed, keep what you
+  // had" — explicit in the API contract); setReports preserves on nullish and
+  // the platform setters are guarded the same way.
+  useEffect(() => {
+    const res = bundleQuery.data;
+    if (!res) return;
+    setReports(
+      res.reports,
+      res.loaded_at,
+      res.event_type_totals ?? undefined,
+      res.relevance_totals ?? undefined,
+      res.has_more,
+      res.location_counts ?? undefined,
+      res.total_count,
+      res.unseen_count,
+    );
+    setDots(res.dots);
+    setPendingNewCount(res.pending_count ?? 0);
+    // processing_status_totals (Issues-view total, via its sum) and
+    // reports_total_count/reports_unseen_count (Reports-view totals) are always
+    // computed server-side regardless of the active tab, so both tab pills AND
+    // the combined header (Sidebar.tsx) stay live on whichever tab is open.
+    if (res.processing_status_totals) {
+      setProcessingStatusTotals(res.processing_status_totals);
     }
-  };
+    setReportsTotalCount(res.reports_total_count ?? 0);
+    setReportsUnseenCount(res.reports_unseen_count ?? 0);
+    if (res.all_platforms && res.all_platforms.length > 0) {
+      setAllPlatforms(res.all_platforms);
+    }
+    if (res.platform_counts) {
+      setPlatformCounts(res.platform_counts);
+    }
+    if (res.platform_added_counts) {
+      setPlatformAddedCounts(res.platform_added_counts);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bundleQuery.data]);
+
+  // Loading indicator: first-ever load, or a filter change still showing the
+  // previous key's data (isPlaceholderData). Background refetches of the SAME
+  // key (version-poll invalidations) don't flash the spinner.
+  useEffect(() => {
+    setIsLoading(bundleQuery.isPending || bundleQuery.isPlaceholderData);
+  }, [bundleQuery.isPending, bundleQuery.isPlaceholderData, setIsLoading]);
+
+  // Cheap 10s change-token poll — the bundle only refetches when the token
+  // moves, so an idle app costs one indexed-aggregate query per tick instead
+  // of the full facet pipeline. Window-focus refetch is React Query's default,
+  // so returning to the tab checks immediately.
+  const versionQuery = useQuery({
+    queryKey: ['version', username],
+    queryFn: () => fetchVersion(username!),
+    enabled: !!username,
+    refetchInterval: VERSION_POLL_MS,
+  });
+  const lastTokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    const token = versionQuery.data?.token;
+    if (token == null) return;
+    if (lastTokenRef.current !== null && token !== lastTokenRef.current) {
+      invalidateBundle();
+    }
+    lastTokenRef.current = token;
+  }, [versionQuery.data]);
+
+  // Auto-admission: the moment a bundle reveals pending reports while
+  // auto-update is on, advance the watermark and refetch — no "wait for the
+  // next tick" gap, and the in-flight guard keeps it single-flight.
+  const admitInFlightRef = useRef(false);
+  useEffect(() => {
+    const pending = bundleQuery.data?.pending_count ?? 0;
+    if (!username || !autoUpdate || pending <= 0 || admitInFlightRef.current) return;
+    admitInFlightRef.current = true;
+    admitAllReports(username)
+      .then(() => invalidateBundle())
+      .catch((e) => console.error('Auto-admission failed:', e))
+      .finally(() => {
+        admitInFlightRef.current = false;
+      });
+  }, [bundleQuery.data, autoUpdate, username]);
+
+  // Manual reload requests (demo reset etc.) still arrive via reloadTrigger.
+  useEffect(() => {
+    if (reloadTrigger > 0) invalidateBundle();
+  }, [reloadTrigger]);
+
+  // Filter/search changes reset pagination to the first page. Deliberately NOT
+  // depending on currentLimit itself (filterKey excludes it) — that would loop.
+  useEffect(() => {
+    setCurrentLimit(BASE_LIMIT);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey]);
 
   const loadMore = () => {
     // Backend caps `limit` at 2000 (Query le=2000); never request beyond it.
     const newLimit = Math.min(currentLimit + BASE_LIMIT, 2000);
     if (newLimit === currentLimit) return;
     setCurrentLimit(newLimit);
-    loadData(newLimit);
   };
-
-  // Initial load — on mount and when filters/search change (always reset to base limit)
-  useEffect(() => {
-    if (!username) return;
-    setCurrentLimit(BASE_LIMIT);
-    loadData(BASE_LIMIT);
-  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew, showIssuesView, reloadTrigger]);
 
   // Load layers list once; auto-activate all layers if none are active yet (fresh deployment)
   useEffect(() => {

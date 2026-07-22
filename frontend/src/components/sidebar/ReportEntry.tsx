@@ -1,11 +1,11 @@
 import React from 'react';
 import { t } from '../../i18n';
 import type { ReportDTO, LocationEntry } from '../../types';
-import { useReportStore, refreshDots } from '../../store/useReportStore';
+import { useReportStore } from '../../store/useReportStore';
 import { useMapStore } from '../../store/useMapStore';
 import { useUserStore } from '../../store/useUserStore';
 import { hideReport, flagReport, acknowledgeReport, restoreLocations } from '../../api/reports';
-import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
+import { invalidateBundle } from '../../queryClient';
 import { LocationTag } from './LocationTag';
 import { computeVisibleReportBounds, isLocationConfirmed } from '../../utils/geo';
 
@@ -61,7 +61,6 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     useReportStore();
   const { enterPickMode, requestFitBounds } = useMapStore();
   const { username } = useUserStore();
-  const filters = useFilterStore();
 
   const isActive = activeReportId === report.id;
   const { hide, flag, new: isNew, locations: userLocations } = report.user_state;
@@ -135,7 +134,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
       // side), so unhiding needs a real refetch to bring its dot back — flipping
       // the local `seen` flag alone only works if the dot happened to already be
       // loaded from before it was hidden.
-      await refreshDots(dotsParamsFromFilters(username, filters));
+      invalidateBundle();
     } catch (e) {
       console.error('Failed to hide:', e);
       optimisticHide(report.id, hide);
@@ -163,7 +162,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     optimisticRestoreLocations(report.id, report.original_locations);
     try {
       await restoreLocations(report.id, username);
-      await refreshDots(dotsParamsFromFilters(username, filters));
+      invalidateBundle();
     } catch (e) {
       console.error('Failed to restore locations:', e);
     }

@@ -12,9 +12,10 @@ import {
   useMapEvents,
 } from 'react-leaflet';
 import { useMapStore } from '../../store/useMapStore';
-import { useFilterStore, getLayerColor, dotsParamsFromFilters } from '../../store/useFilterStore';
+import { useFilterStore, getLayerColor } from '../../store/useFilterStore';
 import { t } from '../../i18n';
-import { useReportStore, refreshDots } from '../../store/useReportStore';
+import { useReportStore } from '../../store/useReportStore';
+import { invalidateBundle } from '../../queryClient';
 import { useUserStore } from '../../store/useUserStore';
 import { fetchLayerGeoJSON } from '../../api/layers';
 import { updateLocations } from '../../api/reports';
@@ -30,7 +31,6 @@ function PickModeHandler(): null {
   const { pickMode, exitPickMode } = useMapStore();
   const { reports, optimisticUpdateLocations } = useReportStore();
   const { username } = useUserStore();
-  const filters = useFilterStore();
 
   useMapEvents({
     click: async (e) => {
@@ -64,7 +64,7 @@ function PickModeHandler(): null {
 
       try {
         await updateLocations(reportId, username, newLocs);
-        await refreshDots(dotsParamsFromFilters(username, filters));
+        invalidateBundle();
       } catch (e2) {
         console.error('Failed to update locations via map click:', e2);
       }

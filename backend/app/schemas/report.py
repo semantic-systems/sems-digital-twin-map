@@ -121,6 +121,11 @@ class NewCountResponse(BaseModel):
     count: int
 
 
+class VersionResponse(BaseModel):
+    """Opaque change token — see report_service.get_change_token."""
+    token: str
+
+
 class HideRequest(BaseModel):
     username: str
     hide: bool

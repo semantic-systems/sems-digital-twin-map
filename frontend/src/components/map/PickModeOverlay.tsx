@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { t } from '../../i18n';
 import { useMapStore } from '../../store/useMapStore';
-import { useReportStore, refreshDots } from '../../store/useReportStore';
+import { useReportStore } from '../../store/useReportStore';
+import { invalidateBundle } from '../../queryClient';
 import { useUserStore } from '../../store/useUserStore';
 import { updateLocations } from '../../api/reports';
-import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
 import type { NominatimResult, LocationEntry } from '../../types';
 
 const BASE_API = '/api/v1';
@@ -13,7 +13,6 @@ export function PickModeOverlay(): React.ReactElement | null {
   const { pickMode, exitPickMode } = useMapStore();
   const { reports, optimisticUpdateLocations } = useReportStore();
   const { username } = useUserStore();
-  const filters = useFilterStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<NominatimResult[]>([]);
@@ -87,7 +86,7 @@ export function PickModeOverlay(): React.ReactElement | null {
 
     try {
       await updateLocations(pickMode.reportId, username, newLocs);
-      await refreshDots(dotsParamsFromFilters(username, filters));
+      invalidateBundle();
     } catch (e) {
       console.error('Failed to update locations via search:', e);
     }

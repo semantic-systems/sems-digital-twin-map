@@ -40,6 +40,7 @@ from ..schemas.report import (
     HideRequest,
     LocationsRequest,
     NewCountResponse,
+    VersionResponse,
     ReportDTO,
     ReportsBundleResponse,
     ReportsResponse,
@@ -47,17 +48,9 @@ from ..schemas.report import (
 from pydantic import BaseModel
 
 class _AdmitAllRequest(BaseModel):
+    # Admission is a watermark over ingestion order (see UserAdmission) — there
+    # is nothing to parameterize beyond who is admitting.
     username: str
-    platforms: list[str] | None = None
-    event_types: list[str] | None = None
-    relevances: list[str] | None = None
-    only_issues: bool = False
-    # Active time window — keeps what gets admitted aligned with the pending
-    # count shown in the banner (which is time-bounded); without these,
-    # admit-all admitted matching reports from ALL time.
-    time_window: str | None = None
-    since: str | None = None
-    until: str | None = None
 from ..services import report_service as svc
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
@@ -162,6 +155,20 @@ def new_count_endpoint(
         demo_mode=settings.DEMO_MODE,
     )
     return NewCountResponse(count=count)
+
+
+# ---------------------------------------------------------------------------
+# GET /version  — cheap change token (must be before /{report_id})
+# ---------------------------------------------------------------------------
+
+@router.get("/version", response_model=VersionResponse)
+def version_endpoint(
+    username: str = Query(...),
+    session: Session = Depends(get_db),
+) -> VersionResponse:
+    """Poll target: the frontend refetches the full bundle only when this
+    token changes — see report_service.get_change_token."""
+    return VersionResponse(token=svc.get_change_token(session, username))
 
 
 # ---------------------------------------------------------------------------
@@ -307,10 +314,9 @@ def admit_all_endpoint(
 ) -> dict[str, Any]:
     """
     Admission is a per-user watermark over ingestion order (see UserAdmission):
-    admit-all simply advances it to the current max report id. The filter
-    fields in the body are accepted for request-shape compatibility but no
-    longer scope admission — filters control what the user SEES, the watermark
-    controls the "nothing appears without an explicit admit" property.
+    admit-all simply advances it to the current max report id. Filters control
+    what the user SEES; the watermark controls the "nothing appears without an
+    explicit admit" property.
     """
     admitted = svc.advance_admission(body.username, session)
     return {"admitted": admitted}

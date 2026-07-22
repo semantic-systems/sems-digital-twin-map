@@ -369,6 +369,49 @@
         }
       }
     },
+    "/api/v1/reports/version": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Version Endpoint",
+        "description": "Poll target: the frontend refetches the full bundle only when this\ntoken changes \u2014 see report_service.get_change_token.",
+        "operationId": "version_endpoint_api_v1_reports_version_get",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Username"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/reports/dots": {
       "get": {
         "tags": [
@@ -815,7 +858,7 @@
           "reports"
         ],
         "summary": "Admit All Endpoint",
-        "description": "Admission is a per-user watermark over ingestion order (see UserAdmission):\nadmit-all simply advances it to the current max report id. The filter\nfields in the body are accepted for request-shape compatibility but no\nlonger scope admission \u2014 filters control what the user SEES, the watermark\ncontrols the \"nothing appears without an explicit admit\" property.",
+        "description": "Admission is a per-user watermark over ingestion order (see UserAdmission):\nadmit-all simply advances it to the current max report id. Filters control\nwhat the user SEES; the watermark controls the \"nothing appears without an\nexplicit admit\" property.",
         "operationId": "admit_all_endpoint_api_v1_reports_admit_all_post",
         "requestBody": {
           "content": {
@@ -2524,91 +2567,25 @@
         ],
         "title": "ValidationError"
       },
+      "VersionResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "VersionResponse",
+        "description": "Opaque change token \u2014 see report_service.get_change_token."
+      },
       "_AdmitAllRequest": {
         "properties": {
           "username": {
             "type": "string",
             "title": "Username"
-          },
-          "platforms": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Platforms"
-          },
-          "event_types": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Types"
-          },
-          "relevances": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Relevances"
-          },
-          "only_issues": {
-            "type": "boolean",
-            "title": "Only Issues",
-            "default": false
-          },
-          "time_window": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Time Window"
-          },
-          "since": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Since"
-          },
-          "until": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Until"
           }
         },
         "type": "object",

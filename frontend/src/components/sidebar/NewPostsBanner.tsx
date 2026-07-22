@@ -1,45 +1,24 @@
 import React from 'react';
 import { newPostsLabel } from '../../i18n';
-import { useReportStore, refreshDots } from '../../store/useReportStore';
+import { useReportStore } from '../../store/useReportStore';
 import { useUserStore } from '../../store/useUserStore';
-import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStore';
-import { admitAllReports, fetchReports } from '../../api/reports';
+import { admitAllReports } from '../../api/reports';
+import { invalidateBundle } from '../../queryClient';
 
 export function NewPostsBanner(): React.ReactElement {
-  const { pendingNewCount, setPendingNewCount, setReports, currentLimit } = useReportStore();
+  const { pendingNewCount } = useReportStore();
   const { username } = useUserStore();
-  const filters = useFilterStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
 
   const handleClick = async () => {
     if (!username || pendingNewCount === 0) return;
 
     try {
-      const effectivePlatforms = filters.platforms.length ? filters.platforms : filters.allPlatforms;
-      // Shared builder: previously this hand-built params object omitted
-      // time_window/search/only_new entirely, so admitting new posts could
-      // reload a wider set of reports/dots than the active filters allowed.
-      const params = dotsParamsFromFilters(username, filters);
-
-      // Admit only filter-matching pending reports (time-bounded to the active
-      // window, matching how pending_count itself is computed)
-      await admitAllReports(username, {
-        platforms: effectivePlatforms,
-        event_types: filters.eventTypes,
-        relevances: filters.relevances,
-        time_window: params.time_window,
-        since: params.since,
-        until: params.until,
-      });
-      // Preserve the user's loaded page size — without limit this fell back to
-      // the 200 default, collapsing the list after someone had paged deeper.
-      const reloaded = await fetchReports({ ...params, limit: currentLimit });
-      setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals ?? undefined, reloaded.relevance_totals ?? undefined, reloaded.has_more, reloaded.location_counts ?? undefined, reloaded.total_count, reloaded.unseen_count);
-      if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
-      if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
-      if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
-      await refreshDots(params);
-      setPendingNewCount(0);
+      // Admission is a watermark, not filter-scoped (see backend UserAdmission)
+      // — advancing it then invalidating the bundle query is now the whole
+      // flow; the bundle refetch brings reports, dots, and every panel count
+      // back in sync in one round trip.
+      await admitAllReports(username);
+      invalidateBundle();
     } catch (e) {
       console.error('Failed to admit reports:', e);
     }

@@ -1208,6 +1208,43 @@ def get_tour_example(session: Session, username: str) -> ReportDTO:
 
 
 # ---------------------------------------------------------------------------
+# get_change_token
+# ---------------------------------------------------------------------------
+
+def get_change_token(session: Session, username: str) -> str:
+    """
+    A cheap opaque token that changes whenever anything relevant to this user's
+    view could have changed: new reports ingested (max id + count), the user's
+    admission watermark, or their per-report state rows (count + per-field sums,
+    since hide/flag/acknowledge UPDATE rows in place without changing count).
+    The frontend polls this instead of the full bundle and only refetches the
+    bundle when the token moves — the steady-state poll cost collapses from the
+    full facet pipeline to a handful of indexed aggregates.
+    """
+    from sqlalchemy import Integer as SaInteger
+
+    max_report_id = session.query(func.max(Report.id)).scalar() or 0
+    report_count = session.query(func.count(Report.id)).scalar() or 0
+
+    admission: UserAdmission | None = session.get(UserAdmission, username)
+    watermark = admission.admitted_up_to_id if admission is not None else 0
+
+    urs = (
+        session.query(
+            func.count(UserReportState.id),
+            func.coalesce(func.sum(cast(UserReportState.hide, SaInteger)), 0),
+            func.coalesce(func.sum(cast(UserReportState.flag, SaInteger)), 0),
+            func.coalesce(func.sum(case((UserReportState.new.is_(False), 1), else_=0)), 0),
+            func.coalesce(func.sum(case((UserReportState.locations.isnot(None), 1), else_=0)), 0),
+        )
+        .filter(UserReportState.username == username)
+        .one()
+    )
+
+    return f"{max_report_id}.{report_count}.{watermark}." + ".".join(str(v) for v in urs)
+
+
+# ---------------------------------------------------------------------------
 # get_new_count
 # ---------------------------------------------------------------------------
 

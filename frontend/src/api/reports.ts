@@ -7,7 +7,6 @@ import type {
   NewCountParams,
   NewCountResponse,
   DotsParams,
-  DotDTO,
   LocationEntry,
 } from '../types';
 
@@ -58,9 +57,9 @@ export async function fetchNewCount(params: NewCountParams): Promise<NewCountRes
   return apiFetch<NewCountResponse>(`/reports/new-count${qs}`);
 }
 
-export async function fetchDots(params: DotsParams): Promise<{ dots: DotDTO[] }> {
-  const qs = buildQuery(toBackendParams(params));
-  return apiFetch<{ dots: DotDTO[] }>(`/reports/dots${qs}`);
+/** Cheap change token; the bundle query is only invalidated when it moves. */
+export async function fetchVersion(username: string): Promise<{ token: string }> {
+  return apiFetch<{ token: string }>(`/reports/version?username=${encodeURIComponent(username)}`);
 }
 
 export async function fetchReport(id: number, username?: string): Promise<ReportDTO> {
@@ -73,22 +72,11 @@ export async function fetchTourExample(username: string): Promise<ReportDTO> {
   return apiFetch<ReportDTO>(`/reports/tour-example?username=${encodeURIComponent(username)}`);
 }
 
-export async function admitAllReports(
-  username: string,
-  filters?: {
-    platforms?: string[];
-    event_types?: string[];
-    relevances?: string[];
-    // Active time window — keeps what gets admitted aligned with the pending
-    // count shown in the banner (which is time-bounded).
-    time_window?: string;
-    since?: string;
-    until?: string;
-  },
-): Promise<{ admitted: number }> {
+/** Advance the user's admission watermark to "now" (see backend UserAdmission). */
+export async function admitAllReports(username: string): Promise<{ admitted: number }> {
   return apiFetch<{ admitted: number }>('/reports/admit-all', {
     method: 'POST',
-    body: JSON.stringify({ username, ...filters }),
+    body: JSON.stringify({ username }),
   });
 }
 
