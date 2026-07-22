@@ -441,77 +441,86 @@ def save_posts(posts: list):
     }
 
     for json_post in posts:
+        # Each post saves inside its own savepoint: one malformed post (e.g. an
+        # unparsable timestamp or unexpected field shape) previously raised out
+        # of the whole loop, silently dropping every post after it in the batch.
+        try:
+            with session.begin_nested():
+                identifier = json_post['id']
+                if identifier in existing_ids:
+                    continue
 
-        identifier = json_post['id']
-        if identifier in existing_ids:
+                entities = json_post.get('geo_linked_entities', [])
+                locations = [{
+                    "lon": entity["location"]["lon"],
+                    "lat": entity["location"]["lat"],
+                    "name": entity["location"]["name"],
+                    "boundingbox": None,
+                    "osm_type": entity["location"]["osm_type"],
+                    "osm_id": entity["location"]["osm_id"],
+                    "mention": entity["mention"],
+                    "status": entity.get("status", "ok"),
+                } if (entity["location"] is not None and "osm_id" in entity["location"]) else {
+                    "mention": entity["mention"],
+                    "status": entity.get("status", "no_candidates"),
+                } for entity in entities ]
+
+                # Upsert polygon into the shared lookup table
+                for entity in entities:
+                    loc = entity.get("location")
+                    if loc and loc.get("osm_id") and loc.get("osm_type") and loc.get("polygon"):
+                        existing_poly = session.query(LocationPolygon).filter_by(
+                            osm_id=str(loc["osm_id"]), osm_type=loc["osm_type"]
+                        ).first()
+                        if not existing_poly:
+                            session.add(LocationPolygon(
+                                osm_id=str(loc["osm_id"]),
+                                osm_type=loc["osm_type"],
+                                polygon=loc["polygon"],
+                            ))
+
+                # convert the time field into a datetime object
+                timestamp = datetime.fromisoformat(json_post['timestamp'].replace('Z', '+00:00'))
+
+                platform = json_post['platform']
+
+                text_field_key = TEXT_FIELD.get(platform, 'text')
+                text = json_post.get(text_field_key) or json_post.get('text', '')
+
+                # special formatting for RSS feeds
+                # i.e. instead of 'rss', save 'rss/ndr'
+                if platform == 'rss' and json_post.get('feed'):
+                    platform = f'rss/{json_post["feed"]}'
+
+                raw_types = json_post.get('event_types', [])
+                mapped_types = list({event_mapping.get(et, 'Sonstiges') for et in raw_types}) or ['Sonstiges']
+
+                # create a new post object
+                report = Report(
+                    identifier=identifier,
+                    text=text,
+                    url=json_post['url'],
+                    platform=platform,
+                    timestamp=timestamp,
+                    # .get with 'unknown' fallback: an unexpected relevance URI used
+                    # to KeyError and abort the whole batch — better to keep the post
+                    # with relevance 'unknown' than to lose it (and its successors).
+                    relevance=relevance_mapping.get(json_post['relevance'], 'unknown'),
+                    event_type=mapped_types[0],     # legacy column — keep populated
+                    event_types=mapped_types,
+                    processing_status=json_post.get('processing_status', 'ok'),
+                    geo_recognition_status=json_post.get('geo_recognition_status', 'ok'),
+                    locations=locations,
+                    original_locations=locations,
+                    author=json_post.get('author', ''),
+                    seen=False,
+                    author_flagged=False)
+
+                # add the post to the session
+                session.add(report)
+        except Exception as e:
+            print(f"Skipping unsaveable post {json_post.get('id', '?')}: {e}", flush=True)
             continue
-
-        entities = json_post.get('geo_linked_entities', [])
-        locations = [{
-            "lon": entity["location"]["lon"],
-            "lat": entity["location"]["lat"],
-            "name": entity["location"]["name"],
-            "boundingbox": None,
-            "osm_type": entity["location"]["osm_type"],
-            "osm_id": entity["location"]["osm_id"],
-            "mention": entity["mention"],
-            "status": entity.get("status", "ok"),
-        } if (entity["location"] is not None and "osm_id" in entity["location"]) else {
-            "mention": entity["mention"],
-            "status": entity.get("status", "no_candidates"),
-        } for entity in entities ]
-
-        # Upsert polygon into the shared lookup table
-        for entity in entities:
-            loc = entity.get("location")
-            if loc and loc.get("osm_id") and loc.get("osm_type") and loc.get("polygon"):
-                existing_poly = session.query(LocationPolygon).filter_by(
-                    osm_id=str(loc["osm_id"]), osm_type=loc["osm_type"]
-                ).first()
-                if not existing_poly:
-                    session.add(LocationPolygon(
-                        osm_id=str(loc["osm_id"]),
-                        osm_type=loc["osm_type"],
-                        polygon=loc["polygon"],
-                    ))
-
-        # convert the time field into a datetime object
-        timestamp = datetime.fromisoformat(json_post['timestamp'].replace('Z', '+00:00'))
-
-        platform = json_post['platform']
-
-        text_field_key = TEXT_FIELD.get(platform, 'text')
-        text = json_post.get(text_field_key) or json_post.get('text', '')
-
-        # special formatting for RSS feeds
-        # i.e. instead of 'rss', save 'rss/ndr'
-        if platform == 'rss' and json_post.get('feed'):
-            platform = f'rss/{json_post["feed"]}'
-
-
-        raw_types = json_post.get('event_types', [])
-        mapped_types = list({event_mapping.get(et, 'Sonstiges') for et in raw_types}) or ['Sonstiges']
-
-        # create a new post object
-        report = Report(
-            identifier=identifier,
-            text=text,
-            url=json_post['url'],
-            platform=platform,
-            timestamp=timestamp,
-            relevance=relevance_mapping[json_post['relevance']],
-            event_type=mapped_types[0],     # legacy column — keep populated
-            event_types=mapped_types,
-            processing_status=json_post.get('processing_status', 'ok'),
-            geo_recognition_status=json_post.get('geo_recognition_status', 'ok'),
-            locations=locations,
-            original_locations=locations,
-            author=json_post.get('author', ''),
-            seen=False,
-            author_flagged=False)
-
-        # add the post to the session
-        session.add(report)
 
         counter += 1
 
