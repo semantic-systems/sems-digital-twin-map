@@ -44,22 +44,21 @@ def user_state(
 ) -> dict[str, Any]:
     """
     Return the full aggregated state for a user:
-      - admitted_ids: list[int]   — reports admitted to the sidebar
+      - admitted_up_to_id: int    — admission watermark; report ids <= this are
+                                    admitted to the sidebar (see UserAdmission)
       - flagged_authors: list[str]
       - hide_ids: list[int]       — reports marked as seen/hidden
-      - new_ids: list[int]        — admitted but not yet acknowledged
+      - acknowledged_ids: list[int] — reports the user has explicitly opened
       - location_overrides: dict  — {str(report_id): list[LocationEntry]}
     """
-    seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, _ = get_user_state(
-        username, session
-    )
+    state = get_user_state(username, session)
 
     return {
-        "admitted_ids": sorted(added_ids),
-        "flagged_authors": sorted(flagged_authors),
-        "hide_ids": sorted(seen_ids),
-        "new_ids": sorted(new_ids),
+        "admitted_up_to_id": state.admitted_up_to,
+        "flagged_authors": sorted(state.flagged_authors),
+        "hide_ids": sorted(state.hidden_ids),
+        "acknowledged_ids": sorted(state.acknowledged_ids),
         "location_overrides": {
-            str(rid): locs for rid, locs in user_locs_map.items()
+            str(rid): locs for rid, locs in state.locs_map.items()
         },
     }

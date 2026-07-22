@@ -809,53 +809,13 @@
         }
       }
     },
-    "/api/v1/reports/admit": {
-      "post": {
-        "tags": [
-          "reports"
-        ],
-        "summary": "Admit Endpoint",
-        "operationId": "admit_endpoint_api_v1_reports_admit_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdmitRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdmitResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/reports/admit-all": {
       "post": {
         "tags": [
           "reports"
         ],
         "summary": "Admit All Endpoint",
+        "description": "Admission is a per-user watermark over ingestion order (see UserAdmission):\nadmit-all simply advances it to the current max report id. The filter\nfields in the body are accepted for request-shape compatibility but no\nlonger scope admission \u2014 filters control what the user SEES, the watermark\ncontrols the \"nothing appears without an explicit admit\" property.",
         "operationId": "admit_all_endpoint_api_v1_reports_admit_all_post",
         "requestBody": {
           "content": {
@@ -1451,7 +1411,7 @@
           "user"
         ],
         "summary": "User State",
-        "description": "Return the full aggregated state for a user:\n  - admitted_ids: list[int]   \u2014 reports admitted to the sidebar\n  - flagged_authors: list[str]\n  - hide_ids: list[int]       \u2014 reports marked as seen/hidden\n  - new_ids: list[int]        \u2014 admitted but not yet acknowledged\n  - location_overrides: dict  \u2014 {str(report_id): list[LocationEntry]}",
+        "description": "Return the full aggregated state for a user:\n  - admitted_up_to_id: int    \u2014 admission watermark; report ids <= this are\n                                admitted to the sidebar (see UserAdmission)\n  - flagged_authors: list[str]\n  - hide_ids: list[int]       \u2014 reports marked as seen/hidden\n  - acknowledged_ids: list[int] \u2014 reports the user has explicitly opened\n  - location_overrides: dict  \u2014 {str(report_id): list[LocationEntry]}",
         "operationId": "user_state_api_v1_user__username__state_get",
         "parameters": [
           {
@@ -1640,43 +1600,6 @@
           "username"
         ],
         "title": "AcknowledgeRequest"
-      },
-      "AdmitRequest": {
-        "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          },
-          "report_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "title": "Report Ids"
-          }
-        },
-        "type": "object",
-        "required": [
-          "username",
-          "report_ids"
-        ],
-        "title": "AdmitRequest"
-      },
-      "AdmitResponse": {
-        "properties": {
-          "admitted": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "title": "Admitted"
-          }
-        },
-        "type": "object",
-        "required": [
-          "admitted"
-        ],
-        "title": "AdmitResponse"
       },
       "DotDTO": {
         "properties": {

@@ -73,13 +73,6 @@ export async function fetchTourExample(username: string): Promise<ReportDTO> {
   return apiFetch<ReportDTO>(`/reports/tour-example?username=${encodeURIComponent(username)}`);
 }
 
-export async function admitReports(username: string, report_ids: number[]): Promise<void> {
-  await apiFetch<void>('/reports/admit', {
-    method: 'POST',
-    body: JSON.stringify({ username, report_ids }),
-  });
-}
-
 export async function admitAllReports(
   username: string,
   filters?: {

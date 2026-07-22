@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..config import settings
-from ..db import Report, UserReportState, get_session, get_db
+from ..db import Report, UserAdmission, UserReportState, get_session, get_db
 
 router = APIRouter(prefix="/api/v1/demo", tags=["demo"])
 
@@ -127,6 +127,7 @@ async def demo_reset(session: Session = Depends(get_db)) -> dict[str, Any]:
     # unscoped delete here previously wiped it along with everything else,
     # permanently 404ing GET /reports/tour-example until the backend restarted.
     session.query(UserReportState).delete()
+    session.query(UserAdmission).delete()
     session.query(Report).filter(~Report.identifier.like("tour-example%")).delete(synchronize_session=False)
     session.commit()
 

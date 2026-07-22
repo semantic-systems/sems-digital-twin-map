@@ -72,23 +72,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reports/admit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admit Endpoint */
-        post: operations["admit_endpoint_api_v1_reports_admit_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/reports/admit-all": {
         parameters: {
             query?: never;
@@ -98,7 +81,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Admit All Endpoint */
+        /**
+         * Admit All Endpoint
+         * @description Admission is a per-user watermark over ingestion order (see UserAdmission):
+         *     admit-all simply advances it to the current max report id. The filter
+         *     fields in the body are accepted for request-shape compatibility but no
+         *     longer scope admission — filters control what the user SEES, the watermark
+         *     controls the "nothing appears without an explicit admit" property.
+         */
         post: operations["admit_all_endpoint_api_v1_reports_admit_all_post"];
         delete?: never;
         options?: never;
@@ -308,10 +298,11 @@ export interface paths {
         /**
          * User State
          * @description Return the full aggregated state for a user:
-         *       - admitted_ids: list[int]   — reports admitted to the sidebar
+         *       - admitted_up_to_id: int    — admission watermark; report ids <= this are
+         *                                     admitted to the sidebar (see UserAdmission)
          *       - flagged_authors: list[str]
          *       - hide_ids: list[int]       — reports marked as seen/hidden
-         *       - new_ids: list[int]        — admitted but not yet acknowledged
+         *       - acknowledged_ids: list[int] — reports the user has explicitly opened
          *       - location_overrides: dict  — {str(report_id): list[LocationEntry]}
          */
         get: operations["user_state_api_v1_user__username__state_get"];
@@ -411,18 +402,6 @@ export interface components {
         AcknowledgeRequest: {
             /** Username */
             username: string;
-        };
-        /** AdmitRequest */
-        AdmitRequest: {
-            /** Username */
-            username: string;
-            /** Report Ids */
-            report_ids: number[];
-        };
-        /** AdmitResponse */
-        AdmitResponse: {
-            /** Admitted */
-            admitted: number[];
         };
         /**
          * DotDTO
@@ -1037,39 +1016,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReportsBundleResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    admit_endpoint_api_v1_reports_admit_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdmitRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdmitResponse"];
                 };
             };
             /** @description Validation Error */

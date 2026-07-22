@@ -165,11 +165,6 @@ export interface DotsParams {
   only_issues?: boolean;
 }
 
-export interface UserStateResponse {
-  username: string;
-  state: Record<number, UserStateDTO>;
-}
-
 export interface DemoStatus {
   demo_mode: boolean;
   running: boolean;

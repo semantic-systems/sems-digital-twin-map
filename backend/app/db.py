@@ -35,6 +35,7 @@ from data.model import (  # noqa: E402  (import not at top of file)
     Report,
     Scenario,
     Style,
+    UserAdmission,
     UserReportState,
 )
 
@@ -98,5 +99,6 @@ __all__ = [
     "Report",
     "Scenario",
     "Style",
+    "UserAdmission",
     "UserReportState",
 ]

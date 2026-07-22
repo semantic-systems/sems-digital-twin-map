@@ -438,6 +438,15 @@ def migrate_columns():
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author_flagged BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS processing_status VARCHAR",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS geo_recognition_status VARCHAR",
+        """CREATE TABLE IF NOT EXISTS user_admission (
+    username VARCHAR PRIMARY KEY,
+    admitted_up_to_id INTEGER NOT NULL DEFAULT 0
+)""",
+        """INSERT INTO user_admission (username, admitted_up_to_id)
+   SELECT username, MAX(report_id) FROM user_report_state
+   WHERE first_seen_at IS NOT NULL
+   GROUP BY username
+   ON CONFLICT (username) DO NOTHING""",
         """CREATE TABLE IF NOT EXISTS user_report_state (
     id SERIAL PRIMARY KEY,
     username VARCHAR NOT NULL,

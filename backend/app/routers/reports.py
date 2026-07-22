@@ -35,8 +35,6 @@ def _resolve_time_range(
     return _since_from_window(time_window), None
 from ..schemas.report import (
     AcknowledgeRequest,
-    AdmitRequest,
-    AdmitResponse,
     DotsResponse,
     FlagRequest,
     HideRequest,
@@ -299,24 +297,7 @@ def bundle_endpoint(
 
 
 # ---------------------------------------------------------------------------
-# POST /admit
-# ---------------------------------------------------------------------------
-
-@router.post("/admit", response_model=AdmitResponse)
-def admit_endpoint(
-    body: AdmitRequest,
-    session: Session = Depends(get_db),
-) -> AdmitResponse:
-    admitted = svc.bulk_admit_reports(
-        username=body.username,
-        report_ids=body.report_ids,
-        session=session,
-    )
-    return AdmitResponse(admitted=admitted)
-
-
-# ---------------------------------------------------------------------------
-# POST /admit-all  — admit every unadmitted report for a user
+# POST /admit-all  — advance the user's admission watermark to "now"
 # ---------------------------------------------------------------------------
 
 @router.post("/admit-all")
@@ -324,34 +305,15 @@ def admit_all_endpoint(
     body: _AdmitAllRequest,
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    from ..config import settings
-    from ..db import Report
-
-    _, _, _, added_ids, _, _ = svc.get_user_state(body.username, session)
-    eff_platform, eff_events, eff_relevance = svc.normalize_filters(
-        body.platforms or None,
-        body.event_types or None,
-        body.relevances or None,
-    )
-    eff_since, eff_until = _resolve_time_range(body.time_window, body.since, body.until)
-    matching_ids = {
-        row[0]
-        for row in svc.build_report_query(
-            session,
-            since=eff_since,
-            until=eff_until,
-            eff_platform=eff_platform,
-            eff_events=eff_events,
-            eff_relevance=eff_relevance,
-            demo_mode=settings.DEMO_MODE,
-            only_issues=body.only_issues,
-        )
-        .with_entities(Report.id)
-        .all()
-    }
-    pending_ids = [rid for rid in matching_ids if rid not in added_ids]
-    admitted = svc.bulk_admit_reports(body.username, pending_ids, session)
-    return {"admitted": len(admitted)}
+    """
+    Admission is a per-user watermark over ingestion order (see UserAdmission):
+    admit-all simply advances it to the current max report id. The filter
+    fields in the body are accepted for request-shape compatibility but no
+    longer scope admission — filters control what the user SEES, the watermark
+    controls the "nothing appears without an explicit admit" property.
+    """
+    admitted = svc.advance_admission(body.username, session)
+    return {"admitted": admitted}
 
 
 # ---------------------------------------------------------------------------
@@ -391,9 +353,12 @@ def get_report_endpoint(
     user_state_row = None
 
     if username:
-        seen_ids, flagged_authors, user_locs_map, _, new_ids, _ = svc.get_user_state(
-            username, session
-        )
+        user_state = svc.get_user_state(username, session)
+        seen_ids = user_state.hidden_ids
+        flagged_authors = user_state.flagged_authors
+        user_locs_map = user_state.locs_map
+        if user_state.is_new(report_id):
+            new_ids = {report_id}
         from ..db import UserReportState
 
         user_state_row = (

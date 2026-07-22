@@ -19,7 +19,7 @@ from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
-from ..db import LocationPolygon, Report, UserReportState
+from ..db import LocationPolygon, Report, UserAdmission, UserReportState
 from ..schemas.report import LocationEntry, ReportDTO, UserStateDTO
 
 # ---------------------------------------------------------------------------
@@ -173,54 +173,53 @@ def enrich_with_polygons(session: Session, locations: list) -> list:
 # get_user_state
 # ---------------------------------------------------------------------------
 
+@dataclass
+class UserState:
+    """A user's complete per-report state, loaded once per request.
+
+    Admission is the watermark (see UserAdmission): a report is admitted iff
+    report.id <= admitted_up_to. "New" is derived, not stored per admitted
+    report: a report is new iff it is admitted and NOT in acknowledged_ids
+    (rows are only written on acknowledge, so the stored set stays bounded by
+    what the user actually clicked — not by everything ever admitted).
+    """
+    hidden_ids: set[int] = field(default_factory=set)
+    flagged_authors: set[str] = field(default_factory=set)
+    locs_map: dict[int, list] = field(default_factory=dict)
+    admitted_up_to: int = 0
+    acknowledged_ids: set[int] = field(default_factory=set)
+
+    def is_new(self, report_id: int) -> bool:
+        return report_id <= self.admitted_up_to and report_id not in self.acknowledged_ids
+
+
 def get_user_state(
     username: str,
     session: Session,
-) -> tuple[set[int], set[str], dict[int, list], set[int], set[int], dict[str, dict]]:
-    """
-    Returns:
-        seen_ids        – report_ids where hide=True
-        flagged_authors – set of flag_author strings where flag=True
-        user_locs_map   – {report_id: locations} where locations IS NOT NULL
-        added_ids       – report_ids where first_seen_at IS NOT NULL
-        new_ids         – report_ids where first_seen_at IS NOT NULL AND new=True
-        snapshot        – {str(report_id): {hide, flag, flag_author, added, new, author}}
-    """
+) -> UserState:
     rows: list[UserReportState] = (
         session.query(UserReportState)
         .filter(UserReportState.username == username)
         .all()
     )
 
-    seen_ids: set[int] = set()
-    flagged_authors: set[str] = set()
-    user_locs_map: dict[int, list] = {}
-    added_ids: set[int] = set()
-    new_ids: set[int] = set()
-    snapshot: dict[str, dict] = {}
-
+    state = UserState()
     for row in rows:
         rid = row.report_id
         if row.hide:
-            seen_ids.add(rid)
+            state.hidden_ids.add(rid)
         if row.flag and row.flag_author:
-            flagged_authors.add(row.flag_author)
+            state.flagged_authors.add(row.flag_author)
         if row.locations is not None:
-            user_locs_map[rid] = row.locations
-        if row.first_seen_at is not None:
-            added_ids.add(rid)
-            if row.new:
-                new_ids.add(rid)
-        snapshot[str(rid)] = {
-            "hide": row.hide,
-            "flag": row.flag,
-            "flag_author": row.flag_author,
-            "added": row.first_seen_at is not None,
-            "new": row.new,
-            "author": row.flag_author,
-        }
+            state.locs_map[rid] = row.locations
+        if not row.new:
+            state.acknowledged_ids.add(rid)
 
-    return seen_ids, flagged_authors, user_locs_map, added_ids, new_ids, snapshot
+    admission: UserAdmission | None = session.get(UserAdmission, username)
+    if admission is not None:
+        state.admitted_up_to = admission.admitted_up_to_id
+
+    return state
 
 
 # ---------------------------------------------------------------------------
@@ -261,66 +260,55 @@ def upsert_user_state(
 
 
 # ---------------------------------------------------------------------------
-# bulk_admit_reports
+# advance_admission
 # ---------------------------------------------------------------------------
 
-def bulk_admit_reports(
+def advance_admission(
     username: str,
-    report_ids: list[int],
     session: Session,
-) -> list[int]:
+    up_to_id: int | None = None,
+) -> int:
     """
-    Upsert first_seen_at = now() for all given report IDs.
-    If the row already exists, first_seen_at is only updated when it is
-    currently NULL (COALESCE preserves an existing timestamp).
-    hide and flag are never overwritten on conflict.
-    Returns the list of IDs that were actually processed.
+    Advance the user's admission watermark to `up_to_id` (default: the current
+    max report id, i.e. "admit everything ingested so far"). The watermark only
+    ever moves forward (GREATEST), so concurrent admits can't regress it.
+    Returns how many reports the move newly admitted.
+
+    Note the semantic simplification vs the old per-report first_seen_at rows:
+    admission is a plain prefix of ingestion order — the active view filters
+    control what you SEE, not what gets admitted. Nothing still appears in the
+    sidebar without an explicit admit (banner click or auto-update), which is
+    the property the admission concept exists for.
     """
-    if not report_ids:
-        return []
+    if up_to_id is None:
+        up_to_id = session.query(func.max(Report.id)).scalar() or 0
 
-    # Filter to IDs that actually exist in the reports table
-    existing_ids: list[int] = [
-        row[0]
-        for row in session.query(Report.id)
-        .filter(Report.id.in_(report_ids))
-        .all()
-    ]
-    if not existing_ids:
-        return []
+    previous = session.get(UserAdmission, username)
+    old_watermark = previous.admitted_up_to_id if previous is not None else 0
 
-    now = _now_utc()
-
-    # Single multi-row upsert instead of one statement per report — admitting a
-    # large backlog previously issued thousands of sequential INSERTs.
-    # existing_ids is unique (Report.id is the PK), which ON CONFLICT DO UPDATE
-    # requires: duplicate keys in one statement would error.
-    stmt = pg_insert(UserReportState).values([
-        {
-            "username": username,
-            "report_id": rid,
-            "hide": False,
-            "flag": False,
-            "first_seen_at": now,
-            "new": True,
-        }
-        for rid in existing_ids
-    ])
-    # On conflict: preserve existing first_seen_at if already set;
-    # do NOT overwrite hide or flag so user choices are retained.
+    stmt = pg_insert(UserAdmission).values(
+        username=username, admitted_up_to_id=up_to_id
+    )
     stmt = stmt.on_conflict_do_update(
-        constraint="uq_user_report",
+        index_elements=[UserAdmission.__table__.c.username],
         set_={
-            "first_seen_at": func.coalesce(
-                UserReportState.__table__.c.first_seen_at,
-                stmt.excluded.first_seen_at,
+            "admitted_up_to_id": func.greatest(
+                UserAdmission.__table__.c.admitted_up_to_id,
+                stmt.excluded.admitted_up_to_id,
             ),
         },
     )
     session.execute(stmt)
-
     session.commit()
-    return existing_ids
+
+    if up_to_id <= old_watermark:
+        return 0
+    return (
+        session.query(func.count(Report.id))
+        .filter(Report.id > old_watermark, Report.id <= up_to_id)
+        .scalar()
+        or 0
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -394,7 +382,7 @@ def build_report_query(
     session: Session,
     since: datetime | None = None,
     until: datetime | None = None,
-    added_ids: set[int] | None = None,
+    admitted_up_to: int | None = None,
     eff_platform: list[str] | None = None,
     eff_events: list[str] | None = None,
     eff_relevance: list[str] | None = None,
@@ -493,8 +481,9 @@ def build_report_query(
         if eff_relevance:
             q = q.filter(Report.relevance.in_(eff_relevance))
 
-    if added_ids is not None:
-        q = q.filter(Report.id.in_(added_ids))
+    if admitted_up_to is not None:
+        # Admission watermark: admitted = a prefix of ingestion (SERIAL id) order.
+        q = q.filter(Report.id <= admitted_up_to)
 
     if search:
         term = f"%{search}%"
@@ -726,14 +715,12 @@ def get_reports(
     ignored (see build_report_query). Mutually exclusive with only_new in practice
     (the frontend only sends one), but both are independently honored here.
     """
-    (
-        seen_ids,
-        flagged_authors,
-        user_locs_map,
-        added_ids,
-        new_ids,
-        _snapshot,
-    ) = get_user_state(username, session)
+    user_state = get_user_state(username, session)
+    seen_ids = user_state.hidden_ids
+    flagged_authors = user_state.flagged_authors
+    user_locs_map = user_state.locs_map
+    watermark = user_state.admitted_up_to
+    acknowledged_ids = user_state.acknowledged_ids
 
     eff_platform, eff_events, eff_relevance = normalize_filters(
         platforms, event_types, relevances
@@ -813,27 +800,30 @@ def get_reports(
             session, since=since, until=until, demo_mode=demo_mode,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
             loc_filter=loc_filter, search=search,
-            added_ids=added_ids,
+            admitted_up_to=watermark,
         )
     )
     if _hidden_ids:
         _reports_total_q = _reports_total_q.filter(~Report.id.in_(_hidden_ids))
     reports_total_count = _reports_total_q.count()
 
-    # Reports-view unseen count — same query, restricted to still-new reports.
-    # Feeds the header's combined red badge (see the router/frontend), which adds
-    # this to the Issues total: Issues has no seen/unseen distinction (every
-    # matching failure is "actionable" regardless of whether you've looked at it
-    # before), so from the header's point of view the whole Issues total behaves
-    # like "unseen".
+    # Reports-view unseen count — same query, restricted to still-new reports
+    # (admitted but not acknowledged, not hidden). Feeds the header's combined
+    # red badge (see the router/frontend), which adds this to the Issues total:
+    # Issues has no seen/unseen distinction (every matching failure is
+    # "actionable" regardless of whether you've looked at it before), so from
+    # the header's point of view the whole Issues total behaves like "unseen".
     _reports_unseen_q = _apply_author_visibility(
         build_report_query(
             session, since=since, until=until, demo_mode=demo_mode,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
             loc_filter=loc_filter, search=search,
-            added_ids=(new_ids - _hidden_ids),
+            admitted_up_to=watermark,
         )
     )
+    _not_new_ids = acknowledged_ids | _hidden_ids
+    if _not_new_ids:
+        _reports_unseen_q = _reports_unseen_q.filter(~Report.id.in_(_not_new_ids))
     reports_unseen_count = _reports_unseen_q.count()
 
     _ALL_LOC_TYPES = frozenset({'localized', 'pending', 'unlocalized'})
@@ -919,9 +909,10 @@ def get_reports(
                 location_counts[loc_status] = location_counts.get(loc_status, 0) + 1
 
             # Unseen badge count: every report that passes the active filters, is
-            # still new, and not hidden. (rid in new_ids implies it is admitted.)
+            # still new (admitted under the watermark, not acknowledged), and not
+            # hidden.
             if (
-                rid in new_ids
+                user_state.is_new(rid)
                 and rid not in seen_ids
                 and _passes_plat and _passes_evt and _passes_rel and _passes_loc
             ):
@@ -931,13 +922,13 @@ def get_reports(
 
     # Count admitted posts per platform (ignoring event_type / platform filters).
     platform_added_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
-    if not only_new and added_ids:
+    if not only_new and watermark:
         added_rows = (
             build_report_query(
                 session,
                 since=since,
                 until=until,
-                added_ids=added_ids,
+                admitted_up_to=watermark,
                 eff_platform=None,
                 eff_events=None,
                 eff_relevance=eff_relevance,
@@ -951,11 +942,11 @@ def get_reports(
             if plat:
                 platform_added_counts[plat] = platform_added_counts.get(plat, 0) + 1
 
-    # If the sidebar is empty (no admitted reports), return [] and count pending.
+    # If the sidebar is empty (nothing admitted yet), return [] and count pending.
     # only_issues bypasses admission entirely — it's a diagnostic view over every
     # matching failed report, not a per-user curated inbox, so there's nothing to
     # "admit" and this early-return must not apply to it.
-    if not added_ids and not only_issues:
+    if not watermark and not only_issues:
         pending_q = build_report_query(
             session,
             since=since,
@@ -990,7 +981,7 @@ def get_reports(
         session,
         since=since,
         until=until,
-        added_ids=None if only_issues else added_ids,
+        admitted_up_to=None if only_issues else watermark,
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
@@ -999,11 +990,11 @@ def get_reports(
         only_issues=only_issues,
     )
 
-    # "Only new" view: restrict to reports still marked new so the page (and its
-    # total_count) contains the new reports directly instead of relying on the
-    # client to filter the loaded page.
-    if only_new:
-        q = q.filter(Report.id.in_(new_ids))
+    # "Only new" view: restrict to reports still marked new (admitted but not
+    # acknowledged) so the page (and its total_count) contains the new reports
+    # directly instead of relying on the client to filter the loaded page.
+    if only_new and acknowledged_ids:
+        q = q.filter(~Report.id.in_(acknowledged_ids))
 
     # Python-level display filtering
     hide_seen = not show_hidden
@@ -1049,6 +1040,10 @@ def get_reports(
         ).all()
     }
 
+    # Page-scoped "new" set for the DTOs (derived from the watermark — see
+    # UserState.is_new), instead of materializing newness for every admitted
+    # report.
+    page_new_ids = {r.id for r in filtered if user_state.is_new(r.id)}
     dtos = [
         build_report_dto(
             r,
@@ -1056,20 +1051,19 @@ def get_reports(
             user_locs_map=user_locs_map,
             seen_ids=seen_ids,
             flagged_authors=flagged_authors,
-            new_ids=new_ids,
+            new_ids=page_new_ids,
         )
         for r in filtered
     ]
 
     # Pending count = reports that match filters (incl. loc_filter and the active
-    # time window — previously omitted here, so the banner could count posts far
-    # outside the current view) but are NOT yet admitted. Always computed against
-    # the REPORTS view (only_issues=False), even when the Issues tab is active:
-    # admission is a Reports-view concept, and the auto-update poll relies on this
-    # number to decide when to admit — hardcoding it to 0 under only_issues (as
-    # before) silently paused auto-admission for as long as the Issues tab stayed
-    # open, letting new reports pile up un-admitted.
-    # Counted via anti-join instead of loading every matching ID into a Python set.
+    # time window) but are NOT yet admitted — with the watermark model this is a
+    # plain range condition, no join. Always computed against the REPORTS view
+    # (only_issues=False), even when the Issues tab is active: admission is a
+    # Reports-view concept, and the auto-update poll relies on this number to
+    # decide when to admit — hardcoding it to 0 under only_issues (as before)
+    # silently paused auto-admission for as long as the Issues tab stayed open,
+    # letting new reports pile up un-admitted.
     pending_count = (
         build_report_query(
             session,
@@ -1081,14 +1075,7 @@ def get_reports(
             demo_mode=demo_mode,
             loc_filter=loc_filter,
         )
-        .outerjoin(
-            UserReportState,
-            and_(
-                UserReportState.report_id == Report.id,
-                UserReportState.username == username,
-            ),
-        )
-        .filter(or_(UserReportState.id.is_(None), UserReportState.first_seen_at.is_(None)))
+        .filter(Report.id > watermark)
         .count()
     )
 
@@ -1143,7 +1130,9 @@ def get_tour_example(session: Session, username: str) -> ReportDTO:
     report.timestamp = _now_utc()
     session.commit()
 
-    bulk_admit_reports(username, [report.id], session)
+    # No admission needed: the example is excluded from every list query by its
+    # identifier, is fetched directly, and its DTO's flags come from the user
+    # state row upserted here (reset to defaults so a tour replay starts clean).
     upsert_user_state(
         username, report.id, session,
         hide=False, flag=False, flag_author=None, new=True, locations=None,
@@ -1186,23 +1175,20 @@ def get_new_count(
     except (ValueError, AttributeError):
         since = _now_utc()
 
-    _seen_ids, _flagged_authors, _user_locs_map, added_ids, _new_ids, _ = (
-        get_user_state(username, session)
-    )
+    user_state = get_user_state(username, session)
 
-    q = build_report_query(
-        session,
-        since=since,
-        eff_platform=eff_platform,
-        eff_events=eff_events,
-        eff_relevance=eff_relevance,
-        demo_mode=demo_mode,
+    return (
+        build_report_query(
+            session,
+            since=since,
+            eff_platform=eff_platform,
+            eff_events=eff_events,
+            eff_relevance=eff_relevance,
+            demo_mode=demo_mode,
+        )
+        .filter(Report.id > user_state.admitted_up_to)
+        .count()
     )
-
-    new_ids_in_db: list[int] = [row[0] for row in q.with_entities(Report.id).all()]
-    # Only count those NOT already admitted
-    unadmitted = [rid for rid in new_ids_in_db if rid not in added_ids]
-    return len(unadmitted)
 
 
 # ---------------------------------------------------------------------------
@@ -1313,7 +1299,6 @@ def build_dots(
     show_flagged: bool,
     show_unflagged: bool,
     demo_mode: bool,
-    added_ids: set[int] | None = None,
     search: str | None = None,
     since: datetime | None = None,
     until: datetime | None = None,
@@ -1326,25 +1311,20 @@ def build_dots(
     matches the "only new" sidebar view. only_issues mirrors get_reports likewise —
     see build_report_query for why event_type/relevance filters don't apply there.
     """
-    (
-        seen_ids,
-        flagged_authors,
-        user_locs_map,
-        user_added_ids,
-        new_ids,
-        _snapshot,
-    ) = get_user_state(username, session)
+    user_state = get_user_state(username, session)
+    seen_ids = user_state.hidden_ids
+    flagged_authors = user_state.flagged_authors
+    user_locs_map = user_state.locs_map
+    watermark = user_state.admitted_up_to
 
-    effective_added = added_ids if added_ids is not None else user_added_ids
-
-    if not effective_added and not only_issues:
+    if not watermark and not only_issues:
         return []
 
     q = build_report_query(
         session,
         since=since,
         until=until,
-        added_ids=None if only_issues else effective_added,
+        admitted_up_to=None if only_issues else watermark,
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
@@ -1353,8 +1333,8 @@ def build_dots(
         only_issues=only_issues,
     )
 
-    if only_new:
-        q = q.filter(Report.id.in_(new_ids))
+    if only_new and user_state.acknowledged_ids:
+        q = q.filter(~Report.id.in_(user_state.acknowledged_ids))
 
     # Unlike get_reports, dots never surface hidden reports on the map — show_hidden
     # only lets the sidebar list display them (greyed out), it doesn't apply here.
@@ -1468,7 +1448,7 @@ def build_dots(
                     "seen": rid in seen_ids,
                     "hide": rid in seen_ids,
                     "flag": (author or "") in flagged_authors,
-                    "new": rid in new_ids,
+                    "new": user_state.is_new(rid),
                     "location_name": loc.get("name") or loc.get("display_name") or "",
                     "location_display": loc.get("mention") or "",
                     "text": (text or "")[:300],

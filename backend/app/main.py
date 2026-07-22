@@ -76,6 +76,18 @@ def _init_db() -> None:
         "UPDATE reports SET event_types = ARRAY[event_type]::VARCHAR[] WHERE event_types IS NULL OR event_types = '{}'",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS processing_status VARCHAR",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS geo_recognition_status VARCHAR",
+        # Admission watermark (see UserAdmission model). The backfill converts the
+        # legacy per-report first_seen_at admission rows into each user's watermark
+        # once; ON CONFLICT keeps later startups from touching an existing value.
+        """CREATE TABLE IF NOT EXISTS user_admission (
+            username VARCHAR PRIMARY KEY,
+            admitted_up_to_id INTEGER NOT NULL DEFAULT 0
+        )""",
+        """INSERT INTO user_admission (username, admitted_up_to_id)
+           SELECT username, MAX(report_id) FROM user_report_state
+           WHERE first_seen_at IS NOT NULL
+           GROUP BY username
+           ON CONFLICT (username) DO NOTHING""",
         "CREATE INDEX IF NOT EXISTS ix_reports_timestamp ON reports (timestamp DESC)",
         "CREATE INDEX IF NOT EXISTS ix_reports_platform ON reports (platform)",
         "CREATE INDEX IF NOT EXISTS ix_reports_relevance ON reports (relevance)",

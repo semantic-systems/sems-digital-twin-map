@@ -284,6 +284,9 @@ class UserReportState(Base):
     """
     Per-user mutable state for a single report.
     Replaces the old browser-local report-state and user-locations stores.
+    Rows exist only where they carry real information (hide/flag/edited
+    locations/acknowledged) — admission itself is the per-user watermark in
+    UserAdmission, not a per-report row.
     """
     __tablename__ = 'user_report_state'
     id            = Column(Integer, primary_key=True)
@@ -293,10 +296,25 @@ class UserReportState(Base):
     flag          = Column(Boolean, nullable=False, server_default='false')   # author flagged
     flag_author   = Column(String, nullable=True)    # denormalised author string when flag=True
     locations     = Column(JSON, nullable=True)       # user-overridden locations
-    first_seen_at = Column(DateTime, nullable=True)   # NULL = not yet admitted to sidebar; set on admit
+    first_seen_at = Column(DateTime, nullable=True)   # legacy per-report admission marker — superseded by UserAdmission, kept for the old Dash app
     new           = Column(Boolean, nullable=False, server_default='true')    # True until user explicitly clicks/acknowledges the report
     report        = relationship('Report', back_populates='user_states')
     __table_args__ = (UniqueConstraint('username', 'report_id', name='uq_user_report'),)
+
+
+class UserAdmission(Base):
+    """
+    Per-user admission watermark: every report with id <= admitted_up_to_id
+    counts as admitted to that user's sidebar. Replaces the per-report
+    first_seen_at rows, which grew as (users x reports) with no information
+    beyond set membership — a watermark makes admit-all O(1), pending-count a
+    single range COUNT, and removes a whole class of admit/pending drift bugs.
+    Report ids are SERIAL, i.e. monotonic in ingestion order, so the watermark
+    is robust against late-ingested posts with old timestamps.
+    """
+    __tablename__ = 'user_admission'
+    username          = Column(String, primary_key=True)
+    admitted_up_to_id = Column(Integer, nullable=False, server_default='0')
 
 
 # the following tables are defined in the database

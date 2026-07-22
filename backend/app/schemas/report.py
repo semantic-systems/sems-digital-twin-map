@@ -114,15 +114,6 @@ class NewCountResponse(BaseModel):
     count: int
 
 
-class AdmitRequest(BaseModel):
-    username: str
-    report_ids: list[int]
-
-
-class AdmitResponse(BaseModel):
-    admitted: list[int]
-
-
 class HideRequest(BaseModel):
     username: str
     hide: bool
