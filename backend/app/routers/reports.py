@@ -54,6 +54,12 @@ class _AdmitAllRequest(BaseModel):
     event_types: list[str] | None = None
     relevances: list[str] | None = None
     only_issues: bool = False
+    # Active time window — keeps what gets admitted aligned with the pending
+    # count shown in the banner (which is time-bounded); without these,
+    # admit-all admitted matching reports from ALL time.
+    time_window: str | None = None
+    since: str | None = None
+    until: str | None = None
 from ..services import report_service as svc
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
@@ -331,10 +337,13 @@ def admit_all_endpoint(
         body.event_types or None,
         body.relevances or None,
     )
+    eff_since, eff_until = _resolve_time_range(body.time_window, body.since, body.until)
     matching_ids = {
         row[0]
         for row in svc.build_report_query(
             session,
+            since=eff_since,
+            until=eff_until,
             eff_platform=eff_platform,
             eff_events=eff_events,
             eff_relevance=eff_relevance,

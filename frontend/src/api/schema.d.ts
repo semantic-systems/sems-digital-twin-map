@@ -845,6 +845,12 @@ export interface components {
              * @default false
              */
             only_issues: boolean;
+            /** Time Window */
+            time_window?: string | null;
+            /** Since */
+            since?: string | null;
+            /** Until */
+            until?: string | null;
         };
         /** _RestoreBody */
         _RestoreBody: {

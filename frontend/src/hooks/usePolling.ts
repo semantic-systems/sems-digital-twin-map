@@ -111,6 +111,9 @@ export function usePolling() {
           platforms: params.platforms,
           event_types: params.event_types,
           relevances: params.relevances,
+          time_window: params.time_window,
+          since: params.since,
+          until: params.until,
         });
         const reloaded = await fetchReports(params);
         // Check again after the second await.

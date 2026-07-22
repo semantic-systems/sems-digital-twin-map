@@ -1026,26 +1026,36 @@ def get_reports(
         for r in filtered
     ]
 
-    # Pending count = reports that match filters (incl. loc_filter) but are NOT yet
-    # admitted. Always computed against the REPORTS view (only_issues=False), even
-    # when the Issues tab is active: admission is a Reports-view concept, and the
-    # auto-update poll relies on this number to decide when to admit — hardcoding
-    # it to 0 under only_issues (as before) silently paused auto-admission for as
-    # long as the Issues tab stayed open, letting new reports pile up un-admitted.
-    all_matching_ids: set[int] = {
-        row[0]
-        for row in build_report_query(
+    # Pending count = reports that match filters (incl. loc_filter and the active
+    # time window — previously omitted here, so the banner could count posts far
+    # outside the current view) but are NOT yet admitted. Always computed against
+    # the REPORTS view (only_issues=False), even when the Issues tab is active:
+    # admission is a Reports-view concept, and the auto-update poll relies on this
+    # number to decide when to admit — hardcoding it to 0 under only_issues (as
+    # before) silently paused auto-admission for as long as the Issues tab stayed
+    # open, letting new reports pile up un-admitted.
+    # Counted via anti-join instead of loading every matching ID into a Python set.
+    pending_count = (
+        build_report_query(
             session,
+            since=since,
+            until=until,
             eff_platform=eff_platform,
             eff_events=eff_events,
             eff_relevance=eff_relevance,
             demo_mode=demo_mode,
             loc_filter=loc_filter,
         )
-        .with_entities(Report.id)
-        .all()
-    }
-    pending_count = len(all_matching_ids - added_ids)
+        .outerjoin(
+            UserReportState,
+            and_(
+                UserReportState.report_id == Report.id,
+                UserReportState.username == username,
+            ),
+        )
+        .filter(or_(UserReportState.id.is_(None), UserReportState.first_seen_at.is_(None)))
+        .count()
+    )
 
     # Under only_new/only_issues the facet scan (which normally computes unseen_count)
     # was skipped; the returned list is exactly the matching set, so total_count is the badge.

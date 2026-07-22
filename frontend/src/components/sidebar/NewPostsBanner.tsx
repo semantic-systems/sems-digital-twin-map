@@ -21,11 +21,15 @@ export function NewPostsBanner(): React.ReactElement {
       // reload a wider set of reports/dots than the active filters allowed.
       const params = dotsParamsFromFilters(username, filters);
 
-      // Admit only filter-matching pending reports
+      // Admit only filter-matching pending reports (time-bounded to the active
+      // window, matching how pending_count itself is computed)
       await admitAllReports(username, {
         platforms: effectivePlatforms,
         event_types: filters.eventTypes,
         relevances: filters.relevances,
+        time_window: params.time_window,
+        since: params.since,
+        until: params.until,
       });
       const reloaded = await fetchReports(params);
       setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count, reloaded.unseen_count);

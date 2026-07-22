@@ -86,7 +86,16 @@ export async function admitReports(username: string, report_ids: number[]): Prom
 
 export async function admitAllReports(
   username: string,
-  filters?: { platforms?: string[]; event_types?: string[]; relevances?: string[] },
+  filters?: {
+    platforms?: string[];
+    event_types?: string[];
+    relevances?: string[];
+    // Active time window — keeps what gets admitted aligned with the pending
+    // count shown in the banner (which is time-bounded).
+    time_window?: string;
+    since?: string;
+    until?: string;
+  },
 ): Promise<{ admitted: number }> {
   return apiFetch<{ admitted: number }>('/reports/admit-all', {
     method: 'POST',
