@@ -6,7 +6,7 @@ import { useFilterStore, dotsParamsFromFilters } from '../../store/useFilterStor
 import { admitAllReports, fetchReports } from '../../api/reports';
 
 export function NewPostsBanner(): React.ReactElement {
-  const { pendingNewCount, setPendingNewCount, setReports } = useReportStore();
+  const { pendingNewCount, setPendingNewCount, setReports, currentLimit } = useReportStore();
   const { username } = useUserStore();
   const filters = useFilterStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
@@ -31,7 +31,9 @@ export function NewPostsBanner(): React.ReactElement {
         since: params.since,
         until: params.until,
       });
-      const reloaded = await fetchReports(params);
+      // Preserve the user's loaded page size — without limit this fell back to
+      // the 200 default, collapsing the list after someone had paged deeper.
+      const reloaded = await fetchReports({ ...params, limit: currentLimit });
       setReports(reloaded.reports, reloaded.loaded_at, reloaded.event_type_totals, reloaded.relevance_totals, reloaded.has_more, reloaded.location_counts, reloaded.total_count, reloaded.unseen_count);
       if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
       if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
