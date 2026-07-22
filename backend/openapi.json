@@ -1,0 +1,2607 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SEMS Digital Twin Map API",
+    "description": "REST API backend for the SEMS Digital Twin Map. Serves reports, map layers, scenarios, and per-user state.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/reports/": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Get Reports Endpoint",
+        "operationId": "get_reports_endpoint_api_v1_reports__get",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The requesting user's name",
+              "title": "Username"
+            },
+            "description": "The requesting user's name"
+          },
+          {
+            "name": "loc_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Loc Filter"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "relevance",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Relevance"
+            }
+          },
+          {
+            "name": "show_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Show Hidden"
+            }
+          },
+          {
+            "name": "show_flagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Flagged"
+            }
+          },
+          {
+            "name": "show_unflagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Unflagged"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2000,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "time_window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Time Window"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO8601 lower time bound (custom range)",
+              "title": "Since"
+            },
+            "description": "ISO8601 lower time bound (custom range)"
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO8601 upper time bound (custom range)",
+              "title": "Until"
+            },
+            "description": "ISO8601 upper time bound (custom range)"
+          },
+          {
+            "name": "only_new",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Only New"
+            }
+          },
+          {
+            "name": "only_issues",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Show only reports whose extraction pipeline failed",
+              "default": false,
+              "title": "Only Issues"
+            },
+            "description": "Show only reports whose extraction pipeline failed"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/new-count": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "New Count Endpoint",
+        "operationId": "new_count_endpoint_api_v1_reports_new_count_get",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Username"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "ISO8601 datetime string",
+              "title": "Since"
+            },
+            "description": "ISO8601 datetime string"
+          },
+          {
+            "name": "loc_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Loc Filter"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "relevance",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Relevance"
+            }
+          },
+          {
+            "name": "show_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Show Hidden"
+            }
+          },
+          {
+            "name": "show_flagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Flagged"
+            }
+          },
+          {
+            "name": "show_unflagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Unflagged"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewCountResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/dots": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Dots Endpoint",
+        "operationId": "dots_endpoint_api_v1_reports_dots_get",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Username"
+            }
+          },
+          {
+            "name": "loc_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Loc Filter"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "relevance",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Relevance"
+            }
+          },
+          {
+            "name": "show_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Show Hidden"
+            }
+          },
+          {
+            "name": "show_flagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Flagged"
+            }
+          },
+          {
+            "name": "show_unflagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Unflagged"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "time_window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Time Window"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO8601 lower time bound (custom range)",
+              "title": "Since"
+            },
+            "description": "ISO8601 lower time bound (custom range)"
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO8601 upper time bound (custom range)",
+              "title": "Until"
+            },
+            "description": "ISO8601 upper time bound (custom range)"
+          },
+          {
+            "name": "only_new",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Only New"
+            }
+          },
+          {
+            "name": "only_issues",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Only Issues"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DotsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/bundle": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Bundle Endpoint",
+        "operationId": "bundle_endpoint_api_v1_reports_bundle_get",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The requesting user's name",
+              "title": "Username"
+            },
+            "description": "The requesting user's name"
+          },
+          {
+            "name": "loc_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Loc Filter"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "relevance",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "title": "Relevance"
+            }
+          },
+          {
+            "name": "show_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Show Hidden"
+            }
+          },
+          {
+            "name": "show_flagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Flagged"
+            }
+          },
+          {
+            "name": "show_unflagged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Show Unflagged"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2000,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "time_window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Time Window"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO8601 lower time bound (custom range)",
+              "title": "Since"
+            },
+            "description": "ISO8601 lower time bound (custom range)"
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO8601 upper time bound (custom range)",
+              "title": "Until"
+            },
+            "description": "ISO8601 upper time bound (custom range)"
+          },
+          {
+            "name": "only_new",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Only New"
+            }
+          },
+          {
+            "name": "only_issues",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Show only reports whose extraction pipeline failed",
+              "default": false,
+              "title": "Only Issues"
+            },
+            "description": "Show only reports whose extraction pipeline failed"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportsBundleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/admit": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Admit Endpoint",
+        "operationId": "admit_endpoint_api_v1_reports_admit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdmitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/admit-all": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Admit All Endpoint",
+        "operationId": "admit_all_endpoint_api_v1_reports_admit_all_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/_AdmitAllRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Admit All Endpoint Api V1 Reports Admit All Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/tour-example": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Tour Example Endpoint",
+        "operationId": "tour_example_endpoint_api_v1_reports_tour_example_get",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The requesting user's name",
+              "title": "Username"
+            },
+            "description": "The requesting user's name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/{report_id}": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Get Report Endpoint",
+        "operationId": "get_report_endpoint_api_v1_reports__report_id__get",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Username"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/{report_id}/hide": {
+      "patch": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Hide Endpoint",
+        "operationId": "hide_endpoint_api_v1_reports__report_id__hide_patch",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Hide Endpoint Api V1 Reports  Report Id  Hide Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/{report_id}/flag": {
+      "patch": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Flag Endpoint",
+        "operationId": "flag_endpoint_api_v1_reports__report_id__flag_patch",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Flag Endpoint Api V1 Reports  Report Id  Flag Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/{report_id}/acknowledge": {
+      "patch": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Acknowledge Endpoint",
+        "operationId": "acknowledge_endpoint_api_v1_reports__report_id__acknowledge_patch",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcknowledgeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Acknowledge Endpoint Api V1 Reports  Report Id  Acknowledge Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/{report_id}/locations": {
+      "patch": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Update Locations Endpoint",
+        "operationId": "update_locations_endpoint_api_v1_reports__report_id__locations_patch",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Update Locations Endpoint Api V1 Reports  Report Id  Locations Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Restore Locations Endpoint",
+        "operationId": "restore_locations_endpoint_api_v1_reports__report_id__locations_delete",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/_RestoreBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Restore Locations Endpoint Api V1 Reports  Report Id  Locations Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/layers/": {
+      "get": {
+        "tags": [
+          "layers"
+        ],
+        "summary": "List Layers",
+        "operationId": "list_layers_api_v1_layers__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LayersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/layers/{layer_id}/geojson": {
+      "get": {
+        "tags": [
+          "layers"
+        ],
+        "summary": "Layer Geojson",
+        "operationId": "layer_geojson_api_v1_layers__layer_id__geojson_get",
+        "parameters": [
+          {
+            "name": "layer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Layer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Layer Geojson Api V1 Layers  Layer Id  Geojson Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "List Scenarios",
+        "operationId": "list_scenarios_api_v1_scenarios__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenariosResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/geojson": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Scenario Geojson",
+        "operationId": "scenario_geojson_api_v1_scenarios__scenario_id__geojson_get",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Scenario Geojson Api V1 Scenarios  Scenario Id  Geojson Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/init": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Init User",
+        "description": "Acknowledge a user session.  No DB rows are created here \u2014 all\nUserReportState rows are created lazily on first action.",
+        "operationId": "init_user_api_v1_user_init_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Init User Api V1 User Init Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/{username}/state": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "User State",
+        "description": "Return the full aggregated state for a user:\n  - admitted_ids: list[int]   \u2014 reports admitted to the sidebar\n  - flagged_authors: list[str]\n  - hide_ids: list[int]       \u2014 reports marked as seen/hidden\n  - new_ids: list[int]        \u2014 admitted but not yet acknowledged\n  - location_overrides: dict  \u2014 {str(report_id): list[LocationEntry]}",
+        "operationId": "user_state_api_v1_user__username__state_get",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Username"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response User State Api V1 User  Username  State Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/geo/nominatim": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Nominatim Search",
+        "description": "Proxy to Nominatim /search.\nRequests polygon_geojson=1 and returns a cleaned list of results.\nReturns [] on any error so the frontend can degrade gracefully.",
+        "operationId": "nominatim_search_api_v1_geo_nominatim_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Search string",
+              "title": "Q"
+            },
+            "description": "Search string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 7,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Nominatim Search Api V1 Geo Nominatim Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/status": {
+      "get": {
+        "tags": [
+          "demo"
+        ],
+        "summary": "Demo Status",
+        "description": "Returns demo mode flag and current trickle progress.",
+        "operationId": "demo_status_api_v1_demo_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Demo Status Api V1 Demo Status Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/reset": {
+      "post": {
+        "tags": [
+          "demo"
+        ],
+        "summary": "Demo Reset",
+        "description": "Clears all reports and user state, then trickles demo reports in one-by-one\nat the polling interval (10 s each).  Only available when DEMO_MODE=True.",
+        "operationId": "demo_reset_api_v1_demo_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Demo Reset Api V1 Demo Reset Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Api V1 Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AcknowledgeRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "title": "AcknowledgeRequest"
+      },
+      "AdmitRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "report_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Report Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "report_ids"
+        ],
+        "title": "AdmitRequest"
+      },
+      "AdmitResponse": {
+        "properties": {
+          "admitted": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Admitted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "admitted"
+        ],
+        "title": "AdmitResponse"
+      },
+      "DotDTO": {
+        "properties": {
+          "report_id": {
+            "type": "integer",
+            "title": "Report Id"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "seen": {
+            "type": "boolean",
+            "title": "Seen"
+          },
+          "hide": {
+            "type": "boolean",
+            "title": "Hide"
+          },
+          "flag": {
+            "type": "boolean",
+            "title": "Flag"
+          },
+          "new": {
+            "type": "boolean",
+            "title": "New"
+          },
+          "location_name": {
+            "type": "string",
+            "title": "Location Name"
+          },
+          "location_display": {
+            "type": "string",
+            "title": "Location Display"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "author": {
+            "type": "string",
+            "title": "Author"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "event_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Event Types",
+            "default": []
+          },
+          "relevance": {
+            "type": "string",
+            "title": "Relevance"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "location_bbox_area": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Bbox Area"
+          },
+          "location_bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Bbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "lat",
+          "lon",
+          "seen",
+          "hide",
+          "flag",
+          "new",
+          "location_name",
+          "location_display",
+          "text",
+          "author",
+          "platform",
+          "timestamp",
+          "relevance",
+          "url"
+        ],
+        "title": "DotDTO",
+        "description": "A single map-dot, one per geocoded location (not one per report \u2014 a\nreport with 3 locations yields 3 of these pre-clustering). Matches the dict\nbuild_dots() constructs; giving it a real schema (rather than list[dict])\nis what lets the frontend's DotDTO type be generated from this schema\ninstead of hand-maintained in parallel."
+      },
+      "DotsResponse": {
+        "properties": {
+          "dots": {
+            "items": {
+              "$ref": "#/components/schemas/DotDTO"
+            },
+            "type": "array",
+            "title": "Dots",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "DotsResponse"
+      },
+      "FlagRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "flag": {
+            "type": "boolean",
+            "title": "Flag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "flag"
+        ],
+        "title": "FlagRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HideRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "hide": {
+            "type": "boolean",
+            "title": "Hide"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "hide"
+        ],
+        "title": "HideRequest"
+      },
+      "InitRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "title": "InitRequest"
+      },
+      "LayerDTO": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "LayerDTO"
+      },
+      "LayersResponse": {
+        "properties": {
+          "layers": {
+            "items": {
+              "$ref": "#/components/schemas/LayerDTO"
+            },
+            "type": "array",
+            "title": "Layers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "layers"
+        ],
+        "title": "LayersResponse"
+      },
+      "LocationEntry": {
+        "properties": {
+          "mention": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mention"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "osm_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Osm Id"
+          },
+          "osm_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Osm Type"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "boundingbox": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boundingbox"
+          },
+          "polygon": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polygon"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "LocationEntry"
+      },
+      "LocationsRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/LocationEntry"
+            },
+            "type": "array",
+            "title": "Locations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "locations"
+        ],
+        "title": "LocationsRequest"
+      },
+      "NewCountResponse": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count"
+        ],
+        "title": "NewCountResponse"
+      },
+      "ReportDTO": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "identifier": {
+            "type": "string",
+            "title": "Identifier"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "event_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Event Types",
+            "default": []
+          },
+          "relevance": {
+            "type": "string",
+            "title": "Relevance"
+          },
+          "processing_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Status"
+          },
+          "geo_recognition_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Geo Recognition Status"
+          },
+          "issue_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issue Kinds",
+            "default": []
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/LocationEntry"
+            },
+            "type": "array",
+            "title": "Locations",
+            "default": []
+          },
+          "original_locations": {
+            "items": {
+              "$ref": "#/components/schemas/LocationEntry"
+            },
+            "type": "array",
+            "title": "Original Locations",
+            "default": []
+          },
+          "user_state": {
+            "$ref": "#/components/schemas/UserStateDTO",
+            "default": {
+              "hide": false,
+              "flag": false,
+              "new": true
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "identifier",
+          "text",
+          "url",
+          "platform",
+          "timestamp",
+          "relevance"
+        ],
+        "title": "ReportDTO"
+      },
+      "ReportsBundleResponse": {
+        "properties": {
+          "reports": {
+            "items": {
+              "$ref": "#/components/schemas/ReportDTO"
+            },
+            "type": "array",
+            "title": "Reports"
+          },
+          "pending_count": {
+            "type": "integer",
+            "title": "Pending Count"
+          },
+          "loaded_at": {
+            "type": "string",
+            "title": "Loaded At"
+          },
+          "event_type_totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Event Type Totals",
+            "default": {}
+          },
+          "relevance_totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Relevance Totals",
+            "default": {}
+          },
+          "location_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Location Counts",
+            "default": {}
+          },
+          "processing_status_totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Processing Status Totals",
+            "default": {}
+          },
+          "reports_total_count": {
+            "type": "integer",
+            "title": "Reports Total Count",
+            "default": 0
+          },
+          "reports_unseen_count": {
+            "type": "integer",
+            "title": "Reports Unseen Count",
+            "default": 0
+          },
+          "all_platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "All Platforms",
+            "default": []
+          },
+          "platform_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Platform Counts",
+            "default": {}
+          },
+          "platform_added_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Platform Added Counts",
+            "default": {}
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "default": false
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count",
+            "default": 0
+          },
+          "unseen_count": {
+            "type": "integer",
+            "title": "Unseen Count",
+            "default": 0
+          },
+          "dots": {
+            "items": {
+              "$ref": "#/components/schemas/DotDTO"
+            },
+            "type": "array",
+            "title": "Dots",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "reports",
+          "pending_count",
+          "loaded_at"
+        ],
+        "title": "ReportsBundleResponse",
+        "description": "Reports list + map dots in one payload, so a filter change needs a single\nround trip instead of two parallel requests contending on one sync worker."
+      },
+      "ReportsResponse": {
+        "properties": {
+          "reports": {
+            "items": {
+              "$ref": "#/components/schemas/ReportDTO"
+            },
+            "type": "array",
+            "title": "Reports"
+          },
+          "pending_count": {
+            "type": "integer",
+            "title": "Pending Count"
+          },
+          "loaded_at": {
+            "type": "string",
+            "title": "Loaded At"
+          },
+          "event_type_totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Event Type Totals",
+            "default": {}
+          },
+          "relevance_totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Relevance Totals",
+            "default": {}
+          },
+          "location_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Location Counts",
+            "default": {}
+          },
+          "processing_status_totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Processing Status Totals",
+            "default": {}
+          },
+          "reports_total_count": {
+            "type": "integer",
+            "title": "Reports Total Count",
+            "default": 0
+          },
+          "reports_unseen_count": {
+            "type": "integer",
+            "title": "Reports Unseen Count",
+            "default": 0
+          },
+          "all_platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "All Platforms",
+            "default": []
+          },
+          "platform_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Platform Counts",
+            "default": {}
+          },
+          "platform_added_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Platform Added Counts",
+            "default": {}
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "default": false
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count",
+            "default": 0
+          },
+          "unseen_count": {
+            "type": "integer",
+            "title": "Unseen Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "reports",
+          "pending_count",
+          "loaded_at"
+        ],
+        "title": "ReportsResponse"
+      },
+      "ScenarioDTO": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ScenarioDTO"
+      },
+      "ScenariosResponse": {
+        "properties": {
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioDTO"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenarios"
+        ],
+        "title": "ScenariosResponse"
+      },
+      "UserStateDTO": {
+        "properties": {
+          "hide": {
+            "type": "boolean",
+            "title": "Hide",
+            "default": false
+          },
+          "flag": {
+            "type": "boolean",
+            "title": "Flag",
+            "default": false
+          },
+          "flag_author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag Author"
+          },
+          "new": {
+            "type": "boolean",
+            "title": "New",
+            "default": true
+          },
+          "locations": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/LocationEntry"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locations"
+          }
+        },
+        "type": "object",
+        "title": "UserStateDTO"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "_AdmitAllRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "platforms": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platforms"
+          },
+          "event_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Types"
+          },
+          "relevances": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relevances"
+          },
+          "only_issues": {
+            "type": "boolean",
+            "title": "Only Issues",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "title": "_AdmitAllRequest"
+      },
+      "_RestoreBody": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "title": "_RestoreBody"
+      }
+    }
+  }
+}
