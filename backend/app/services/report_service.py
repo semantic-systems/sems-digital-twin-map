@@ -517,8 +517,76 @@ def build_report_query(
 
 
 # ---------------------------------------------------------------------------
-# filter_by_display
+# Display-filter predicate — THE Python-side definition of report visibility
 # ---------------------------------------------------------------------------
+
+_ALL_LOC_TYPES = frozenset({'localized', 'pending', 'unlocalized'})
+
+
+def effective_loc_set(loc_filter: list[str] | None) -> set[str] | None:
+    """None (no restriction) unless loc_filter is a strict subset of the three
+    location types — the single place this convention is decoded."""
+    return set(loc_filter) if loc_filter and set(loc_filter) < _ALL_LOC_TYPES else None
+
+
+def loc_status_of(effective_locs: list) -> str:
+    """'localized' | 'pending' | 'unlocalized' for a report's effective locations.
+    Single Python-side definition; build_report_query's SQL CASE and the facet
+    scan's _loc_status_expr are its documented SQL mirrors."""
+    if any(isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs):
+        return 'localized'
+    if effective_locs:
+        return 'pending'
+    return 'unlocalized'
+
+
+def has_geo_linking_error(effective_locs: list) -> bool:
+    """At least one location mention whose geo-linking failed outright
+    ('error' — distinct from 'no_candidates', which isn't a failure)."""
+    return any(isinstance(loc, dict) and loc.get('status') == 'error' for loc in effective_locs)
+
+
+def passes_display_filters(
+    *,
+    report_id: int,
+    author: str | None,
+    effective_locs: list,
+    geo_recognition_status: str | None,
+    loc_set: set[str] | None,
+    seen_ids: set[int],
+    flagged_authors: set[str],
+    hide_seen: bool,
+    hide_flagged: bool,
+    hide_unflagged: bool,
+    only_issues: bool,
+) -> bool:
+    """The one Python-side visibility predicate, shared by the sidebar list
+    (filter_by_display) and the map dots (build_dots) so the two can never
+    drift apart again. It covers what SQL can't see — user-modified locations —
+    while build_report_query pushes down the SQL-expressible mirror of the same
+    rules.
+
+    only_issues: loc_set is bypassed for reports that are in the Issues tab
+    BECAUSE the geo pipeline (recognition or per-mention linking) failed —
+    filtering those by location outcome would exclude the very reports the tab
+    exists to surface. Mirrors build_report_query's is_location_failure
+    handling of loc_filter."""
+    if hide_seen and report_id in seen_ids:
+        return False
+    if hide_flagged and (author or "") in flagged_authors:
+        return False
+    if hide_unflagged and (author or "") not in flagged_authors:
+        return False
+
+    if loc_set:
+        is_location_issue = only_issues and (
+            geo_recognition_status == 'error' or has_geo_linking_error(effective_locs)
+        )
+        if not is_location_issue and loc_status_of(effective_locs) not in loc_set:
+            return False
+
+    return True
+
 
 def filter_by_display(
     reports: list[Report],
@@ -531,47 +599,26 @@ def filter_by_display(
     hide_unflagged: bool,
     only_issues: bool = False,
 ) -> list[Report]:
-    """Python-level post-query filtering (handles user-modified locations).
-    only_issues: bypasses loc_filter for reports that are in the Issues tab because
-    the geo pipeline (recognition or per-mention linking) failed — filtering them by
-    location outcome would exclude the very reports the tab exists to surface.
-    Mirrors build_report_query's is_location_failure handling of loc_filter there
-    (see its docstring)."""
-    _ALL_LOC = frozenset({'localized', 'pending', 'unlocalized'})
-    _loc_set = set(loc_filter) if loc_filter and set(loc_filter) < _ALL_LOC else None
-
-    result: list[Report] = []
-
-    for r in reports:
-        if hide_seen and r.id in seen_ids:
-            continue
-        if hide_flagged and (r.author or "") in flagged_authors:
-            continue
-        if hide_unflagged and (r.author or "") not in flagged_authors:
-            continue
-
-        if _loc_set:
-            effective_locs: list = (user_locs_map[r.id] if r.id in user_locs_map else r.locations) or []
-            is_location_issue = only_issues and (
-                r.geo_recognition_status == 'error'
-                or any(isinstance(loc, dict) and loc.get('status') == 'error' for loc in effective_locs)
-            )
-            if not is_location_issue:
-                is_localized = any(
-                    isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
-                )
-                has_pending = (not is_localized) and bool(effective_locs)
-                is_unlocalized = not is_localized and not has_pending
-                if not (
-                    (is_localized and 'localized' in _loc_set)
-                    or (has_pending and 'pending' in _loc_set)
-                    or (is_unlocalized and 'unlocalized' in _loc_set)
-                ):
-                    continue
-
-        result.append(r)
-
-    return result
+    """Python-level post-query filtering — a thin loop over
+    passes_display_filters (see there for the actual rules)."""
+    loc_set = effective_loc_set(loc_filter)
+    return [
+        r
+        for r in reports
+        if passes_display_filters(
+            report_id=r.id,
+            author=r.author,
+            effective_locs=(user_locs_map[r.id] if r.id in user_locs_map else r.locations) or [],
+            geo_recognition_status=r.geo_recognition_status,
+            loc_set=loc_set,
+            seen_ids=seen_ids,
+            flagged_authors=flagged_authors,
+            hide_seen=hide_seen,
+            hide_flagged=hide_flagged,
+            hide_unflagged=hide_unflagged,
+            only_issues=only_issues,
+        )
+    ]
 
 
 def _compute_issue_kinds(report: Report) -> list[str]:
@@ -590,10 +637,8 @@ def _compute_issue_kinds(report: Report) -> list[str]:
         # Recognition failing means no mentions could have been extracted at all,
         # so `locations` is empty by construction — nothing to check per-mention.
         kinds.append('geo_recognition_failed')
-    else:
-        locs = report.locations or []
-        if any(isinstance(loc, dict) and loc.get('status') == 'error' for loc in locs):
-            kinds.append('geoparsing_failed')
+    elif has_geo_linking_error(report.locations or []):
+        kinds.append('geoparsing_failed')
 
     return kinds
 
@@ -826,11 +871,10 @@ def get_reports(
         _reports_unseen_q = _reports_unseen_q.filter(~Report.id.in_(_not_new_ids))
     reports_unseen_count = _reports_unseen_q.count()
 
-    _ALL_LOC_TYPES = frozenset({'localized', 'pending', 'unlocalized'})
     # NOTE: under only_issues, loc_filter is still meaningful — it just doesn't apply
-    # to geoparsing-failure rows (filter_by_display bypasses it for those; see there
-    # and build_report_query's is_geoparsing_failure for the full rationale).
-    _eff_loc = set(loc_filter) if (loc_filter and set(loc_filter) < _ALL_LOC_TYPES) else None
+    # to geo-failure rows (passes_display_filters bypasses it for those; see there
+    # and build_report_query's is_location_failure for the full rationale).
+    _eff_loc = effective_loc_set(loc_filter)
 
     event_type_totals: dict[str, int] = {}
     platform_counts: dict[str, int] = {p: 0 for p in ALL_PLATFORMS}
@@ -1342,12 +1386,10 @@ def build_dots(
     hide_flagged = not show_flagged
     hide_unflagged = not show_unflagged
 
-    # Location-type filter is applied in Python (mirrors filter_by_display) so it
-    # respects user-modified locations from user_locs_map, just like get_reports.
-    # Under only_issues it's bypassed for geoparsing-failure rows specifically — see
-    # filter_by_display and build_report_query's is_geoparsing_failure.
-    _ALL_LOC = frozenset({'localized', 'pending', 'unlocalized'})
-    _loc_set = set(loc_filter) if loc_filter and set(loc_filter) < _ALL_LOC else None
+    # Display filtering is the SAME shared predicate the sidebar list uses
+    # (passes_display_filters) — dots and list can't drift apart. Applied in
+    # Python so it respects user-modified locations from user_locs_map.
+    _loc_set = effective_loc_set(loc_filter)
 
     rows = q.with_entities(
         Report.id,
@@ -1380,31 +1422,22 @@ def build_dots(
 
     dots: list[dict] = []
     for (rid, text, author, platform, timestamp, event_types, event_type, relevance, url, locs_raw, geo_status) in rows:
-        if hide_seen and rid in seen_ids:
-            continue
-        if hide_flagged and (author or "") in flagged_authors:
-            continue
-        if hide_unflagged and (author or "") not in flagged_authors:
-            continue
-
         effective_locs: list = (user_locs_map[rid] if rid in user_locs_map else locs_raw) or []
 
-        is_location_issue = only_issues and (
-            geo_status == 'error'
-            or any(isinstance(loc, dict) and loc.get('status') == 'error' for loc in effective_locs)
-        )
-        if _loc_set and not is_location_issue:
-            is_localized = any(
-                isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
-            )
-            has_pending = (not is_localized) and bool(effective_locs)
-            is_unlocalized = not is_localized and not has_pending
-            if not (
-                (is_localized and 'localized' in _loc_set)
-                or (has_pending and 'pending' in _loc_set)
-                or (is_unlocalized and 'unlocalized' in _loc_set)
-            ):
-                continue
+        if not passes_display_filters(
+            report_id=rid,
+            author=author,
+            effective_locs=effective_locs,
+            geo_recognition_status=geo_status,
+            loc_set=_loc_set,
+            seen_ids=seen_ids,
+            flagged_authors=flagged_authors,
+            hide_seen=hide_seen,
+            hide_flagged=hide_flagged,
+            hide_unflagged=hide_unflagged,
+            only_issues=only_issues,
+        ):
+            continue
 
         for loc in effective_locs:
             if not isinstance(loc, dict):
