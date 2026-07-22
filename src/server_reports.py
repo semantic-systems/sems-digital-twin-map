@@ -93,21 +93,82 @@ def wkt_to_geojson(wkt_str: str):
     geojson_dict = mapping(geom)
     return geojson_dict
 
-def _run_sparql(query: str, auth_header: str) -> list:
+def _run_sparql_raise(query: str, auth_header: str) -> list:
+    """Like _run_sparql but propagates failures instead of swallowing them.
+    Used where a caller needs to tell a real query failure apart from a
+    legitimately empty result set (e.g. the WKT batch retry/bisection below)."""
     sparql.setQuery(query)
     sparql.setReturnFormat('json')
     sparql.setMethod('POST')
     sparql.addCustomHttpHeader("User-Agent", USER_AGENT)
     sparql.addCustomHttpHeader("Authorization", auth_header)
+    return sparql.query().convert()['results']['bindings']
+
+
+def _run_sparql(query: str, auth_header: str) -> list:
     try:
-        return sparql.query().convert()['results']['bindings']
+        return _run_sparql_raise(query, auth_header)
     except Exception as e:
         status = getattr(getattr(e, 'response', None), 'status', None)
         print(f"Error fetching data from SPARQL endpoint (HTTP {status}): {e}", flush=True)
         return []
 
 
+def _fetch_wkt_batch(uris: list, auth_header: str) -> dict:
+    """Fetch WKT geometries for a batch of location URIs. One oversized/malformed
+    geometry in the batch (e.g. Virtuoso 'SR578: expected result length of wide
+    string is too large' on a huge MULTIPOLYGON) fails the whole VALUES query, so
+    on failure we bisect the batch and retry each half independently — isolating
+    and skipping just the offending URI(s) instead of losing every geometry in
+    the batch."""
+    if not uris:
+        return {}
+
+    loc_values = ' '.join(f'<{uri}>' for uri in uris)
+    wkt_query = f"""
+        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        SELECT ?location ?wkt {{
+            GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
+                VALUES ?location {{ {loc_values} }}
+                ?location geo:hasGeometry ?geom .
+                ?geom geo:asWKT ?wkt .
+            }}
+        }}
+    """
+    try:
+        bindings = _run_sparql_raise(wkt_query, auth_header)
+    except Exception as e:
+        if len(uris) == 1:
+            print(f"Skipping unfetchable geometry for {uris[0]}: {e}", flush=True)
+            return {}
+        mid = len(uris) // 2
+        result = _fetch_wkt_batch(uris[:mid], auth_header)
+        result.update(_fetch_wkt_batch(uris[mid:], auth_header))
+        return result
+
+    result = {}
+    for binding in bindings:
+        loc_uri = binding['location']['value']
+        try:
+            result[loc_uri] = wkt_to_geojson(binding['wkt']['value'])
+        except Exception as e:
+            print(f"Skipping unparsable WKT for {loc_uri}: {e}", flush=True)
+    return result
+
+
 LOCATION_BATCH_SIZE = 50  # Virtuoso rejects VALUES clauses with too many URIs
+
+# The endpoint hosts many unrelated datasets (old social-media snapshots, demo
+# datasets, deich/sensor data, ...). Every query below must be scoped to this
+# graph explicitly — without a GRAPH clause, Virtuoso matches across ALL of
+# them, silently mixing in ~1M stale posts from the retired social_media_v2
+# dataset plus whatever else happens to live on the endpoint.
+SOCIAL_MEDIA_GRAPH = 'http://rescue-mate.de/datasets/social_media_data'
+
+# Post-level statuses that indicate the classifier failed to produce a
+# category/relevance for a post at all (so it would otherwise never appear in
+# the results — see the UNION in posts_query below).
+FAILED_POST_STATUSES = ('rm:error', 'rm:no_text')
 
 RELEVANT_CATEGORIES = ' '.join(f'<http://rescue-mate.de/resource/{c}>' for c in [
     'affected_individual', 'caution_and_advice', 'displaced_and_evacuations',
@@ -124,26 +185,48 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
     search_since_str = search_since.isoformat().replace('+00:00', 'Z')
     until_filter = f'FILTER (?date <= "{search_until.isoformat().replace("+00:00", "Z")}"^^xsd:dateTime)' if search_until else ''
 
-    # Query 1: post metadata only — no geometry joins
+    # Query 1: post metadata only — no geometry joins.
+    # A post is returned if EITHER it has a relevant category+relevance (the normal
+    # case) OR its processing status indicates the classifier failed outright (so it
+    # would otherwise have no category/relevance and never appear here at all).
+    # NOTE: ?postStatus must be bound as a real triple pattern inside each UNION
+    # branch, NOT via a shared outer OPTIONAL + a bare FILTER in the second branch —
+    # that shape makes Virtuoso's query planner drastically over-estimate the cost
+    # and return a 500 (verified against the live endpoint). Binding it separately
+    # per branch avoids that.
     posts_query = f"""
         PREFIX rm: <http://rescue-mate.de/resource/>
         PREFIX rmo: <http://rescue-mate.de/ontology/>
         PREFIX schema: <http://schema.org/>
-        SELECT ?post ?text ?date ?category ?predictedRelevance ?url ?user ?username ?platform ?user_identifier {{
-            VALUES ?category {{ {RELEVANT_CATEGORIES} }}
-            ?post a rmo:SocialMediaPost ;
-                schema:text ?text ;
-                schema:dateCreated ?date ;
-                rmo:hasDetectedCategory ?category ;
-                rm:predictedRelevance ?predictedRelevance .
-            FILTER (?date > "{search_since_str}"^^xsd:dateTime)
-            {until_filter}
-            OPTIONAL {{ ?post schema:url ?url }}
-            OPTIONAL {{
-                ?post schema:author ?user .
-                OPTIONAL {{ ?user schema:name ?username }}
-                OPTIONAL {{ ?user rm:socialMediaServiceName ?platform }}
-                OPTIONAL {{ ?user schema:identifier ?user_identifier }}
+        SELECT ?post ?text ?date ?category ?predictedRelevance ?url ?user ?username ?platform ?user_identifier ?geoRecognitionStatus ?postStatus  {{
+            GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
+                ?post a rmo:SocialMediaPost ;
+                    schema:text ?text ;
+                    schema:dateCreated ?date .
+                {{
+                    VALUES ?category {{ {RELEVANT_CATEGORIES} }}
+                    ?post rmo:hasDetectedCategory ?category ;
+                        rm:predictedRelevance ?predictedRelevance .
+                    ?post rm:eventPredictionStatus ?postStatus .
+                    ?post rm:geoRecognitionStatus ?geoRecognitionStatus .
+                }}
+                UNION
+                {{
+                    ?post rm:eventPredictionStatus ?postStatus .
+                    ?post rm:geoRecognitionStatus ?geoRecognitionStatus .
+                    ?post rmo:hasDetectedCategory ?category ;
+                        rm:predictedRelevance ?predictedRelevance .
+                    FILTER (?postStatus IN ({', '.join(FAILED_POST_STATUSES)}))
+                }}
+                FILTER (?date > "{search_since_str}"^^xsd:dateTime)
+                {until_filter}
+                OPTIONAL {{ ?post schema:url ?url }}
+                OPTIONAL {{
+                    ?post schema:author ?user .
+                    OPTIONAL {{ ?user schema:name ?username }}
+                    OPTIONAL {{ ?user rm:socialMediaServiceName ?platform }}
+                    OPTIONAL {{ ?user schema:identifier ?user_identifier }}
+                }}
             }}
         }}
     """
@@ -168,6 +251,8 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                 'url': result.get('url', {'value': ''})['value'],
                 'event_types': [raw_category] if raw_category else [],
                 'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
+                'processing_status': result['postStatus']['value'].split('/')[-1] or 'ok',
+                'geo_recognition_status': result['geoRecognitionStatus']['value'].split('/')[-1] or 'ok',
                 'geo_linked_entities': [],
                 'author': (
                     result.get('username', {}).get('value') or
@@ -180,6 +265,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
 
     if VERBOSE:
         print(f"Query 1: {len(posts)} posts in window", flush=True)
+
 
     # Query 2a: location metadata only (no geometry), batched to stay under Virtuoso's
     # VALUES clause size limit. Fetches lat/lon so we can bbox-filter before requesting WKT.
@@ -196,17 +282,20 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
             PREFIX obo: <http://purl.obolibrary.org/obo/>
             PREFIX schema: <http://schema.org/>
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            SELECT ?post ?location_mention_surface_form ?location ?osm_type ?osm_id ?lat ?lon ?name {{
-                VALUES ?post {{ {batch_values} }}
-                ?post rm:hasMentionedLocation ?location_mention .
-                ?location_mention schema:text ?location_mention_surface_form .
-                OPTIONAL {{
-                    ?location_mention obo:IAO_0000136 ?location .
-                    ?location rm:osm_type ?osm_type ;
-                        rm:osm_id ?osm_id ;
-                        rm:latitude ?lat ;
-                        rm:longitude ?lon ;
-                        rdfs:label ?name .
+            SELECT ?post ?location_mention_surface_form ?location ?osm_type ?osm_id ?lat ?lon ?name ?locStatus {{
+                GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
+                    VALUES ?post {{ {batch_values} }}
+                    ?post rm:hasMentionedLocation ?location_mention .
+                    ?location_mention schema:text ?location_mention_surface_form .
+                    ?location_mention rm:geoLinkingStatus ?locStatus .
+                    OPTIONAL {{
+                        ?location_mention obo:IAO_0000136 ?location .
+                        ?location rm:osm_type ?osm_type ;
+                            rm:osm_id ?osm_id ;
+                            rm:latitude ?lat ;
+                            rm:longitude ?lon ;
+                            rdfs:label ?name .
+                    }}
                 }}
             }}
         """
@@ -217,9 +306,14 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                 continue
             seen_mentions[post_id].add(mention)
 
+            # 'ok' with no resolved location shouldn't normally happen, but falls back
+            # to 'no_candidates' (matching pre-status silent-drop behavior) rather than
+            # masking it as a clean 'ok'.
+            loc_status = result['locStatus']['value'].split('/')[-1] or 'no_candidates'
+
             loc_uri = result.get('location', {}).get('value')
             if not loc_uri or 'osm_id' not in result:
-                posts[post_id]['geo_linked_entities'].append({'mention': mention, 'location': None})
+                posts[post_id]['geo_linked_entities'].append({'mention': mention, 'location': None, 'status': loc_status})
                 continue
 
             lat = float(result['lat']['value'])
@@ -227,7 +321,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
             if bbox:
                 min_lon, min_lat, max_lon, max_lat = bbox
                 if not (min_lat <= lat <= max_lat and min_lon <= lon <= max_lon):
-                    posts[post_id]['geo_linked_entities'].append({'mention': mention, 'location': None})
+                    posts[post_id]['geo_linked_entities'].append({'mention': mention, 'location': None, 'status': loc_status})
                     continue
 
             in_bbox_locs[loc_uri] = {
@@ -266,18 +360,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                 uncached_uris.append(loc_uri)
 
     if uncached_uris:
-        loc_values = ' '.join(f'<{uri}>' for uri in uncached_uris)
-        wkt_query = f"""
-            PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-            SELECT ?location ?wkt {{
-                VALUES ?location {{ {loc_values} }}
-                ?location geo:hasGeometry ?geom .
-                ?geom geo:asWKT ?wkt .
-            }}
-        """
-        for result in _run_sparql(wkt_query, auth_header):
-            loc_uri = result['location']['value']
-            geojson_by_uri[loc_uri] = wkt_to_geojson(result['wkt']['value'])
+        geojson_by_uri.update(_fetch_wkt_batch(uncached_uris, auth_header))
 
     if VERBOSE:
         n_cached = len(in_bbox_locs) - len(uncached_uris)
@@ -285,7 +368,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
 
     for post_id, mention, loc_uri in pending:
         meta = in_bbox_locs[loc_uri]
-        geo_linked_entity: dict = {'mention': mention}
+        geo_linked_entity: dict = {'mention': mention, 'status': 'ok'}
         geojson = geojson_by_uri.get(loc_uri)
         if geojson:
             geo_linked_entity['location'] = {**meta, 'geojson': geojson, 'polygon': geojson}
@@ -311,6 +394,7 @@ event_mapping = {
     'http://rescue-mate.de/resource/response_efforts': 'Einsatzmaßnahmen',
     'http://rescue-mate.de/resource/sympathy_and_support': 'Mitgefühl & Unterstützung',
     'http://rescue-mate.de/resource/other_emergency': 'Sonstiges',
+    'http://rescue-mate.de/resource/unknown': 'unknown',
 }
 
 relevance_mapping = {
@@ -318,12 +402,14 @@ relevance_mapping = {
     'http://rescue-mate.de/resource/medium': 'medium',
     'http://rescue-mate.de/resource/low': 'low',
     'http://rescue-mate.de/resource/none': 'none',
+    'http://rescue-mate.de/resource/unknown': 'unknown',
 }
 
 def save_posts(posts: list):
     """Save the posts to the database"""
 
     engine, session = autoconnect_db()
+
 
     counter = 0
 
@@ -349,8 +435,12 @@ def save_posts(posts: list):
             "boundingbox": None,
             "osm_type": entity["location"]["osm_type"],
             "osm_id": entity["location"]["osm_id"],
-            "mention": entity["mention"]
-        } if (entity["location"] is not None and "osm_id" in entity["location"]) else {"mention": entity["mention"]} for entity in entities ]
+            "mention": entity["mention"],
+            "status": entity.get("status", "ok"),
+        } if (entity["location"] is not None and "osm_id" in entity["location"]) else {
+            "mention": entity["mention"],
+            "status": entity.get("status", "no_candidates"),
+        } for entity in entities ]
 
         # Upsert polygon into the shared lookup table
         for entity in entities:
@@ -393,6 +483,7 @@ def save_posts(posts: list):
             relevance=relevance_mapping[json_post['relevance']],
             event_type=mapped_types[0],     # legacy column — keep populated
             event_types=mapped_types,
+            processing_status=json_post.get('processing_status', 'ok'),
             locations=locations,
             original_locations=locations,
             author=json_post.get('author', ''),
