@@ -9,22 +9,34 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 # ---------------------------------------------------------------------------
-# Walk up the directory tree to find the src/ package (works both locally and in Docker)
-_search = os.path.abspath(os.path.dirname(__file__))
-_SRC_PATH: str = ""
-for _ in range(6):
-    _candidate = os.path.join(_search, "src")
-    if os.path.isdir(_candidate):
-        _SRC_PATH = _candidate
-        break
-    _parent = os.path.dirname(_search)
-    if _parent == _search:
-        break
-    _search = _parent
-if _SRC_PATH and _SRC_PATH not in sys.path:
-    sys.path.insert(0, _SRC_PATH)
+# The shared DB layer lives in the `data` package (src/data). Preferred setup:
+# install it (`pip install -e .` at the repo root — see pyproject.toml) or put
+# src/ on PYTHONPATH. If neither is the case, fall back to the two known
+# checkout layouts instead of the previous walk-up-until-something-matches
+# search, which silently depended on directory naming and could pick up an
+# unrelated src/ directory:
+#   repo checkout:  <repo>/backend/app/db.py  ->  <repo>/src
+#   Docker image:   /app/app/db.py            ->  /app/src   (see backend/Dockerfile)
+try:
+    import data.model  # noqa: F401
+except ImportError:
+    _here = os.path.abspath(os.path.dirname(__file__))
+    _candidates = [
+        os.path.normpath(os.path.join(_here, "..", "..", "src")),  # repo checkout
+        os.path.normpath(os.path.join(_here, "..", "src")),        # Docker image
+    ]
+    for _src in _candidates:
+        if os.path.isdir(os.path.join(_src, "data")):
+            if _src not in sys.path:
+                sys.path.insert(0, _src)
+            break
+    else:
+        raise ImportError(
+            "Cannot import the shared `data` package. Install it with "
+            "`pip install -e .` from the repo root, or ensure src/ is on "
+            f"PYTHONPATH. Tried: {_candidates}"
+        )
 
-# Now the existing models are importable as  data.model
 from data.model import (  # noqa: E402  (import not at top of file)
     Base,
     Colormap,

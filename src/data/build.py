@@ -447,6 +447,7 @@ def migrate_columns():
    WHERE first_seen_at IS NOT NULL
    GROUP BY username
    ON CONFLICT (username) DO NOTHING""",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_reports_identifier ON reports (identifier)",
         """CREATE TABLE IF NOT EXISTS user_report_state (
     id SERIAL PRIMARY KEY,
     username VARCHAR NOT NULL,

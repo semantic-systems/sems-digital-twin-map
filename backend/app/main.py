@@ -92,6 +92,11 @@ def _init_db() -> None:
         "CREATE INDEX IF NOT EXISTS ix_reports_platform ON reports (platform)",
         "CREATE INDEX IF NOT EXISTS ix_reports_relevance ON reports (relevance)",
         "CREATE INDEX IF NOT EXISTS ix_reports_identifier_prefix ON reports (identifier text_pattern_ops)",
+        # Dedup on ingest previously lived only in save_posts application code —
+        # enforce it in the schema too. Skipped gracefully (like every statement
+        # here) if a legacy DB already contains duplicates; the log line then
+        # tells you to clean them up.
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_reports_identifier ON reports (identifier)",
         "CREATE INDEX IF NOT EXISTS ix_reports_event_types_gin ON reports USING GIN (event_types)",
         "CREATE INDEX IF NOT EXISTS ix_urs_report_id ON user_report_state (report_id)",
         "CREATE INDEX IF NOT EXISTS ix_urs_username_first_seen ON user_report_state (username, first_seen_at) WHERE first_seen_at IS NOT NULL",

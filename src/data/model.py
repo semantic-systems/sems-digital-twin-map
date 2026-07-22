@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 from geoalchemy2 import Geometry
 
 # This file defines the database model for the application

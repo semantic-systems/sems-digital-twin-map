@@ -1,0 +1,26 @@
+# Makes the shared DB layer (src/data — models, connection helpers) an
+# installable package, so the FastAPI backend and the legacy Dash app can both
+# depend on `data.*` as a real import instead of sys.path manipulation:
+#
+#   pip install -e .
+#
+# backend/app/db.py keeps a path-based fallback for environments where the
+# package isn't installed (current Docker image, ad-hoc scripts), so installing
+# this is recommended but not required.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sems-data"
+version = "0.1.0"
+description = "Shared database models and connection helpers for the SEMS digital twin map"
+requires-python = ">=3.10"
+dependencies = [
+    "sqlalchemy",
+    "geoalchemy2",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["data"]
