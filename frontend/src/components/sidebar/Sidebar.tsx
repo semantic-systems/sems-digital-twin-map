@@ -66,7 +66,15 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = window.setInterval(() => {
       fetchDemoStatus()
-        .then(setDemoStatus)
+        .then((s) => {
+          setDemoStatus(s);
+          // Trickle finished — stop polling instead of hitting /demo/status
+          // every 5s forever. A reset restarts polling via handleReset.
+          if (!s.running && pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+        })
         .catch(() => {});
     }, 5_000);
   }
