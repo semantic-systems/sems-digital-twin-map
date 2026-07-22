@@ -15,6 +15,7 @@ class LocationEntry(BaseModel):
     display_name: str | None = None
     boundingbox: list | None = None
     polygon: dict | None = None
+    status: str | None = None  # 'ok', 'error', 'no_candidates' — geocoding outcome for this mention
 
     model_config = ConfigDict(extra="allow")
 
@@ -36,6 +37,12 @@ class ReportDTO(BaseModel):
     timestamp: datetime
     event_types: list[str] = []
     relevance: str
+    processing_status: str | None = None  # 'ok' (default/legacy), 'error', 'no_text'
+    geo_recognition_status: str | None = None  # 'ok' (default/legacy), 'error'
+    # Zero or more of 'classification_failed' | 'no_text' | 'geo_recognition_failed' |
+    # 'geoparsing_failed' — classification and the geo pipeline fail independently,
+    # so a report can carry more than one at once. Empty when it isn't an issue.
+    issue_kinds: list[str] = []
     author: str | None = None
     locations: list[LocationEntry] = []
     original_locations: list[LocationEntry] = []
@@ -81,6 +88,14 @@ class ReportsResponse(BaseModel):
     event_type_totals: dict[str, int] = {}
     relevance_totals: dict[str, int] = {}
     location_counts: dict[str, int] = {}
+    processing_status_totals: dict[str, int] = {}
+    # Reports-view totals, always computed regardless of which tab is active (the
+    # Issues-view counterpart is processing_status_totals' sum) — see
+    # report_service.get_reports. Together with processing_status_totals, these
+    # let the frontend show a tab-independent combined header plus a plain total
+    # on each tab pill.
+    reports_total_count: int = 0
+    reports_unseen_count: int = 0
     all_platforms: list[str] = []
     platform_counts: dict[str, int] = {}
     platform_added_counts: dict[str, int] = {}

@@ -9,10 +9,13 @@ const INTERVAL_MS = 10_000;
 
 export function usePolling() {
   const { username } = useUserStore();
-  const { setReports, setPendingNewCount, setUnseenCount, currentLimit } = useReportStore();
+  const { setReports, setPendingNewCount, setUnseenCount, currentLimit, pendingNewCount } = useReportStore();
   const filters = useFilterStore();
   const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts } = filters;
   const timerRef = useRef<number | null>(null);
+  // Guards against the scheduled tick and the "pending just appeared" effect below
+  // both invoking pollRef.current() at once.
+  const inFlightRef = useRef(false);
 
   // Keep a stable ref of the current poll function so the interval doesn't
   // need to be recreated every time a filter changes.
@@ -20,6 +23,8 @@ export function usePolling() {
 
   pollRef.current = async () => {
     if (!username) return;
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     try {
       // Snapshot filter identity before the async fetch. After awaiting, if any
       // filter has changed (loadData fired mid-flight), discard this response to
@@ -41,6 +46,7 @@ export function usePolling() {
         locShowPending: snapLocPending,
         locShowUnlocalized: snapLocUnlocalized,
         showOnlyNew: snapShowOnlyNew,
+        showIssuesView: snapShowIssuesView,
       } = filters;
 
       const params = {
@@ -61,6 +67,7 @@ export function usePolling() {
         since: snapTimeWindow === 'custom' ? (snapCustomSince || undefined) : undefined,
         until: snapTimeWindow === 'custom' ? (snapCustomUntil || undefined) : undefined,
         only_new: snapShowOnlyNew || undefined,
+        only_issues: snapShowIssuesView || undefined,
         limit: currentLimit,
       };
 
@@ -83,12 +90,15 @@ export function usePolling() {
         cur.locShowLocalized !== snapLocLocalized ||
         cur.locShowPending !== snapLocPending ||
         cur.locShowUnlocalized !== snapLocUnlocalized ||
-        cur.showOnlyNew !== snapShowOnlyNew
+        cur.showOnlyNew !== snapShowOnlyNew ||
+        cur.showIssuesView !== snapShowIssuesView
       ) return;
 
-      // Under only_new the backend skips facet counts (returns zeros); don't let
-      // the poll overwrite the last-known panel counts with them.
-      if (!snapShowOnlyNew) {
+      // Under only_new/only_issues the backend skips facet counts (returns zeros);
+      // don't let the poll overwrite the last-known panel counts with them (mirrors
+      // App.tsx's isLeanView).
+      const snapIsLeanView = snapShowOnlyNew || snapShowIssuesView;
+      if (!snapIsLeanView) {
         if (reportsRes.all_platforms?.length) setAllPlatforms(reportsRes.all_platforms);
         if (reportsRes.platform_counts) setPlatformCounts(reportsRes.platform_counts);
         if (reportsRes.platform_added_counts) setPlatformAddedCounts(reportsRes.platform_added_counts);
@@ -119,21 +129,22 @@ export function usePolling() {
           cur2.locShowLocalized !== snapLocLocalized ||
           cur2.locShowPending !== snapLocPending ||
           cur2.locShowUnlocalized !== snapLocUnlocalized ||
-          cur2.showOnlyNew !== snapShowOnlyNew
+          cur2.showOnlyNew !== snapShowOnlyNew ||
+          cur2.showIssuesView !== snapShowIssuesView
         ) return;
-        // only_new returns empty facet counts — preserve the last-known panel
-        // counts (pass undefined; skip the platform setters).
+        // only_new/only_issues return empty facet counts — preserve the last-known
+        // panel counts (pass undefined; skip the platform setters).
         setReports(
           reloaded.reports,
           reloaded.loaded_at,
-          snapShowOnlyNew ? undefined : reloaded.event_type_totals,
-          snapShowOnlyNew ? undefined : reloaded.relevance_totals,
+          snapIsLeanView ? undefined : reloaded.event_type_totals,
+          snapIsLeanView ? undefined : reloaded.relevance_totals,
           reloaded.has_more,
-          snapShowOnlyNew ? undefined : reloaded.location_counts,
+          snapIsLeanView ? undefined : reloaded.location_counts,
           reloaded.total_count,
           reloaded.unseen_count,
         );
-        if (!snapShowOnlyNew) {
+        if (!snapIsLeanView) {
           if (reloaded.all_platforms?.length) setAllPlatforms(reloaded.all_platforms);
           if (reloaded.platform_counts) setPlatformCounts(reloaded.platform_counts);
           if (reloaded.platform_added_counts) setPlatformAddedCounts(reloaded.platform_added_counts);
@@ -155,7 +166,16 @@ export function usePolling() {
       }
     } catch {
       // swallow poll errors silently
+    } finally {
+      inFlightRef.current = false;
     }
+  };
+
+  const restartInterval = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = window.setInterval(() => {
+      if (!document.hidden) pollRef.current();
+    }, INTERVAL_MS);
   };
 
   useEffect(() => {
@@ -165,15 +185,29 @@ export function usePolling() {
       if (!document.hidden) pollRef.current();
     };
 
-    timerRef.current = window.setInterval(() => {
-      if (!document.hidden) pollRef.current();
-    }, INTERVAL_MS);
-
+    restartInterval();
     document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
+
+  // A load/reload (App.loadData, filter change, admit, ...) just revealed pending
+  // reports while auto-update is on. Previously this sat waiting for the next
+  // scheduled tick — up to INTERVAL_MS away regardless of how it lined up with
+  // when the banner appeared — which is what made the "N new" banner visibly
+  // linger for several seconds even though the browser was going to admit it
+  // automatically anyway. Admit immediately instead, and restart the interval so
+  // the next scheduled tick is a full INTERVAL_MS away again (not moments later).
+  useEffect(() => {
+    if (!username) return;
+    if (!filters.autoUpdate) return;
+    if (pendingNewCount <= 0) return;
+    pollRef.current();
+    restartInterval();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingNewCount, filters.autoUpdate, username]);
 }

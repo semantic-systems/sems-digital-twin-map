@@ -12,7 +12,7 @@ SQLAlchemy Session and return plain Python / Pydantic objects.
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import String, cast, case, and_, or_
+from sqlalchemy import String, cast, case, and_, or_, func
 from sqlalchemy import Text as SaText
 from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -382,6 +382,9 @@ def normalize_filters(
 # build_report_query
 # ---------------------------------------------------------------------------
 
+_ISSUE_STATUSES = ('error', 'no_text')
+
+
 def build_report_query(
     session: Session,
     since: datetime | None = None,
@@ -393,12 +396,35 @@ def build_report_query(
     demo_mode: bool = False,
     search: str | None = None,
     loc_filter: list[str] | None = None,
+    only_issues: bool = False,
 ):
     """
     Returns a SQLAlchemy Query[Report] with all filters applied.
     Does NOT call .all() — callers may add further ordering / limits.
     loc_filter: None or all three values means no restriction; a strict subset
     filters to reports matching any of the listed location types.
+    only_issues: restricts to reports worth operator attention. Classification and
+    the geo pipeline (recognition, then per-mention linking — see
+    fetch_social_media_posts' ?postStatus / ?geoRecognitionStatus / ?locStatus) are
+    independent stages, so a report can fail any combination of them. Each filter
+    dimension is only meaningful, and only applied, on the side that's intact:
+      - classification failure (processing_status in ('error', 'no_text')): category/
+        relevance are absent/unreliable by construction, so eff_events/eff_relevance
+        are NOT applied to these rows regardless of their geo outcome.
+      - geo failure — either recognition (geo_recognition_status == 'error': the NER
+        step crashed, so `locations` is empty by construction and that emptiness
+        can't be trusted as "no location mentioned") or linking (geo_recognition_status
+        == 'ok' but at least one location mention has a per-mention "error" status in
+        the `locations` JSON, distinct from "no_candidates" which just means no place
+        was found and isn't a failure): loc_filter classifies by location outcome,
+        which is exactly what's broken here, so it is NOT applied to these rows
+        regardless of their classification outcome.
+    Each bypass is keyed only off the axis it depends on, so a row failing both
+    axes at once still gets the right (skip both) treatment. Geo-failure reports
+    are NOT excluded from the normal (non-issues) view — their relevance/category
+    data is fine if classification succeeded, only the location is incomplete, so
+    they stay visible there too; only_issues adds a second, filtered view onto the
+    same reports rather than moving them out.
     """
     # Upper time bound: an explicit `until` (custom range), else "now".
     q = session.query(Report).filter(Report.timestamp <= (until or _now_utc()))
@@ -416,18 +442,51 @@ def build_report_query(
     # via get_tour_example / GET /api/v1/reports/tour-example.
     q = q.filter(~Report.identifier.like("tour-example%"))
 
+    _locs_text = cast(Report.locations, SaText)
+    is_classification_failure = Report.processing_status.in_(_ISSUE_STATUSES)
+    is_geo_recognition_failure = Report.geo_recognition_status == 'error'
+    is_geoparsing_failure = and_(
+        # NULL-safe "not a recognition failure" — plain `!= 'error'` would evaluate
+        # to NULL (excluding the row) for legacy reports where the column is NULL.
+        or_(Report.geo_recognition_status.is_(None), Report.geo_recognition_status != 'error'),
+        _locs_text.like('%"status": "error"%'),
+    )
+    is_location_failure = or_(is_geo_recognition_failure, is_geoparsing_failure)
+
+    if only_issues:
+        q = q.filter(or_(is_classification_failure, is_location_failure))
+    else:
+        q = q.filter(
+            or_(Report.processing_status.is_(None), Report.processing_status == 'ok')
+        )
+
     if eff_platform:
         q = q.filter(
             or_(*[Report.platform.like(f"{p}%") for p in eff_platform])
         )
 
-    if eff_events:
-        q = q.filter(
-            Report.event_types.overlap(cast(eff_events, PG_ARRAY(String)))
-        )
+    if only_issues:
+        # Apply event/relevance filters only where classification is intact;
+        # classification-failure rows bypass them unconditionally regardless of
+        # their (independent) geo outcome.
+        if eff_events:
+            q = q.filter(or_(
+                is_classification_failure,
+                Report.event_types.overlap(cast(eff_events, PG_ARRAY(String))),
+            ))
+        if eff_relevance:
+            q = q.filter(or_(
+                is_classification_failure,
+                Report.relevance.in_(eff_relevance),
+            ))
+    else:
+        if eff_events:
+            q = q.filter(
+                Report.event_types.overlap(cast(eff_events, PG_ARRAY(String)))
+            )
 
-    if eff_relevance:
-        q = q.filter(Report.relevance.in_(eff_relevance))
+        if eff_relevance:
+            q = q.filter(Report.relevance.in_(eff_relevance))
 
     if added_ids is not None:
         q = q.filter(Report.id.in_(added_ids))
@@ -454,7 +513,11 @@ def build_report_query(
         if 'unlocalized' in _loc_set:
             conditions.append(or_(Report.locations.is_(None), locs_text == '[]'))
         if conditions:
-            q = q.filter(or_(*conditions))
+            loc_cond = or_(*conditions)
+            # Apply the location filter only where the geo pipeline is intact; a
+            # geo-failure row bypasses it unconditionally regardless of its
+            # (independent) classification outcome — see is_location_failure above.
+            q = q.filter(or_(is_location_failure, loc_cond) if only_issues else loc_cond)
 
     return q
 
@@ -472,8 +535,14 @@ def filter_by_display(
     hide_seen: bool,
     hide_flagged: bool,
     hide_unflagged: bool,
+    only_issues: bool = False,
 ) -> list[Report]:
-    """Python-level post-query filtering (handles user-modified locations)."""
+    """Python-level post-query filtering (handles user-modified locations).
+    only_issues: bypasses loc_filter for reports that are in the Issues tab because
+    the geo pipeline (recognition or per-mention linking) failed — filtering them by
+    location outcome would exclude the very reports the tab exists to surface.
+    Mirrors build_report_query's is_location_failure handling of loc_filter there
+    (see its docstring)."""
     _ALL_LOC = frozenset({'localized', 'pending', 'unlocalized'})
     _loc_set = set(loc_filter) if loc_filter and set(loc_filter) < _ALL_LOC else None
 
@@ -489,21 +558,50 @@ def filter_by_display(
 
         if _loc_set:
             effective_locs: list = (user_locs_map[r.id] if r.id in user_locs_map else r.locations) or []
-            is_localized = any(
-                isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
+            is_location_issue = only_issues and (
+                r.geo_recognition_status == 'error'
+                or any(isinstance(loc, dict) and loc.get('status') == 'error' for loc in effective_locs)
             )
-            has_pending = (not is_localized) and bool(effective_locs)
-            is_unlocalized = not is_localized and not has_pending
-            if not (
-                (is_localized and 'localized' in _loc_set)
-                or (has_pending and 'pending' in _loc_set)
-                or (is_unlocalized and 'unlocalized' in _loc_set)
-            ):
-                continue
+            if not is_location_issue:
+                is_localized = any(
+                    isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
+                )
+                has_pending = (not is_localized) and bool(effective_locs)
+                is_unlocalized = not is_localized and not has_pending
+                if not (
+                    (is_localized and 'localized' in _loc_set)
+                    or (has_pending and 'pending' in _loc_set)
+                    or (is_unlocalized and 'unlocalized' in _loc_set)
+                ):
+                    continue
 
         result.append(r)
 
     return result
+
+
+def _compute_issue_kinds(report: Report) -> list[str]:
+    """Which pipeline failure(s) (if any) this report represents, for display in
+    the Issues tab. Empty for reports that aren't issues at all. Classification and
+    the geo pipeline (recognition, then linking) are independent stages, so a report
+    can carry a classification failure AND a geo failure at once — hence a list, not
+    a single value. Kept in sync with build_report_query's only_issues filter."""
+    kinds: list[str] = []
+    if report.processing_status == 'error':
+        kinds.append('classification_failed')
+    elif report.processing_status == 'no_text':
+        kinds.append('no_text')
+
+    if report.geo_recognition_status == 'error':
+        # Recognition failing means no mentions could have been extracted at all,
+        # so `locations` is empty by construction — nothing to check per-mention.
+        kinds.append('geo_recognition_failed')
+    else:
+        locs = report.locations or []
+        if any(isinstance(loc, dict) and loc.get('status') == 'error' for loc in locs):
+            kinds.append('geoparsing_failed')
+
+    return kinds
 
 
 # ---------------------------------------------------------------------------
@@ -558,6 +656,9 @@ def build_report_dto(
         timestamp=report.timestamp.replace(tzinfo=timezone.utc),
         event_types=report.event_types or [report.event_type] if report.event_type else [],
         relevance=report.relevance,
+        processing_status=report.processing_status,
+        geo_recognition_status=report.geo_recognition_status,
+        issue_kinds=_compute_issue_kinds(report),
         author=report.author,
         locations=effective_locs,
         original_locations=original_locs,
@@ -585,6 +686,7 @@ def get_reports(
     since: datetime | None = None,
     until: datetime | None = None,
     only_new: bool = False,
+    only_issues: bool = False,
 ) -> tuple[list[ReportDTO], int, str, dict[str, int], list[str]]:
     """
     Returns (reports, pending_count, loaded_at_iso).
@@ -593,6 +695,10 @@ def get_reports(
     new, so the sidebar's "only new" view is correctly paginated server-side rather
     than filtered after the fact over the loaded page. Facet/pending counts are left
     at the full distribution.
+    only_issues switches to the "extraction issues" tab: reports whose pipeline
+    failed (processing_status in error/no_text), with event_type/relevance filters
+    ignored (see build_report_query). Mutually exclusive with only_new in practice
+    (the frontend only sends one), but both are independently honored here.
     """
     (
         seen_ids,
@@ -607,7 +713,107 @@ def get_reports(
         platforms, event_types, relevances
     )
 
+    # Author-visibility filter (show_flagged/show_unflagged), applied to both badge
+    # queries below to match filter_by_display's semantics exactly — otherwise the
+    # badges silently ignore these two toggles while the actual lists (which DO go
+    # through filter_by_display) honor them, producing a badge that doesn't match
+    # what switching tabs would actually show. `Report.id.is_(None)` is a portable
+    # "match nothing" (id is a non-null PK), used instead of sqlalchemy.false() for
+    # the "both toggles off" / "no author ever flagged" edge cases.
+    def _apply_author_visibility(bq):
+        if show_flagged and show_unflagged:
+            return bq
+        if not show_flagged and not show_unflagged:
+            return bq.filter(Report.id.is_(None))
+        # Coalesce to '' like filter_by_display's `r.author or ""` — a NULL author
+        # would otherwise make `~author.in_(...)` evaluate to NULL (row excluded)
+        # instead of the correct "definitely not a flagged author" TRUE.
+        _author = func.coalesce(Report.author, '')
+        if not show_flagged:
+            return bq.filter(~_author.in_(flagged_authors)) if flagged_authors else bq
+        # not show_unflagged
+        return bq.filter(_author.in_(flagged_authors)) if flagged_authors else bq.filter(Report.id.is_(None))
+
+    # Reports still marked hidden (show_hidden=False, the default) are excluded the
+    # same way filter_by_display excludes them from the actual list.
+    _hidden_ids = set() if show_hidden else seen_ids
+
+    # Issue-kind facet — grouped count, always computed (independent of only_issues)
+    # so the "Issues (N)" tab badge stays accurate while on the Reports tab, and
+    # reflects the SAME active platform/event/relevance/loc/search/hide/flag filters
+    # as the Issues list itself would (build_report_query already encodes the
+    # correct per-issue-kind bypass rules for eff_events/eff_relevance/loc_filter,
+    # so this is just the issues-view query with a GROUP BY instead of a LIMIT).
+    # Bucket priority mirrors _compute_issue_kinds; a row could technically qualify
+    # for more than one bucket (classification and geo fail independently) but this
+    # single-bucket grouping is only used for the summary breakdown, not for which
+    # rows show up — see build_report_query for that.
+    _issue_kind_expr = case(
+        (Report.processing_status == 'error', 'classification_failed'),
+        (Report.processing_status == 'no_text', 'no_text'),
+        (Report.geo_recognition_status == 'error', 'geo_recognition_failed'),
+        else_='geoparsing_failed',
+    )
+    _issues_badge_q = _apply_author_visibility(
+        build_report_query(
+            session, since=since, until=until, demo_mode=demo_mode, only_issues=True,
+            eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
+            loc_filter=loc_filter, search=search,
+        )
+    )
+    if _hidden_ids:
+        _issues_badge_q = _issues_badge_q.filter(~Report.id.in_(_hidden_ids))
+    processing_status_totals: dict[str, int] = {}
+    for (kind, count) in (
+        _issues_badge_q
+        .with_entities(_issue_kind_expr, func.count())
+        .group_by(_issue_kind_expr)
+        .all()
+    ):
+        if kind:
+            processing_status_totals[kind] = count
+
+    # Reports-tab pill — total admitted reports matching filters, always computed
+    # (mirrors processing_status_totals above) so it stays informative while the
+    # Issues tab is active, same as the Issues pill stays informative while on
+    # Reports. This is the Reports-view counterpart to processing_status_totals'
+    # sum: a plain total, not an unseen-only count — the two pills are meant to be
+    # directly comparable ("how much is in each tab"), and the header (computed by
+    # the caller) combines this with reports_unseen_count and the issues total for
+    # its own two numbers. Applies the same active filters as the Reports list
+    # itself (a single indexed COUNT, cheap enough to run unconditionally).
+    _reports_total_q = _apply_author_visibility(
+        build_report_query(
+            session, since=since, until=until, demo_mode=demo_mode,
+            eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
+            loc_filter=loc_filter, search=search,
+            added_ids=added_ids,
+        )
+    )
+    if _hidden_ids:
+        _reports_total_q = _reports_total_q.filter(~Report.id.in_(_hidden_ids))
+    reports_total_count = _reports_total_q.count()
+
+    # Reports-view unseen count — same query, restricted to still-new reports.
+    # Feeds the header's combined red badge (see the router/frontend), which adds
+    # this to the Issues total: Issues has no seen/unseen distinction (every
+    # matching failure is "actionable" regardless of whether you've looked at it
+    # before), so from the header's point of view the whole Issues total behaves
+    # like "unseen".
+    _reports_unseen_q = _apply_author_visibility(
+        build_report_query(
+            session, since=since, until=until, demo_mode=demo_mode,
+            eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
+            loc_filter=loc_filter, search=search,
+            added_ids=(new_ids - _hidden_ids),
+        )
+    )
+    reports_unseen_count = _reports_unseen_q.count()
+
     _ALL_LOC_TYPES = frozenset({'localized', 'pending', 'unlocalized'})
+    # NOTE: under only_issues, loc_filter is still meaningful — it just doesn't apply
+    # to geoparsing-failure rows (filter_by_display bypasses it for those; see there
+    # and build_report_query's is_geoparsing_failure for the full rationale).
     _eff_loc = set(loc_filter) if (loc_filter and set(loc_filter) < _ALL_LOC_TYPES) else None
 
     event_type_totals: dict[str, int] = {}
@@ -623,9 +829,11 @@ def get_reports(
     # Each dimension's count reflects all OTHER active filters but not itself,
     # so the numbers tell you "how many results does this value add to my view".
     # One query with no facet filters; cross-filtering is done in Python to keep
-    # DB round trips to a minimum. Skipped entirely under only_new (the expensive
-    # full-set scan) — the frontend preserves its prior counts in that mode.
-    if not only_new:
+    # DB round trips to a minimum. Skipped entirely under only_new/only_issues (the
+    # expensive full-set scan) — the frontend preserves its prior counts in that mode.
+    # event_type/relevance facets are meaningless under only_issues anyway (see
+    # build_report_query), so there is nothing useful for this block to compute there.
+    if not only_new and not only_issues:
         _locs_text = cast(Report.locations, SaText)
         _loc_status_expr = case(
             (_locs_text.like('%"osm_id"%'), "localized"),
@@ -708,6 +916,7 @@ def get_reports(
                 eff_events=None,
                 eff_relevance=eff_relevance,
                 demo_mode=demo_mode,
+                only_issues=only_issues,
             )
             .with_entities(Report.platform)
             .all()
@@ -716,8 +925,11 @@ def get_reports(
             if plat:
                 platform_added_counts[plat] = platform_added_counts.get(plat, 0) + 1
 
-    # If the sidebar is empty (no admitted reports), return [] and count pending
-    if not added_ids:
+    # If the sidebar is empty (no admitted reports), return [] and count pending.
+    # only_issues bypasses admission entirely — it's a diagnostic view over every
+    # matching failed report, not a per-user curated inbox, so there's nothing to
+    # "admit" and this early-return must not apply to it.
+    if not added_ids and not only_issues:
         pending_q = build_report_query(
             session,
             since=since,
@@ -727,22 +939,25 @@ def get_reports(
             eff_relevance=eff_relevance,
             demo_mode=demo_mode,
             loc_filter=loc_filter,
+            only_issues=only_issues,
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
-        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False, 0, unseen_count
+        return [], pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, False, 0, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count
 
-    # Build the main query (only admitted reports)
+    # Build the main query (only admitted reports — except only_issues, which
+    # shows every matching report regardless of admission state)
     q = build_report_query(
         session,
         since=since,
         until=until,
-        added_ids=added_ids,
+        added_ids=None if only_issues else added_ids,
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
         demo_mode=demo_mode,
         search=search,
+        only_issues=only_issues,
     )
 
     # "Only new" view: restrict to reports still marked new so the page (and its
@@ -780,6 +995,7 @@ def get_reports(
             hide_seen=hide_seen,
             hide_flagged=hide_flagged,
             hide_unflagged=hide_unflagged,
+            only_issues=only_issues,
         )
         total_count = len(filtered)
         has_more = total_count > limit
@@ -806,29 +1022,34 @@ def get_reports(
         for r in filtered
     ]
 
-    # Pending count = reports that match filters (incl. loc_filter) but are NOT yet admitted
-    all_matching_ids: set[int] = {
-        row[0]
-        for row in build_report_query(
-            session,
-            eff_platform=eff_platform,
-            eff_events=eff_events,
-            eff_relevance=eff_relevance,
-            demo_mode=demo_mode,
-            loc_filter=loc_filter,
-        )
-        .with_entities(Report.id)
-        .all()
-    }
-    pending_count = len(all_matching_ids - added_ids)
+    # Pending count = reports that match filters (incl. loc_filter) but are NOT yet
+    # admitted. Meaningless under only_issues (nothing needs admission there).
+    if only_issues:
+        pending_count = 0
+    else:
+        all_matching_ids: set[int] = {
+            row[0]
+            for row in build_report_query(
+                session,
+                eff_platform=eff_platform,
+                eff_events=eff_events,
+                eff_relevance=eff_relevance,
+                demo_mode=demo_mode,
+                loc_filter=loc_filter,
+                only_issues=only_issues,
+            )
+            .with_entities(Report.id)
+            .all()
+        }
+        pending_count = len(all_matching_ids - added_ids)
 
-    # Under only_new the facet scan (which normally computes unseen_count) was
-    # skipped; the returned list is exactly the new set, so total_count is the badge.
-    if only_new:
+    # Under only_new/only_issues the facet scan (which normally computes unseen_count)
+    # was skipped; the returned list is exactly the matching set, so total_count is the badge.
+    if only_new or only_issues:
         unseen_count = total_count
 
     loaded_at = datetime.now(timezone.utc).isoformat()
-    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count
+    return dtos, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count
 
 
 # ---------------------------------------------------------------------------
@@ -1017,11 +1238,13 @@ def build_dots(
     since: datetime | None = None,
     until: datetime | None = None,
     only_new: bool = False,
+    only_issues: bool = False,
 ) -> list[dict]:
     """
     Build the list of map-dot dicts from admitted reports that have coordinates.
     only_new restricts to reports still marked new (mirrors get_reports) so the map
-    matches the "only new" sidebar view.
+    matches the "only new" sidebar view. only_issues mirrors get_reports likewise —
+    see build_report_query for why event_type/relevance filters don't apply there.
     """
     (
         seen_ids,
@@ -1034,19 +1257,20 @@ def build_dots(
 
     effective_added = added_ids if added_ids is not None else user_added_ids
 
-    if not effective_added:
+    if not effective_added and not only_issues:
         return []
 
     q = build_report_query(
         session,
         since=since,
         until=until,
-        added_ids=effective_added,
+        added_ids=None if only_issues else effective_added,
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
         demo_mode=demo_mode,
         search=search,
+        only_issues=only_issues,
     )
 
     if only_new:
@@ -1060,6 +1284,8 @@ def build_dots(
 
     # Location-type filter is applied in Python (mirrors filter_by_display) so it
     # respects user-modified locations from user_locs_map, just like get_reports.
+    # Under only_issues it's bypassed for geoparsing-failure rows specifically — see
+    # filter_by_display and build_report_query's is_geoparsing_failure.
     _ALL_LOC = frozenset({'localized', 'pending', 'unlocalized'})
     _loc_set = set(loc_filter) if loc_filter and set(loc_filter) < _ALL_LOC else None
 
@@ -1074,6 +1300,7 @@ def build_dots(
         Report.relevance,
         Report.url,
         Report.locations,
+        Report.geo_recognition_status,
     ).order_by(Report.timestamp.desc()).all()
 
     # Precompute bbox for every unique (osm_id, osm_type) referenced across all rows.
@@ -1092,7 +1319,7 @@ def build_dots(
                     bbox_map[(pr.osm_id, pr.osm_type)] = bb
 
     dots: list[dict] = []
-    for (rid, text, author, platform, timestamp, event_types, event_type, relevance, url, locs_raw) in rows:
+    for (rid, text, author, platform, timestamp, event_types, event_type, relevance, url, locs_raw, geo_status) in rows:
         if hide_seen and rid in seen_ids:
             continue
         if hide_flagged and (author or "") in flagged_authors:
@@ -1102,7 +1329,11 @@ def build_dots(
 
         effective_locs: list = (user_locs_map[rid] if rid in user_locs_map else locs_raw) or []
 
-        if _loc_set:
+        is_location_issue = only_issues and (
+            geo_status == 'error'
+            or any(isinstance(loc, dict) and loc.get('status') == 'error' for loc in effective_locs)
+        )
+        if _loc_set and not is_location_issue:
             is_localized = any(
                 isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs
             )

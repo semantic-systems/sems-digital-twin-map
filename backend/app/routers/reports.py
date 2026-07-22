@@ -53,6 +53,7 @@ class _AdmitAllRequest(BaseModel):
     platforms: list[str] | None = None
     event_types: list[str] | None = None
     relevances: list[str] | None = None
+    only_issues: bool = False
 from ..services import report_service as svc
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
@@ -78,12 +79,13 @@ def get_reports_endpoint(
     since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     only_new: bool = Query(False),
+    only_issues: bool = Query(False, description="Show only reports whose extraction pipeline failed"),
     session: Session = Depends(get_db),
 ) -> ReportsResponse:
     from ..config import settings
 
     eff_since, eff_until = _resolve_time_range(time_window, since, until)
-    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count = svc.get_reports(
+    reports, pending_count, loaded_at, event_type_totals, all_platforms, platform_counts, platform_added_counts, relevance_totals, location_counts, has_more, total_count, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count = svc.get_reports(
         session=session,
         username=username,
         loc_filter=loc_filter or None,
@@ -99,6 +101,7 @@ def get_reports_endpoint(
         since=eff_since,
         until=eff_until,
         only_new=only_new,
+        only_issues=only_issues,
     )
     return ReportsResponse(
         reports=reports,
@@ -113,6 +116,9 @@ def get_reports_endpoint(
         has_more=has_more,
         total_count=total_count,
         unseen_count=unseen_count,
+        processing_status_totals=processing_status_totals,
+        reports_total_count=reports_total_count,
+        reports_unseen_count=reports_unseen_count,
     )
 
 
@@ -173,6 +179,7 @@ def dots_endpoint(
     since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     only_new: bool = Query(False),
+    only_issues: bool = Query(False),
     session: Session = Depends(get_db),
 ) -> DotsResponse:
     from ..config import settings
@@ -196,6 +203,7 @@ def dots_endpoint(
         since=eff_since,
         until=eff_until,
         only_new=only_new,
+        only_issues=only_issues,
     )
     return DotsResponse(dots=dots)
 
@@ -220,6 +228,7 @@ def bundle_endpoint(
     since: str | None = Query(None, description="ISO8601 lower time bound (custom range)"),
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     only_new: bool = Query(False),
+    only_issues: bool = Query(False, description="Show only reports whose extraction pipeline failed"),
     session: Session = Depends(get_db),
 ) -> ReportsBundleResponse:
     from ..config import settings
@@ -228,7 +237,7 @@ def bundle_endpoint(
     (
         reports, pending_count, loaded_at, event_type_totals, all_platforms,
         platform_counts, platform_added_counts, relevance_totals, location_counts,
-        has_more, total_count, unseen_count,
+        has_more, total_count, unseen_count, processing_status_totals, reports_total_count, reports_unseen_count,
     ) = svc.get_reports(
         session=session,
         username=username,
@@ -245,6 +254,7 @@ def bundle_endpoint(
         since=eff_since,
         until=eff_until,
         only_new=only_new,
+        only_issues=only_issues,
     )
     eff_platform, eff_events, eff_relevance = svc.normalize_filters(
         platforms or None, event_types or None, relevances or None
@@ -264,6 +274,7 @@ def bundle_endpoint(
         since=eff_since,
         until=eff_until,
         only_new=only_new,
+        only_issues=only_issues,
     )
     return ReportsBundleResponse(
         reports=reports,
@@ -278,6 +289,9 @@ def bundle_endpoint(
         has_more=has_more,
         total_count=total_count,
         unseen_count=unseen_count,
+        processing_status_totals=processing_status_totals,
+        reports_total_count=reports_total_count,
+        reports_unseen_count=reports_unseen_count,
         dots=dots,
     )
 
@@ -325,6 +339,7 @@ def admit_all_endpoint(
             eff_events=eff_events,
             eff_relevance=eff_relevance,
             demo_mode=settings.DEMO_MODE,
+            only_issues=body.only_issues,
         )
         .with_entities(Report.id)
         .all()

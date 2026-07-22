@@ -258,6 +258,8 @@ class Report(Base):
     event_type = Column(String, nullable=False)   # legacy — kept for migration backfill
     event_types = Column(ARRAY(String), nullable=True)
     relevance = Column(String, nullable=False)
+    processing_status = Column(String, nullable=True)  # 'ok' (default/legacy), 'error', 'no_text' — from rm:eventPredictionStatus
+    geo_recognition_status = Column(String, nullable=True)  # 'ok' (default/legacy), 'error' — from rm:geoRecognitionStatus; whether the NER step that finds location mentions in the text succeeded (independent of, and upstream of, per-mention rm:geoLinkingStatus in `locations[].status`)
     locations = Column(JSON, nullable=True)
     original_locations = Column(JSON, nullable=True)   # snapshot at import time, never overwritten
     locations_slim = Column(JSON, nullable=True)        # locations minus polygon field, for fast list/dots queries

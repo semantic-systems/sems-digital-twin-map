@@ -9,9 +9,27 @@ import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
-  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, showOnlyNew, setShowOnlyNew } = useFilterStore();
+  const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, showOnlyNew, setShowOnlyNew, showIssuesView, setShowIssuesView, processingStatusTotals, reportsTotalCount, reportsUnseenCount } = useFilterStore();
   const { isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
-  const { totalCount, unseenCount } = useEffectiveFacetTotals();
+
+  // useReportStore's unseenCount/totalCount (surfaced here via useEffectiveFacetTotals
+  // for the tour-example adjustment) always describe whichever tab was last fetched,
+  // AND optimisticAcknowledge/optimisticHide adjust them instantly on click — so they
+  // give live feedback for the tab you're actually looking at. reportsUnseenCount/
+  // reportsTotalCount/processingStatusTotals, by contrast, are always computed
+  // server-side for BOTH views regardless of which tab is active, but only refresh on
+  // the next real fetch (no optimistic updates) — fine for the OTHER, currently-idle
+  // tab, but using them for the active tab is what broke live-click feedback. So: live
+  // value for the active tab, tab-independent value for the inactive one.
+  const { totalCount: activeTabTotal, unseenCount: activeTabUnseen } = useEffectiveFacetTotals();
+  const issuesTotal = Object.values(processingStatusTotals).reduce((a, b) => a + b, 0);
+  // Issues has no seen/unseen distinction (every matching failure is "actionable"
+  // regardless of whether you've looked at it before), so its whole total behaves
+  // like "unseen" when it's the inactive side of the combination.
+  const otherTabUnseen = showIssuesView ? reportsUnseenCount : issuesTotal;
+  const otherTabTotal = showIssuesView ? reportsTotalCount : issuesTotal;
+  const combinedUnseen = activeTabUnseen + otherTabUnseen;
+  const combinedTotal = activeTabTotal + otherTabTotal;
 
   // Keep the input responsive on every keystroke, but debounce the store update
   // that drives the refetch so typing "fire" triggers one reload, not four.
@@ -75,8 +93,6 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
     }
   }
 
-  // unseenCount now comes from the store (server-computed over all matching
-  // reports, kept responsive by the optimistic acknowledge/hide adjustments).
   const showDemo = demoStatus?.demo_mode === true;
 
   if (collapsed) {
@@ -107,7 +123,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
         >
           ›
         </button>
-        {unseenCount > 0 && (
+        {combinedUnseen > 0 && (
           <span
             style={{
               background: '#ef4444', color: '#fff', fontSize: 9,
@@ -115,7 +131,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
               animation: 'pulse 1.5s ease-in-out infinite',
             }}
           >
-            {unseenCount}
+            {combinedUnseen}
           </span>
         )}
       </div>
@@ -163,7 +179,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
           <span style={{ fontSize: 14, fontWeight: 700, color: '#f0f2f7' }}>
             {t('reports')}
           </span>
-          {unseenCount > 0 && (
+          {combinedUnseen > 0 && (
             <span
               style={{
                 background: '#ef4444',
@@ -175,11 +191,11 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
                 animation: 'pulse 1.5s ease-in-out infinite',
               }}
             >
-              {unseenCount}
+              {combinedUnseen}
             </span>
           )}
           <span style={{ fontSize: 11, color: '#4b5563' }}>
-            {`(${totalCount})`}
+            {`(${combinedTotal})`}
           </span>
           {isLoading && (
             <span
@@ -221,6 +237,60 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
           {t('auto_update')}
           <span style={{ fontSize: 9, color: '#4b5563' }}>({t('recommended')})</span>
         </label>
+      </div>
+
+      {/* Tabs: Reports / Issues */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 4,
+          padding: '6px 10px',
+          borderBottom: '1px solid #252836',
+          flexShrink: 0,
+        }}
+      >
+        {([
+          { key: 'reports', label: t('tab_reports'), active: !showIssuesView, badge: reportsTotalCount },
+          { key: 'issues', label: t('tab_issues'), active: showIssuesView, badge: issuesTotal },
+        ] as const).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setShowIssuesView(tab.key === 'issues')}
+            aria-pressed={tab.active}
+            style={{
+              flex: 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 5,
+              padding: '4px 8px',
+              fontSize: 11,
+              fontWeight: 600,
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontFamily: "'Inter', system-ui, sans-serif",
+              border: `1px solid ${tab.active ? '#2563eb' : '#374151'}`,
+              background: tab.active ? '#1d4ed8' : 'transparent',
+              color: tab.active ? '#fff' : '#9ca3af',
+            }}
+          >
+            {tab.label}
+            {tab.badge > 0 && (
+              <span
+                style={{
+                  background: tab.active ? 'rgba(255,255,255,0.25)' : '#ef4444',
+                  color: '#fff',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  padding: '1px 5px',
+                  borderRadius: 999,
+                }}
+              >
+                {tab.badge}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Demo trickle bar */}

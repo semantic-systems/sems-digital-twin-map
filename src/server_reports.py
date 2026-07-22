@@ -484,6 +484,7 @@ def save_posts(posts: list):
             event_type=mapped_types[0],     # legacy column — keep populated
             event_types=mapped_types,
             processing_status=json_post.get('processing_status', 'ok'),
+            geo_recognition_status=json_post.get('geo_recognition_status', 'ok'),
             locations=locations,
             original_locations=locations,
             author=json_post.get('author', ''),

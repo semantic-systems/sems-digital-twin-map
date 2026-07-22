@@ -205,12 +205,29 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     transition: 'background 0.1s, color 0.1s',
   };
 
+  // Classification and the geo pipeline fail independently (see
+  // report_service.py::build_report_query), so a report can carry more than one
+  // issue_kind at once. Classification failure means category/relevance have no
+  // reliable value — show why the report is here instead of that misleading
+  // metadata. A geo failure (recognition or per-mention linking) leaves
+  // category/relevance intact, so its label is shown alongside them, not in place.
+  const issueKinds = report.issue_kinds ?? [];
+  const noReliableCategory = issueKinds.includes('classification_failed') || issueKinds.includes('no_text');
+  const ISSUE_LABEL_KEYS: Record<string, string> = {
+    classification_failed: 'issue_error',
+    no_text: 'issue_no_text',
+    geo_recognition_failed: 'issue_geo_recognition_failed',
+    geoparsing_failed: 'issue_geoparsing_failed',
+  };
+  const issueLabels = issueKinds.map((k) => ISSUE_LABEL_KEYS[k] ? t(ISSUE_LABEL_KEYS[k]) : null).filter(Boolean);
+
   const metaLine = [
     geoInfo.icon,
     report.author ? `@${report.author}` : null,
     formatPlatform(report.platform),
-    (report.event_types ?? []).join(', ') || null,
-    t(`rel_${report.relevance}`),
+    ...(noReliableCategory
+      ? issueLabels
+      : [(report.event_types ?? []).join(', ') || null, t(`rel_${report.relevance}`), ...issueLabels]),
     formatTimestamp(report.timestamp),
   ]
     .filter(Boolean)

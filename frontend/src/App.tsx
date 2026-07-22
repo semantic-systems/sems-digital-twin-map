@@ -17,7 +17,7 @@ const BASE_LIMIT = 200;
 
 function AppInner(): React.ReactElement {
   const { username } = useUserStore();
-  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew } =
+  const { setAllPlatforms, setPlatformCounts, setPlatformAddedCounts, setProcessingStatusTotals, setReportsTotalCount, setReportsUnseenCount, setAvailableLayers, setActiveLayers, activeLayers, platforms, allPlatforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew, showIssuesView } =
     useFilterStore();
   const { setReports, setPendingNewCount, setIsLoading, reloadTrigger, currentLimit, setCurrentLimit } = useReportStore();
 
@@ -41,6 +41,7 @@ function AppInner(): React.ReactElement {
     since: timeWindow === 'custom' ? (customSince || undefined) : undefined,
     until: timeWindow === 'custom' ? (customUntil || undefined) : undefined,
     only_new: showOnlyNew || undefined,
+    only_issues: showIssuesView || undefined,
     limit,
     };
   };
@@ -63,23 +64,34 @@ function AppInner(): React.ReactElement {
       // Discard if a newer loadData started while this one was in-flight.
       if (seq !== loadSeqRef.current) return;
 
-      // Under "only new" the backend skips the facet scan and returns empty panel
-      // counts; keep the last-known ones by passing undefined (setReports preserves
-      // them) and skipping the platform-count setters.
+      // Under "only new"/"issues" the backend skips the facet scan and returns empty
+      // panel counts; keep the last-known ones by passing undefined (setReports
+      // preserves them) and skipping the platform-count setters.
+      const isLeanView = showOnlyNew || showIssuesView;
       setReports(
         reportsRes.reports,
         reportsRes.loaded_at,
-        showOnlyNew ? undefined : reportsRes.event_type_totals,
-        showOnlyNew ? undefined : reportsRes.relevance_totals,
+        isLeanView ? undefined : reportsRes.event_type_totals,
+        isLeanView ? undefined : reportsRes.relevance_totals,
         reportsRes.has_more,
-        showOnlyNew ? undefined : reportsRes.location_counts,
+        isLeanView ? undefined : reportsRes.location_counts,
         reportsRes.total_count,
         reportsRes.unseen_count,
       );
       commitDotsIfCurrent(reportsRes.dots, dotsToken);
       setPendingNewCount(reportsRes.pending_count ?? 0);
+      // processing_status_totals (Issues-view total, via its sum) and
+      // reports_total_count/reports_unseen_count (Reports-view totals) are always
+      // computed server-side regardless of the active tab — see
+      // report_service.get_reports — so both tab pills AND the combined header
+      // (Sidebar.tsx) stay live no matter which tab is currently open.
+      if (reportsRes.processing_status_totals) {
+        setProcessingStatusTotals(reportsRes.processing_status_totals);
+      }
+      setReportsTotalCount(reportsRes.reports_total_count ?? 0);
+      setReportsUnseenCount(reportsRes.reports_unseen_count ?? 0);
 
-      if (!showOnlyNew) {
+      if (!isLeanView) {
         if (reportsRes.all_platforms && reportsRes.all_platforms.length > 0) {
           setAllPlatforms(reportsRes.all_platforms);
         }
@@ -112,7 +124,7 @@ function AppInner(): React.ReactElement {
     if (!username) return;
     setCurrentLimit(BASE_LIMIT);
     loadData(BASE_LIMIT);
-  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew, reloadTrigger]);
+  }, [username, platforms, eventTypes, relevances, showHidden, showFlagged, showUnflagged, search, timeWindow, customSince, customUntil, locShowLocalized, locShowPending, locShowUnlocalized, showOnlyNew, showIssuesView, reloadTrigger]);
 
   // Load layers list once; auto-activate all layers if none are active yet (fresh deployment)
   useEffect(() => {

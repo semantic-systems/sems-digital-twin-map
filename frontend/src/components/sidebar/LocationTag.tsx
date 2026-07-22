@@ -111,35 +111,43 @@ export function LocationTag({
     );
   }
 
-  // Pending (no osm_id)
+  // Pending, no osm_id — either the geoparser ran and found nothing ('no_candidates',
+  // the normal/expected case) or it errored outright ('error', a pipeline failure).
+  // Only the latter is an "issue" worth calling out distinctly.
+  const isError = loc.status === 'error';
+  const color = isError ? '#fca5a5' : '#fdba74';
+  const borderColor = isError ? '#dc2626' : '#f97316';
+  const removeColor = isError ? '#f87171' : '#fb923c';
+
   return (
     <span
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         gap: 2,
-        border: '1px dashed #f97316',
+        border: `1px dashed ${borderColor}`,
         borderRadius: 4,
         padding: '1px 5px',
         fontSize: 10,
-        color: '#fdba74',
+        color,
         whiteSpace: 'nowrap',
         maxWidth: 180,
       }}
     >
+      {isError && <span aria-hidden="true">⚠</span>}
       <button
-        title={t('georeference_title')}
+        title={isError ? t('geoparsing_error_title') : t('georeference_title')}
         onClick={handleReassign}
         style={{
           background: 'none',
           border: 'none',
           padding: 0,
           cursor: 'pointer',
-          color: '#fdba74',
+          color,
           fontSize: 10,
           fontStyle: 'italic',
           textDecoration: 'underline dotted',
-          textDecorationColor: '#f97316',
+          textDecorationColor: borderColor,
           maxWidth: 130,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -157,7 +165,7 @@ export function LocationTag({
           border: 'none',
           padding: '0 2px',
           cursor: 'pointer',
-          color: '#fb923c',
+          color: removeColor,
           fontSize: 10,
           lineHeight: 1,
           opacity: 0.7,

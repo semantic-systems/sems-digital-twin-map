@@ -54,6 +54,7 @@ export function dotsParamsFromFilters(
     customSince: string | null;
     customUntil: string | null;
     showOnlyNew: boolean;
+    showIssuesView: boolean;
     locShowLocalized: boolean;
     locShowPending: boolean;
     locShowUnlocalized: boolean;
@@ -73,6 +74,7 @@ export function dotsParamsFromFilters(
     since: f.timeWindow === 'custom' ? (f.customSince || undefined) : undefined,
     until: f.timeWindow === 'custom' ? (f.customUntil || undefined) : undefined,
     only_new: f.showOnlyNew || undefined,
+    only_issues: f.showIssuesView || undefined,
   };
 }
 
@@ -92,6 +94,14 @@ interface FilterStore {
   allPlatforms: string[];
   platformCounts: Record<string, number>;
   platformAddedCounts: Record<string, number>;
+  // Extraction-issue counts by status ('error'/'no_text'), for the Issues tab badge.
+  // Always computed server-side regardless of which tab is active — see App.loadData.
+  processingStatusTotals: Record<string, number>;
+  // Reports-view totals — the Reports-view counterpart to processingStatusTotals'
+  // sum, also always computed server-side regardless of which tab is active, so
+  // both pills and the combined header stay informative on whichever tab is open.
+  reportsTotalCount: number;
+  reportsUnseenCount: number;
   showHidden: boolean;
   showFlagged: boolean;
   showUnflagged: boolean;
@@ -109,6 +119,9 @@ interface FilterStore {
   spatialDrawMode: boolean;
   // Client-side view filter: show only reports still marked new (unacknowledged).
   showOnlyNew: boolean;
+  // "Issues" tab: show only reports whose extraction pipeline failed, instead of
+  // the normal reports view. Mutually exclusive with showOnlyNew in the UI.
+  showIssuesView: boolean;
 
   setLocShowLocalized: (v: boolean) => void;
   setLocShowPending: (v: boolean) => void;
@@ -118,6 +131,9 @@ interface FilterStore {
   setAllPlatforms: (v: string[]) => void;
   setPlatformCounts: (v: Record<string, number>) => void;
   setPlatformAddedCounts: (v: Record<string, number>) => void;
+  setProcessingStatusTotals: (v: Record<string, number>) => void;
+  setReportsTotalCount: (v: number) => void;
+  setReportsUnseenCount: (v: number) => void;
   setShowHidden: (v: boolean) => void;
   setShowFlagged: (v: boolean) => void;
   setShowUnflagged: (v: boolean) => void;
@@ -133,6 +149,7 @@ interface FilterStore {
   setSpatialPolygon: (p: [number, number][] | null) => void;
   setSpatialDrawMode: (v: boolean) => void;
   setShowOnlyNew: (v: boolean) => void;
+  setShowIssuesView: (v: boolean) => void;
 }
 
 export const useFilterStore = create<FilterStore>()(
@@ -146,6 +163,9 @@ export const useFilterStore = create<FilterStore>()(
       allPlatforms: [],
       platformCounts: {},
       platformAddedCounts: {},
+      processingStatusTotals: {},
+      reportsTotalCount: 0,
+      reportsUnseenCount: 0,
       showHidden: false,
       showFlagged: true,
       showUnflagged: true,
@@ -164,6 +184,7 @@ export const useFilterStore = create<FilterStore>()(
       spatialPolygon: null,
       spatialDrawMode: false,
       showOnlyNew: false,
+      showIssuesView: false,
 
       setLocShowLocalized: (locShowLocalized) => set({ locShowLocalized }),
       setLocShowPending: (locShowPending) => set({ locShowPending }),
@@ -173,6 +194,9 @@ export const useFilterStore = create<FilterStore>()(
       setAllPlatforms: (allPlatforms) => set({ allPlatforms }),
       setPlatformCounts: (platformCounts) => set({ platformCounts }),
       setPlatformAddedCounts: (platformAddedCounts) => set({ platformAddedCounts }),
+      setProcessingStatusTotals: (processingStatusTotals) => set({ processingStatusTotals }),
+      setReportsTotalCount: (reportsTotalCount) => set({ reportsTotalCount }),
+      setReportsUnseenCount: (reportsUnseenCount) => set({ reportsUnseenCount }),
       setShowHidden: (showHidden) => set({ showHidden }),
       setShowFlagged: (showFlagged) => set({ showFlagged }),
       setShowUnflagged: (showUnflagged) => set({ showUnflagged }),
@@ -209,15 +233,17 @@ export const useFilterStore = create<FilterStore>()(
         set({ timeWindow: 'custom', customSince, customUntil }),
       setSpatialPolygon: (spatialPolygon) => set({ spatialPolygon, spatialDrawMode: false }),
       setSpatialDrawMode: (spatialDrawMode) => set({ spatialDrawMode }),
-      setShowOnlyNew: (showOnlyNew) => set({ showOnlyNew }),
+      // The two tabs are mutually exclusive — turning one on always turns the other off.
+      setShowOnlyNew: (showOnlyNew) => set({ showOnlyNew, showIssuesView: showOnlyNew ? false : get().showIssuesView }),
+      setShowIssuesView: (showIssuesView) => set({ showIssuesView, showOnlyNew: showIssuesView ? false : get().showOnlyNew }),
     }),
     {
       name: 'sems-filters-v2',
-      // Don't persist draw mode or the "only new" view filter — always start idle
-      // (a persisted "only new" could reopen into a confusingly empty list).
+      // Don't persist draw mode or the "only new"/"issues" view filters — always
+      // start idle (a persisted one could reopen into a confusingly empty list).
       partialize: (s) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { spatialDrawMode, showOnlyNew, ...rest } = s;
+        const { spatialDrawMode, showOnlyNew, showIssuesView, ...rest } = s;
         return rest;
       },
     },

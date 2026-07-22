@@ -436,6 +436,8 @@ def migrate_columns():
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author VARCHAR DEFAULT ''",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS seen BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS author_flagged BOOLEAN NOT NULL DEFAULT FALSE",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS processing_status VARCHAR",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS geo_recognition_status VARCHAR",
         """CREATE TABLE IF NOT EXISTS user_report_state (
     id SERIAL PRIMARY KEY,
     username VARCHAR NOT NULL,

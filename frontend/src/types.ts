@@ -8,6 +8,8 @@ export interface LocationEntry {
   display_name?: string;
   boundingbox?: number[];
   polygon?: GeoJsonGeometry;
+  /** Geocoding outcome for this mention: 'ok' | 'error' | 'no_candidates'. */
+  status?: string | null;
   [key: string]: unknown;
 }
 
@@ -28,6 +30,14 @@ export interface ReportDTO {
   timestamp: string; // ISO
   event_types: string[];
   relevance: 'high' | 'medium' | 'low' | 'none';
+  /** 'ok' (default/legacy) | 'error' | 'no_text' — classification pipeline outcome for this post. */
+  processing_status?: string | null;
+  /** 'ok' (default/legacy) | 'error' — geo-recognition (mention extraction) pipeline outcome. */
+  geo_recognition_status?: string | null;
+  /** Zero or more of 'classification_failed' | 'no_text' | 'geo_recognition_failed' |
+   * 'geoparsing_failed' — classification and the geo pipeline fail independently, so
+   * a report can carry more than one at once. Empty when it isn't an issue. */
+  issue_kinds?: string[];
   author?: string | null;
   locations: LocationEntry[];
   original_locations: LocationEntry[];
@@ -41,6 +51,9 @@ export interface ReportsResponse {
   event_type_totals?: Record<string, number>;
   relevance_totals?: Record<string, number>;
   location_counts?: Record<string, number>;
+  processing_status_totals?: Record<string, number>;
+  reports_total_count?: number;
+  reports_unseen_count?: number;
   all_platforms?: string[];
   platform_counts?: Record<string, number>;
   platform_added_counts?: Record<string, number>;
@@ -111,6 +124,7 @@ export interface FetchReportsParams {
   since?: string;
   until?: string;
   only_new?: boolean;
+  only_issues?: boolean;
 }
 
 export interface ReportsBundleResponse extends ReportsResponse {
@@ -148,6 +162,7 @@ export interface DotsParams {
   since?: string;
   until?: string;
   only_new?: boolean;
+  only_issues?: boolean;
 }
 
 export interface UserStateResponse {

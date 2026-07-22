@@ -200,6 +200,10 @@ export function FilterBar(): React.ReactElement {
     >
       {/* Row 1: Location · Relevance */}
       <div style={{ ...row, padding: '4px 12px', borderBottom: '1px solid #f3f4f6', overflowX: 'auto' }}>
+        {/* Location status applies in the Issues tab too — just not to reports that
+            are there BECAUSE geoparsing failed (the backend bypasses it for those
+            specifically; see build_report_query's is_geoparsing_failure). It still
+            filters classification-failure reports, whose geoparsing ran fine. */}
         <SectionLabel>{t('location')}</SectionLabel>
         <div style={{ display: 'flex', gap: 10, marginLeft: 6, alignItems: 'center' }}>
           <label style={checkLabel}>
@@ -221,6 +225,10 @@ export function FilterBar(): React.ReactElement {
 
         <Divider />
 
+        {/* Relevance applies in the Issues tab too — just not to reports that are
+            there because classification itself failed (bypassed for those on the
+            backend; see build_report_query). It still filters geoparsing-failure
+            reports, whose category/relevance are intact. */}
         <SectionLabel>{t('relevance')}</SectionLabel>
         <div style={{ display: 'flex', gap: 6, marginLeft: 6, alignItems: 'center' }}>
           {ALL_RELEVANCES_LIST.map((rel) => (
@@ -455,7 +463,7 @@ export function FilterBar(): React.ReactElement {
         </div>
       </div>
 
-      {/* Row 2: Event type chips */}
+      {/* Row 2: Event type chips — applies in the Issues tab too, same caveat as relevance above */}
       <div style={{ ...row, padding: '3px 12px', borderBottom: '1px solid #f3f4f6' }}>
         <SectionLabel>{t('type')}</SectionLabel>
         <div style={{ marginLeft: 6, flex: 1, overflowX: 'auto', overflowY: 'hidden' }}>

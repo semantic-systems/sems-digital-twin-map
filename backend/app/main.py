@@ -74,6 +74,8 @@ def _init_db() -> None:
         "ALTER TABLE user_report_state ADD COLUMN IF NOT EXISTS new BOOLEAN NOT NULL DEFAULT TRUE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS event_types VARCHAR[]",
         "UPDATE reports SET event_types = ARRAY[event_type]::VARCHAR[] WHERE event_types IS NULL OR event_types = '{}'",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS processing_status VARCHAR",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS geo_recognition_status VARCHAR",
         "CREATE INDEX IF NOT EXISTS ix_reports_timestamp ON reports (timestamp DESC)",
         "CREATE INDEX IF NOT EXISTS ix_reports_platform ON reports (platform)",
         "CREATE INDEX IF NOT EXISTS ix_reports_relevance ON reports (relevance)",
