@@ -475,7 +475,11 @@ def update_locations_endpoint(
     username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, bool]:
-    locations_raw = [loc.model_dump(exclude_none=False) for loc in body.locations]
+    # exclude_none so a pending mention isn't stored with an explicit osm_id:null
+    # (which the location-status classifier would mis-read as "localized" — see
+    # loc_status_of). A pending mention persists as just {mention, status}, a
+    # geocoded one keeps its lat/lon/osm_id.
+    locations_raw = [loc.model_dump(exclude_none=True) for loc in body.locations]
     svc.update_locations(
         session=session,
         username=username,

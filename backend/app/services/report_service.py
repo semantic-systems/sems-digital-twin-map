@@ -628,8 +628,14 @@ def effective_loc_set(loc_filter: list[str] | None) -> set[str] | None:
 def loc_status_of(effective_locs: list) -> str:
     """'localized' | 'pending' | 'unlocalized' for a report's effective locations.
     Single Python-side definition; build_report_query's SQL CASE and the facet
-    scan's _loc_status_expr are its documented SQL mirrors."""
-    if any(isinstance(loc, dict) and "osm_id" in loc for loc in effective_locs):
+    scan's _loc_status_expr are its documented SQL mirrors.
+
+    'localized' requires a TRUTHY osm_id, not just the presence of the key —
+    a user-edited location list stored via model_dump can carry an explicit
+    `osm_id: null` for a pending mention, which the old `"osm_id" in loc` check
+    wrongly counted as localized (e.g. deleting a mention flipped a report to
+    'verortet')."""
+    if any(isinstance(loc, dict) and loc.get("osm_id") for loc in effective_locs):
         return 'localized'
     if effective_locs:
         return 'pending'
