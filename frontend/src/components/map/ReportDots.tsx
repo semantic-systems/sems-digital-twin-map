@@ -124,9 +124,9 @@ function clusterDots(
 // ---------------------------------------------------------------------------
 
 function makeDotIcon({
-  color, size, count, hasNew, isActive, dataTour,
+  color, size, count, hasNew, isActive, dataTour, dimmed = false,
 }: {
-  color: string; size: number; count: number; hasNew: boolean; isActive: boolean; dataTour?: string;
+  color: string; size: number; count: number; hasNew: boolean; isActive: boolean; dataTour?: string; dimmed?: boolean;
 }): L.DivIcon {
   const borderWidth = isActive ? 3 : 2;
   const countBadge = count > 1
@@ -135,8 +135,10 @@ function makeDotIcon({
   const exclamation = hasNew && !isActive
     ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:${Math.round(size * 0.55)}px;font-weight:900;color:#fff;font-family:'Inter',sans-serif;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.4);">!</div>`
     : '';
+  // Hidden reports (surfaced only under show-hidden) render dimmed so they read
+  // as "hidden but visible for review", mirroring the sidebar list's greying.
   return L.divIcon({
-    html: `<div${dataTour ? ` data-tour="${dataTour}"` : ''} style="position:relative;width:${size}px;height:${size}px;">
+    html: `<div${dataTour ? ` data-tour="${dataTour}"` : ''} style="position:relative;width:${size}px;height:${size}px;${dimmed ? 'opacity:0.4;' : ''}">
       <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${borderWidth}px solid #ffffff;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,0.45);"></div>
       ${exclamation}
       ${countBadge}
@@ -425,13 +427,17 @@ const GroupMarker = React.memo(function GroupMarker({
   const color = isGroupActive ? '#3b82f6' : (RELEVANCE_COLORS[primaryDot.relevance] ?? '#6b7280');
   const size = isGroupActive ? 26 : isMulti ? 24 : 20;
 
+  // Dim the marker only when every report in the group is hidden — a group that
+  // still contains a visible report reads as visible.
+  const allHidden = dedupedDots.every((d) => d.hide || d.seen);
+
   // Tag the onboarding tour's example dot (and only that dot) so the tour can
   // point at a real, live marker instead of a decorative stand-in.
   const isExampleGroup = exampleReportId !== null && group.dots.some((d) => d.report_id === exampleReportId);
 
   const icon = useMemo(
-    () => makeDotIcon({ color, size, count: dedupedDots.length, hasNew, isActive: isGroupActive, dataTour: isExampleGroup ? 'tour-example-dot' : undefined }),
-    [color, size, dedupedDots.length, hasNew, isGroupActive, isExampleGroup],
+    () => makeDotIcon({ color, size, count: dedupedDots.length, hasNew, isActive: isGroupActive, dataTour: isExampleGroup ? 'tour-example-dot' : undefined, dimmed: allHidden }),
+    [color, size, dedupedDots.length, hasNew, isGroupActive, isExampleGroup, allHidden],
   );
 
   // Ref to the Leaflet Marker instance so we can reopen the popup programmatically.

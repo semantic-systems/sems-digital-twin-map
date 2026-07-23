@@ -19,13 +19,16 @@ export function useVisibleDots(): DotDTO[] {
   const reports = useReportStore((s) => s.reports);
   const spatialPolygon = useFilterStore((s) => s.spatialPolygon);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
+  const showHidden = useFilterStore((s) => s.showHidden);
   const filterState = useFilterStore();
 
   return useMemo(() => {
-    // Hidden reports never get a dot, regardless of showHidden — that filter only
-    // reveals them (greyed) in the sidebar list, never on the map.
+    // Hidden reports surface on the map (dimmed, by ReportDots) only when
+    // showHidden is on — same rule as the sidebar list. With it off, drop them,
+    // which also handles an optimistic hide immediately (the dot is still in the
+    // payload until the next refetch, but hiddenIds catches it here).
     const hiddenIds = new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
-    let result = dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
+    let result = showHidden ? dots.slice() : dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
     if (spatialPolygon) {
       result = result.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
     }
@@ -66,5 +69,5 @@ export function useVisibleDots(): DotDTO[] {
       exampleDots = exampleDots.filter((d) => pointInPolygon(d.lat, d.lon, spatialPolygon));
     }
     return [...visible, ...exampleDots];
-  }, [dots, reports, spatialPolygon, showOnlyNew, activeReportId, filterState]);
+  }, [dots, reports, spatialPolygon, showOnlyNew, showHidden, activeReportId, filterState]);
 }

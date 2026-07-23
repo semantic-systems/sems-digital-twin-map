@@ -1430,9 +1430,12 @@ def build_dots(
     if only_new and user_state.acknowledged_ids:
         q = q.filter(~Report.id.in_(user_state.acknowledged_ids))
 
-    # Unlike get_reports, dots never surface hidden reports on the map — show_hidden
-    # only lets the sidebar list display them (greyed out), it doesn't apply here.
-    hide_seen = True
+    # show_hidden applies to the map the same way it applies to the sidebar list:
+    # off (default) hides them, on surfaces them (the frontend renders them dimmed).
+    # Keeping this consistent with get_reports is also what lets the dots payload
+    # and total_count exclude the same rows, so the client-side spatial count
+    # (see useEffectiveFacetTotals) is exact rather than off-by-the-hidden-set.
+    hide_seen = not show_hidden
     hide_flagged = not show_flagged
     hide_unflagged = not show_unflagged
 
