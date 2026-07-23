@@ -20,6 +20,7 @@ export function useVisibleDots(): DotDTO[] {
   const reports = useReportStore((s) => s.reports);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
   const showHidden = useFilterStore((s) => s.showHidden);
+  const platforms = useFilterStore((s) => s.platforms);
   const filterState = useFilterStore();
 
   return useMemo(() => {
@@ -29,6 +30,15 @@ export function useVisibleDots(): DotDTO[] {
     // payload until the next refetch, but hiddenIds catches it here).
     const hiddenIds = new Set(reports.filter((r) => r.user_state.hide).map((r) => r.id));
     let result = showHidden ? dots.slice() : dots.filter((d) => !d.seen && !hiddenIds.has(d.report_id));
+    // Defensive platform filter mirroring the backend (Report.platform LIKE 'p%').
+    // The server already platform-filters the dots, but during React Query's
+    // keepPreviousData window after a filter change, `dots` still holds the
+    // PREVIOUS filter's payload until the new fetch commits — this keeps the map
+    // consistent with the current platform selection instead of showing a dot
+    // from an unselected platform. Empty selection = all (no restriction).
+    if (platforms.length > 0) {
+      result = result.filter((d) => platforms.some((p) => (d.platform ?? '').startsWith(p)));
+    }
     if (showOnlyNew) {
       // Keep the selected report's dots even after acknowledging cleared their
       // new flag, so the report you just clicked stays visible on the map.
@@ -63,5 +73,5 @@ export function useVisibleDots(): DotDTO[] {
     if (!example || example.user_state.hide || !exampleMatchesFilters(example, filterState)) return visible;
     const exampleDots = deriveExampleDots(example);
     return [...visible, ...exampleDots];
-  }, [dots, reports, showOnlyNew, showHidden, activeReportId, filterState]);
+  }, [dots, reports, showOnlyNew, showHidden, platforms, activeReportId, filterState]);
 }
