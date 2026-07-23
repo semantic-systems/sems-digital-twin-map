@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Polygon, Polyline, Rectangle } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { useReportStore } from '../../store/useReportStore';
-import { useUserStore } from '../../store/useUserStore';
+import { fetchReport } from '../../api/reports';
 import type { LocationEntry, GeoJsonGeometry, ReportDTO, DotDTO } from '../../types';
 import { computeSuppressedRegions, locationExtent, filterLocationsWithVisibleDots, dedupByOsm, osmKey } from '../../utils/geo';
 
@@ -145,21 +145,20 @@ function LocationPolygon({ loc }: { loc: GeoLocation }): React.ReactElement | nu
 
 export function ActiveReportPolygons({ visibleDots }: { visibleDots: DotDTO[] }): React.ReactElement {
   const { activeReportId, reports } = useReportStore();
-  const username = useUserStore((s) => s.username);
   const [detailReport, setDetailReport] = useState<ReportDTO | null>(null);
 
   useEffect(() => {
     if (activeReportId === null) { setDetailReport(null); return; }
     let cancelled = false;
-    const qs = username ? `?username=${encodeURIComponent(username)}` : '';
-    fetch(`/api/v1/reports/${activeReportId}${qs}`)
-      .then((r) => r.json())
-      .then((data: ReportDTO) => { if (!cancelled) setDetailReport(data); })
+    // fetchReport goes through apiFetch (sends the session cookie; the user is
+    // derived server-side — no client username param anymore).
+    fetchReport(activeReportId)
+      .then((data) => { if (!cancelled) setDetailReport(data); })
       .catch(() => { if (!cancelled) setDetailReport(null); });
     // Guard against out-of-order responses when the active report changes
     // quickly: a stale fetch must not overwrite the current detail report.
     return () => { cancelled = true; };
-  }, [activeReportId, username]);
+  }, [activeReportId]);
 
   if (activeReportId === null) return <></>;
 
