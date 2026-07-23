@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "SEMS Digital Twin Map API",
-    "description": "REST API backend for the SEMS Digital Twin Map. Serves reports, map layers, scenarios, and per-user state.",
+    "title": "RM Digital Twin Map API",
+    "description": "REST API backend for the RM Digital Twin Map. Serves reports, map layers, scenarios, and per-user state.",
     "version": "1.0.0"
   },
   "paths": {

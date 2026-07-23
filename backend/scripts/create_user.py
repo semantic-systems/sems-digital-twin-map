@@ -28,7 +28,7 @@ from app.db import User, get_session  # noqa: E402
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Create or manage SEMS app accounts.")
+    ap = argparse.ArgumentParser(description="Create or manage RM app accounts.")
     ap.add_argument("username", nargs="?", help="account username")
     ap.add_argument("--password", help="password (omit to be prompted)")
     ap.add_argument("--admin", action="store_true", help="grant the admin role (bootstrap the first admin)")

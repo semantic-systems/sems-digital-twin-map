@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sems-data"
 version = "0.1.0"
-description = "Shared database models and connection helpers for the SEMS digital twin map"
+description = "Shared database models and connection helpers for the RM digital twin map"
 requires-python = ">=3.10"
 dependencies = [
     "sqlalchemy",

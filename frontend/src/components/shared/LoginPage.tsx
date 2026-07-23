@@ -68,7 +68,7 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: (me: MeResponse) => void
               🗺
             </div>
             <span style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9', letterSpacing: '-0.3px' }}>
-              SEMS Digital Twin Map
+              RM Social Media Map
             </span>
           </div>
           <p style={{ fontSize: 13, color: '#94a3b8', marginLeft: 46 }}>{t('login_subtitle')}</p>

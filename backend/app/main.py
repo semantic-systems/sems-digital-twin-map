@@ -207,10 +207,10 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     lifespan=lifespan,
-    title="SEMS Digital Twin Map API",
+    title="RM Digital Twin Map API",
     version="1.0.0",
     description=(
-        "REST API backend for the SEMS Digital Twin Map. "
+        "REST API backend for the RM Digital Twin Map. "
         "Serves reports, map layers, scenarios, and per-user state."
     ),
 )
