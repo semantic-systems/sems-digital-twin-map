@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from ..auth import get_current_username
 from ..db import Report, get_db
 
 _TIME_WINDOWS = {'1h': 1, '6h': 6, '1d': 24, '3d': 72}
@@ -48,7 +49,6 @@ def _parse_area(area: str | None) -> list | None:
         return None
     return [[nums[i], nums[i + 1]] for i in range(0, len(nums), 2)]
 from ..schemas.report import (
-    AcknowledgeRequest,
     DotsResponse,
     FlagRequest,
     HideRequest,
@@ -59,12 +59,6 @@ from ..schemas.report import (
     ReportsBundleResponse,
     ReportsResponse,
 )
-from pydantic import BaseModel
-
-class _AdmitAllRequest(BaseModel):
-    # Admission is a watermark over ingestion order (see UserAdmission) — there
-    # is nothing to parameterize beyond who is admitting.
-    username: str
 from ..services import report_service as svc
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
@@ -76,7 +70,7 @@ router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 
 @router.get("/", response_model=ReportsResponse)
 def get_reports_endpoint(
-    username: str = Query(..., description="The requesting user's name"),
+    username: str = Depends(get_current_username),
     loc_filter: list[str] = Query(default=[]),
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
@@ -141,7 +135,7 @@ def get_reports_endpoint(
 
 @router.get("/new-count", response_model=NewCountResponse)
 def new_count_endpoint(
-    username: str = Query(...),
+    username: str = Depends(get_current_username),
     since: str = Query(..., description="ISO8601 datetime string"),
     loc_filter: list[str] = Query(default=[]),
     platforms: list[str] = Query(default=[], alias="platform"),
@@ -179,7 +173,7 @@ def new_count_endpoint(
 
 @router.get("/version", response_model=VersionResponse)
 def version_endpoint(
-    username: str = Query(...),
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> VersionResponse:
     """Poll target: the frontend refetches the full bundle only when this
@@ -193,7 +187,7 @@ def version_endpoint(
 
 @router.get("/dots", response_model=DotsResponse)
 def dots_endpoint(
-    username: str = Query(...),
+    username: str = Depends(get_current_username),
     loc_filter: list[str] = Query(default=[]),
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
@@ -243,7 +237,7 @@ def dots_endpoint(
 
 @router.get("/bundle", response_model=ReportsBundleResponse)
 def bundle_endpoint(
-    username: str = Query(..., description="The requesting user's name"),
+    username: str = Depends(get_current_username),
     loc_filter: list[str] = Query(default=[]),
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
@@ -331,7 +325,7 @@ def bundle_endpoint(
 
 @router.post("/admit-all")
 def admit_all_endpoint(
-    body: _AdmitAllRequest,
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """
@@ -340,7 +334,7 @@ def admit_all_endpoint(
     what the user SEES; the watermark controls the "nothing appears without an
     explicit admit" property.
     """
-    admitted = svc.advance_admission(body.username, session)
+    admitted = svc.advance_admission(username, session)
     return {"admitted": admitted}
 
 
@@ -351,7 +345,7 @@ def admit_all_endpoint(
 
 @router.get("/tour-example", response_model=ReportDTO)
 def tour_example_endpoint(
-    username: str = Query(..., description="The requesting user's name"),
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> ReportDTO:
     try:
@@ -367,36 +361,28 @@ def tour_example_endpoint(
 @router.get("/{report_id}", response_model=ReportDTO)
 def get_report_endpoint(
     report_id: int,
-    username: str | None = Query(None),
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> ReportDTO:
     report: Report | None = session.query(Report).filter(Report.id == report_id).first()
     if report is None:
         raise HTTPException(status_code=404, detail="Report not found")
 
-    user_locs_map: dict[int, list] = {}
-    seen_ids: set[int] = set()
-    flagged_authors: set[str] = set()
-    new_ids: set[int] = set()
-    user_state_row = None
+    user_state = svc.get_user_state(username, session)
+    seen_ids = user_state.hidden_ids
+    flagged_authors = user_state.flagged_authors
+    user_locs_map = user_state.locs_map
+    new_ids: set[int] = {report_id} if user_state.is_new(report_id) else set()
+    from ..db import UserReportState
 
-    if username:
-        user_state = svc.get_user_state(username, session)
-        seen_ids = user_state.hidden_ids
-        flagged_authors = user_state.flagged_authors
-        user_locs_map = user_state.locs_map
-        if user_state.is_new(report_id):
-            new_ids = {report_id}
-        from ..db import UserReportState
-
-        user_state_row = (
-            session.query(UserReportState)
-            .filter(
-                UserReportState.username == username,
-                UserReportState.report_id == report_id,
-            )
-            .first()
+    user_state_row = (
+        session.query(UserReportState)
+        .filter(
+            UserReportState.username == username,
+            UserReportState.report_id == report_id,
         )
+        .first()
+    )
 
     dto = svc.build_report_dto(
         report=report,
@@ -420,11 +406,12 @@ def get_report_endpoint(
 def hide_endpoint(
     report_id: int,
     body: HideRequest,
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, bool]:
     svc.toggle_hide(
         session=session,
-        username=body.username,
+        username=username,
         report_id=report_id,
         hide=body.hide,
     )
@@ -439,6 +426,7 @@ def hide_endpoint(
 def flag_endpoint(
     report_id: int,
     body: FlagRequest,
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
     report: Report | None = session.query(Report).filter(Report.id == report_id).first()
@@ -451,7 +439,7 @@ def flag_endpoint(
 
     affected = svc.toggle_flag(
         session=session,
-        username=body.username,
+        username=username,
         author=author,
         flag=body.flag,
     )
@@ -465,12 +453,12 @@ def flag_endpoint(
 @router.patch("/{report_id}/acknowledge")
 def acknowledge_endpoint(
     report_id: int,
-    body: AcknowledgeRequest,
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, bool]:
     svc.acknowledge_report(
         session=session,
-        username=body.username,
+        username=username,
         report_id=report_id,
     )
     return {"ok": True}
@@ -484,12 +472,13 @@ def acknowledge_endpoint(
 def update_locations_endpoint(
     report_id: int,
     body: LocationsRequest,
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, bool]:
     locations_raw = [loc.model_dump(exclude_none=False) for loc in body.locations]
     svc.update_locations(
         session=session,
-        username=body.username,
+        username=username,
         report_id=report_id,
         locations=locations_raw,
     )
@@ -497,22 +486,18 @@ def update_locations_endpoint(
 
 
 # ---------------------------------------------------------------------------
-# DELETE /{report_id}/locations  (body carries username)
+# DELETE /{report_id}/locations
 # ---------------------------------------------------------------------------
-
-class _RestoreBody(AcknowledgeRequest):
-    pass
-
 
 @router.delete("/{report_id}/locations")
 def restore_locations_endpoint(
     report_id: int,
-    body: _RestoreBody,
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, bool]:
     svc.restore_locations(
         session=session,
-        username=body.username,
+        username=username,
         report_id=report_id,
     )
     return {"ok": True}

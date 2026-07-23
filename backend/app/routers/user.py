@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from ..auth import get_current_username
 from ..db import get_db
 from ..services.report_service import get_user_state
 
@@ -13,37 +13,17 @@ router = APIRouter(prefix="/api/v1/user", tags=["user"])
 
 
 # ---------------------------------------------------------------------------
-# Request bodies
+# GET /state  — the current (authenticated) user's aggregated state
 # ---------------------------------------------------------------------------
 
-class InitRequest(BaseModel):
-    username: str
-
-
-# ---------------------------------------------------------------------------
-# POST /init
-# ---------------------------------------------------------------------------
-
-@router.post("/init")
-def init_user(body: InitRequest) -> dict[str, Any]:
-    """
-    Acknowledge a user session.  No DB rows are created here — all
-    UserReportState rows are created lazily on first action.
-    """
-    return {"username": body.username, "ok": True}
-
-
-# ---------------------------------------------------------------------------
-# GET /{username}/state
-# ---------------------------------------------------------------------------
-
-@router.get("/{username}/state")
+@router.get("/state")
 def user_state(
-    username: str,
+    username: str = Depends(get_current_username),
     session: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """
-    Return the full aggregated state for a user:
+    Return the full aggregated state for the CURRENT user (derived from the
+    session — a user can only read their own state):
       - admitted_up_to_id: int    — admission watermark; report ids <= this are
                                     admitted to the sidebar (see UserAdmission)
       - flagged_authors: list[str]

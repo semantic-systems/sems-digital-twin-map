@@ -4,7 +4,7 @@ import time
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
@@ -229,12 +229,21 @@ app.add_middleware(
 # Routers
 # ---------------------------------------------------------------------------
 
+# auth.router (login/logout/me) and demo.router (status is polled pre-login) stay
+# open. reports and user enforce auth per-route (they need the username value);
+# layers/scenarios/geo are shared read-only resources with no per-user value, so
+# they're locked at the router level — the whole API sits behind login, an
+# unauthenticated client can only reach the auth endpoints.
+from .auth import get_current_username  # noqa: E402
+
+_require_auth = [Depends(get_current_username)]
+
 app.include_router(auth.router)
 app.include_router(reports.router)
-app.include_router(layers_router)
-app.include_router(scenarios_router)
+app.include_router(layers_router, dependencies=_require_auth)
+app.include_router(scenarios_router, dependencies=_require_auth)
 app.include_router(user.router)
-app.include_router(geo.router)
+app.include_router(geo.router, dependencies=_require_auth)
 app.include_router(demo.router)
 
 

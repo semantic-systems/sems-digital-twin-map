@@ -160,17 +160,6 @@
         "operationId": "get_reports_endpoint_api_v1_reports__get",
         "parameters": [
           {
-            "name": "username",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "description": "The requesting user's name",
-              "title": "Username"
-            },
-            "description": "The requesting user's name"
-          },
-          {
             "name": "loc_filter",
             "in": "query",
             "required": false,
@@ -371,6 +360,22 @@
               "title": "Area"
             },
             "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring"
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
           }
         ],
         "responses": {
@@ -405,15 +410,6 @@
         "summary": "New Count Endpoint",
         "operationId": "new_count_endpoint_api_v1_reports_new_count_get",
         "parameters": [
-          {
-            "name": "username",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Username"
-            }
-          },
           {
             "name": "since",
             "in": "query",
@@ -506,6 +502,22 @@
               "default": true,
               "title": "Show Unflagged"
             }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
           }
         ],
         "responses": {
@@ -542,12 +554,19 @@
         "operationId": "version_endpoint_api_v1_reports_version_get",
         "parameters": [
           {
-            "name": "username",
-            "in": "query",
-            "required": true,
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
             "schema": {
-              "type": "string",
-              "title": "Username"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
         ],
@@ -583,15 +602,6 @@
         "summary": "Dots Endpoint",
         "operationId": "dots_endpoint_api_v1_reports_dots_get",
         "parameters": [
-          {
-            "name": "username",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Username"
-            }
-          },
           {
             "name": "loc_filter",
             "in": "query",
@@ -779,6 +789,22 @@
               "title": "Area"
             },
             "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring"
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
           }
         ],
         "responses": {
@@ -813,17 +839,6 @@
         "summary": "Bundle Endpoint",
         "operationId": "bundle_endpoint_api_v1_reports_bundle_get",
         "parameters": [
-          {
-            "name": "username",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "description": "The requesting user's name",
-              "title": "Username"
-            },
-            "description": "The requesting user's name"
-          },
           {
             "name": "loc_filter",
             "in": "query",
@@ -1025,6 +1040,22 @@
               "title": "Area"
             },
             "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring"
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
           }
         ],
         "responses": {
@@ -1059,24 +1090,32 @@
         "summary": "Admit All Endpoint",
         "description": "Admission is a per-user watermark over ingestion order (see UserAdmission):\nadmit-all simply advances it to the current max report id. Filters control\nwhat the user SEES; the watermark controls the \"nothing appears without an\nexplicit admit\" property.",
         "operationId": "admit_all_endpoint_api_v1_reports_admit_all_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/_AdmitAllRequest"
-              }
+        "parameters": [
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
+                  "additionalProperties": true,
                   "title": "Response Admit All Endpoint Api V1 Reports Admit All Post"
                 }
               }
@@ -1104,15 +1143,20 @@
         "operationId": "tour_example_endpoint_api_v1_reports_tour_example_get",
         "parameters": [
           {
-            "name": "username",
-            "in": "query",
-            "required": true,
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
             "schema": {
-              "type": "string",
-              "description": "The requesting user's name",
-              "title": "Username"
-            },
-            "description": "The requesting user's name"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
           }
         ],
         "responses": {
@@ -1157,8 +1201,8 @@
             }
           },
           {
-            "name": "username",
-            "in": "query",
+            "name": "sems_session",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -1169,7 +1213,7 @@
                   "type": "null"
                 }
               ],
-              "title": "Username"
+              "title": "Sems Session"
             }
           }
         ],
@@ -1212,6 +1256,22 @@
             "schema": {
               "type": "integer",
               "title": "Report Id"
+            }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
         ],
@@ -1269,6 +1329,22 @@
               "type": "integer",
               "title": "Report Id"
             }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
           }
         ],
         "requestBody": {
@@ -1323,18 +1399,24 @@
               "type": "integer",
               "title": "Report Id"
             }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AcknowledgeRequest"
-              }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1378,6 +1460,22 @@
             "schema": {
               "type": "integer",
               "title": "Report Id"
+            }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
         ],
@@ -1433,18 +1531,24 @@
               "type": "integer",
               "title": "Report Id"
             }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/_RestoreBody"
-              }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1480,6 +1584,24 @@
         ],
         "summary": "List Layers",
         "operationId": "list_layers_api_v1_layers__get",
+        "parameters": [
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1487,6 +1609,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LayersResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1509,6 +1641,22 @@
             "schema": {
               "type": "integer",
               "title": "Layer Id"
+            }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
         ],
@@ -1545,6 +1693,24 @@
         ],
         "summary": "List Scenarios",
         "operationId": "list_scenarios_api_v1_scenarios__get",
+        "parameters": [
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1552,6 +1718,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ScenariosResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1574,6 +1750,22 @@
             "schema": {
               "type": "integer",
               "title": "Scenario Id"
+            }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
         ],
@@ -1603,66 +1795,29 @@
         }
       }
     },
-    "/api/v1/user/init": {
-      "post": {
-        "tags": [
-          "user"
-        ],
-        "summary": "Init User",
-        "description": "Acknowledge a user session.  No DB rows are created here \u2014 all\nUserReportState rows are created lazily on first action.",
-        "operationId": "init_user_api_v1_user_init_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InitRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "type": "object",
-                  "title": "Response Init User Api V1 User Init Post"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/user/{username}/state": {
+    "/api/v1/user/state": {
       "get": {
         "tags": [
           "user"
         ],
         "summary": "User State",
-        "description": "Return the full aggregated state for a user:\n  - admitted_up_to_id: int    \u2014 admission watermark; report ids <= this are\n                                admitted to the sidebar (see UserAdmission)\n  - flagged_authors: list[str]\n  - hide_ids: list[int]       \u2014 reports marked as seen/hidden\n  - acknowledged_ids: list[int] \u2014 reports the user has explicitly opened\n  - location_overrides: dict  \u2014 {str(report_id): list[LocationEntry]}",
-        "operationId": "user_state_api_v1_user__username__state_get",
+        "description": "Return the full aggregated state for the CURRENT user (derived from the\nsession \u2014 a user can only read their own state):\n  - admitted_up_to_id: int    \u2014 admission watermark; report ids <= this are\n                                admitted to the sidebar (see UserAdmission)\n  - flagged_authors: list[str]\n  - hide_ids: list[int]       \u2014 reports marked as seen/hidden\n  - acknowledged_ids: list[int] \u2014 reports the user has explicitly opened\n  - location_overrides: dict  \u2014 {str(report_id): list[LocationEntry]}",
+        "operationId": "user_state_api_v1_user_state_get",
         "parameters": [
           {
-            "name": "username",
-            "in": "path",
-            "required": true,
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
             "schema": {
-              "type": "string",
-              "title": "Username"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
         ],
@@ -1674,7 +1829,7 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": true,
-                  "title": "Response User State Api V1 User  Username  State Get"
+                  "title": "Response User State Api V1 User State Get"
                 }
               }
             }
@@ -1722,6 +1877,22 @@
               "minimum": 1,
               "default": 7,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "sems_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sems Session"
             }
           }
         ],
@@ -1830,19 +2001,6 @@
   },
   "components": {
     "schemas": {
-      "AcknowledgeRequest": {
-        "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          }
-        },
-        "type": "object",
-        "required": [
-          "username"
-        ],
-        "title": "AcknowledgeRequest"
-      },
       "DotDTO": {
         "properties": {
           "report_id": {
@@ -1976,10 +2134,6 @@
       },
       "FlagRequest": {
         "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          },
           "flag": {
             "type": "boolean",
             "title": "Flag"
@@ -1987,7 +2141,6 @@
         },
         "type": "object",
         "required": [
-          "username",
           "flag"
         ],
         "title": "FlagRequest"
@@ -2007,10 +2160,6 @@
       },
       "HideRequest": {
         "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          },
           "hide": {
             "type": "boolean",
             "title": "Hide"
@@ -2018,23 +2167,9 @@
         },
         "type": "object",
         "required": [
-          "username",
           "hide"
         ],
         "title": "HideRequest"
-      },
-      "InitRequest": {
-        "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          }
-        },
-        "type": "object",
-        "required": [
-          "username"
-        ],
-        "title": "InitRequest"
       },
       "LayerDTO": {
         "properties": {
@@ -2191,10 +2326,6 @@
       },
       "LocationsRequest": {
         "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          },
           "locations": {
             "items": {
               "$ref": "#/components/schemas/LocationEntry"
@@ -2205,7 +2336,6 @@
         },
         "type": "object",
         "required": [
-          "username",
           "locations"
         ],
         "title": "LocationsRequest"
@@ -2810,32 +2940,6 @@
         ],
         "title": "VersionResponse",
         "description": "Opaque change token \u2014 see report_service.get_change_token."
-      },
-      "_AdmitAllRequest": {
-        "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          }
-        },
-        "type": "object",
-        "required": [
-          "username"
-        ],
-        "title": "_AdmitAllRequest"
-      },
-      "_RestoreBody": {
-        "properties": {
-          "username": {
-            "type": "string",
-            "title": "Username"
-          }
-        },
-        "type": "object",
-        "required": [
-          "username"
-        ],
-        "title": "_RestoreBody"
       }
     }
   }

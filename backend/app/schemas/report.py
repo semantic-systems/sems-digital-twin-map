@@ -126,20 +126,17 @@ class VersionResponse(BaseModel):
     token: str
 
 
+# Request bodies below no longer carry `username` — the acting user is derived
+# server-side from the session (see auth.get_current_username). AcknowledgeRequest
+# has no remaining fields, so acknowledge/logout-style endpoints take no body.
+
 class HideRequest(BaseModel):
-    username: str
     hide: bool
 
 
 class FlagRequest(BaseModel):
-    username: str
     flag: bool
 
 
-class AcknowledgeRequest(BaseModel):
-    username: str
-
-
 class LocationsRequest(BaseModel):
-    username: str
     locations: list[LocationEntry]
