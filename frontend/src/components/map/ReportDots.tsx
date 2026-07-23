@@ -156,13 +156,17 @@ function makeDotIcon({
 
 function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
   const { username } = useUserStore();
-  const { optimisticHide, optimisticFlag, reports, dots } = useReportStore();
+  const { optimisticHide, optimisticFlag, reports, dots, pinnedReport } = useReportStore();
   const { requestFitBounds } = useMapStore();
-  const report = reports.find((r) => r.id === dot.report_id);
+  // Prefer the loaded page; else the pinned report (ReportList fetches it on
+  // demand when a selected report is beyond the page — clicking the dot triggers
+  // exactly that, so this resolves once the fetch lands and gives the popup live
+  // hide/flag state + report-based centering instead of the dot's snapshot).
+  const report = reports.find((r) => r.id === dot.report_id)
+    ?? (pinnedReport?.id === dot.report_id ? pinnedReport : undefined);
 
-  // The report may not be in the currently loaded list (e.g. beyond the limit or
-  // filtered out of the sidebar while still on the map). Fall back to the dot's
-  // own hide/flag state so the action buttons still render and work.
+  // If neither is available yet, fall back to the dot's own hide/flag snapshot so
+  // the action buttons still render and work.
   const hidden = report ? report.user_state.hide : dot.hide;
   const flagged = report ? report.user_state.flag : dot.flag;
 
