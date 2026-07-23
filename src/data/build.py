@@ -448,6 +448,20 @@ def migrate_columns():
    GROUP BY username
    ON CONFLICT (username) DO NOTHING""",
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_reports_identifier ON reports (identifier)",
+        """CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR NOT NULL UNIQUE,
+    password_hash VARCHAR NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+)""",
+        """CREATE TABLE IF NOT EXISTS auth_sessions (
+    token VARCHAR PRIMARY KEY,
+    username VARCHAR NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    expires_at TIMESTAMP NOT NULL
+)""",
+        "CREATE INDEX IF NOT EXISTS ix_auth_sessions_username ON auth_sessions (username)",
         """CREATE TABLE IF NOT EXISTS user_report_state (
     id SERIAL PRIMARY KEY,
     username VARCHAR NOT NULL,

@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import demo, geo, reports, user
+from .routers import auth, demo, geo, reports, user
 from .routers.layers import router as layers_router
 from .routers.layers import scenarios_router
 
@@ -88,6 +88,22 @@ def _init_db() -> None:
            WHERE first_seen_at IS NOT NULL
            GROUP BY username
            ON CONFLICT (username) DO NOTHING""",
+        # Authentication: accounts (admin-provisioned via scripts/create_user.py)
+        # and server-side login sessions (see app/auth.py).
+        """CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR NOT NULL UNIQUE,
+            password_hash VARCHAR NOT NULL,
+            active BOOLEAN NOT NULL DEFAULT TRUE,
+            created_at TIMESTAMP NOT NULL DEFAULT now()
+        )""",
+        """CREATE TABLE IF NOT EXISTS auth_sessions (
+            token VARCHAR PRIMARY KEY,
+            username VARCHAR NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT now(),
+            expires_at TIMESTAMP NOT NULL
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_auth_sessions_username ON auth_sessions (username)",
         "CREATE INDEX IF NOT EXISTS ix_reports_timestamp ON reports (timestamp DESC)",
         "CREATE INDEX IF NOT EXISTS ix_reports_platform ON reports (platform)",
         "CREATE INDEX IF NOT EXISTS ix_reports_relevance ON reports (relevance)",
@@ -213,6 +229,7 @@ app.add_middleware(
 # Routers
 # ---------------------------------------------------------------------------
 
+app.include_router(auth.router)
 app.include_router(reports.router)
 app.include_router(layers_router)
 app.include_router(scenarios_router)

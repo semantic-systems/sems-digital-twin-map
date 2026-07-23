@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     # Feature flags
     DEMO_MODE: bool = False
 
+    # Auth: set True in production (HTTPS) so the session cookie is only sent over
+    # TLS. Left False for local http dev.
+    COOKIE_SECURE: bool = False
+
     # External services
     NOMINATIM_URL: str = "https://nominatim.openstreetmap.org"
 

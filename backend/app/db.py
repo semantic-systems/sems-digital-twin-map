@@ -47,8 +47,10 @@ from data.model import (  # noqa: E402  (import not at top of file)
     Report,
     Scenario,
     Style,
+    User,
     UserAdmission,
     UserReportState,
+    UserSession,
 )
 
 from .config import settings  # noqa: E402
@@ -117,6 +119,8 @@ __all__ = [
     "Report",
     "Scenario",
     "Style",
+    "User",
     "UserAdmission",
     "UserReportState",
+    "UserSession",
 ]

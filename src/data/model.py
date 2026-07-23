@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, JSON, Boolean, DateTime, Table, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import declarative_base, relationship
 from geoalchemy2 import Geometry
@@ -316,6 +316,37 @@ class UserAdmission(Base):
     admitted_up_to_id = Column(Integer, nullable=False, server_default='0')
 
 
+class User(Base):
+    """
+    An application account. Accounts are provisioned by the admin (there is no
+    self-signup) via scripts/create_user.py — passwords are stored as PBKDF2
+    hashes (see backend/app/auth.py), never plaintext. The `username` here is the
+    same identifier keyed on throughout user_report_state / user_admission; the
+    difference under auth is that it now comes from the verified session, not a
+    client-supplied query param.
+    """
+    __tablename__ = 'users'
+    id            = Column(Integer, primary_key=True)
+    username      = Column(String, nullable=False, unique=True)
+    password_hash = Column(String, nullable=False)
+    active        = Column(Boolean, nullable=False, server_default='true')
+    created_at    = Column(DateTime, nullable=False, server_default=text('now()'))
+
+
+class UserSession(Base):
+    """
+    A server-side login session. On login a random opaque token is issued and set
+    as an httpOnly cookie; every request looks the token up here to resolve the
+    current user. Server-side (rather than a JWT) so sessions are revocable —
+    logout and admin-deactivation take effect immediately.
+    """
+    __tablename__ = 'auth_sessions'
+    token      = Column(String, primary_key=True)
+    username   = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime, nullable=False, server_default=text('now()'))
+    expires_at = Column(DateTime, nullable=False)
+
+
 # the following tables are defined in the database
 # UPDATE THIS IF YOU ADD NEW TABLES
 # this is used at startup to check if any tables are missing
@@ -332,4 +363,7 @@ TABLES = [
     Alert,
     Report,
     UserReportState,
+    UserAdmission,
+    User,
+    UserSession,
 ]
