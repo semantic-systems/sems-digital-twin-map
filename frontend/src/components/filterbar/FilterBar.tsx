@@ -158,11 +158,15 @@ export function FilterBar(): React.ReactElement {
   };
 
   const togglePlatform = (p: string) => {
-    if (platforms.includes(p)) {
-      setPlatforms(platforms.filter((x) => x !== p));
-    } else {
-      setPlatforms([...platforms, p]);
-    }
+    // `platforms` uses the "empty = all selected" convention (the checkbox
+    // `checked` logic and the backend both read it that way). Expand that
+    // implicit "all" to the explicit list BEFORE toggling — otherwise unchecking
+    // one platform (which isn't in the empty array) would be read as "add it",
+    // inverting the selection to only-that-one. Collapse back to [] once
+    // everything is selected again so "all" stays canonical.
+    const base = platforms.length === 0 ? [...allPlatforms] : platforms;
+    const next = base.includes(p) ? base.filter((x) => x !== p) : [...base, p];
+    setPlatforms(next.length === allPlatforms.length ? [] : next);
   };
 
   const effectivePlatforms = allPlatforms.length ? allPlatforms : [];
