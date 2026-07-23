@@ -18,11 +18,13 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     ports:
-      - "8052:80"
+      - "8050:80"
     depends_on:
       - backend
     networks:
       - sems_network
+    env_file:
+      - .env
     restart: always
 
   server_reports:
