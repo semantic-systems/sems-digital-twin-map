@@ -330,6 +330,7 @@ class User(Base):
     username      = Column(String, nullable=False, unique=True)
     password_hash = Column(String, nullable=False)
     active        = Column(Boolean, nullable=False, server_default='true')
+    is_admin      = Column(Boolean, nullable=False, server_default='false')  # may provision/manage other accounts
     created_at    = Column(DateTime, nullable=False, server_default=text('now()'))
 
 

@@ -2,6 +2,7 @@ import { apiFetch } from './client';
 
 export interface MeResponse {
   username: string;
+  is_admin: boolean;
 }
 
 /** Log in with account credentials; the backend sets the httpOnly session cookie. */

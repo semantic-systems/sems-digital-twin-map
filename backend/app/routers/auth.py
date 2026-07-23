@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..auth import (
-    SESSION_COOKIE,
     clear_session_cookie,
     create_session,
     destroy_session,
@@ -25,6 +24,7 @@ class LoginRequest(BaseModel):
 
 class MeResponse(BaseModel):
     username: str
+    is_admin: bool = False
 
 
 @router.post("/login", response_model=MeResponse)
@@ -44,7 +44,7 @@ def login(
 
     token = create_session(db, user.username)
     set_session_cookie(response, token)
-    return MeResponse(username=user.username)
+    return MeResponse(username=user.username, is_admin=user.is_admin)
 
 
 @router.post("/logout")
@@ -59,7 +59,12 @@ def logout(
 
 
 @router.get("/me", response_model=MeResponse)
-def me(username: str = Depends(get_current_username)) -> MeResponse:
-    """Who am I — used by the frontend on load to decide login-page vs app. 401
-    (via the dependency) when there's no valid session."""
-    return MeResponse(username=username)
+def me(
+    username: str = Depends(get_current_username),
+    db: Session = Depends(get_db),
+) -> MeResponse:
+    """Who am I — used by the frontend on load to decide login-page vs app, and
+    whether to show the admin user-management panel. 401 (via the dependency)
+    when there's no valid session."""
+    user: User | None = db.query(User).filter(User.username == username).first()
+    return MeResponse(username=username, is_admin=bool(user and user.is_admin))

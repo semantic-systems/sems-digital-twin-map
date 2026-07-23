@@ -134,3 +134,16 @@ def get_current_username(
     if username is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return username
+
+
+def get_current_admin(
+    username: str = Depends(get_current_username),
+    db: Session = Depends(get_db),
+) -> str:
+    """Like get_current_username but also requires the account to be an admin —
+    401 if not logged in, 403 if logged in without the admin role. Gates the
+    user-management endpoints."""
+    user: User | None = db.query(User).filter(User.username == username).first()
+    if user is None or not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return username

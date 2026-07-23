@@ -31,6 +31,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Create or manage SEMS app accounts.")
     ap.add_argument("username", nargs="?", help="account username")
     ap.add_argument("--password", help="password (omit to be prompted)")
+    ap.add_argument("--admin", action="store_true", help="grant the admin role (bootstrap the first admin)")
     ap.add_argument("--deactivate", action="store_true", help="deactivate the account")
     ap.add_argument("--activate", action="store_true", help="re-activate the account")
     ap.add_argument("--list", action="store_true", help="list all accounts and exit")
@@ -42,7 +43,8 @@ def main() -> int:
             if not users:
                 print("(no accounts)")
             for u in users:
-                print(f"{'ACTIVE ' if u.active else 'disabled'}  {u.username}")
+                role = 'admin' if u.is_admin else 'user '
+                print(f"{'ACTIVE ' if u.active else 'disabled'}  {role}  {u.username}")
             return 0
 
         if not args.username:
@@ -75,12 +77,19 @@ def main() -> int:
                 return 1
             existing.password_hash = hash_password(password)
             existing.active = True
+            if args.admin:
+                existing.is_admin = True  # --admin grants; omit to leave role unchanged
             session.commit()
-            print(f"Password reset for {args.username}")
+            print(f"Password reset for {args.username}" + (" (now admin)" if args.admin else ""))
         else:
-            session.add(User(username=args.username, password_hash=hash_password(password), active=True))
+            session.add(User(
+                username=args.username,
+                password_hash=hash_password(password),
+                active=True,
+                is_admin=args.admin,
+            ))
             session.commit()
-            print(f"Created account {args.username}")
+            print(f"Created {'admin' if args.admin else 'account'} {args.username}")
     return 0
 
 

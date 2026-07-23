@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
-import { login } from '../../api/auth';
+import { login, type MeResponse } from '../../api/auth';
 import { ApiError } from '../../api/client';
 
 /**
  * The login screen. Accounts are provisioned by the admin (backend
- * scripts/create_user.py) — there is no signup. On success the backend sets the
- * httpOnly session cookie and we hand the resolved username up to App.
+ * scripts/create_user.py or the in-app admin panel) — there is no signup. On
+ * success the backend sets the httpOnly session cookie and we hand the resolved
+ * identity up to App.
  */
-export function LoginPage({ onLoggedIn }: { onLoggedIn: (username: string) => void }): React.ReactElement {
+export function LoginPage({ onLoggedIn }: { onLoggedIn: (me: MeResponse) => void }): React.ReactElement {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +29,7 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: (username: string) => vo
     setLoading(true);
     try {
       const me = await login(username.trim(), password);
-      onLoggedIn(me.username);
+      onLoggedIn(me);
     } catch (e) {
       setError(e instanceof ApiError && e.status === 401 ? t('login_bad_credentials') : t('login_failed'));
       setLoading(false);

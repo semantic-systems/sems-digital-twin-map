@@ -453,8 +453,10 @@ def migrate_columns():
     username VARCHAR NOT NULL UNIQUE,
     password_hash VARCHAR NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT now()
 )""",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE",
         """CREATE TABLE IF NOT EXISTS auth_sessions (
     token VARCHAR PRIMARY KEY,
     username VARCHAR NOT NULL,

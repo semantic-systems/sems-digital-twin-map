@@ -203,21 +203,21 @@ function AppInner(): React.ReactElement {
 }
 
 function App(): React.ReactElement {
-  const { username, authChecked, setUsername, setAuthChecked } = useUserStore();
+  const { username, authChecked, setAuth, setAuthChecked } = useUserStore();
 
   // On mount: probe the session (/auth/me) to decide login page vs app, and
   // register the global 401 handler so an expired session anywhere drops back to
   // the login screen and clears cached data.
   useEffect(() => {
     setUnauthorizedHandler(() => {
-      setUsername(null);
+      setAuth(null);
       queryClient.clear();
     });
     fetchMe()
-      .then((me) => setUsername(me.username))
-      .catch(() => setUsername(null))
+      .then((me) => setAuth(me))
+      .catch(() => setAuth(null))
       .finally(() => setAuthChecked(true));
-  }, [setUsername, setAuthChecked]);
+  }, [setAuth, setAuthChecked]);
 
   if (!authChecked) {
     // Brief blank while the session probe resolves — avoids flashing the login
@@ -226,7 +226,7 @@ function App(): React.ReactElement {
   }
 
   if (!username) {
-    return <LoginPage onLoggedIn={(name) => setUsername(name)} />;
+    return <LoginPage onLoggedIn={(me) => setAuth(me)} />;
   }
 
   return <AppInner />;

@@ -10,18 +10,21 @@ import { create } from 'zustand';
  */
 interface UserStore {
   username: string | null;
+  isAdmin: boolean;
   authChecked: boolean;
   isDemo: boolean;
-  setUsername: (name: string | null) => void;
+  /** Set both identity fields at once (from /auth/me or /auth/login); pass null to log out. */
+  setAuth: (v: { username: string; is_admin: boolean } | null) => void;
   setAuthChecked: (v: boolean) => void;
   setIsDemo: (demo: boolean) => void;
 }
 
 export const useUserStore = create<UserStore>()((set) => ({
   username: null,
+  isAdmin: false,
   authChecked: false,
   isDemo: false,
-  setUsername: (username) => set({ username }),
+  setAuth: (v) => set({ username: v?.username ?? null, isAdmin: v?.is_admin ?? false }),
   setAuthChecked: (authChecked) => set({ authChecked }),
   setIsDemo: (isDemo) => set({ isDemo }),
 }));

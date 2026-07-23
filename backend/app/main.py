@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import auth, demo, geo, reports, user
+from .routers import admin, auth, demo, geo, reports, user
 from .routers.layers import router as layers_router
 from .routers.layers import scenarios_router
 
@@ -95,8 +95,10 @@ def _init_db() -> None:
             username VARCHAR NOT NULL UNIQUE,
             password_hash VARCHAR NOT NULL,
             active BOOLEAN NOT NULL DEFAULT TRUE,
+            is_admin BOOLEAN NOT NULL DEFAULT FALSE,
             created_at TIMESTAMP NOT NULL DEFAULT now()
         )""",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE",
         """CREATE TABLE IF NOT EXISTS auth_sessions (
             token VARCHAR PRIMARY KEY,
             username VARCHAR NOT NULL,
@@ -239,6 +241,7 @@ from .auth import get_current_username  # noqa: E402
 _require_auth = [Depends(get_current_username)]
 
 app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(reports.router)
 app.include_router(layers_router, dependencies=_require_auth)
 app.include_router(scenarios_router, dependencies=_require_auth)

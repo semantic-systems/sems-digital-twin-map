@@ -10,11 +10,20 @@ import { queryClient } from '../../queryClient';
 import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
+import { UserManagement } from '../shared/UserManagement';
+
+const menuItem: React.CSSProperties = {
+  display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none',
+  color: '#e5e7eb', fontSize: 12, padding: '7px 8px', borderRadius: 6, cursor: 'pointer',
+  fontFamily: "'Inter', system-ui, sans-serif",
+};
 
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, showOnlyNew, setShowOnlyNew, showIssuesView, setShowIssuesView, processingStatusTotals, reportsTotalCount, reportsUnseenCount } = useFilterStore();
   const { isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
-  const { username, setUsername } = useUserStore();
+  const { username, isAdmin, setAuth } = useUserStore();
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -23,7 +32,7 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
       // ignore — clear locally regardless
     }
     queryClient.clear();
-    setUsername(null);
+    setAuth(null);
   };
 
   // useReportStore's unseenCount/totalCount (surfaced here via useEffectiveFacetTotals
@@ -238,10 +247,11 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
           )}
         </div>
 
-        {/* Right side: auto-update toggle + account */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+        {/* Right side: auto-update toggle + account menu */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <label
             data-tour="auto-update-toggle"
+            title={t('recommended')}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -258,28 +268,57 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
               style={{ width: 12, height: 12, accentColor: '#3b82f6' }}
             />
             {t('auto_update')}
-            <span style={{ fontSize: 9, color: '#4b5563' }}>({t('recommended')})</span>
           </label>
+
+          {/* Account menu — a compact button that opens a dropdown, so the header
+              never overflows regardless of username length. */}
           {username && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#6b7280' }}>
-              <span title={username} style={{ maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {username}
-              </span>
+            <div style={{ position: 'relative' }}>
               <button
-                onClick={handleLogout}
-                title={t('logout')}
+                onClick={() => setAccountOpen((o) => !o)}
+                title={username}
+                aria-haspopup="menu"
+                aria-expanded={accountOpen}
                 style={{
-                  background: 'none', border: '1px solid #374151', borderRadius: 5,
-                  color: '#9ca3af', fontSize: 10, padding: '2px 6px', cursor: 'pointer',
-                  fontFamily: "'Inter', system-ui, sans-serif",
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 24, height: 24, borderRadius: '50%',
+                  background: '#1d4ed8', color: '#fff', border: 'none', cursor: 'pointer',
+                  fontSize: 11, fontWeight: 700, fontFamily: "'Inter', system-ui, sans-serif",
                 }}
               >
-                {t('logout')}
+                {username.charAt(0).toUpperCase()}
               </button>
-            </span>
+              {accountOpen && (
+                <>
+                  {/* click-away backdrop */}
+                  <div onClick={() => setAccountOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                  <div
+                    role="menu"
+                    style={{
+                      position: 'absolute', top: 30, right: 0, zIndex: 41, minWidth: 170,
+                      background: '#1a1d27', border: '1px solid #2a2e3c', borderRadius: 8,
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.4)', padding: 6,
+                    }}
+                  >
+                    <div style={{ padding: '4px 8px 8px', borderBottom: '1px solid #252836', marginBottom: 4 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#f0f2f7', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{username}</div>
+                      {isAdmin && <div style={{ fontSize: 10, color: '#60a5fa' }}>{t('users_admin')}</div>}
+                    </div>
+                    {isAdmin && (
+                      <button onClick={() => { setAccountOpen(false); setShowUsers(true); }} style={menuItem}>
+                        {t('manage_users')}
+                      </button>
+                    )}
+                    <button onClick={handleLogout} style={menuItem}>{t('logout')}</button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>
+
+      {showUsers && username && <UserManagement self={username} onClose={() => setShowUsers(false)} />}
 
       {/* Tabs: Reports / Issues */}
       <div
