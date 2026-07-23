@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     # TLS. Left False for local http dev.
     COOKIE_SECURE: bool = False
 
+    # Optional bootstrap admin, created on startup if the username doesn't exist
+    # yet (see auth.ensure_default_admin). Lets docker-compose provision a first
+    # admin so you can log in without shell access. Only creates — never resets an
+    # existing account's password — so changing it in-app survives restarts.
+    DEFAULT_ADMIN_USER: str = ""
+    DEFAULT_ADMIN_PASSWORD: str = ""
+
     # External services
     NOMINATIM_URL: str = "https://nominatim.openstreetmap.org"
 

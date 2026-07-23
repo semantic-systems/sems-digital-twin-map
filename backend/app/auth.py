@@ -136,6 +136,25 @@ def get_current_username(
     return username
 
 
+def ensure_default_admin(session: Session) -> None:
+    """Create the bootstrap admin from DEFAULT_ADMIN_USER/PASSWORD if set and that
+    username doesn't exist yet. Idempotent and non-destructive — it never resets an
+    existing account's password, so an admin who changes their password in-app
+    keeps it across restarts. Called once at startup."""
+    from .config import settings
+
+    user = settings.DEFAULT_ADMIN_USER.strip()
+    password = settings.DEFAULT_ADMIN_PASSWORD
+    if not user or not password:
+        return
+    if session.query(User).filter(User.username == user).first() is not None:
+        return
+    session.add(User(username=user, password_hash=hash_password(password), active=True, is_admin=True))
+    session.commit()
+    warn = "  ⚠ CHANGE THIS PASSWORD after first login." if len(password) < 12 else ""
+    print(f"[startup] Created bootstrap admin '{user}'.{warn}", flush=True)
+
+
 def get_current_admin(
     username: str = Depends(get_current_username),
     db: Session = Depends(get_db),

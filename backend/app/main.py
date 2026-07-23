@@ -202,6 +202,14 @@ def _init_db() -> None:
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     _init_db()  # blocks until tables exist — fast, no external calls
+    # Bootstrap admin from DEFAULT_ADMIN_USER/PASSWORD (docker-compose), if set.
+    from .auth import ensure_default_admin
+    from .db import get_session
+    try:
+        with get_session() as _s:
+            ensure_default_admin(_s)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[startup] SKIP: default admin: {exc!s:.100}")
     yield
 
 

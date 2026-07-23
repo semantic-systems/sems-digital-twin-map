@@ -11,6 +11,14 @@ services:
       - sems_network
     env_file:
       - .env
+    environment:
+      # Bootstrap admin, created on first startup if it doesn't exist yet (only
+      # created, never reset — so a password you change in-app survives restarts).
+      # Override in .env; CHANGE THE PASSWORD after first login.
+      DEFAULT_ADMIN_USER: ${DEFAULT_ADMIN_USER:-admin}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-changeme}
+      # Set true when serving behind HTTPS so the session cookie is TLS-only.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     restart: always
 
   frontend:
