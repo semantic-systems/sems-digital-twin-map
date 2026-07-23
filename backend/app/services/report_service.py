@@ -427,6 +427,26 @@ def _has_no_coord():
     )
 
 
+def point_in_polygon(lat: float, lon: float, ring: list) -> bool:
+    """Ray-casting point-in-polygon; `ring` is a list of [lat, lon] pairs (the
+    spatial_polygon format). Used by build_dots to drop a single OUT-of-area
+    location's dot from a report that qualified because a DIFFERENT location of
+    its is inside the drawn area — so the map only ever shows dots within the
+    area, while the sidebar still lists the report (build_report_query's
+    report-level EXISTS keeps it). Small edge disagreements with PostGIS's
+    ST_Contains are immaterial here — this only decides which dots to draw."""
+    inside = False
+    n = len(ring)
+    j = n - 1
+    for i in range(n):
+        yi, xi = ring[i][0], ring[i][1]
+        yj, xj = ring[j][0], ring[j][1]
+        if (yi > lat) != (yj > lat) and lon < (xj - xi) * (lat - yi) / (yj - yi) + xi:
+            inside = not inside
+        j = i
+    return inside
+
+
 def build_report_query(
     session: Session,
     since: datetime | None = None,
@@ -1587,6 +1607,13 @@ def build_dots(
                 lat_f = float(lat)
                 lon_f = float(lon)
             except (TypeError, ValueError):
+                continue
+
+            # Per-location spatial filter: the report qualified because SOME point
+            # is in the drawn area (build_report_query's report-level EXISTS), but
+            # only its in-area points should get a dot — otherwise a multi-location
+            # report shows dots outside the area the user drew.
+            if spatial_polygon and not point_in_polygon(lat_f, lon_f, spatial_polygon):
                 continue
 
             loc_bbox_area: float | None = None
