@@ -5,8 +5,10 @@ import { useFilterStore, dotsParamsFromFilters } from './store/useFilterStore';
 import { useReportStore } from './store/useReportStore';
 import { fetchReportsBundle, fetchVersion, admitAllReports } from './api/reports';
 import { fetchLayers } from './api/layers';
-import { invalidateBundle } from './queryClient';
-import { UsernameModal } from './components/shared/UsernameModal';
+import { fetchMe } from './api/auth';
+import { setUnauthorizedHandler } from './api/client';
+import { queryClient, invalidateBundle } from './queryClient';
+import { LoginPage } from './components/shared/LoginPage';
 import { FilterBar } from './components/filterbar/FilterBar';
 import { Sidebar } from './components/sidebar/Sidebar';
 import { MapView } from './components/map/MapView';
@@ -33,9 +35,8 @@ function AppInner(): React.ReactElement {
   // whether relevant or not) drives the "reset to page 1" effect below without
   // an infinite loop — it deliberately excludes limit.
   const paramsBase = useMemo(
-    () => dotsParamsFromFilters(username!, filterState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [username, filterState],
+    () => dotsParamsFromFilters(filterState),
+    [filterState],
   );
   const filterKey = JSON.stringify(paramsBase);
   // params doubles as the bundle query key, which is what makes stale-response
@@ -109,7 +110,7 @@ function AppInner(): React.ReactElement {
   // so returning to the tab checks immediately.
   const versionQuery = useQuery({
     queryKey: ['version', username],
-    queryFn: () => fetchVersion(username!),
+    queryFn: () => fetchVersion(),
     enabled: !!username,
     refetchInterval: VERSION_POLL_MS,
   });
@@ -131,7 +132,7 @@ function AppInner(): React.ReactElement {
     const pending = bundleQuery.data?.pending_count ?? 0;
     if (!username || !autoUpdate || pending <= 0 || admitInFlightRef.current) return;
     admitInFlightRef.current = true;
-    admitAllReports(username)
+    admitAllReports()
       .then(() => invalidateBundle())
       .catch((e) => console.error('Auto-admission failed:', e))
       .finally(() => {
@@ -202,10 +203,30 @@ function AppInner(): React.ReactElement {
 }
 
 function App(): React.ReactElement {
-  const { username } = useUserStore();
+  const { username, authChecked, setUsername, setAuthChecked } = useUserStore();
+
+  // On mount: probe the session (/auth/me) to decide login page vs app, and
+  // register the global 401 handler so an expired session anywhere drops back to
+  // the login screen and clears cached data.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setUsername(null);
+      queryClient.clear();
+    });
+    fetchMe()
+      .then((me) => setUsername(me.username))
+      .catch(() => setUsername(null))
+      .finally(() => setAuthChecked(true));
+  }, [setUsername, setAuthChecked]);
+
+  if (!authChecked) {
+    // Brief blank while the session probe resolves — avoids flashing the login
+    // page for an already-authenticated user on every reload.
+    return <div style={{ position: 'fixed', inset: 0, background: '#0f172a' }} />;
+  }
 
   if (!username) {
-    return <UsernameModal />;
+    return <LoginPage onLoggedIn={(name) => setUsername(name)} />;
   }
 
   return <AppInner />;

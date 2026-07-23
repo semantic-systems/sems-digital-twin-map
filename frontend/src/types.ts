@@ -113,7 +113,6 @@ export type GeoJsonGeometry = {
 export type Lang = 'de' | 'en';
 
 export interface FetchReportsParams {
-  username: string;
   loc_filter?: string[];
   platforms?: string[];
   event_types?: string[];
@@ -137,7 +136,6 @@ export interface ReportsBundleResponse extends ReportsResponse {
 }
 
 export interface NewCountParams {
-  username: string;
   since: string;
   loc_filter?: string[];
   platforms?: string[];
@@ -154,7 +152,6 @@ export interface NewCountResponse {
 }
 
 export interface DotsParams {
-  username: string;
   loc_filter?: string[];
   platforms?: string[];
   event_types?: string[];

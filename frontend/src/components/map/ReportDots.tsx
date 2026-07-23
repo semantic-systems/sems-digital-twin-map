@@ -184,7 +184,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
     if (!username) return;
     const newHide = !hidden;
     optimisticHide(dot.report_id, newHide);
-    try { await hideReport(dot.report_id, username, newHide); }
+    try { await hideReport(dot.report_id, newHide); }
     catch (e) { console.error('Failed to hide:', e); }
   };
 
@@ -192,7 +192,7 @@ function DotPopup({ dot }: { dot: DotDTO }): React.ReactElement {
     if (!username || !dot.author) return;
     const newFlag = !flagged;
     optimisticFlag(dot.author, newFlag);
-    try { await flagReport(dot.report_id, username, newFlag); }
+    try { await flagReport(dot.report_id, newFlag); }
     catch (e) { console.error('Failed to flag:', e); }
   };
 
@@ -482,7 +482,7 @@ const GroupMarker = React.memo(function GroupMarker({
         setActiveReportId(newId);
         if (newId !== null && username && dot.new) {
           optimisticAcknowledge(newId);
-          acknowledgeReport(newId, username).catch(() => {});
+          acknowledgeReport(newId).catch(() => {});
         }
       }
     },
@@ -519,7 +519,7 @@ const GroupMarker = React.memo(function GroupMarker({
     setActiveReportId(dot.report_id);
     if (dot.new && username) {
       optimisticAcknowledge(dot.report_id);
-      acknowledgeReport(dot.report_id, username).catch(() => {});
+      acknowledgeReport(dot.report_id).catch(() => {});
     }
     // Pass a reopen function so the detail overlay's back button can reopen this popup.
     const reopenPopup = () => {

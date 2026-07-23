@@ -83,7 +83,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     if (newId !== null && isNew && username) {
       optimisticAcknowledge(newId);
       try {
-        await acknowledgeReport(newId, username);
+        await acknowledgeReport(newId);
       } catch (e) {
         console.error('Failed to acknowledge:', e);
       }
@@ -129,7 +129,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     const newHide = !hide;
     optimisticHide(report.id, newHide);
     try {
-      await hideReport(report.id, username, newHide);
+      await hideReport(report.id, newHide);
       // Dots for hidden reports are never fetched at all (not just filtered client
       // side), so unhiding needs a real refetch to bring its dot back — flipping
       // the local `seen` flag alone only works if the dot happened to already be
@@ -146,7 +146,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     const newFlag = !flag;
     optimisticFlag(report.author, newFlag);
     try {
-      await flagReport(report.id, username, newFlag);
+      await flagReport(report.id, newFlag);
     } catch (e) {
       console.error('Failed to flag:', e);
       optimisticFlag(report.author, flag);
@@ -161,7 +161,7 @@ export function ReportEntry({ report, pinned = false }: ReportEntryProps): React
     if (!username) return;
     optimisticRestoreLocations(report.id, report.original_locations);
     try {
-      await restoreLocations(report.id, username);
+      await restoreLocations(report.id);
       invalidateBundle();
     } catch (e) {
       console.error('Failed to restore locations:', e);

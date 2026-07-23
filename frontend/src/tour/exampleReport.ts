@@ -4,9 +4,9 @@ export * from './constants';
 
 import { activeLocFilter, ALL_EVENT_TYPES_LIST, ALL_RELEVANCES_LIST } from '../store/useFilterStore';
 
-/** Fetches the example report, admitting it for `username` as a side effect (see backend). */
-export async function loadExampleReport(username: string): Promise<ReportDTO> {
-  return fetchTourExample(username);
+/** Fetches the example report, admitting it for the current user as a side effect (see backend). */
+export async function loadExampleReport(): Promise<ReportDTO> {
+  return fetchTourExample();
 }
 
 const TIME_WINDOW_HOURS: Record<string, number> = { '1h': 1, '6h': 6, '1d': 24, '3d': 72 };

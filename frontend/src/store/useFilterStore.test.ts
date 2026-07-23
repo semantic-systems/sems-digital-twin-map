@@ -21,7 +21,7 @@ describe('activeLocFilter', () => {
   });
 });
 
-function baseFilters(overrides: Partial<Parameters<typeof dotsParamsFromFilters>[1]> = {}) {
+function baseFilters(overrides: Partial<Parameters<typeof dotsParamsFromFilters>[0]> = {}) {
   return {
     platforms: [],
     allPlatforms: ['bluesky', 'mastodon'],
@@ -44,28 +44,28 @@ function baseFilters(overrides: Partial<Parameters<typeof dotsParamsFromFilters>
 
 describe('dotsParamsFromFilters', () => {
   it('falls back to allPlatforms when no platform is explicitly selected', () => {
-    const params = dotsParamsFromFilters('alice', baseFilters());
+    const params = dotsParamsFromFilters(baseFilters());
     expect(params.platforms).toEqual(['bluesky', 'mastodon']);
   });
 
   it('uses the explicit platform selection when present', () => {
-    const params = dotsParamsFromFilters('alice', baseFilters({ platforms: ['bluesky'] }));
+    const params = dotsParamsFromFilters(baseFilters({ platforms: ['bluesky'] }));
     expect(params.platforms).toEqual(['bluesky']);
   });
 
   it('omits search when empty, includes it when set', () => {
-    expect(dotsParamsFromFilters('alice', baseFilters()).search).toBeUndefined();
-    expect(dotsParamsFromFilters('alice', baseFilters({ search: 'fire' })).search).toBe('fire');
+    expect(dotsParamsFromFilters(baseFilters()).search).toBeUndefined();
+    expect(dotsParamsFromFilters(baseFilters({ search: 'fire' })).search).toBe('fire');
   });
 
   it('only includes since/until when timeWindow is "custom"', () => {
-    const preset = dotsParamsFromFilters('alice', baseFilters({
+    const preset = dotsParamsFromFilters(baseFilters({
       timeWindow: '1d', customSince: '2026-01-01', customUntil: '2026-01-02',
     }));
     expect(preset.since).toBeUndefined();
     expect(preset.until).toBeUndefined();
 
-    const custom = dotsParamsFromFilters('alice', baseFilters({
+    const custom = dotsParamsFromFilters(baseFilters({
       timeWindow: 'custom', customSince: '2026-01-01', customUntil: '2026-01-02',
     }));
     expect(custom.since).toBe('2026-01-01');
@@ -73,24 +73,23 @@ describe('dotsParamsFromFilters', () => {
   });
 
   it('omits only_new when false, sets it true when showOnlyNew is on', () => {
-    expect(dotsParamsFromFilters('alice', baseFilters()).only_new).toBeUndefined();
-    expect(dotsParamsFromFilters('alice', baseFilters({ showOnlyNew: true })).only_new).toBe(true);
+    expect(dotsParamsFromFilters(baseFilters()).only_new).toBeUndefined();
+    expect(dotsParamsFromFilters(baseFilters({ showOnlyNew: true })).only_new).toBe(true);
   });
 
   it('derives loc_filter via activeLocFilter (undefined when all three shown)', () => {
-    expect(dotsParamsFromFilters('alice', baseFilters()).loc_filter).toBeUndefined();
+    expect(dotsParamsFromFilters(baseFilters()).loc_filter).toBeUndefined();
     expect(
-      dotsParamsFromFilters('alice', baseFilters({ locShowPending: false })).loc_filter,
+      dotsParamsFromFilters(baseFilters({ locShowPending: false })).loc_filter,
     ).toEqual(['localized', 'unlocalized']);
   });
 
-  it('passes through username, event types, relevances and show-flags verbatim', () => {
-    const params = dotsParamsFromFilters('alice', baseFilters({
+  it('passes through event types, relevances and show-flags verbatim', () => {
+    const params = dotsParamsFromFilters(baseFilters({
       eventTypes: ['Sonstiges', 'Bedarfe & Anfragen'],
       relevances: ['high', 'medium'],
       showHidden: true, showFlagged: false, showUnflagged: true,
     }));
-    expect(params.username).toBe('alice');
     expect(params.event_types).toEqual(['Sonstiges', 'Bedarfe & Anfragen']);
     expect(params.relevances).toEqual(['high', 'medium']);
     expect(params.show_hidden).toBe(true);

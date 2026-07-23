@@ -63,7 +63,7 @@ function PickModeHandler(): null {
       exitPickMode();
 
       try {
-        await updateLocations(reportId, username, newLocs);
+        await updateLocations(reportId, newLocs);
         invalidateBundle();
       } catch (e2) {
         console.error('Failed to update locations via map click:', e2);

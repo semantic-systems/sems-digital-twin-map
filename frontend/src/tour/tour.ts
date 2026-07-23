@@ -44,7 +44,7 @@ export async function startTour(): Promise<void> {
 
   let exampleReportId: number | null = null;
   try {
-    const report = await loadExampleReport(username);
+    const report = await loadExampleReport();
     exampleReportId = report.id;
     useReportStore.getState().addExampleReport(report);
     useTourStore.getState().setActiveExampleReportId(report.id);
@@ -115,7 +115,7 @@ export async function startTour(): Promise<void> {
     const report = useReportStore.getState().reports.find((r) => r.id === exampleReportId);
     if (!report?.user_state.hide) return;
     useReportStore.getState().optimisticHide(exampleReportId, false);
-    hideReport(exampleReportId, username, false).catch(() => {});
+    hideReport(exampleReportId, false).catch(() => {});
   };
   const unsubscribeHideWatch = useReportStore.subscribe((state) => {
     if (exampleReportId === null) return;

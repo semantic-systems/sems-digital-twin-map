@@ -17,7 +17,7 @@ export function NewPostsBanner(): React.ReactElement {
       // — advancing it then invalidating the bundle query is now the whole
       // flow; the bundle refetch brings reports, dots, and every panel count
       // back in sync in one round trip.
-      await admitAllReports(username);
+      await admitAllReports();
       invalidateBundle();
     } catch (e) {
       console.error('Failed to admit reports:', e);

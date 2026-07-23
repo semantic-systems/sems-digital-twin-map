@@ -71,23 +71,26 @@ export type _NewCountResponse = Assert<KeysEqual<NewCountResponse, components['s
 // Pick<T, K> itself fails to compile if any listed key is missing from T, so
 // simply picking the same literal key list from both sides is the check.
 type FetchReportsSharedKeys =
-  | 'username' | 'show_hidden' | 'show_flagged' | 'show_unflagged'
+  | 'show_hidden' | 'show_flagged' | 'show_unflagged'
   | 'search' | 'time_window' | 'since' | 'until' | 'only_new' | 'area' | 'limit';
 export type _FetchReportsParams_Frontend = Pick<FetchReportsParams, FetchReportsSharedKeys>;
 export type _FetchReportsParams_Backend = Pick<
-  operations['get_reports_endpoint_api_v1_reports__get']['parameters']['query'],
+  // NonNullable: with the acting user now a cookie (not a required query param),
+  // every remaining query param is optional, so openapi-typescript types the whole
+  // `query` object as `T | undefined` — unwrap it before Pick.
+  NonNullable<operations['get_reports_endpoint_api_v1_reports__get']['parameters']['query']>,
   FetchReportsSharedKeys
 >;
 
 type DotsSharedKeys =
-  | 'username' | 'show_hidden' | 'show_flagged' | 'show_unflagged'
+  | 'show_hidden' | 'show_flagged' | 'show_unflagged'
   | 'search' | 'time_window' | 'since' | 'until' | 'only_new' | 'area';
 export type _DotsParams_Frontend = Pick<DotsParams, DotsSharedKeys>;
 export type _DotsParams_Backend = Pick<
-  operations['dots_endpoint_api_v1_reports_dots_get']['parameters']['query'],
+  NonNullable<operations['dots_endpoint_api_v1_reports_dots_get']['parameters']['query']>,
   DotsSharedKeys
 >;
 export type _BundleParams_Backend = Pick<
-  operations['bundle_endpoint_api_v1_reports_bundle_get']['parameters']['query'],
+  NonNullable<operations['bundle_endpoint_api_v1_reports_bundle_get']['parameters']['query']>,
   FetchReportsSharedKeys
 >;

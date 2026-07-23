@@ -85,7 +85,7 @@ export function PickModeOverlay(): React.ReactElement | null {
     setSearchQuery('');
 
     try {
-      await updateLocations(pickMode.reportId, username, newLocs);
+      await updateLocations(pickMode.reportId, newLocs);
       invalidateBundle();
     } catch (e) {
       console.error('Failed to update locations via search:', e);

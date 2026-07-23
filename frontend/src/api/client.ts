@@ -1,11 +1,33 @@
 const BASE = '/api/v1';
 
+export class ApiError extends Error {
+  status: number;
+  constructor(path: string, status: number) {
+    super(`API ${path}: ${status}`);
+    this.status = status;
+  }
+}
+
+// Called whenever any request comes back 401 — the session is gone/expired, so
+// the app should drop to the login screen. Registered by App on mount to avoid
+// this module depending on the store.
+let onUnauthorized: (() => void) | null = null;
+export function setUnauthorizedHandler(fn: () => void): void {
+  onUnauthorized = fn;
+}
+
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(BASE + path, {
+    // Send/receive the session cookie on every request.
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
   });
-  if (!res.ok) throw new Error(`API ${path}: ${res.status}`);
+  if (res.status === 401) {
+    onUnauthorized?.();
+    throw new ApiError(path, 401);
+  }
+  if (!res.ok) throw new ApiError(path, res.status);
   return res.json() as Promise<T>;
 }
 

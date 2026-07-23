@@ -74,7 +74,7 @@ export function ReportList({ onLoadMore }: { onLoadMore: () => void }): React.Re
 
     // Not in the loaded page → fetch it directly and pin it.
     let cancelled = false;
-    fetchReport(activeReportId, username ?? undefined)
+    fetchReport(activeReportId)
       .then((r) => { if (!cancelled) setPinnedReport(r); })
       .catch(() => {});
     return () => { cancelled = true; };

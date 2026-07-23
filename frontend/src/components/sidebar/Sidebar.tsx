@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
 import { useFilterStore } from '../../store/useFilterStore';
 import { useReportStore } from '../../store/useReportStore';
+import { useUserStore } from '../../store/useUserStore';
 import { useEffectiveFacetTotals } from '../../hooks/useEffectiveFacetTotals';
 import { fetchDemoStatus, resetDemo } from '../../api/demo';
+import { logout } from '../../api/auth';
+import { queryClient } from '../../queryClient';
 import type { DemoStatus } from '../../types';
 import { ReportList } from './ReportList';
 import { NewPostsBanner } from './NewPostsBanner';
@@ -11,6 +14,17 @@ import { NewPostsBanner } from './NewPostsBanner';
 export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.ReactElement {
   const { autoUpdate, setAutoUpdate, allPlatforms, setPlatformCounts, search, setSearch, showOnlyNew, setShowOnlyNew, showIssuesView, setShowIssuesView, processingStatusTotals, reportsTotalCount, reportsUnseenCount } = useFilterStore();
   const { isLoading, setReports, setDots, setPendingNewCount, bumpReloadTrigger } = useReportStore();
+  const { username, setUsername } = useUserStore();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // ignore — clear locally regardless
+    }
+    queryClient.clear();
+    setUsername(null);
+  };
 
   // useReportStore's unseenCount/totalCount (surfaced here via useEffectiveFacetTotals
   // for the tour-example adjustment) always describe whichever tab was last fetched,
@@ -224,27 +238,47 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
           )}
         </div>
 
-        {/* Right side: auto-update toggle */}
-        <label
-          data-tour="auto-update-toggle"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            cursor: 'pointer',
-            fontSize: 11,
-            color: '#9ca3af',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={autoUpdate}
-            onChange={(e) => setAutoUpdate(e.target.checked)}
-            style={{ width: 12, height: 12, accentColor: '#3b82f6' }}
-          />
-          {t('auto_update')}
-          <span style={{ fontSize: 9, color: '#4b5563' }}>({t('recommended')})</span>
-        </label>
+        {/* Right side: auto-update toggle + account */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+          <label
+            data-tour="auto-update-toggle"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              cursor: 'pointer',
+              fontSize: 11,
+              color: '#9ca3af',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={autoUpdate}
+              onChange={(e) => setAutoUpdate(e.target.checked)}
+              style={{ width: 12, height: 12, accentColor: '#3b82f6' }}
+            />
+            {t('auto_update')}
+            <span style={{ fontSize: 9, color: '#4b5563' }}>({t('recommended')})</span>
+          </label>
+          {username && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#6b7280' }}>
+              <span title={username} style={{ maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {username}
+              </span>
+              <button
+                onClick={handleLogout}
+                title={t('logout')}
+                style={{
+                  background: 'none', border: '1px solid #374151', borderRadius: 5,
+                  color: '#9ca3af', fontSize: 10, padding: '2px 6px', cursor: 'pointer',
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                }}
+              >
+                {t('logout')}
+              </button>
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Tabs: Reports / Issues */}

@@ -11,10 +11,10 @@ import type {
 } from '../types';
 
 // The backend uses singular aliases: ?platform=, ?event_type=, ?relevance=
-// The frontend stores use plural names, so we remap here.
+// The frontend stores use plural names, so we remap here. The acting user is NOT
+// sent — it's derived server-side from the session cookie (see backend auth).
 function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): Record<string, unknown> {
   return {
-    username: p.username,
     loc_filter: (p as FetchReportsParams).loc_filter,
     platform: p.platforms,
     event_type: p.event_types,
@@ -59,63 +59,49 @@ export async function fetchNewCount(params: NewCountParams): Promise<NewCountRes
 }
 
 /** Cheap change token; the bundle query is only invalidated when it moves. */
-export async function fetchVersion(username: string): Promise<{ token: string }> {
-  return apiFetch<{ token: string }>(`/reports/version?username=${encodeURIComponent(username)}`);
+export async function fetchVersion(): Promise<{ token: string }> {
+  return apiFetch<{ token: string }>('/reports/version');
 }
 
-export async function fetchReport(id: number, username?: string): Promise<ReportDTO> {
-  const qs = username ? `?username=${encodeURIComponent(username)}` : '';
-  return apiFetch<ReportDTO>(`/reports/${id}${qs}`);
+export async function fetchReport(id: number): Promise<ReportDTO> {
+  return apiFetch<ReportDTO>(`/reports/${id}`);
 }
 
 /** The onboarding tour's permanent example report (see tour/exampleReport.ts). */
-export async function fetchTourExample(username: string): Promise<ReportDTO> {
-  return apiFetch<ReportDTO>(`/reports/tour-example?username=${encodeURIComponent(username)}`);
+export async function fetchTourExample(): Promise<ReportDTO> {
+  return apiFetch<ReportDTO>('/reports/tour-example');
 }
 
 /** Advance the user's admission watermark to "now" (see backend UserAdmission). */
-export async function admitAllReports(username: string): Promise<{ admitted: number }> {
-  return apiFetch<{ admitted: number }>('/reports/admit-all', {
-    method: 'POST',
-    body: JSON.stringify({ username }),
-  });
+export async function admitAllReports(): Promise<{ admitted: number }> {
+  return apiFetch<{ admitted: number }>('/reports/admit-all', { method: 'POST' });
 }
 
-export async function hideReport(id: number, username: string, hide: boolean): Promise<void> {
+export async function hideReport(id: number, hide: boolean): Promise<void> {
   await apiFetch<void>(`/reports/${id}/hide`, {
     method: 'PATCH',
-    body: JSON.stringify({ username, hide }),
+    body: JSON.stringify({ hide }),
   });
 }
 
-export async function flagReport(id: number, username: string, flag: boolean): Promise<void> {
+export async function flagReport(id: number, flag: boolean): Promise<void> {
   await apiFetch<void>(`/reports/${id}/flag`, {
     method: 'PATCH',
-    body: JSON.stringify({ username, flag }),
+    body: JSON.stringify({ flag }),
   });
 }
 
-export async function acknowledgeReport(id: number, username: string): Promise<void> {
-  await apiFetch<void>(`/reports/${id}/acknowledge`, {
-    method: 'PATCH',
-    body: JSON.stringify({ username }),
-  });
+export async function acknowledgeReport(id: number): Promise<void> {
+  await apiFetch<void>(`/reports/${id}/acknowledge`, { method: 'PATCH' });
 }
 
-export async function updateLocations(
-  id: number,
-  username: string,
-  locations: LocationEntry[],
-): Promise<void> {
+export async function updateLocations(id: number, locations: LocationEntry[]): Promise<void> {
   await apiFetch<void>(`/reports/${id}/locations`, {
     method: 'PATCH',
-    body: JSON.stringify({ username, locations }),
+    body: JSON.stringify({ locations }),
   });
 }
 
-export async function restoreLocations(id: number, username: string): Promise<void> {
-  await apiFetch<void>(`/reports/${id}/locations`, {
-    method: 'DELETE',
-    body: JSON.stringify({ username }),
-  });
+export async function restoreLocations(id: number): Promise<void> {
+  await apiFetch<void>(`/reports/${id}/locations`, { method: 'DELETE' });
 }

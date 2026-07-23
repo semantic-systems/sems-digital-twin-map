@@ -37,7 +37,7 @@ export function LocationTag({
     const newLocs = allLocations.filter((_, i) => i !== locIndex);
     optimisticUpdateLocations(reportId, newLocs);
     try {
-      await updateLocations(reportId, username, newLocs);
+      await updateLocations(reportId, newLocs);
       // A removed location's dot needs to disappear from the map — invalidate
       // the shared bundle query so the next fetch reflects it.
       invalidateBundle();

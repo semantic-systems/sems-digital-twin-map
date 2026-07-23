@@ -40,7 +40,6 @@ export function activeLocFilter(f: {
  *  SAME filters as the main load. Omitting any of these here makes filtered-out dots
  *  reappear after an edit. */
 export function dotsParamsFromFilters(
-  username: string,
   f: {
     platforms: string[];
     allPlatforms: string[];
@@ -67,7 +66,6 @@ export function dotsParamsFromFilters(
   },
 ): DotsParams {
   return {
-    username,
     loc_filter: activeLocFilter(f),
     platforms: f.platforms.length ? f.platforms : f.allPlatforms,
     event_types: f.eventTypes,

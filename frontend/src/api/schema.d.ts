@@ -4,6 +4,66 @@
  */
 
 export interface paths {
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Login
+         * @description Verify credentials, open a session, set the httpOnly cookie. Returns 401 on
+         *     bad username OR password (same message either way, so it can't be used to probe
+         *     which usernames exist).
+         */
+        post: operations["login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description Who am I — used by the frontend on load to decide login-page vs app. 401
+         *     (via the dependency) when there's no valid session.
+         */
+        get: operations["me_api_v1_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/": {
         parameters: {
             query?: never;
@@ -287,28 +347,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/user/init": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Init User
-         * @description Acknowledge a user session.  No DB rows are created here — all
-         *     UserReportState rows are created lazily on first action.
-         */
-        post: operations["init_user_api_v1_user_init_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/user/{username}/state": {
+    "/api/v1/user/state": {
         parameters: {
             query?: never;
             header?: never;
@@ -317,7 +356,8 @@ export interface paths {
         };
         /**
          * User State
-         * @description Return the full aggregated state for a user:
+         * @description Return the full aggregated state for the CURRENT user (derived from the
+         *     session — a user can only read their own state):
          *       - admitted_up_to_id: int    — admission watermark; report ids <= this are
          *                                     admitted to the sidebar (see UserAdmission)
          *       - flagged_authors: list[str]
@@ -325,7 +365,7 @@ export interface paths {
          *       - acknowledged_ids: list[int] — reports the user has explicitly opened
          *       - location_overrides: dict  — {str(report_id): list[LocationEntry]}
          */
-        get: operations["user_state_api_v1_user__username__state_get"];
+        get: operations["user_state_api_v1_user_state_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -418,11 +458,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AcknowledgeRequest */
-        AcknowledgeRequest: {
-            /** Username */
-            username: string;
-        };
         /**
          * DotDTO
          * @description A single map-dot, one per geocoded location (not one per report — a
@@ -482,8 +517,6 @@ export interface components {
         };
         /** FlagRequest */
         FlagRequest: {
-            /** Username */
-            username: string;
             /** Flag */
             flag: boolean;
         };
@@ -494,15 +527,8 @@ export interface components {
         };
         /** HideRequest */
         HideRequest: {
-            /** Username */
-            username: string;
             /** Hide */
             hide: boolean;
-        };
-        /** InitRequest */
-        InitRequest: {
-            /** Username */
-            username: string;
         };
         /** LayerDTO */
         LayerDTO: {
@@ -545,10 +571,20 @@ export interface components {
         };
         /** LocationsRequest */
         LocationsRequest: {
-            /** Username */
-            username: string;
             /** Locations */
             locations: components["schemas"]["LocationEntry"][];
+        };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Username */
+            username: string;
+            /** Password */
+            password: string;
+        };
+        /** MeResponse */
+        MeResponse: {
+            /** Username */
+            username: string;
         };
         /** NewCountResponse */
         NewCountResponse: {
@@ -801,16 +837,6 @@ export interface components {
             /** Token */
             token: string;
         };
-        /** _AdmitAllRequest */
-        _AdmitAllRequest: {
-            /** Username */
-            username: string;
-        };
-        /** _RestoreBody */
-        _RestoreBody: {
-            /** Username */
-            username: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -820,11 +846,106 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_api_v1_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_reports_endpoint_api_v1_reports__get: {
         parameters: {
-            query: {
-                /** @description The requesting user's name */
-                username: string;
+            query?: {
                 loc_filter?: string[];
                 platform?: string[];
                 event_type?: string[];
@@ -847,7 +968,9 @@ export interface operations {
             };
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -874,7 +997,6 @@ export interface operations {
     new_count_endpoint_api_v1_reports_new_count_get: {
         parameters: {
             query: {
-                username: string;
                 /** @description ISO8601 datetime string */
                 since: string;
                 loc_filter?: string[];
@@ -887,7 +1009,9 @@ export interface operations {
             };
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -913,12 +1037,12 @@ export interface operations {
     };
     version_endpoint_api_v1_reports_version_get: {
         parameters: {
-            query: {
-                username: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -944,8 +1068,7 @@ export interface operations {
     };
     dots_endpoint_api_v1_reports_dots_get: {
         parameters: {
-            query: {
-                username: string;
+            query?: {
                 loc_filter?: string[];
                 platform?: string[];
                 event_type?: string[];
@@ -966,7 +1089,9 @@ export interface operations {
             };
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -992,9 +1117,7 @@ export interface operations {
     };
     bundle_endpoint_api_v1_reports_bundle_get: {
         parameters: {
-            query: {
-                /** @description The requesting user's name */
-                username: string;
+            query?: {
                 loc_filter?: string[];
                 platform?: string[];
                 event_type?: string[];
@@ -1017,7 +1140,9 @@ export interface operations {
             };
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1046,13 +1171,11 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["_AdmitAllRequest"];
+            cookie?: {
+                sems_session?: string | null;
             };
         };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -1078,13 +1201,12 @@ export interface operations {
     };
     tour_example_endpoint_api_v1_reports_tour_example_get: {
         parameters: {
-            query: {
-                /** @description The requesting user's name */
-                username: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1110,14 +1232,14 @@ export interface operations {
     };
     get_report_endpoint_api_v1_reports__report_id__get: {
         parameters: {
-            query?: {
-                username?: string | null;
-            };
+            query?: never;
             header?: never;
             path: {
                 report_id: number;
             };
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1148,7 +1270,9 @@ export interface operations {
             path: {
                 report_id: number;
             };
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1185,7 +1309,9 @@ export interface operations {
             path: {
                 report_id: number;
             };
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1222,13 +1348,11 @@ export interface operations {
             path: {
                 report_id: number;
             };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AcknowledgeRequest"];
+            cookie?: {
+                sems_session?: string | null;
             };
         };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -1259,13 +1383,11 @@ export interface operations {
             path: {
                 report_id: number;
             };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["_RestoreBody"];
+            cookie?: {
+                sems_session?: string | null;
             };
         };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -1296,7 +1418,9 @@ export interface operations {
             path: {
                 report_id: number;
             };
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1331,7 +1455,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1344,6 +1470,15 @@ export interface operations {
                     "application/json": components["schemas"]["LayersResponse"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     layer_geojson_api_v1_layers__layer_id__geojson_get: {
@@ -1353,7 +1488,9 @@ export interface operations {
             path: {
                 layer_id: number;
             };
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1384,7 +1521,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1397,6 +1536,15 @@ export interface operations {
                     "application/json": components["schemas"]["ScenariosResponse"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     scenario_geojson_api_v1_scenarios__scenario_id__geojson_get: {
@@ -1406,7 +1554,9 @@ export interface operations {
             path: {
                 scenario_id: number;
             };
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1432,49 +1582,14 @@ export interface operations {
             };
         };
     };
-    init_user_api_v1_user_init_post: {
+    user_state_api_v1_user_state_get: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["InitRequest"];
+            cookie?: {
+                sems_session?: string | null;
             };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    user_state_api_v1_user__username__state_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                username: string;
-            };
-            cookie?: never;
         };
         requestBody?: never;
         responses: {
@@ -1509,7 +1624,9 @@ export interface operations {
             };
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                sems_session?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
