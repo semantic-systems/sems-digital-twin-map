@@ -61,6 +61,12 @@ _engine = create_engine(
     pool_pre_ping=True,
     pool_size=5,
     max_overflow=10,
+    # Disable JIT for every connection. This is a short-query OLTP workload where
+    # JIT rarely amortizes, and it's actively harmful for the drawn-area
+    # (PostGIS-over-JSON) queries: Postgres wildly over-estimates their cost via the
+    # json_array_elements cardinality guess and would spend 60ms–1s JIT-compiling a
+    # query whose real work is a few ms (verified against the live DB).
+    connect_args={"options": "-c jit=off"},
 )
 
 _SessionFactory: sessionmaker[Session] = sessionmaker(

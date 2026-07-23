@@ -33,6 +33,20 @@ def _resolve_time_range(
     if custom_since is not None or custom_until is not None:
         return custom_since, custom_until
     return _since_from_window(time_window), None
+
+def _parse_area(area: str | None) -> list | None:
+    """Parse the drawn-area query param — a flat 'lat,lon,lat,lon,…' string — into a
+    [lat, lon] ring. Returns None on empty/malformed input or a degenerate ring
+    (fewer than 3 points), in which case the spatial filter is simply not applied."""
+    if not area:
+        return None
+    try:
+        nums = [float(x) for x in area.split(",") if x.strip() != ""]
+    except ValueError:
+        return None
+    if len(nums) < 6 or len(nums) % 2 != 0:  # need ≥3 points (6 numbers), in pairs
+        return None
+    return [[nums[i], nums[i + 1]] for i in range(0, len(nums), 2)]
 from ..schemas.report import (
     AcknowledgeRequest,
     DotsResponse,
@@ -77,6 +91,7 @@ def get_reports_endpoint(
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     only_new: bool = Query(False),
     only_issues: bool = Query(False, description="Show only reports whose extraction pipeline failed"),
+    area: str | None = Query(None, description="Drawn-area filter: flat 'lat,lon,lat,lon,…' ring"),
     session: Session = Depends(get_db),
 ) -> ReportsResponse:
     from ..config import settings
@@ -99,6 +114,7 @@ def get_reports_endpoint(
         until=eff_until,
         only_new=only_new,
         only_issues=only_issues,
+        spatial_polygon=_parse_area(area),
     )
     return ReportsResponse(
         reports=res.reports,
@@ -191,6 +207,7 @@ def dots_endpoint(
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     only_new: bool = Query(False),
     only_issues: bool = Query(False),
+    area: str | None = Query(None, description="Drawn-area filter: flat 'lat,lon,lat,lon,…' ring"),
     session: Session = Depends(get_db),
 ) -> DotsResponse:
     from ..config import settings
@@ -215,6 +232,7 @@ def dots_endpoint(
         until=eff_until,
         only_new=only_new,
         only_issues=only_issues,
+        spatial_polygon=_parse_area(area),
     )
     return DotsResponse(dots=dots)
 
@@ -240,11 +258,13 @@ def bundle_endpoint(
     until: str | None = Query(None, description="ISO8601 upper time bound (custom range)"),
     only_new: bool = Query(False),
     only_issues: bool = Query(False, description="Show only reports whose extraction pipeline failed"),
+    area: str | None = Query(None, description="Drawn-area filter: flat 'lat,lon,lat,lon,…' ring"),
     session: Session = Depends(get_db),
 ) -> ReportsBundleResponse:
     from ..config import settings
 
     eff_since, eff_until = _resolve_time_range(time_window, since, until)
+    spatial_polygon = _parse_area(area)
     res = svc.get_reports(
         session=session,
         username=username,
@@ -262,6 +282,7 @@ def bundle_endpoint(
         until=eff_until,
         only_new=only_new,
         only_issues=only_issues,
+        spatial_polygon=spatial_polygon,
     )
     eff_platform, eff_events, eff_relevance = svc.normalize_filters(
         platforms or None, event_types or None, relevances or None
@@ -282,6 +303,7 @@ def bundle_endpoint(
         until=eff_until,
         only_new=only_new,
         only_issues=only_issues,
+        spatial_polygon=spatial_polygon,
     )
     return ReportsBundleResponse(
         reports=res.reports,

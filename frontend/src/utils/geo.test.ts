@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  pointInPolygon,
   locationExtent,
   computeSuppressedRegions,
   computeSuppressedDotsWithLocs,
@@ -32,23 +31,6 @@ function makeDot(overrides: Partial<DotDTO> = {}): DotDTO {
     ...overrides,
   };
 }
-
-describe('pointInPolygon', () => {
-  const square: [number, number][] = [[0, 0], [0, 10], [10, 10], [10, 0]];
-
-  it('detects a point inside the polygon', () => {
-    expect(pointInPolygon(5, 5, square)).toBe(true);
-  });
-
-  it('detects a point outside the polygon', () => {
-    expect(pointInPolygon(20, 20, square)).toBe(false);
-  });
-
-  it('treats a point far outside as outside regardless of axis', () => {
-    expect(pointInPolygon(5, -5, square)).toBe(false);
-    expect(pointInPolygon(-5, 5, square)).toBe(false);
-  });
-});
 
 describe('locationExtent', () => {
   it('computes the bbox over the WHOLE polygon geometry, not just the first ring', () => {

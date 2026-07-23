@@ -128,6 +128,8 @@ export interface FetchReportsParams {
   until?: string;
   only_new?: boolean;
   only_issues?: boolean;
+  /** Drawn-area filter: flat 'lat,lon,lat,lon,…' ring, applied server-side via PostGIS. */
+  area?: string;
 }
 
 export interface ReportsBundleResponse extends ReportsResponse {
@@ -166,6 +168,8 @@ export interface DotsParams {
   until?: string;
   only_new?: boolean;
   only_issues?: boolean;
+  /** Drawn-area filter: flat 'lat,lon,lat,lon,…' ring, applied server-side via PostGIS. */
+  area?: string;
 }
 
 export interface DemoStatus {

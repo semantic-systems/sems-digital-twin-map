@@ -842,6 +842,8 @@ export interface operations {
                 only_new?: boolean;
                 /** @description Show only reports whose extraction pipeline failed */
                 only_issues?: boolean;
+                /** @description Drawn-area filter: flat 'lat,lon,lat,lon,…' ring */
+                area?: string | null;
             };
             header?: never;
             path?: never;
@@ -959,6 +961,8 @@ export interface operations {
                 until?: string | null;
                 only_new?: boolean;
                 only_issues?: boolean;
+                /** @description Drawn-area filter: flat 'lat,lon,lat,lon,…' ring */
+                area?: string | null;
             };
             header?: never;
             path?: never;
@@ -1008,6 +1012,8 @@ export interface operations {
                 only_new?: boolean;
                 /** @description Show only reports whose extraction pipeline failed */
                 only_issues?: boolean;
+                /** @description Drawn-area filter: flat 'lat,lon,lat,lon,…' ring */
+                area?: string | null;
             };
             header?: never;
             path?: never;

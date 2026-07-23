@@ -28,6 +28,7 @@ function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): R
     ...((p as DotsParams).search ? { search: (p as DotsParams).search } : {}),
     ...((p as DotsParams).only_new ? { only_new: true } : {}),
     ...((p as DotsParams).only_issues ? { only_issues: true } : {}),
+    ...((p as DotsParams).area ? { area: (p as DotsParams).area } : {}),
   };
 }
 

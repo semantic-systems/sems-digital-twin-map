@@ -60,6 +60,10 @@ export function dotsParamsFromFilters(
     locShowLocalized: boolean;
     locShowPending: boolean;
     locShowUnlocalized: boolean;
+    // The drawn-area filter — sent to the backend (which applies it via PostGIS),
+    // so it's part of the request/query key and a redraw triggers a refetch.
+    // Optional for pre-existing callers/tests that build this shape by hand.
+    spatialPolygon?: [number, number][] | null;
   },
 ): DotsParams {
   return {
@@ -77,7 +81,15 @@ export function dotsParamsFromFilters(
     until: f.timeWindow === 'custom' ? (f.customUntil || undefined) : undefined,
     only_new: f.showOnlyNew || undefined,
     only_issues: f.showIssuesView || undefined,
+    area: encodeArea(f.spatialPolygon),
   };
+}
+
+/** Encode a drawn-area ring as a flat 'lat,lon,lat,lon,…' string (5-dp rounded) for
+ *  the `area` query param; undefined when no area is drawn. */
+export function encodeArea(ring: [number, number][] | null | undefined): string | undefined {
+  if (!ring || ring.length < 3) return undefined;
+  return ring.flatMap(([lat, lon]) => [lat.toFixed(5), lon.toFixed(5)]).join(',');
 }
 
 /** Derive a stable color for a layer based on its position in availableLayers. */

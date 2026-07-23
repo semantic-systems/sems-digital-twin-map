@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import String, cast, case, and_, or_, func
+from sqlalchemy import text as sa_text
 from sqlalchemy import Text as SaText
 from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -378,6 +379,54 @@ def normalize_filters(
 _ISSUE_STATUSES = ('error', 'no_text')
 
 
+# ---------------------------------------------------------------------------
+# Spatial (drawn-area) filter — PostGIS point-in-polygon over the JSON locations
+# ---------------------------------------------------------------------------
+
+def polygon_to_wkt(ring: list) -> str | None:
+    """Convert a drawn area (a `[lat, lon]` ring as the frontend sends it) into a
+    closed POLYGON WKT in PostGIS's `(lon lat)` axis order. Returns None for a
+    degenerate ring (fewer than 3 points) — PostGIS rejects those, so callers just
+    skip the spatial filter rather than error."""
+    if not ring or len(ring) < 3:
+        return None
+    try:
+        pts = [(float(lon), float(lat)) for lat, lon in ring]
+    except (TypeError, ValueError):
+        return None
+    if pts[0] != pts[-1]:
+        pts.append(pts[0])
+    if len(pts) < 4:
+        return None
+    coords = ", ".join(f"{lon} {lat}" for lon, lat in pts)
+    return f"POLYGON(({coords}))"
+
+
+def _in_area_exists(wkt: str):
+    """SQL EXISTS: at least one of the report's locations has a lat/lon inside the
+    drawn polygon. ST_MakeValid absorbs a self-intersecting hand-drawn ring. NB:
+    JIT is disabled engine-wide (db.py) — Postgres badly over-estimates the cost of
+    these json-expansion queries and would otherwise spend 60ms–1s JIT-compiling a
+    query whose real work is a few ms."""
+    return sa_text(
+        "EXISTS (SELECT 1 FROM json_array_elements(reports.locations) AS _loc "
+        "WHERE (_loc->>'lat') IS NOT NULL AND (_loc->>'lon') IS NOT NULL "
+        "AND ST_Contains("
+        "ST_MakeValid(ST_SetSRID(ST_GeomFromText(:_area_wkt), 4326)), "
+        "ST_SetSRID(ST_MakePoint((_loc->>'lon')::float8, (_loc->>'lat')::float8), 4326)))"
+    ).bindparams(_area_wkt=wkt)
+
+
+def _has_no_coord():
+    """SQL: the report has no location with usable coordinates, so its position is
+    unknown and the drawn area can't validly exclude it (the location-type filter
+    governs it instead)."""
+    return sa_text(
+        "NOT EXISTS (SELECT 1 FROM json_array_elements(reports.locations) AS _loc "
+        "WHERE (_loc->>'lat') IS NOT NULL AND (_loc->>'lon') IS NOT NULL)"
+    )
+
+
 def build_report_query(
     session: Session,
     since: datetime | None = None,
@@ -390,6 +439,7 @@ def build_report_query(
     search: str | None = None,
     loc_filter: list[str] | None = None,
     only_issues: bool = False,
+    spatial_polygon: list | None = None,
 ):
     """
     Returns a SQLAlchemy Query[Report] with all filters applied.
@@ -413,11 +463,22 @@ def build_report_query(
         which is exactly what's broken here, so it is NOT applied to these rows
         regardless of their classification outcome.
     Each bypass is keyed only off the axis it depends on, so a row failing both
-    axes at once still gets the right (skip both) treatment. Geo-failure reports
-    are NOT excluded from the normal (non-issues) view — their relevance/category
-    data is fine if classification succeeded, only the location is incomplete, so
-    they stay visible there too; only_issues adds a second, filtered view onto the
-    same reports rather than moving them out.
+    axes at once still gets the right (skip both) treatment. "Issues only show in
+    Issues": the two views are mutually exclusive — the Reports view (only_issues
+    False) is clean reports ONLY (classification ok AND geo-recognition ok AND no
+    per-mention linking error), so a geo-failure report is no longer visible there
+    (a report with a partial geoparsing failure moves entirely to Issues until the
+    bad mention is fixed).
+
+    spatial_polygon: a drawn-area ring ([lat, lon] pairs). When present it's applied
+    as a PostGIS point-in-polygon over the locations JSON, uniformly to every
+    consumer of this builder (list, dots, facet scan, badges, pending count):
+      - Reports view: a located report must have a point inside the polygon; a
+        report with no coordinates can't be spatially disproven, so it passes and
+        is governed by the location-type filter instead.
+      - Issues view: geo-failure reports have an ambiguous position, so the area
+        can't validly exclude them — they always stay visible (same bypass shape as
+        loc_filter). Classification failures with good coordinates are area-filtered.
     """
     # Upper time bound: an explicit `until` (custom range), else "now".
     q = session.query(Report).filter(Report.timestamp <= (until or _now_utc()))
@@ -449,8 +510,13 @@ def build_report_query(
     if only_issues:
         q = q.filter(or_(is_classification_failure, is_location_failure))
     else:
+        # "Issues only show in Issues" — the Reports view is clean reports only:
+        # classification ok AND geo-recognition ok AND no per-mention linking error.
+        # NULL-safe: legacy rows with NULL status columns / NULL locations are clean.
         q = q.filter(
-            or_(Report.processing_status.is_(None), Report.processing_status == 'ok')
+            or_(Report.processing_status.is_(None), Report.processing_status == 'ok'),
+            or_(Report.geo_recognition_status.is_(None), Report.geo_recognition_status != 'error'),
+            or_(Report.locations.is_(None), ~_locs_text.like('%"status": "error"%')),
         )
 
     if eff_platform:
@@ -512,6 +578,16 @@ def build_report_query(
             # geo-failure row bypasses it unconditionally regardless of its
             # (independent) classification outcome — see is_location_failure above.
             q = q.filter(or_(is_location_failure, loc_cond) if only_issues else loc_cond)
+
+    # Drawn-area (spatial) filter — see the docstring for the per-view semantics.
+    if spatial_polygon:
+        wkt = polygon_to_wkt(spatial_polygon)
+        if wkt:
+            in_area = _in_area_exists(wkt)
+            if only_issues:
+                q = q.filter(or_(is_location_failure, in_area))
+            else:
+                q = q.filter(or_(_has_no_coord(), in_area))
 
     return q
 
@@ -752,6 +828,7 @@ def get_reports(
     until: datetime | None = None,
     only_new: bool = False,
     only_issues: bool = False,
+    spatial_polygon: list | None = None,
 ) -> ReportsResult:
     """
     pending_count = number of reports in DB that have not yet been admitted.
@@ -820,7 +897,7 @@ def get_reports(
         build_report_query(
             session, since=since, until=until, demo_mode=demo_mode, only_issues=True,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
-            loc_filter=loc_filter, search=search,
+            loc_filter=loc_filter, search=search, spatial_polygon=spatial_polygon,
         )
     )
     if _hidden_ids:
@@ -848,7 +925,7 @@ def get_reports(
         build_report_query(
             session, since=since, until=until, demo_mode=demo_mode,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
-            loc_filter=loc_filter, search=search,
+            loc_filter=loc_filter, search=search, spatial_polygon=spatial_polygon,
             admitted_up_to=watermark,
         )
     )
@@ -866,7 +943,7 @@ def get_reports(
         build_report_query(
             session, since=since, until=until, demo_mode=demo_mode,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
-            loc_filter=loc_filter, search=search,
+            loc_filter=loc_filter, search=search, spatial_polygon=spatial_polygon,
             admitted_up_to=watermark,
         )
     )
@@ -925,6 +1002,7 @@ def get_reports(
             eff_relevance=None,
             demo_mode=demo_mode,
             search=search,
+            spatial_polygon=spatial_polygon,
         ).with_entities(
             Report.id, Report.event_types, Report.platform, Report.relevance,
             Report.author, _loc_status_expr,
@@ -991,6 +1069,7 @@ def get_reports(
                     eff_events=None,
                     eff_relevance=eff_relevance,
                     demo_mode=demo_mode,
+                    spatial_polygon=spatial_polygon,
                 )
                 .with_entities(Report.platform)
                 .all()
@@ -1014,6 +1093,7 @@ def get_reports(
             demo_mode=demo_mode,
             loc_filter=loc_filter,
             only_issues=only_issues,
+            spatial_polygon=spatial_polygon,
         )
         pending_count = pending_q.count()
         loaded_at = datetime.now(timezone.utc).isoformat()
@@ -1045,6 +1125,7 @@ def get_reports(
         demo_mode=demo_mode,
         search=search,
         only_issues=only_issues,
+        spatial_polygon=spatial_polygon,
     )
 
     # "Only new" view: restrict to reports still marked new (admitted but not
@@ -1398,12 +1479,14 @@ def build_dots(
     until: datetime | None = None,
     only_new: bool = False,
     only_issues: bool = False,
+    spatial_polygon: list | None = None,
 ) -> list[dict]:
     """
     Build the list of map-dot dicts from admitted reports that have coordinates.
     only_new restricts to reports still marked new (mirrors get_reports) so the map
     matches the "only new" sidebar view. only_issues mirrors get_reports likewise —
     see build_report_query for why event_type/relevance filters don't apply there.
+    spatial_polygon applies the drawn-area filter server-side (see build_report_query).
     """
     user_state = get_user_state(username, session)
     seen_ids = user_state.hidden_ids
@@ -1425,6 +1508,7 @@ def build_dots(
         demo_mode=demo_mode,
         search=search,
         only_issues=only_issues,
+        spatial_polygon=spatial_polygon,
     )
 
     if only_new and user_state.acknowledged_ids:

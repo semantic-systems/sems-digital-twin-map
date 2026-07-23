@@ -208,6 +208,24 @@
               "title": "Only Issues"
             },
             "description": "Show only reports whose extraction pipeline failed"
+          },
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring",
+              "title": "Area"
+            },
+            "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring"
           }
         ],
         "responses": {
@@ -598,6 +616,24 @@
               "default": false,
               "title": "Only Issues"
             }
+          },
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring",
+              "title": "Area"
+            },
+            "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring"
           }
         ],
         "responses": {
@@ -826,6 +862,24 @@
               "title": "Only Issues"
             },
             "description": "Show only reports whose extraction pipeline failed"
+          },
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring",
+              "title": "Area"
+            },
+            "description": "Drawn-area filter: flat 'lat,lon,lat,lon,\u2026' ring"
           }
         ],
         "responses": {

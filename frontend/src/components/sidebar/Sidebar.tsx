@@ -258,11 +258,11 @@ export function Sidebar({ onLoadMore }: { onLoadMore: () => void }): React.React
         }}
       >
         {([
-          // The active tab's badge uses activeTabTotal (spatially-adjusted + live),
-          // so it agrees with the header; the inactive tab uses its server total
-          // (the drawn area can't be applied to a tab whose dots aren't loaded).
-          { key: 'reports', label: t('tab_reports'), active: !showIssuesView, badge: showIssuesView ? reportsTotalCount : activeTabTotal },
-          { key: 'issues', label: t('tab_issues'), active: showIssuesView, badge: showIssuesView ? activeTabTotal : issuesTotal },
+          // Both tab totals come from the server and now reflect every filter
+          // including the drawn area (applied via PostGIS), so both pills react to
+          // the area regardless of which tab is active — no client-side casing.
+          { key: 'reports', label: t('tab_reports'), active: !showIssuesView, badge: reportsTotalCount },
+          { key: 'issues', label: t('tab_issues'), active: showIssuesView, badge: issuesTotal },
         ] as const).map((tab) => (
           <button
             key={tab.key}

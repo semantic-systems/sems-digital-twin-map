@@ -1,18 +1,7 @@
 import type { LocationEntry, DotDTO } from '../types';
 
-/** Ray-casting point-in-polygon. Polygon is an array of [lat, lon] pairs. */
-export function pointInPolygon(lat: number, lon: number, polygon: [number, number][]): boolean {
-  let inside = false;
-  const n = polygon.length;
-  for (let i = 0, j = n - 1; i < n; j = i++) {
-    const [yi, xi] = polygon[i];
-    const [yj, xj] = polygon[j];
-    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
-      inside = !inside;
-    }
-  }
-  return inside;
-}
+// (Point-in-polygon lived here; the drawn-area filter is now applied server-side
+// via PostGIS, so no client-side geometry test is needed.)
 
 // Short OSM type codes (Photon) vs. long ones (Nominatim) — normalize so the same
 // entity written both ways ("R" vs "relation") collapses to one key.

@@ -2,14 +2,15 @@ import { useMemo } from 'react';
 import { useReportStore } from '../store/useReportStore';
 import { useFilterStore } from '../store/useFilterStore';
 import { useTourStore } from '../store/useTourStore';
-import { pointInPolygon } from '../utils/geo';
 import { exampleMatchesFilters } from '../tour/exampleReport';
 import type { ReportDTO } from '../types';
 
 /**
- * The reports actually shown in the sidebar list, after the client-side view
- * filters (spatial polygon + "only new"). Server-side filters (platform, event
- * type, relevance, loc_filter, time, search) are already applied to `reports`.
+ * The reports actually shown in the sidebar list, after the "only new" client
+ * view filter. Every server-side filter — platform, event type, relevance,
+ * loc_filter, time, search, AND the drawn area (applied via PostGIS) — is already
+ * applied to `reports`, so this only handles what the server can't see: the
+ * optimistic hide gap and the tour example.
  *
  * Single source of truth so the header count always equals what the list renders
  * — ReportList and the Sidebar count both consume this.
@@ -17,7 +18,6 @@ import type { ReportDTO } from '../types';
 export function useVisibleReports(): ReportDTO[] {
   const reports = useReportStore((s) => s.reports);
   const activeReportId = useReportStore((s) => s.activeReportId);
-  const spatialPolygon = useFilterStore((s) => s.spatialPolygon);
   const showOnlyNew = useFilterStore((s) => s.showOnlyNew);
   const showHidden = useFilterStore((s) => s.showHidden);
   const activeExampleReportId = useTourStore((s) => s.activeExampleReportId);
@@ -56,22 +56,6 @@ export function useVisibleReports(): ReportDTO[] {
       filtered = filtered.filter((r) => r.user_state.new || r.id === activeReportId);
     }
 
-    // Spatial polygon filter — reports with no coordinates always pass
-    // (they can't be spatially disproven, and may well be relevant).
-    if (spatialPolygon) {
-      filtered = filtered.filter((r) => {
-        const locs = r.user_state.locations ?? r.locations;
-        const hasCoords = locs.some((l) => l.lat != null && l.lon != null);
-        if (!hasCoords) return true;
-        return locs.some(
-          (l) =>
-            l.lat != null &&
-            l.lon != null &&
-            pointInPolygon(l.lat as number, l.lon as number, spatialPolygon),
-        );
-      });
-    }
-
     return filtered;
-  }, [reports, spatialPolygon, showOnlyNew, activeReportId, showHidden, activeExampleReportId, filterState]);
+  }, [reports, showOnlyNew, activeReportId, showHidden, activeExampleReportId, filterState]);
 }

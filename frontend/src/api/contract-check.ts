@@ -72,7 +72,7 @@ export type _NewCountResponse = Assert<KeysEqual<NewCountResponse, components['s
 // simply picking the same literal key list from both sides is the check.
 type FetchReportsSharedKeys =
   | 'username' | 'show_hidden' | 'show_flagged' | 'show_unflagged'
-  | 'search' | 'time_window' | 'since' | 'until' | 'only_new' | 'limit';
+  | 'search' | 'time_window' | 'since' | 'until' | 'only_new' | 'area' | 'limit';
 export type _FetchReportsParams_Frontend = Pick<FetchReportsParams, FetchReportsSharedKeys>;
 export type _FetchReportsParams_Backend = Pick<
   operations['get_reports_endpoint_api_v1_reports__get']['parameters']['query'],
@@ -81,7 +81,7 @@ export type _FetchReportsParams_Backend = Pick<
 
 type DotsSharedKeys =
   | 'username' | 'show_hidden' | 'show_flagged' | 'show_unflagged'
-  | 'search' | 'time_window' | 'since' | 'until' | 'only_new';
+  | 'search' | 'time_window' | 'since' | 'until' | 'only_new' | 'area';
 export type _DotsParams_Frontend = Pick<DotsParams, DotsSharedKeys>;
 export type _DotsParams_Backend = Pick<
   operations['dots_endpoint_api_v1_reports_dots_get']['parameters']['query'],
