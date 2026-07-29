@@ -347,15 +347,35 @@ ALL_EVENT_TYPES = [
 ALL_RELEVANCE_TYPES = ["high", "medium", "low", "none"]
 
 
+def parse_taxonomy_groups(raw: list[str] | None) -> list[list[str]] | None:
+    """
+    Each raw entry is ONE saved query's labels, comma-separated
+    ('hazard_type,hazard_type.natural_climatological.wildfire'). Queries are the
+    unit the user toggles in the UI, so they stay grouped all the way down to the
+    SQL — see the taxonomy block in build_report_query for how they combine.
+    Blank entries and stray whitespace are dropped; nothing usable means None.
+    """
+    if not raw:
+        return None
+    groups: list[list[str]] = []
+    for entry in raw:
+        labels = [label.strip() for label in entry.split(",") if label.strip()]
+        if labels:
+            groups.append(labels)
+    return groups or None
+
+
 def normalize_filters(
     filter_platform: list[str] | None,
     filter_event_type: list[str] | None,
     filter_relevance_type: list[str] | None,
-) -> tuple[list[str] | None, list[str] | None, list[str] | None]:
+    filter_taxonomy_groups: list[str] | None = None,
+) -> tuple[list[str] | None, list[str] | None, list[str] | None, list[list[str]] | None]:
     """
-    Returns (eff_platform, eff_events, eff_relevance).
+    Returns (eff_platform, eff_events, eff_relevance, eff_taxonomy_groups).
     None means "no filter / all selected".
     Empty list means "filter blocks everything".
+    Taxonomy has no "ALL" set — no groups is simply treated as None (no filter).
     """
     eff_platform: list[str] | None = filter_platform if filter_platform else None
 
@@ -369,7 +389,9 @@ def normalize_filters(
     else:
         eff_relevance = filter_relevance_type
 
-    return eff_platform, eff_events, eff_relevance
+    eff_taxonomy = parse_taxonomy_groups(filter_taxonomy_groups)
+
+    return eff_platform, eff_events, eff_relevance, eff_taxonomy
 
 
 # ---------------------------------------------------------------------------
@@ -455,6 +477,7 @@ def build_report_query(
     eff_platform: list[str] | None = None,
     eff_events: list[str] | None = None,
     eff_relevance: list[str] | None = None,
+    eff_taxonomy: list[list[str]] | None = None,
     demo_mode: bool = False,
     search: str | None = None,
     loc_filter: list[str] | None = None,
@@ -566,6 +589,34 @@ def build_report_query(
 
         if eff_relevance:
             q = q.filter(Report.relevance.in_(eff_relevance))
+
+    # Taxonomy labels: a plain additional narrowing filter (no classification-failure
+    # bypass — applied to both the Reports and Issues views). Labels are dotted paths
+    # already expanded to their prefix ancestors in the KG, so an array-overlap gives
+    # coarse/fine matching.
+    #
+    # Two levels of combination, because the user toggles whole QUERIES, not labels:
+    #   within one query — group its labels by top-level facet (the segment before
+    #     the first '.'), then OR within a facet and AND across facets. "wildfire OR
+    #     flood, and human-affected" is the useful reading of a single query.
+    #   across queries — OR. Each active chip widens the result set, so turning one
+    #     on can only ever add posts, never remove them.
+    if eff_taxonomy:
+        from collections import defaultdict
+
+        query_clauses = []
+        for group in eff_taxonomy:
+            by_facet = defaultdict(list)
+            for lbl in group:
+                by_facet[lbl.split('.', 1)[0]].append(lbl)
+            facet_clauses = [
+                Report.taxonomy_labels.overlap(cast(labels, PG_ARRAY(String)))
+                for labels in by_facet.values()
+            ]
+            if facet_clauses:
+                query_clauses.append(and_(*facet_clauses))
+        if query_clauses:
+            q = q.filter(or_(*query_clauses))
 
     if admitted_up_to is not None:
         # Admission watermark: admitted = a prefix of ingestion (SERIAL id) order.
@@ -796,6 +847,7 @@ def build_report_dto(
         platform=report.platform,
         timestamp=report.timestamp.replace(tzinfo=timezone.utc),
         event_types=report.event_types or [report.event_type] if report.event_type else [],
+        taxonomy_labels=report.taxonomy_labels or [],
         relevance=report.relevance,
         processing_status=report.processing_status,
         geo_recognition_status=report.geo_recognition_status,
@@ -844,6 +896,7 @@ def get_reports(
     platforms: list[str] | None = None,
     event_types: list[str] | None = None,
     relevances: list[str] | None = None,
+    taxonomy_groups: list[str] | None = None,
     show_hidden: bool = False,
     show_flagged: bool = True,
     show_unflagged: bool = True,
@@ -874,8 +927,8 @@ def get_reports(
     watermark = user_state.admitted_up_to
     acknowledged_ids = user_state.acknowledged_ids
 
-    eff_platform, eff_events, eff_relevance = normalize_filters(
-        platforms, event_types, relevances
+    eff_platform, eff_events, eff_relevance, eff_taxonomy = normalize_filters(
+        platforms, event_types, relevances, taxonomy_groups
     )
 
     # Author-visibility filter (show_flagged/show_unflagged), applied to both badge
@@ -923,6 +976,7 @@ def get_reports(
         build_report_query(
             session, since=since, until=until, demo_mode=demo_mode, only_issues=True,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
+            eff_taxonomy=eff_taxonomy,
             loc_filter=loc_filter, search=search, spatial_polygon=spatial_polygon,
         )
     )
@@ -951,6 +1005,7 @@ def get_reports(
         build_report_query(
             session, since=since, until=until, demo_mode=demo_mode,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
+            eff_taxonomy=eff_taxonomy,
             loc_filter=loc_filter, search=search, spatial_polygon=spatial_polygon,
             admitted_up_to=watermark,
         )
@@ -969,6 +1024,7 @@ def get_reports(
         build_report_query(
             session, since=since, until=until, demo_mode=demo_mode,
             eff_platform=eff_platform, eff_events=eff_events, eff_relevance=eff_relevance,
+            eff_taxonomy=eff_taxonomy,
             loc_filter=loc_filter, search=search, spatial_polygon=spatial_polygon,
             admitted_up_to=watermark,
         )
@@ -1026,6 +1082,7 @@ def get_reports(
             eff_platform=None,
             eff_events=None,
             eff_relevance=None,
+            eff_taxonomy=eff_taxonomy,
             demo_mode=demo_mode,
             search=search,
             spatial_polygon=spatial_polygon,
@@ -1094,6 +1151,7 @@ def get_reports(
                     eff_platform=None,
                     eff_events=None,
                     eff_relevance=eff_relevance,
+                    eff_taxonomy=eff_taxonomy,
                     demo_mode=demo_mode,
                     spatial_polygon=spatial_polygon,
                 )
@@ -1116,6 +1174,7 @@ def get_reports(
             eff_platform=eff_platform,
             eff_events=eff_events,
             eff_relevance=eff_relevance,
+            eff_taxonomy=eff_taxonomy,
             demo_mode=demo_mode,
             loc_filter=loc_filter,
             only_issues=only_issues,
@@ -1148,6 +1207,7 @@ def get_reports(
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
+        eff_taxonomy=eff_taxonomy,
         demo_mode=demo_mode,
         search=search,
         only_issues=only_issues,
@@ -1236,6 +1296,7 @@ def get_reports(
             eff_platform=eff_platform,
             eff_events=eff_events,
             eff_relevance=eff_relevance,
+            eff_taxonomy=eff_taxonomy,
             demo_mode=demo_mode,
             loc_filter=loc_filter,
         )
@@ -1362,6 +1423,7 @@ def get_new_count(
     eff_platform: list[str] | None,
     eff_events: list[str] | None,
     eff_relevance: list[str] | None,
+    eff_taxonomy: list[list[str]] | None,
     loc_filter: list[str] | None,
     show_hidden: bool,
     show_flagged: bool,
@@ -1385,6 +1447,7 @@ def get_new_count(
             eff_platform=eff_platform,
             eff_events=eff_events,
             eff_relevance=eff_relevance,
+            eff_taxonomy=eff_taxonomy,
             demo_mode=demo_mode,
         )
         .filter(Report.id > user_state.admitted_up_to)
@@ -1495,6 +1558,7 @@ def build_dots(
     eff_platform: list[str] | None,
     eff_events: list[str] | None,
     eff_relevance: list[str] | None,
+    eff_taxonomy: list[list[str]] | None,
     loc_filter: list[str] | None,
     show_hidden: bool,
     show_flagged: bool,
@@ -1531,6 +1595,7 @@ def build_dots(
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
+        eff_taxonomy=eff_taxonomy,
         demo_mode=demo_mode,
         search=search,
         only_issues=only_issues,

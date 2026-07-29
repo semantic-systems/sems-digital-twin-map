@@ -182,7 +182,14 @@ LOCATION_BATCH_SIZE = 50  # Virtuoso rejects VALUES clauses with too many URIs
 # graph explicitly — without a GRAPH clause, Virtuoso matches across ALL of
 # them, silently mixing in ~1M stale posts from the retired social_media_v2
 # dataset plus whatever else happens to live on the endpoint.
-SOCIAL_MEDIA_GRAPH = 'http://rescue-mate.de/datasets/social_media_data'
+# Single source of posts. The retired social_media_data graph ran the old
+# pipeline; this one is its successor and carries the same post shape, so every
+# query below (posts, locations, WKT) is scoped to it. Post URIs are NOT shared
+# between the two pipelines — each mints its own UUIDs for its own fetches — so
+# nothing here can be joined back to social_media_data.
+SOCIAL_MEDIA_GRAPH = 'http://rescue-mate.de/datasets/social_media_taxonomy_data'
+# Taxonomy labels (rmo:hasTaxonomyLabel) live in this SAME graph, on the post
+# resource — single dataset, no separate graph to join.
 
 # Post-level statuses that indicate the classifier failed to produce a
 # category/relevance for a post at all (so it would otherwise never appear in
@@ -217,7 +224,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
         PREFIX rm: <http://rescue-mate.de/resource/>
         PREFIX rmo: <http://rescue-mate.de/ontology/>
         PREFIX schema: <http://schema.org/>
-        SELECT ?post ?text ?date ?category ?predictedRelevance ?url ?user ?username ?platform ?user_identifier ?geoRecognitionStatus ?postStatus  {{
+        SELECT ?post ?text ?date ?category ?predictedRelevance ?url ?user ?username ?platform ?user_identifier ?geoRecognitionStatus ?postStatus ?tag  {{
             GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
                 ?post a rmo:SocialMediaPost ;
                     schema:text ?text ;
@@ -246,6 +253,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                     OPTIONAL {{ ?user rm:socialMediaServiceName ?platform }}
                     OPTIONAL {{ ?user schema:identifier ?user_identifier }}
                 }}
+                OPTIONAL {{ ?post rmo:hasTaxonomyLabel ?tag }}
             }}
         }}
     """
@@ -261,6 +269,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
         post_id = post_uri.split('/')[-1]
         post_uris[post_id] = post_uri
         raw_category = result.get('category', {}).get('value', '')
+        raw_tag = result.get('tag', {}).get('value', '')
         if post_id not in posts:
             posts[post_id] = {
                 'id': post_id,
@@ -269,6 +278,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                 'platform': result.get('platform', {}).get('value', '').split('/')[-1],
                 'url': result.get('url', {'value': ''})['value'],
                 'event_types': [raw_category] if raw_category else [],
+                'taxonomy_labels': [raw_tag] if raw_tag else [],
                 'relevance': result.get('predictedRelevance', {}).get('value', 'http://rescue-mate.de/resource/none'),
                 'processing_status': result['postStatus']['value'].split('/')[-1] or 'ok',
                 'geo_recognition_status': result['geoRecognitionStatus']['value'].split('/')[-1] or 'ok',
@@ -279,8 +289,11 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                     result.get('user', {}).get('value', '').split('/')[-1]
                 ),
             }
-        elif raw_category and raw_category not in posts[post_id]['event_types']:
-            posts[post_id]['event_types'].append(raw_category)
+        else:
+            if raw_category and raw_category not in posts[post_id]['event_types']:
+                posts[post_id]['event_types'].append(raw_category)
+            if raw_tag and raw_tag not in posts[post_id]['taxonomy_labels']:
+                posts[post_id]['taxonomy_labels'].append(raw_tag)
 
     if VERBOSE:
         print(f"Query 1: {len(posts)} posts in window", flush=True)
@@ -508,6 +521,7 @@ def save_posts(posts: list):
                     relevance=relevance_mapping.get(json_post['relevance'], 'unknown'),
                     event_type=mapped_types[0],     # legacy column — keep populated
                     event_types=mapped_types,
+                    taxonomy_labels=json_post.get('taxonomy_labels', []) or None,
                     processing_status=json_post.get('processing_status', 'ok'),
                     geo_recognition_status=json_post.get('geo_recognition_status', 'ok'),
                     locations=locations,

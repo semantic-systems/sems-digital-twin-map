@@ -4,6 +4,8 @@ import { t } from '../../i18n';
 import { useFilterStore, ALL_RELEVANCES_LIST, getLayerColor } from '../../store/useFilterStore';
 import { useEffectiveFacetTotals } from '../../hooks/useEffectiveFacetTotals';
 import { EventTypeChips } from './EventTypeChips';
+import { QueryPanel } from './QueryPanel';
+import { useQueryAvailable } from '../../hooks/useQueryAvailable';
 import { PRESET_AREAS } from '../../utils/presetAreas';
 
 const RELEVANCE_COLORS: Record<string, string> = {
@@ -119,6 +121,9 @@ export function FilterBar(): React.ReactElement {
   } = useFilterStore();
 
   const { eventTypeTotals, relevanceTotals, locationCounts, platformCounts } = useEffectiveFacetTotals();
+
+  // Only surfaced when the backend LLM query service is reachable (polled live).
+  const queryAvailable = useQueryAvailable();
 
   // Custom-range popover state
   const [rangeOpen, setRangeOpen] = useState(false);
@@ -474,6 +479,16 @@ export function FilterBar(): React.ReactElement {
           <EventTypeChips counts={eventTypeTotals} />
         </div>
       </div>
+
+      {/* Row 2b: Free-text Query panel (conditional — only when the LLM service is up) */}
+      {queryAvailable && (
+        <div style={{ ...row, padding: '3px 12px', borderBottom: '1px solid #f3f4f6' }}>
+          <SectionLabel>{t('query')}</SectionLabel>
+          <div style={{ marginLeft: 6, flex: 1 }}>
+            <QueryPanel />
+          </div>
+        </div>
+      )}
 
       {/* Row 3: Ansicht · Platforms (conditional) */}
       <div style={{ ...row, padding: '3px 12px', borderBottom: availableLayers.length > 0 ? '1px solid #f3f4f6' : undefined, flexWrap: 'wrap' }}>

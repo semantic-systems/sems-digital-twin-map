@@ -18,6 +18,7 @@ function toBackendParams(p: FetchReportsParams | NewCountParams | DotsParams): R
     loc_filter: (p as FetchReportsParams).loc_filter,
     platform: p.platforms,
     event_type: p.event_types,
+    taxonomy_group: (p as DotsParams).taxonomy_group,
     relevance: p.relevances,
     show_hidden: p.show_hidden,
     show_flagged: p.show_flagged,

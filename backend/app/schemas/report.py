@@ -36,6 +36,7 @@ class ReportDTO(BaseModel):
     platform: str
     timestamp: datetime
     event_types: list[str] = []
+    taxonomy_labels: list[str] = []
     relevance: str
     processing_status: str | None = None  # 'ok' (default/legacy), 'error', 'no_text'
     geo_recognition_status: str | None = None  # 'ok' (default/legacy), 'error'

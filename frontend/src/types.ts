@@ -129,6 +129,9 @@ export interface FetchReportsParams {
   only_issues?: boolean;
   /** Drawn-area filter: flat 'lat,lon,lat,lon,…' ring, applied server-side via PostGIS. */
   area?: string;
+  /** One entry per active Query chip: that query's taxonomy labels, comma-separated.
+   *  Chips OR together server-side. */
+  taxonomy_group?: string[];
 }
 
 export interface ReportsBundleResponse extends ReportsResponse {
@@ -167,6 +170,9 @@ export interface DotsParams {
   only_issues?: boolean;
   /** Drawn-area filter: flat 'lat,lon,lat,lon,…' ring, applied server-side via PostGIS. */
   area?: string;
+  /** One entry per active Query chip: that query's taxonomy labels, comma-separated.
+   *  Chips OR together server-side. */
+  taxonomy_group?: string[];
 }
 
 export interface DemoStatus {

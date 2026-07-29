@@ -14,6 +14,7 @@
   "platform": "Platform",
   "view": "View",
   "type": "Type",
+  "query": "Query",
   "layers": "Layers",
   "show_hidden": "Show hidden",
   "show_flagged": "Flagged",

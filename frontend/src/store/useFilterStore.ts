@@ -19,6 +19,27 @@ export const ALL_EVENT_TYPES_LIST = [
 
 export const ALL_RELEVANCES_LIST = ['high', 'medium', 'low', 'none'];
 
+/** One saved free-text query from the Query panel. The query TEXT is what the user
+ *  sees and toggles; `labels` is the taxonomy expansion the backend LLM returned for
+ *  it, kept around only to build the request. `id` survives text collisions (the same
+ *  query can legitimately be added twice with different expansions). */
+export interface TaxonomyQuery {
+  id: string;
+  text: string;
+  labels: string[];
+  active: boolean;
+}
+
+/** `taxonomy_group` param: one comma-separated label list per ACTIVE query.
+ *  undefined when nothing is active, so the param drops out of the URL entirely
+ *  rather than being sent empty. */
+export function activeTaxonomyGroups(queries?: TaxonomyQuery[]): string[] | undefined {
+  const groups = (queries ?? [])
+    .filter((q) => q.active && q.labels.length)
+    .map((q) => q.labels.join(','));
+  return groups.length ? groups : undefined;
+}
+
 /** Build the `loc_filter` query param from the location-type toggles.
  *  Returns undefined when all three are on (no restriction) — matching the
  *  backend contract where a full set means "no filter". */
@@ -44,6 +65,9 @@ export function dotsParamsFromFilters(
     platforms: string[];
     allPlatforms: string[];
     eventTypes: string[];
+    // Saved free-text queries from the Query panel. Only the active ones filter.
+    // Optional so callers that build this shape by hand (tests) stay valid.
+    taxonomyQueries?: TaxonomyQuery[];
     relevances: string[];
     showHidden: boolean;
     showFlagged: boolean;
@@ -69,6 +93,7 @@ export function dotsParamsFromFilters(
     loc_filter: activeLocFilter(f),
     platforms: f.platforms.length ? f.platforms : f.allPlatforms,
     event_types: f.eventTypes,
+    taxonomy_group: activeTaxonomyGroups(f.taxonomyQueries),
     relevances: f.relevances,
     show_hidden: f.showHidden,
     show_flagged: f.showFlagged,
@@ -118,6 +143,8 @@ interface FilterStore {
   showFlagged: boolean;
   showUnflagged: boolean;
   eventTypes: string[];
+  // Crisis-taxonomy labels applied as a server-side report filter (Query panel).
+  taxonomyQueries: TaxonomyQuery[];
   activeLayers: number[];
   availableLayers: LayerDTO[];
   autoUpdate: boolean;
@@ -151,6 +178,10 @@ interface FilterStore {
   setShowUnflagged: (v: boolean) => void;
   toggleEventType: (type: string) => void;
   soloEventType: (type: string) => void;
+  addTaxonomyQuery: (text: string, labels: string[]) => void;
+  toggleTaxonomyQuery: (id: string) => void;
+  removeTaxonomyQuery: (id: string) => void;
+  clearTaxonomyQueries: () => void;
   setActiveLayers: (ids: number[]) => void;
   toggleLayer: (id: number) => void;
   setAvailableLayers: (layers: LayerDTO[]) => void;
@@ -182,6 +213,7 @@ export const useFilterStore = create<FilterStore>()(
       showFlagged: true,
       showUnflagged: true,
       eventTypes: [...ALL_EVENT_TYPES_LIST],
+      taxonomyQueries: [],
       activeLayers: [],
       availableLayers: [],
       // Recommended default — new reports merge in automatically rather than
@@ -227,6 +259,22 @@ export const useFilterStore = create<FilterStore>()(
               ? [...ALL_EVENT_TYPES_LIST]
               : [type],
         })),
+      addTaxonomyQuery: (text, labels) =>
+        set((s) => ({
+          taxonomyQueries: [
+            ...s.taxonomyQueries,
+            { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, labels, active: true },
+          ],
+        })),
+      toggleTaxonomyQuery: (id) =>
+        set((s) => ({
+          taxonomyQueries: s.taxonomyQueries.map((q) =>
+            q.id === id ? { ...q, active: !q.active } : q,
+          ),
+        })),
+      removeTaxonomyQuery: (id) =>
+        set((s) => ({ taxonomyQueries: s.taxonomyQueries.filter((q) => q.id !== id) })),
+      clearTaxonomyQueries: () => set({ taxonomyQueries: [] }),
       setActiveLayers: (ids) => set({ activeLayers: ids }),
       setAvailableLayers: (availableLayers) => set({ availableLayers }),
       toggleLayer: (id) => {
@@ -253,9 +301,12 @@ export const useFilterStore = create<FilterStore>()(
       name: 'sems-filters-v2',
       // Don't persist draw mode or the "only new"/"issues" view filters — always
       // start idle (a persisted one could reopen into a confusingly empty list).
+      // taxonomyQueries is likewise ephemeral: they're LLM-derived query filters, and
+      // persisted ones would keep filtering invisibly after the Query row hides
+      // (e.g. the LLM went unreachable) with no UI to clear them.
       partialize: (s) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { spatialDrawMode, showOnlyNew, showIssuesView, ...rest } = s;
+        const { spatialDrawMode, showOnlyNew, showIssuesView, taxonomyQueries, ...rest } = s;
         return rest;
       },
     },

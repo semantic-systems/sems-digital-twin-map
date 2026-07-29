@@ -75,6 +75,11 @@ def get_reports_endpoint(
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
     relevances: list[str] = Query(default=[], alias="relevance"),
+    taxonomy_groups: list[str] = Query(
+        default=[],
+        alias="taxonomy_group",
+        description="One saved query per value, its labels comma-separated. Queries OR together.",
+    ),
     show_hidden: bool = Query(False),
     show_flagged: bool = Query(True),
     show_unflagged: bool = Query(True),
@@ -98,6 +103,7 @@ def get_reports_endpoint(
         platforms=platforms or None,
         event_types=event_types or None,
         relevances=relevances or None,
+        taxonomy_groups=taxonomy_groups or None,
         show_hidden=show_hidden,
         show_flagged=show_flagged,
         show_unflagged=show_unflagged,
@@ -141,6 +147,11 @@ def new_count_endpoint(
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
     relevances: list[str] = Query(default=[], alias="relevance"),
+    taxonomy_groups: list[str] = Query(
+        default=[],
+        alias="taxonomy_group",
+        description="One saved query per value, its labels comma-separated. Queries OR together.",
+    ),
     show_hidden: bool = Query(False),
     show_flagged: bool = Query(True),
     show_unflagged: bool = Query(True),
@@ -148,8 +159,8 @@ def new_count_endpoint(
 ) -> NewCountResponse:
     from ..config import settings
 
-    eff_platform, eff_events, eff_relevance = svc.normalize_filters(
-        platforms or None, event_types or None, relevances or None
+    eff_platform, eff_events, eff_relevance, eff_taxonomy = svc.normalize_filters(
+        platforms or None, event_types or None, relevances or None, taxonomy_groups or None
     )
     count = svc.get_new_count(
         session=session,
@@ -158,6 +169,7 @@ def new_count_endpoint(
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
+        eff_taxonomy=eff_taxonomy,
         loc_filter=loc_filter or None,
         show_hidden=show_hidden,
         show_flagged=show_flagged,
@@ -192,6 +204,11 @@ def dots_endpoint(
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
     relevances: list[str] = Query(default=[], alias="relevance"),
+    taxonomy_groups: list[str] = Query(
+        default=[],
+        alias="taxonomy_group",
+        description="One saved query per value, its labels comma-separated. Queries OR together.",
+    ),
     show_hidden: bool = Query(False),
     show_flagged: bool = Query(True),
     show_unflagged: bool = Query(True),
@@ -206,8 +223,8 @@ def dots_endpoint(
 ) -> DotsResponse:
     from ..config import settings
 
-    eff_platform, eff_events, eff_relevance = svc.normalize_filters(
-        platforms or None, event_types or None, relevances or None
+    eff_platform, eff_events, eff_relevance, eff_taxonomy = svc.normalize_filters(
+        platforms or None, event_types or None, relevances or None, taxonomy_groups or None
     )
     eff_since, eff_until = _resolve_time_range(time_window, since, until)
     dots = svc.build_dots(
@@ -216,6 +233,7 @@ def dots_endpoint(
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
+        eff_taxonomy=eff_taxonomy,
         loc_filter=loc_filter or None,
         show_hidden=show_hidden,
         show_flagged=show_flagged,
@@ -242,6 +260,11 @@ def bundle_endpoint(
     platforms: list[str] = Query(default=[], alias="platform"),
     event_types: list[str] = Query(default=[], alias="event_type"),
     relevances: list[str] = Query(default=[], alias="relevance"),
+    taxonomy_groups: list[str] = Query(
+        default=[],
+        alias="taxonomy_group",
+        description="One saved query per value, its labels comma-separated. Queries OR together.",
+    ),
     show_hidden: bool = Query(False),
     show_flagged: bool = Query(True),
     show_unflagged: bool = Query(True),
@@ -266,6 +289,7 @@ def bundle_endpoint(
         platforms=platforms or None,
         event_types=event_types or None,
         relevances=relevances or None,
+        taxonomy_groups=taxonomy_groups or None,
         show_hidden=show_hidden,
         show_flagged=show_flagged,
         show_unflagged=show_unflagged,
@@ -278,8 +302,8 @@ def bundle_endpoint(
         only_issues=only_issues,
         spatial_polygon=spatial_polygon,
     )
-    eff_platform, eff_events, eff_relevance = svc.normalize_filters(
-        platforms or None, event_types or None, relevances or None
+    eff_platform, eff_events, eff_relevance, eff_taxonomy = svc.normalize_filters(
+        platforms or None, event_types or None, relevances or None, taxonomy_groups or None
     )
     dots = svc.build_dots(
         session=session,
@@ -287,6 +311,7 @@ def bundle_endpoint(
         eff_platform=eff_platform,
         eff_events=eff_events,
         eff_relevance=eff_relevance,
+        eff_taxonomy=eff_taxonomy,
         loc_filter=loc_filter or None,
         show_hidden=show_hidden,
         show_flagged=show_flagged,

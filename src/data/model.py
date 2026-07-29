@@ -256,6 +256,7 @@ class Report(Base):
     timestamp = Column(DateTime, nullable=False)
     event_type = Column(String, nullable=False)   # legacy — kept for migration backfill
     event_types = Column(ARRAY(String), nullable=True)
+    taxonomy_labels = Column(ARRAY(String), nullable=True)
     relevance = Column(String, nullable=False)
     processing_status = Column(String, nullable=True)  # 'ok' (default/legacy), 'error', 'no_text' — from rm:eventPredictionStatus
     geo_recognition_status = Column(String, nullable=True)  # 'ok' (default/legacy), 'error' — from rm:geoRecognitionStatus; whether the NER step that finds location mentions in the text succeeded (independent of, and upstream of, per-mention rm:geoLinkingStatus in `locations[].status`)

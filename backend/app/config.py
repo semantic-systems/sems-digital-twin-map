@@ -38,6 +38,15 @@ class Settings(BaseSettings):
     # External services
     NOMINATIM_URL: str = "https://nominatim.openstreetmap.org"
 
+    # Query-transform LLM (the free-text Query panel). The map calls this
+    # OpenAI-compatible endpoint directly. Empty URL disables the feature (the
+    # Query tab stays hidden). See app/services/query_service.py.
+    QUERY_LLM_URL: str = ""          # OpenAI-compatible base, e.g. https://.../v1
+    # Forwarded as the `x-bf-vk` header (and Bearer) so requests authenticate
+    # against the BrainFrame-style proxy. Empty = no auth header (local vLLM).
+    QUERY_LLM_API_KEY: str = ""
+    QUERY_LLM_MODEL: str = "google/gemma-4-31B-it"
+
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 

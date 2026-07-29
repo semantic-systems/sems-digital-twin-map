@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import admin, auth, demo, geo, reports, user
+from .routers import admin, auth, demo, geo, query, reports, user
 from .routers.layers import router as layers_router
 from .routers.layers import scenarios_router
 
@@ -74,6 +74,7 @@ def _init_db() -> None:
         "ALTER TABLE user_report_state ADD COLUMN IF NOT EXISTS new BOOLEAN NOT NULL DEFAULT TRUE",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS event_types VARCHAR[]",
         "UPDATE reports SET event_types = ARRAY[event_type]::VARCHAR[] WHERE event_types IS NULL OR event_types = '{}'",
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS taxonomy_labels VARCHAR[]",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS processing_status VARCHAR",
         "ALTER TABLE reports ADD COLUMN IF NOT EXISTS geo_recognition_status VARCHAR",
         # Admission watermark (see UserAdmission model). The backfill converts the
@@ -116,6 +117,7 @@ def _init_db() -> None:
         # tells you to clean them up.
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_reports_identifier ON reports (identifier)",
         "CREATE INDEX IF NOT EXISTS ix_reports_event_types_gin ON reports USING GIN (event_types)",
+        "CREATE INDEX IF NOT EXISTS ix_reports_taxonomy_labels_gin ON reports USING GIN (taxonomy_labels)",
         "CREATE INDEX IF NOT EXISTS ix_urs_report_id ON user_report_state (report_id)",
         "CREATE INDEX IF NOT EXISTS ix_urs_username_first_seen ON user_report_state (username, first_seen_at) WHERE first_seen_at IS NOT NULL",
         # Deduplicated polygon storage
@@ -255,6 +257,7 @@ app.include_router(layers_router, dependencies=_require_auth)
 app.include_router(scenarios_router, dependencies=_require_auth)
 app.include_router(user.router)
 app.include_router(geo.router, dependencies=_require_auth)
+app.include_router(query.router, dependencies=_require_auth)
 app.include_router(demo.router)
 
 
