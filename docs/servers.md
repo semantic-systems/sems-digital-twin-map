@@ -4,6 +4,8 @@ This file explains the different services and containers used in the project. Fo
 ## backend
 The FastAPI backend. Serves all data to the frontend via a REST API and handles per-user state. It is accessible by default under [http://localhost:8052/](http://localhost:8052/), with Swagger UI at [http://localhost:8052/docs](http://localhost:8052/docs). On first start, the backend automatically creates all required database tables. Source code is in `backend/`.
 
+The backend also enforces the report retention window: once an hour it deletes every report older than `REPORT_RETENTION_DAYS` days (default 7, set in `.env`; 0 disables the purge) along with the per-user state belonging to it. Implementation in `src/data/retention.py`.
+
 ## frontend
 The React (Vite) frontend. Serves the interactive map UI. It is accessible by default under [http://localhost:8050/](http://localhost:8050/). Source code is in `frontend/`.
 

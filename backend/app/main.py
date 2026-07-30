@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import time
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI
@@ -199,6 +200,46 @@ def _init_db() -> None:
     print("[startup] DB init complete.")
 
 
+# ---------------------------------------------------------------------------
+# Retention purge
+# ---------------------------------------------------------------------------
+
+PURGE_INTERVAL_SECONDS = 3600  # hourly — the window is days wide, so this is plenty
+
+
+def _purge_once() -> int:
+    """One retention pass. Blocking (psycopg), hence the to_thread call below."""
+    from .db import get_session  # noqa: PLC0415  (also puts src/ on sys.path for `data`)
+    from data.retention import purge_old_reports  # noqa: PLC0415
+
+    with get_session() as session:
+        return purge_old_reports(session, settings.REPORT_RETENTION_DAYS)
+
+
+async def _purge_loop() -> None:
+    """Delete reports past the retention window, forever, every hour.
+
+    Lives in the backend rather than in the ingestion process because the backend
+    is the one component present in every deployment (docker-compose, local dev,
+    demo mode) — data can only get stale if nobody is serving it either. Failures
+    are logged and retried next cycle: a purge that can't run must never take the
+    API down with it.
+    """
+    while True:
+        try:
+            deleted = await asyncio.to_thread(_purge_once)
+            if deleted:
+                print(
+                    f"[retention] deleted {deleted} report(s) older than "
+                    f"{settings.REPORT_RETENTION_DAYS} day(s)"
+                )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            print(f"[retention] purge failed, retrying next cycle: {exc!s:.200}")
+        await asyncio.sleep(PURGE_INTERVAL_SECONDS)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     _init_db()  # blocks until tables exist — fast, no external calls
@@ -210,7 +251,13 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             ensure_default_admin(_s)
     except Exception as exc:  # noqa: BLE001
         print(f"[startup] SKIP: default admin: {exc!s:.100}")
-    yield
+    purge_task = asyncio.create_task(_purge_loop())
+    try:
+        yield
+    finally:
+        purge_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await purge_task
 
 
 app = FastAPI(

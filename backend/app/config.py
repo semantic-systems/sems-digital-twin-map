@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     # Feature flags
     DEMO_MODE: bool = False
 
+    # Retention: reports older than this many days are deleted by the background
+    # purge (see data/retention.py, main.py::_purge_loop). 0 or negative disables
+    # the purge and lets the table grow without bound.
+    REPORT_RETENTION_DAYS: int = 7
+
     # Auth: set True in production (HTTPS) so the session cookie is only sent over
     # TLS. Left False for local http dev.
     COOKIE_SECURE: bool = False
