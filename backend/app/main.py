@@ -9,6 +9,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
+from .csrf import origin_check_middleware
 from .routers import admin, auth, demo, geo, reports, user
 from .routers.layers import router as layers_router
 from .routers.layers import scenarios_router
@@ -281,6 +282,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ---------------------------------------------------------------------------
+# CSRF
+# ---------------------------------------------------------------------------
+
+# Replaces the protection SameSite=Lax gave for free, which cross-site iframe
+# embedding (COOKIE_SAMESITE=none) gives up. Registered after CORS so preflights
+# are answered before it runs.
+app.middleware("http")(origin_check_middleware)
 
 # ---------------------------------------------------------------------------
 # Routers

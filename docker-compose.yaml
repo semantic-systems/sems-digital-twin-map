@@ -19,6 +19,9 @@ services:
       DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-changeme}
       # Set true when serving behind HTTPS so the session cookie is TLS-only.
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # "none" (implies Secure) when the map is embedded as a cross-site iframe,
+      # otherwise the browser drops the login cookie inside the frame.
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-lax}
     restart: always
 
   frontend:

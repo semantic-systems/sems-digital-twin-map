@@ -84,21 +84,77 @@ def destroy_session(session: Session, token: str | None) -> None:
     session.commit()
 
 
-def set_session_cookie(response: Response, token: str) -> None:
+def _is_cross_site() -> bool:
+    """Whether the app is configured to be embedded in a page on another site."""
     from .config import settings
+
+    return settings.COOKIE_SAMESITE == "none"
+
+
+def _cookie_kwargs() -> dict:
+    """Attributes the session cookie is set AND cleared with.
+
+    They have to match exactly in both directions — a cookie written with
+    Partitioned is a different cookie to the browser than one without, so a logout
+    using different attributes would leave the session cookie in place.
+
+    SameSite=None is only accepted by browsers together with Secure, so "none"
+    forces it rather than leaving it to COOKIE_SECURE: a half-configured cross-site
+    deployment would otherwise hand the browser a cookie it silently drops, with no
+    error anyone could act on.
+    """
+    from .config import settings
+
+    return {
+        "path": "/",
+        "samesite": settings.COOKIE_SAMESITE,
+        "secure": True if _is_cross_site() else settings.COOKIE_SECURE,
+    }
+
+
+def _mark_partitioned(response: Response) -> None:
+    """Append `Partitioned` (CHIPS) to the session cookie just written.
+
+    Chrome requires it for a cookie used inside a third-party frame. Done by hand
+    on the raw header because Starlette's set_cookie(partitioned=True) raises
+    below Python 3.14 — stdlib http.cookies only learned the attribute there — and
+    the backend image runs 3.11, so using the parameter would turn every login
+    into a 500.
+    """
+    prefix = SESSION_COOKIE.encode() + b"="
+    for i, (name, value) in enumerate(response.raw_headers):
+        if name == b"set-cookie" and value.startswith(prefix):
+            if b"Partitioned" not in value:
+                response.raw_headers[i] = (name, value + b"; Partitioned")
+            return
+
+
+def set_session_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         key=SESSION_COOKIE,
         value=token,
         max_age=SESSION_DAYS * 24 * 3600,
         httponly=True,
-        samesite="lax",
-        secure=settings.COOKIE_SECURE,
-        path="/",
+        **_cookie_kwargs(),
     )
+    if _is_cross_site():
+        _mark_partitioned(response)
 
 
 def clear_session_cookie(response: Response) -> None:
-    response.delete_cookie(key=SESSION_COOKIE, path="/")
+    # Not response.delete_cookie(): it takes no `partitioned` argument, and the
+    # expiry it writes has to carry the exact same attributes as the cookie it is
+    # meant to remove. An expired set_cookie is what delete_cookie does internally.
+    response.set_cookie(
+        key=SESSION_COOKIE,
+        value="",
+        max_age=0,
+        expires=0,
+        httponly=True,
+        **_cookie_kwargs(),
+    )
+    if _is_cross_site():
+        _mark_partitioned(response)
 
 
 def resolve_session_user(session: Session, token: str | None) -> str | None:
