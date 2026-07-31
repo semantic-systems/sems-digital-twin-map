@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 import time
@@ -24,6 +25,27 @@ _endpoints_raw = os.getenv('SPARQL_ENDPOINTS', '') or os.getenv('SPARQL_ENDPOINT
 SPARQL_ENDPOINTS = [e.strip() for e in _endpoints_raw.split(',') if e.strip()]
 if not SPARQL_ENDPOINTS:
     raise ValueError("Set SPARQL_ENDPOINTS (comma-separated) or SPARQL_ENDPOINT.")
+
+
+def _origin(url: str) -> str:
+    """scheme://host of a URL, dropping any path (e.g. .../sparql -> ...)."""
+    p = urlsplit(url)
+    return urlunsplit((p.scheme, p.netloc, '', '', ''))
+
+
+# Per-node keycloak base URLs, parallel to SPARQL_ENDPOINTS -- each node MAY
+# authenticate via a different keycloak. get_keycloak_token tries them in order and
+# fails over, so a node's keycloak being down doesn't stop reads. Unset entries
+# default to the node's own origin (scheme://host of its /sparql URL). Today only
+# node-1's keycloak authenticates the client, so it's first and used unless it's down;
+# a token from any keycloak is accepted by every node's /sparql, so one token serves
+# all reads. Override via SPARQL_KEYCLOAK_URLS (comma-separated, parallel list).
+_keycloak_raw = os.getenv('SPARQL_KEYCLOAK_URLS', '')
+_keycloak_list = [k.strip() for k in _keycloak_raw.split(',') if k.strip()]
+KEYCLOAK_URLS = [
+    _keycloak_list[i] if i < len(_keycloak_list) else _origin(ep)
+    for i, ep in enumerate(SPARQL_ENDPOINTS)
+]
 
 
 BOUNDING_BOX = os.getenv('BOUNDING_BOX', '')
@@ -79,15 +101,17 @@ def _client(endpoint: str) -> SPARQLWrapper:
 
 
 def get_keycloak_token():
-    KEYCLOAK_URL = "https://node-1.net.uhh.rescue-mate.de/auth"
+    """Fetch a keycloak token, failing over across the nodes' keycloak URLs.
+
+    Auth is effectively central today (only node-1's keycloak authenticates the
+    client), but trying each node's keycloak in order means a promoted/decentralized
+    secondary can issue tokens if the primary's keycloak is down. The resulting token
+    is accepted by every node's /sparql, so one token is reused for all reads. Fails
+    fast per keycloak (short connect timeout) so failover is quick."""
     REALM = "master"
     CLIENT_ID = "uhh"
-
     USERNAME = os.getenv('USERNAME', '')
     PASSWORD = os.getenv('PASSWORD', '')
-
-    token_url = f"{KEYCLOAK_URL}/realms/{REALM}/protocol/openid-connect/token"
-
     data = {
         "grant_type": "password",
         "client_id": CLIENT_ID,
@@ -97,11 +121,21 @@ def get_keycloak_token():
         # "client_secret": "dein-secret",
     }
 
-    response = requests.post(token_url, data=data)
-    response.raise_for_status()
-    token = response.json()["access_token"]
-
-    return token
+    last_err = None
+    tried = set()
+    for kc in KEYCLOAK_URLS:
+        if kc in tried:  # KEYCLOAK_URLS often repeats one central keycloak
+            continue
+        tried.add(kc)
+        token_url = f"{kc}/auth/realms/{REALM}/protocol/openid-connect/token"
+        try:
+            response = requests.post(token_url, data=data, timeout=(5, 30))
+            response.raise_for_status()
+            return response.json()["access_token"]
+        except Exception as e:
+            last_err = e
+            print(f"Auth via {kc} failed ({e}); trying next keycloak", flush=True)
+    raise RuntimeError(f"No keycloak could issue a token: {last_err}")
 
 def wkt_to_geojson(wkt_str: str):
     # Parse WKT
