@@ -14,9 +14,16 @@ from data.model import LocationPolygon, Report
 import random   # can be removed later
 
 
-SPARQL_ENDPOINT = os.getenv('SPARQL_ENDPOINT', '')
-if not SPARQL_ENDPOINT:
-    raise ValueError("SPARQL_ENDPOINT environment variable is not set.")
+# The KG runs as multiple nodes that are failover PEERS, not replicas: a post
+# written while one node was down lives only on another. So the map must read from
+# EVERY node and union the results -- reading just the first responder would
+# silently miss whatever was written elsewhere. SPARQL_ENDPOINTS is a comma-
+# separated list of each node's /sparql; the singular SPARQL_ENDPOINT is still
+# honored as a one-node fallback.
+_endpoints_raw = os.getenv('SPARQL_ENDPOINTS', '') or os.getenv('SPARQL_ENDPOINT', '')
+SPARQL_ENDPOINTS = [e.strip() for e in _endpoints_raw.split(',') if e.strip()]
+if not SPARQL_ENDPOINTS:
+    raise ValueError("Set SPARQL_ENDPOINTS (comma-separated) or SPARQL_ENDPOINT.")
 
 
 BOUNDING_BOX = os.getenv('BOUNDING_BOX', '')
@@ -58,7 +65,18 @@ SEARCH_W_REGEX = '.*(hamburg).*'
 SEARCH_B_REGEX = '.*(berlin).*'
 SEARCH_LOOK_BACK = 30    # how many minutes to look back
 
-sparql = SPARQLWrapper(SPARQL_ENDPOINT)
+# One SPARQLWrapper per endpoint, reused across queries. Auth is central: a single
+# keycloak token (from get_keycloak_token) is accepted by every node's /sparql.
+_sparql_clients: dict[str, SPARQLWrapper] = {}
+
+
+def _client(endpoint: str) -> SPARQLWrapper:
+    client = _sparql_clients.get(endpoint)
+    if client is None:
+        client = SPARQLWrapper(endpoint)
+        _sparql_clients[endpoint] = client
+    return client
+
 
 def get_keycloak_token():
     KEYCLOAK_URL = "https://node-1.net.uhh.rescue-mate.de/auth"
@@ -93,10 +111,11 @@ def wkt_to_geojson(wkt_str: str):
     geojson_dict = mapping(geom)
     return geojson_dict
 
-def _run_sparql_raise(query: str, auth_header: str) -> list:
+def _run_sparql_raise(query: str, auth_header: str, endpoint: str) -> list:
     """Like _run_sparql but propagates failures instead of swallowing them.
     Used where a caller needs to tell a real query failure apart from a
     legitimately empty result set (e.g. the WKT batch retry/bisection below)."""
+    sparql = _client(endpoint)
     sparql.setQuery(query)
     sparql.setReturnFormat('json')
     sparql.setMethod('POST')
@@ -105,12 +124,12 @@ def _run_sparql_raise(query: str, auth_header: str) -> list:
     return sparql.query().convert()['results']['bindings']
 
 
-def _run_sparql(query: str, auth_header: str) -> list:
+def _run_sparql(query: str, auth_header: str, endpoint: str) -> list:
     try:
-        return _run_sparql_raise(query, auth_header)
+        return _run_sparql_raise(query, auth_header, endpoint)
     except Exception as e:
         status = getattr(getattr(e, 'response', None), 'status', None)
-        print(f"Error fetching data from SPARQL endpoint (HTTP {status}): {e}", flush=True)
+        print(f"Error fetching data from SPARQL endpoint {endpoint} (HTTP {status}): {e}", flush=True)
         return []
 
 
@@ -123,7 +142,7 @@ def _run_sparql(query: str, auth_header: str) -> list:
 _unfetchable_geometry_uris: set = set()
 
 
-def _fetch_wkt_batch(uris: list, auth_header: str) -> dict:
+def _fetch_wkt_batch(uris: list, auth_header: str, endpoint: str) -> dict:
     """Fetch WKT geometries for a batch of location URIs.
 
     The WKT is selected as STR(?wkt), not raw ?wkt: Virtuoso's result-set
@@ -154,15 +173,15 @@ def _fetch_wkt_batch(uris: list, auth_header: str) -> dict:
         }}
     """
     try:
-        bindings = _run_sparql_raise(wkt_query, auth_header)
+        bindings = _run_sparql_raise(wkt_query, auth_header, endpoint)
     except Exception as e:
         if len(uris) == 1:
             _unfetchable_geometry_uris.add(uris[0])
             print(f"Skipping unfetchable geometry for {uris[0]} (won't retry until restart): {e}", flush=True)
             return {}
         mid = len(uris) // 2
-        result = _fetch_wkt_batch(uris[:mid], auth_header)
-        result.update(_fetch_wkt_batch(uris[mid:], auth_header))
+        result = _fetch_wkt_batch(uris[:mid], auth_header, endpoint)
+        result.update(_fetch_wkt_batch(uris[mid:], auth_header, endpoint))
         return result
 
     result = {}
@@ -197,10 +216,18 @@ RELEVANT_CATEGORIES = ' '.join(f'<http://rescue-mate.de/resource/{c}>' for c in 
 ])
 
 
-def fetch_social_media_posts(search_since: datetime, search_until: datetime | None = None):
-    """Fetch posts from RescueMate KG using two queries: posts then locations."""
+def fetch_social_media_posts(search_since: datetime, search_until: datetime | None = None,
+                             endpoint: str | None = None, auth_header: str | None = None):
+    """Fetch posts from ONE RescueMate KG node using two queries: posts then locations.
 
-    auth_header = f"Bearer {get_keycloak_token()}"
+    `endpoint` is that node's /sparql; a post and its locations/geometry are
+    co-located on one node, so the whole chain (posts -> locations -> WKT) must run
+    against the same endpoint. `auth_header` lets a multi-node caller reuse a single
+    central token across nodes; if omitted, a fresh one is fetched."""
+    if endpoint is None:
+        endpoint = SPARQL_ENDPOINTS[0]
+    if auth_header is None:
+        auth_header = f"Bearer {get_keycloak_token()}"
     search_since_str = search_since.isoformat().replace('+00:00', 'Z')
     until_filter = f'FILTER (?date <= "{search_until.isoformat().replace("+00:00", "Z")}"^^xsd:dateTime)' if search_until else ''
 
@@ -250,7 +277,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
         }}
     """
 
-    bindings = _run_sparql(posts_query, auth_header)
+    bindings = _run_sparql(posts_query, auth_header, endpoint)
     if not bindings:
         return []
 
@@ -318,7 +345,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                 }}
             }}
         """
-        for result in _run_sparql(loc_meta_query, auth_header):
+        for result in _run_sparql(loc_meta_query, auth_header, endpoint):
             post_id = result['post']['value'].split('/')[-1]
             mention = result.get('location_mention_surface_form', {}).get('value')
             if not mention or mention in seen_mentions[post_id]:
@@ -379,7 +406,7 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                 uncached_uris.append(loc_uri)
 
     if uncached_uris:
-        geojson_by_uri.update(_fetch_wkt_batch(uncached_uris, auth_header))
+        geojson_by_uri.update(_fetch_wkt_batch(uncached_uris, auth_header, endpoint))
 
     if VERBOSE:
         n_cached = len(in_bbox_locs) - len(uncached_uris)
@@ -396,9 +423,33 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
         posts[post_id]['geo_linked_entities'].append(geo_linked_entity)
 
     if VERBOSE:
-        print(f"Fetched {len(posts)} posts from SPARQL endpoint", flush=True)
+        print(f"Fetched {len(posts)} posts from {endpoint}", flush=True)
 
     return posts.values()
+
+
+def fetch_social_media_posts_all_nodes(search_since: datetime, search_until: datetime | None = None):
+    """Fetch from EVERY node and union posts by id.
+
+    The nodes are failover peers, not replicas -- data written while one node was
+    down lives only on another -- so the complete set is the union across all of
+    them. Auth is central: one keycloak token is fetched here and reused for every
+    node (it's accepted by each node's /sparql). A node that errors this cycle simply
+    contributes nothing (its posts are read from wherever else they live) instead of
+    failing the whole refresh -- that's the whole point of reading from all nodes.
+    A post found on more than one node is deduplicated by id (first node wins;
+    cross-node copies are identical, since a post is fully ingested to one node)."""
+    auth_header = f"Bearer {get_keycloak_token()}"
+    merged: dict[str, dict] = {}
+    for endpoint in SPARQL_ENDPOINTS:
+        try:
+            for post in fetch_social_media_posts(search_since, search_until, endpoint, auth_header):
+                merged.setdefault(post['id'], post)
+        except Exception as e:
+            print(f"Node {endpoint} failed this cycle, continuing with other nodes: {e}", flush=True)
+    if VERBOSE:
+        print(f"Union across {len(SPARQL_ENDPOINTS)} node(s): {len(merged)} unique posts", flush=True)
+    return merged.values()
 
 event_mapping = {
     'http://rescue-mate.de/resource/not_humanitarian': 'Irrelevant',
@@ -643,7 +694,7 @@ if __name__ == '__main__':
         window_end = min(window_start + BACKFILL_WINDOW, start_date)
         print(f'Backfill window: {window_start.strftime("%H:%M")} → {window_end.strftime("%H:%M %Y-%m-%d")} UTC')
         try:
-            posts = fetch_social_media_posts(window_start, search_until=window_end)
+            posts = fetch_social_media_posts_all_nodes(window_start, search_until=window_end)
             save_posts(posts)
         except Exception as e:
             print(f'Backfill window failed, skipping: {e}')
@@ -657,7 +708,7 @@ if __name__ == '__main__':
     search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
     while True:
         try:
-            posts = list(fetch_social_media_posts(search_since))
+            posts = list(fetch_social_media_posts_all_nodes(search_since))
         except Exception as e:
             print(f"Error fetching posts, retrying in next cycle: {e}")
             posts = []
