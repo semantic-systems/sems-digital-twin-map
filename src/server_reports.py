@@ -1,4 +1,5 @@
 import os
+import threading
 from collections import defaultdict
 from urllib.parse import urlsplit, urlunsplit
 
@@ -56,6 +57,12 @@ REQUEST_DELAY = 10
 # how long to wait before timing out a request (in seconds)
 TIMEOUT_DELAY = 300            # 5 minutes
 
+# Per-query SPARQL timeout (seconds). Without this, SPARQLWrapper has no timeout, so a
+# hanging node blocks the whole refresh indefinitely. Bounds each query so a stuck node
+# fails fast and the other nodes still return; the WKT batch already bisects, so a
+# timeout there just shrinks the batch. Override via SPARQL_TIMEOUT.
+SPARQL_TIMEOUT = int(os.getenv('SPARQL_TIMEOUT', '60'))
+
 # set to True to print more information
 VERBOSE = True
 
@@ -96,6 +103,7 @@ def _client(endpoint: str) -> SPARQLWrapper:
     client = _sparql_clients.get(endpoint)
     if client is None:
         client = SPARQLWrapper(endpoint)
+        client.setTimeout(SPARQL_TIMEOUT)
         _sparql_clients[endpoint] = client
     return client
 
@@ -462,28 +470,71 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
     return posts.values()
 
 
-def fetch_social_media_posts_all_nodes(search_since: datetime, search_until: datetime | None = None):
-    """Fetch from EVERY node and union posts by id.
+# Serializes the DB-write phase across the per-node threads. The slow part (fetching
+# from a node) runs fully in parallel; only the short save is serialized -- so a
+# post's polygon insert can't race another node's into a LocationPolygon primary-key
+# collision, and two nodes can't double-insert the same report. save is fast relative
+# to fetch, so the lock is not a throughput bottleneck.
+_save_lock = threading.Lock()
 
-    The nodes are failover peers, not replicas -- data written while one node was
-    down lives only on another -- so the complete set is the union across all of
-    them. Auth is central: one keycloak token is fetched here and reused for every
-    node (it's accepted by each node's /sparql). A node that errors this cycle simply
-    contributes nothing (its posts are read from wherever else they live) instead of
-    failing the whole refresh -- that's the whole point of reading from all nodes.
-    A post found on more than one node is deduplicated by id (first node wins;
-    cross-node copies are identical, since a post is fully ingested to one node)."""
-    auth_header = f"Bearer {get_keycloak_token()}"
-    merged: dict[str, dict] = {}
-    for endpoint in SPARQL_ENDPOINTS:
+
+def _run_node_pipeline(endpoint: str, start_date: datetime):
+    """Full, INDEPENDENT backfill + live-poll loop for ONE node, run in its own thread.
+
+    The nodes are failover peers, not replicas -- data written while one node was down
+    lives only on another -- so every node must be read; running a whole pipeline per
+    node (rather than a shared window loop) means they never block each other: node-1
+    can finish its backfill and be live-polling while node-2 is still backfilling.
+    Each node tracks its own search window and saves its own posts. Re-fetch dedup is
+    handled by save_posts (existing_ids); cross-node duplicates don't occur in practice
+    since a post is fully ingested to exactly one node. Saves are serialized by
+    _save_lock so concurrent node threads can't collide on the shared polygon table."""
+    tag = urlsplit(endpoint).netloc or endpoint
+
+    def _save(posts):
+        with _save_lock:
+            return save_posts(posts)
+
+    # Backfill: last 3 days in 2-hour windows with 5-minute overlap.
+    BACKFILL_WINDOW = timedelta(minutes=120)
+    BACKFILL_OVERLAP = timedelta(minutes=5)
+    window_start = start_date - timedelta(days=3)
+    print(f'[{tag}] backfilling from {window_start.strftime("%Y-%m-%d %H:%M")} UTC', flush=True)
+    while window_start < start_date:
+        window_end = min(window_start + BACKFILL_WINDOW, start_date)
         try:
-            for post in fetch_social_media_posts(search_since, search_until, endpoint, auth_header):
-                merged.setdefault(post['id'], post)
+            posts = fetch_social_media_posts(window_start, search_until=window_end, endpoint=endpoint)
+            _save(list(posts))
         except Exception as e:
-            print(f"Node {endpoint} failed this cycle, continuing with other nodes: {e}", flush=True)
-    if VERBOSE:
-        print(f"Union across {len(SPARQL_ENDPOINTS)} node(s): {len(merged)} unique posts", flush=True)
-    return merged.values()
+            print(f'[{tag}] backfill window failed, skipping: {e}', flush=True)
+        window_start += BACKFILL_WINDOW - BACKFILL_OVERLAP
+        time.sleep(0.1)
+    print(f'[{tag}] backfill complete; starting live polling', flush=True)
+
+    # Live polling.
+    search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
+    while True:
+        try:
+            posts = list(fetch_social_media_posts(search_since, endpoint=endpoint))
+        except Exception as e:
+            print(f"[{tag}] error fetching, retrying next cycle: {e}", flush=True)
+            posts = []
+            time.sleep(10)
+
+        _save(posts)
+
+        # Advance search_since to just before the newest post this node saw, so the
+        # next poll only fetches genuinely new posts instead of the full lookback.
+        if posts:
+            latest_ts = max(
+                datetime.fromisoformat(p['timestamp'].replace('Z', '+00:00'))
+                for p in posts
+            )
+            search_since = latest_ts - timedelta(seconds=30)
+        else:
+            search_since = datetime.now(tz=timezone.utc) - timedelta(minutes=2)
+
+        time.sleep(REQUEST_DELAY)
 
 event_mapping = {
     'http://rescue-mate.de/resource/not_humanitarian': 'Irrelevant',
@@ -718,52 +769,21 @@ if __name__ == '__main__':
     #time.sleep(30)
     start_date = datetime.now(tz=timezone.utc)
 
-    # Backfill: fetch the last 3 days in 30-minute windows with 5-minute overlap
-    BACKFILL_WINDOW = timedelta(minutes=120)
-    BACKFILL_OVERLAP = timedelta(minutes=5)
-    backfill_start = start_date - timedelta(days=3)
-    print(f'Backfilling posts from {backfill_start.strftime("%Y-%m-%d %H:%M:%S")} UTC')
-    window_start = backfill_start
-    while window_start < start_date:
-        window_end = min(window_start + BACKFILL_WINDOW, start_date)
-        print(f'Backfill window: {window_start.strftime("%H:%M")} → {window_end.strftime("%H:%M %Y-%m-%d")} UTC')
-        try:
-            posts = fetch_social_media_posts_all_nodes(window_start, search_until=window_end)
-            save_posts(posts)
-        except Exception as e:
-            print(f'Backfill window failed, skipping: {e}')
-        window_start += BACKFILL_WINDOW - BACKFILL_OVERLAP
-        time.sleep(0.1)
-    print('Backfill complete. Starting live polling.')
+    # One independent pipeline per node, each in its own thread: nodes never block each
+    # other, so node-1 can finish backfilling and go live while node-2 is still
+    # backfilling. Each thread backfills 3 days then live-polls; saves are serialized
+    # internally by _save_lock. Threads are daemons so the process exits cleanly.
+    print(f'Starting {len(SPARQL_ENDPOINTS)} independent node pipeline(s) at '
+          f'{start_date.strftime("%Y-%m-%d %H:%M:%S")} UTC', flush=True)
+    node_threads = []
+    for _ep in SPARQL_ENDPOINTS:
+        _t = threading.Thread(
+            target=_run_node_pipeline, args=(_ep, start_date),
+            name=f'node-pipeline-{urlsplit(_ep).netloc or _ep}', daemon=True,
+        )
+        _t.start()
+        node_threads.append(_t)
 
-    print(
-        f'Starting to fetch posts from {start_date.strftime("%Y-%m-%d %H:%M:%S")} UTC'
-    )
-    search_since = start_date - timedelta(minutes=SEARCH_LOOK_BACK)
-    while True:
-        try:
-            posts = list(fetch_social_media_posts_all_nodes(search_since))
-        except Exception as e:
-            print(f"Error fetching posts, retrying in next cycle: {e}")
-            posts = []
-            time.sleep(10)
-
-        for post in posts:
-            for location in post["geo_linked_entities"]:
-                if location["location"] is not None:
-                    location["location"]["polygon"] = location["location"]["geojson"]
-
-        saved_counter = save_posts(posts)
-
-        # Advance search_since to just before the newest post we saw, so the
-        # next poll only fetches genuinely new posts instead of the full lookback window.
-        if posts:
-            latest_ts = max(
-                datetime.fromisoformat(p['timestamp'].replace('Z', '+00:00'))
-                for p in posts
-            )
-            search_since = latest_ts - timedelta(seconds=30)
-        else:
-            search_since = datetime.now(tz=timezone.utc) - timedelta(minutes=2)
-
-        time.sleep(REQUEST_DELAY)
+    # Keep the main thread alive while the per-node pipelines run.
+    for _t in node_threads:
+        _t.join()
