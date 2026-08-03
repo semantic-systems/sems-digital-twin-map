@@ -207,11 +207,9 @@ def _fetch_wkt_batch(uris: list, auth_header: str, endpoint: str) -> dict:
     wkt_query = f"""
         PREFIX geo: <http://www.opengis.net/ont/geosparql#>
         SELECT ?location (STR(?wkt) AS ?wkt_str) {{
-            GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
                 VALUES ?location {{ {loc_values} }}
                 ?location geo:hasGeometry ?geom .
                 ?geom geo:asWKT ?wkt .
-            }}
         }}
     """
     try:
@@ -243,7 +241,6 @@ LOCATION_BATCH_SIZE = 50  # Virtuoso rejects VALUES clauses with too many URIs
 # graph explicitly — without a GRAPH clause, Virtuoso matches across ALL of
 # them, silently mixing in ~1M stale posts from the retired social_media_v2
 # dataset plus whatever else happens to live on the endpoint.
-SOCIAL_MEDIA_GRAPH = 'http://rescue-mate.de/datasets/social_media_data'
 
 # Post-level statuses that indicate the classifier failed to produce a
 # category/relevance for a post at all (so it would otherwise never appear in
@@ -287,7 +284,6 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
         PREFIX rmo: <http://rescue-mate.de/ontology/>
         PREFIX schema: <http://schema.org/>
         SELECT ?post ?text ?date ?category ?predictedRelevance ?url ?user ?username ?platform ?user_identifier ?geoRecognitionStatus ?postStatus  {{
-            GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
                 ?post a rmo:SocialMediaPost ;
                     schema:text ?text ;
                     schema:dateCreated ?date .
@@ -315,7 +311,6 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                     OPTIONAL {{ ?user rm:socialMediaServiceName ?platform }}
                     OPTIONAL {{ ?user schema:identifier ?user_identifier }}
                 }}
-            }}
         }}
     """
 
@@ -371,7 +366,6 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
             PREFIX schema: <http://schema.org/>
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             SELECT ?post ?location_mention_surface_form ?location ?osm_type ?osm_id ?lat ?lon ?name ?locStatus {{
-                GRAPH <{SOCIAL_MEDIA_GRAPH}> {{
                     VALUES ?post {{ {batch_values} }}
                     ?post rm:hasMentionedLocation ?location_mention .
                     ?location_mention schema:text ?location_mention_surface_form .
@@ -384,7 +378,6 @@ def fetch_social_media_posts(search_since: datetime, search_until: datetime | No
                             rm:longitude ?lon ;
                             rdfs:label ?name .
                     }}
-                }}
             }}
         """
         for result in _run_sparql(loc_meta_query, auth_header, endpoint):
