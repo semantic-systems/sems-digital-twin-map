@@ -12,6 +12,11 @@ The data model is defined in `src/data/model.py` and consists of the following c
 - `Colormap`: An optional additional styling information for a FeatureSet. If a Colormap is assigned to a FeatureSets Style, the features will be colored according to the colormap.
 - `Alert`: Represents a single NINA API alert.
 - `Report`: Represents a single social media post or news headline that is displayed in the left sidebar of the map.
+- `UserReportState`: Per-user mutable state (hide/flag/edited locations) for a single Report.
+- `UserAdmission`: Per-user watermark tracking which Reports have been admitted to that user's sidebar.
+- `LocationPolygon`: Deduplicated polygon geometry, referenced by Reports via `osm_id`/`osm_type`.
+- `User`: An application account (login, admin flag).
+- `UserSession`: A server-side login session token.
 
 ![Data Model Diagram](./img/datamodel.png)
 
@@ -129,16 +134,20 @@ Report objects represent social media posts or news headlines that are displayed
 - `url`: The URL to the original post or news article.
 - `platform`: The source platform (e.g. `mastodon`, `bluesky`, `reddit`). RSS feeds are stored as `rss/<feed_name>`.
 - `timestamp`: The timestamp of when the post/article was published.
-- `event_type`: The classified event type of the post (e.g. `Warnungen & Hinweise`, `Infrastruktur-Schäden`). Used to filter reports in the frontend.
+- `event_type`: The classified event type of the post (e.g. `Warnungen & Hinweise`, `Infrastruktur-Schäden`). Legacy — kept only for migration backfill; superseded by `event_types`.
+- `event_types`: Array of classified event types for the post. Used to filter reports in the frontend.
 - `relevance`: Predicted relevance of the post (`high`, `medium`, `low`, `none`).
+- `processing_status`: Status of the event/relevance extraction pipeline (`ok`/legacy default, `error`, `no_text`), from `rm:eventPredictionStatus`. Drives the "Issues" tab in the sidebar.
+- `geo_recognition_status`: Status of the NER step that finds location mentions in the text (`ok`/legacy default, `error`), from `rm:geoRecognitionStatus`. Independent of, and upstream of, the per-mention `geo_linking` status inside `locations[].status`.
 - `locations`: A JSON array of geo-linked location objects associated with the post. Can be modified per-user via `UserReportState`.
 - `original_locations`: Snapshot of the locations at import time. Never overwritten.
+- `locations_slim`: `locations` minus the `polygon` field, for fast list/dots queries that don't need full polygon geometry.
 - `author`: Username or handle of the post author.
 - `seen`: Whether the post has been marked as seen (legacy field, superseded by `UserReportState.hide`).
 - `author_flagged`: Whether the author has been flagged (legacy field, superseded by `UserReportState.flag`).
 
 ## UserReportState
-Stores per-user mutable state for a single report. This replaces the old browser-local state and allows multiple users to independently manage their view of reports.
+Stores per-user mutable state for a single report. This replaces the old browser-local state and allows multiple users to independently manage their view of reports. Rows exist only where they carry real information (hide/flag/edited locations/acknowledged) — admission itself is tracked separately in `UserAdmission`, not as a per-report row here.
 - `id`: Primary key.
 - `username`: The username this state belongs to.
 - `report_id`: Foreign key to the `Report`.
@@ -146,5 +155,32 @@ Stores per-user mutable state for a single report. This replaces the old browser
 - `flag`: Whether the user has flagged the author of this report.
 - `flag_author`: Denormalised author string stored when `flag=True`.
 - `locations`: User-overridden locations for this report (overrides `Report.locations` for this user).
-- `first_seen_at`: Timestamp of when the report was first admitted to this user's sidebar. `NULL` means not yet admitted.
+- `first_seen_at`: Legacy per-report admission marker, superseded by `UserAdmission`. Kept only for the old Dash app.
 - `new`: `True` until the user explicitly acknowledges the report.
+
+## UserAdmission
+Per-user admission watermark: every report with `id <= admitted_up_to_id` counts as admitted to that user's sidebar. Replaces the old per-report `first_seen_at` rows, which grew as (users × reports) with no information beyond set membership — a watermark makes "admit all" O(1), the pending count a single range `COUNT`, and removes a whole class of admit/pending drift bugs. Report ids are `SERIAL` (monotonic in ingestion order), so the watermark stays correct even for late-ingested posts with old timestamps.
+- `username`: Primary key.
+- `admitted_up_to_id`: Highest report id admitted to this user's sidebar so far.
+
+## LocationPolygon
+Deduplicated polygon storage, keyed by `(osm_id, osm_type)`. Reports reference polygons via `osm_id`/`osm_type` in their `locations` JSON instead of embedding the polygon geometry in every report.
+- `osm_id`: OpenStreetMap id of the location (primary key, together with `osm_type`).
+- `osm_type`: OpenStreetMap type of the location (primary key, together with `osm_id`).
+- `polygon`: The polygon geometry (GeoJSON) for this location.
+
+## User
+An application account. Accounts are provisioned by an admin (there is no self-signup) via `backend/scripts/create_user.py`; passwords are stored as PBKDF2 hashes (see `backend/app/auth.py`), never plaintext.
+- `id`: Primary key.
+- `username`: Unique login name — the same identifier used throughout `UserReportState`/`UserAdmission`.
+- `password_hash`: PBKDF2 password hash.
+- `active`: Whether the account can currently log in.
+- `is_admin`: Whether the account may provision/manage other accounts.
+- `created_at`: When the account was created.
+
+## UserSession
+A server-side login session. On login, a random opaque token is issued and set as an httpOnly cookie; every request looks the token up here to resolve the current user. Sessions are server-side (rather than a JWT) so they're revocable — logout and admin-deactivation take effect immediately.
+- `token`: The opaque session token (primary key).
+- `username`: The user this session belongs to.
+- `created_at`: When the session was created.
+- `expires_at`: When the session expires.

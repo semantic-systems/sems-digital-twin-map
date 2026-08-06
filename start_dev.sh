@@ -16,7 +16,7 @@ docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d postgis p
 
 echo ""
 echo "PostgreSQL is reachable at localhost:5432"
-echo "pgAdmin at http://localhost:8080"
+echo "pgAdmin at http://localhost:8051"
 echo ""
 echo "Start the backend:  cd backend && uvicorn app.main:app --reload --port 8052"
 echo "Start the frontend: cd frontend && npm run dev"
