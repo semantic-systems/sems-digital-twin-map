@@ -1,5 +1,10 @@
 # sems-digital-twin-map
 
+> New to this project, or setting up a deployment? Start with
+> [`OVERVIEW.md`](OVERVIEW.md) — what this map (and the companion Social
+> Media Sensor) does, and what credentials to gather before running the
+> sensor repo's `quick_setup/`.
+
 An interactive situational map of Hamburg that combines open geodata from the
 [Urban Data Hub](https://api.hamburg.de/datasets/v1/) with near-real-time
 social media reports (Mastodon, Bluesky, Reddit, RSS news) ingested from the
