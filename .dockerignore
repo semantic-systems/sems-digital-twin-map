@@ -2,3 +2,26 @@
 **/__pycache__
 **/.DS_Store
 frontend/dist
+.git
+venv
+venv2
+
+# Secrets / local overrides -- never bake these into an image.
+.env
+.env.*
+
+# Editor / tooling cruft, not needed in any image.
+.idea
+.claude
+.pytest_cache
+
+# Docs and dev-only files -- irrelevant to any of the three service images
+# (backend/frontend Dockerfiles COPY explicit paths already and don't need
+# this; server_reports' Dockerfile does `COPY . .` so this matters there).
+docs
+README.md
+start_dev.sh
+docker-compose.yaml
+docker-compose.dev.yaml
+example.env
+cache
