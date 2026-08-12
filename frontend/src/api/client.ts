@@ -16,7 +16,19 @@ export function setUnauthorizedHandler(fn: () => void): void {
   onUnauthorized = fn;
 }
 
-export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+export interface ApiOptions {
+  /** Don't treat a 401 as "the session died" — for calls that legitimately answer
+   *  401 as a normal result. Logging in with a wrong password is not an expired
+   *  session, and letting it fire the global handler wipes the auth state (and
+   *  with it the login form's error message) instead of showing it. */
+  authOptional?: boolean;
+}
+
+export async function apiFetch<T>(
+  path: string,
+  options?: RequestInit,
+  { authOptional = false }: ApiOptions = {},
+): Promise<T> {
   // Content-Type only when there is a body to describe. It is not a
   // CORS-safelisted request header, so sending it on plain GETs turns any
   // request that ends up cross-origin (e.g. a redirect that changes the scheme)
@@ -32,7 +44,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     headers,
   });
   if (res.status === 401) {
-    onUnauthorized?.();
+    if (!authOptional) onUnauthorized?.();
     throw new ApiError(path, 401);
   }
   if (!res.ok) throw new ApiError(path, res.status);

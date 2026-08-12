@@ -9,7 +9,15 @@ import { ApiError } from '../../api/client';
  * success the backend sets the httpOnly session cookie and we hand the resolved
  * identity up to App.
  */
-export function LoginPage({ onLoggedIn }: { onLoggedIn: (me: MeResponse) => void }): React.ReactElement {
+export function LoginPage({
+  onLoggedIn,
+  sessionLost = false,
+}: {
+  onLoggedIn: (me: MeResponse) => void;
+  /** The previous session went away mid-use (a 401 on an authenticated call).
+   *  Shown as a notice so this never looks like "the login button did nothing". */
+  sessionLost?: boolean;
+}): React.ReactElement {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -103,7 +111,15 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: (me: MeResponse) => void
             style={inputStyle(!!error)}
           />
 
-          {error && <p style={{ fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{error}</p>}
+          {error
+            ? <p style={{ fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{error}</p>
+            : sessionLost && (
+                // Amber, not red: nothing was typed wrong — the session just did
+                // not survive. Yields to a real error as soon as there is one.
+                <p style={{ fontSize: 12, color: '#f59e0b', margin: '8px 0 0' }}>
+                  {t('login_session_lost')}
+                </p>
+              )}
 
           <button
             onClick={submit}

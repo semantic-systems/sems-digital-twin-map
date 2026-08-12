@@ -51,9 +51,12 @@ def login(
 def logout(
     response: Response,
     sems_session: str | None = Cookie(default=None),
+    sems_session_xs: str | None = Cookie(default=None),
     db: Session = Depends(get_db),
 ) -> dict[str, bool]:
-    destroy_session(db, sems_session)
+    # Either cookie may be the one this browser holds (top-level vs embedded);
+    # both carry the same token, so destroying it once ends the session for both.
+    destroy_session(db, sems_session or sems_session_xs)
     clear_session_cookie(response)
     return {"ok": True}
 

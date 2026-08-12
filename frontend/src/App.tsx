@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useUserStore } from './store/useUserStore';
 import { useFilterStore, dotsParamsFromFilters } from './store/useFilterStore';
@@ -204,6 +204,11 @@ function AppInner(): React.ReactElement {
 
 function App(): React.ReactElement {
   const { username, authChecked, setAuth, setAuthChecked } = useUserStore();
+  // Set when a 401 arrives on an already-authenticated session. Without it the
+  // user is dropped on a blank login form with no clue what happened — which is
+  // exactly how a browser silently refusing to store the session cookie looked
+  // like "login does nothing" instead of a reportable error.
+  const [sessionLost, setSessionLost] = useState(false);
 
   // On mount: probe the session (/auth/me) to decide login page vs app, and
   // register the global 401 handler so an expired session anywhere drops back to
@@ -211,6 +216,7 @@ function App(): React.ReactElement {
   useEffect(() => {
     setUnauthorizedHandler(() => {
       setAuth(null);
+      setSessionLost(true);
       queryClient.clear();
     });
     fetchMe()
@@ -226,7 +232,15 @@ function App(): React.ReactElement {
   }
 
   if (!username) {
-    return <LoginPage onLoggedIn={(me) => setAuth(me)} />;
+    return (
+      <LoginPage
+        sessionLost={sessionLost}
+        onLoggedIn={(me) => {
+          setSessionLost(false);
+          setAuth(me);
+        }}
+      />
+    );
   }
 
   return <AppInner />;

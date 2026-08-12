@@ -46,6 +46,7 @@
   "login_fill_both": "Enter your username and password.",
   "login_bad_credentials": "Invalid username or password.",
   "login_failed": "Sign-in failed. Please try again.",
+  "login_session_lost": "Your session ended and you were signed out. If this repeats right after signing in, your browser may be blocking the session cookie.",
   "manage_users": "Manage users",
   "users_title": "User management",
   "users_add": "Add user",

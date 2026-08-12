@@ -46,6 +46,7 @@
   "login_fill_both": "Bitte Benutzername und Passwort eingeben.",
   "login_bad_credentials": "Ungültiger Benutzername oder Passwort.",
   "login_failed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+  "login_session_lost": "Ihre Sitzung wurde beendet und Sie wurden abgemeldet. Falls das direkt nach der Anmeldung erneut passiert, blockiert Ihr Browser möglicherweise das Sitzungs-Cookie.",
   "manage_users": "Benutzer verwalten",
   "users_title": "Benutzerverwaltung",
   "users_add": "Benutzer hinzufügen",

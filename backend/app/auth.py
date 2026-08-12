@@ -55,6 +55,11 @@ def verify_password(password: str, stored: str) -> bool:
 # ---------------------------------------------------------------------------
 
 SESSION_COOKIE = "sems_session"
+# Cross-site-capable twin of the above, only issued when the deployment is
+# configured as embeddable. Separate name so the two can carry different
+# SameSite/Partitioned attributes without overwriting each other — see
+# set_session_cookie for why one cookie cannot serve both contexts.
+SESSION_COOKIE_EMBEDDED = "sems_session_xs"
 SESSION_DAYS = 30
 
 
@@ -92,28 +97,42 @@ def _is_cross_site() -> bool:
 
 
 def _cookie_kwargs() -> dict:
-    """Attributes the session cookie is set AND cleared with.
+    """Attributes for the first-party cookie — the one a normal, top-level visit
+    uses. Always SameSite=Lax and never Partitioned, whatever COOKIE_SAMESITE says;
+    the embedded case is served by its own cookie (see _embedded_cookie_kwargs)
+    rather than by weakening this one.
 
-    They have to match exactly in both directions — a cookie written with
-    Partitioned is a different cookie to the browser than one without, so a logout
-    using different attributes would leave the session cookie in place.
-
-    SameSite=None is only accepted by browsers together with Secure, so "none"
-    forces it rather than leaving it to COOKIE_SECURE: a half-configured cross-site
-    deployment would otherwise hand the browser a cookie it silently drops, with no
-    error anyone could act on.
+    Safari is why the two are split. A cookie carrying SameSite=None+Partitioned is
+    not sent back on a plain top-level request there, so serving both contexts from
+    one cookie meant Safari users could log in (200 + Set-Cookie) and then have
+    every following request come back 401 — while Chrome and Firefox were fine.
     """
     from .config import settings
 
     return {
         "path": "/",
-        "samesite": settings.COOKIE_SAMESITE,
-        "secure": True if _is_cross_site() else settings.COOKIE_SECURE,
+        "samesite": "lax",
+        "secure": settings.COOKIE_SECURE,
     }
 
 
-def _mark_partitioned(response: Response) -> None:
-    """Append `Partitioned` (CHIPS) to the session cookie just written.
+def _embedded_cookie_kwargs() -> dict:
+    """Attributes for the cookie used when the app runs inside a cross-site iframe.
+
+    SameSite=None is the only value a browser will send from a third-party frame,
+    and it is only accepted together with Secure — so Secure is forced here rather
+    than left to COOKIE_SECURE, which would otherwise hand the browser a cookie it
+    silently drops with no error anyone could act on.
+    """
+    return {
+        "path": "/",
+        "samesite": "none",
+        "secure": True,
+    }
+
+
+def _mark_partitioned(response: Response, cookie_name: str) -> None:
+    """Append `Partitioned` (CHIPS) to the named cookie just written.
 
     Chrome requires it for a cookie used inside a third-party frame. Done by hand
     on the raw header because Starlette's set_cookie(partitioned=True) raises
@@ -121,7 +140,7 @@ def _mark_partitioned(response: Response) -> None:
     the backend image runs 3.11, so using the parameter would turn every login
     into a 500.
     """
-    prefix = SESSION_COOKIE.encode() + b"="
+    prefix = cookie_name.encode() + b"="
     for i, (name, value) in enumerate(response.raw_headers):
         if name == b"set-cookie" and value.startswith(prefix):
             if b"Partitioned" not in value:
@@ -130,15 +149,32 @@ def _mark_partitioned(response: Response) -> None:
 
 
 def set_session_cookie(response: Response, token: str) -> None:
+    """Write the session token as a first-party cookie, plus — when the deployment
+    is also embedded somewhere — a second, cross-site-capable copy.
+
+    Two cookies rather than one compromise policy: a page inside a cross-site
+    iframe fetches its OWN origin, so `Sec-Fetch-Site` reads `same-origin` in both
+    the framed and the top-level case and the server cannot tell them apart from
+    the request. Offering both lets each browser send whichever one it is willing
+    to store; they carry the same token, so either resolves the same session.
+    """
+    max_age = SESSION_DAYS * 24 * 3600
     response.set_cookie(
         key=SESSION_COOKIE,
         value=token,
-        max_age=SESSION_DAYS * 24 * 3600,
+        max_age=max_age,
         httponly=True,
         **_cookie_kwargs(),
     )
     if _is_cross_site():
-        _mark_partitioned(response)
+        response.set_cookie(
+            key=SESSION_COOKIE_EMBEDDED,
+            value=token,
+            max_age=max_age,
+            httponly=True,
+            **_embedded_cookie_kwargs(),
+        )
+        _mark_partitioned(response, SESSION_COOKIE_EMBEDDED)
 
 
 def clear_session_cookie(response: Response) -> None:
@@ -154,7 +190,15 @@ def clear_session_cookie(response: Response) -> None:
         **_cookie_kwargs(),
     )
     if _is_cross_site():
-        _mark_partitioned(response)
+        response.set_cookie(
+            key=SESSION_COOKIE_EMBEDDED,
+            value="",
+            max_age=0,
+            expires=0,
+            httponly=True,
+            **_embedded_cookie_kwargs(),
+        )
+        _mark_partitioned(response, SESSION_COOKIE_EMBEDDED)
 
 
 def resolve_session_user(session: Session, token: str | None) -> str | None:
@@ -181,12 +225,17 @@ def resolve_session_user(session: Session, token: str | None) -> str | None:
 
 def get_current_username(
     sems_session: str | None = Cookie(default=None),
+    sems_session_xs: str | None = Cookie(default=None),
     db: Session = Depends(get_db),
 ) -> str:
     """The authenticated user's username, derived from the session cookie.
     Raises 401 when not logged in — this is what every user-scoped endpoint uses
-    instead of accepting a client-supplied username."""
-    username = resolve_session_user(db, sems_session)
+    instead of accepting a client-supplied username.
+
+    Either cookie is accepted: which of the two the browser sends depends on
+    whether the app is running top-level or inside a cross-site frame, and both
+    carry the same token."""
+    username = resolve_session_user(db, sems_session or sems_session_xs)
     if username is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return username
