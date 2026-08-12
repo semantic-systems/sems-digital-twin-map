@@ -17,11 +17,19 @@ export function setUnauthorizedHandler(fn: () => void): void {
 }
 
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  // Content-Type only when there is a body to describe. It is not a
+  // CORS-safelisted request header, so sending it on plain GETs turns any
+  // request that ends up cross-origin (e.g. a redirect that changes the scheme)
+  // into a preflighted one -- and a preflight is not allowed to redirect.
+  const headers: HeadersInit = {
+    ...(options?.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+    ...options?.headers,
+  };
   const res = await fetch(BASE + path, {
     // Send/receive the session cookie on every request.
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
+    headers,
   });
   if (res.status === 401) {
     onUnauthorized?.();
