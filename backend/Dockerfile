@@ -12,6 +12,13 @@ COPY src/data/ ./src/data/
 # Copy the FastAPI application
 COPY backend/app/ ./app/
 
+# Admin tooling. Needed IN the image: accounts are admin-provisioned and
+# ensure_default_admin only ever creates, never resets -- so without this there
+# is no way to reset a forgotten/wrong password on a running deployment short of
+# hand-written SQL. Run as:
+#   docker compose exec backend python scripts/create_user.py --list
+COPY backend/scripts/ ./scripts/
+
 # Tell db.py / demo.py that we are running inside Docker
 ENV IN_DOCKER=true
 
