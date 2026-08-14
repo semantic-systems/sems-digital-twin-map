@@ -127,6 +127,83 @@ Unlike the above, these aren't obtained from anyone — they're passwords
 storing map reports, and the map's own bootstrap admin login). The
 quick-setup script generates safe placeholders and lets you override them.
 
+## External services and their parameters
+
+Neither system is self-contained: both call out to services that must exist
+and be reachable. This is the handover-relevant map of *what talks to what*,
+and which parameter points at each. "Where" gives the file the parameter
+lives in; every one can also be overridden by an environment variable of the
+same name (upper-cased; geolinker's take a `GEO_LINKER__` prefix).
+
+### Social Media Sensor
+
+| Service | What it's for | Parameter(s) | Where | If missing |
+|---|---|---|---|---|
+| **LLM endpoint** (OpenAI-compatible) | Relevance + event classification, geo-disambiguation. Nothing runs locally. | `llm_address`, `model_name`, `OPENAI_API_KEY` | `config.yaml` / env (sensor repo) | Sensor can't classify at all — hard dependency |
+| **RescueMate KG nodes** | Where posts are published (`/datasets`) and deduplicated (`/sparql`) | `target_server_nodes`, `target_server_dataset`, `target_server_username`/`_password` | `config.yaml` / env (sensor repo) | Posts are dropped ("no usable KG node") |
+| **Keycloak** | Issues the token for the KG nodes. Only node-1's realm knows the `uhh` client. | `target_server_nodes[].keycloak_url` | `config.yaml` | 401 / no token → nothing published |
+| **Photon** | Primary geocoding candidate search | `photon_url` | `geolinker/config.yaml` (sensor repo) | Geo-linking raises — effectively mandatory |
+| **Nominatim** | OSM lookup for polygons/geometries | `nominatim_url` | `geolinker/config.yaml` (sensor repo) | Optional: guarded, returns no geometries |
+| **Overpass** | Adds OSM containing-relations as extra candidates | `overpass_url`, `add_containing_relations` | `geolinker/config.yaml` (sensor repo) | Optional: off unless both are set |
+| **Mastodon instance** | Post source (authenticated) | `MASTODON_SERVER`, `MASTODON_ACCESS_TOKEN`, `social_media_platforms.mastodon` | env / `config.yaml` | That source yields nothing |
+| **Bluesky Jetstream** | Post source (public firehose, no auth) | `BLUESKY_SERVER`, `social_media_platforms.bluesky` | env / `config.yaml` | That source yields nothing |
+| **RSS feeds** | Post source (Abendblatt, Tagesschau, NDR, SHZ) | `social_media_platforms.rss.feeds` | `config.yaml` | That source yields nothing |
+| **DSPy LM** | Query rewriting / candidate ranking | `dspy_lm_model`, `dspy_lm_url` | `geolinker/config.yaml` (sensor repo) | Optional: falls back to the main LLM above |
+| **Fine-tuned retrieval model** | Alternative query generation backend | `cr_model_path` / `cr_external_model_url` | `geolinker/config.yaml` (sensor repo) | Optional: unset → main LLM is used |
+
+The DSPy *program* files (`cr_dspy_program_path`, `dspy_ranker_program_path`)
+are not services — they default to files bundled in `geolinker/data/`, which
+is why they're deliberately absent from `geolinker/config.yaml` (sensor repo).
+
+### Digital Twin Map
+
+| Service | What it's for | Parameter(s) | Where | If missing |
+|---|---|---|---|---|
+| **RescueMate KG SPARQL** | Reads the reports the sensor published. All nodes are queried and unioned (they're failover peers, not replicas). | `SPARQL_ENDPOINTS`, `USERNAME`/`PASSWORD` | `.env` (this repo) / `map.env` | No reports appear on the map |
+| **Keycloak** | Token for those SPARQL reads | `SPARQL_KEYCLOAK_URLS` | `.env` (this repo) / `map.env` | Unset → each node is asked for a token from its *own* Keycloak; only node-1's knows the `uhh` client, so node-2 returns `invalid_client`. node-1 is tried first either way, so setting this only suppresses that doomed second request — it does not make auth succeed when node-1 is down |
+| **PostgreSQL + PostGIS** | Stores reports, users, triage state | `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT` | `.env` (this repo) / `map.env` | Backend won't start — started by compose itself |
+| **Hamburg Urban Data Hub** | Open geodata layers (schools, care homes, …) | `api_config.json` | this repo | Those layers are empty; reports still work |
+
+### Current endpoints
+
+The addresses actually configured today, so a new maintainer knows what these
+services *are* and not just that they exist. Hostnames like `hcds-rescuemate`
+and `sems-coypu-2` are **internal** — reachable only from the university
+network/VPN, which is the usual cause of a fresh deployment hanging on
+geocoding or LLM calls.
+
+| Parameter | Configured value | Set in |
+|---|---|---|
+| `llm_address` | `https://llm.api.hcds.uni-hamburg.de/v1` | `config.yaml` (sensor repo) |
+| `model_name` | `google/gemma-4-26B-A4B-it` | `config.yaml` (sensor repo) |
+| `target_server_nodes` | `https://node-1.net.uhh.rescue-mate.de`, `https://node-2.net.uhh.rescue-mate.de` (node-2 authenticates via node-1) | `config.yaml` (sensor repo) |
+| `target_server_dataset` | `social_media_data_fixed` | `config.yaml` (sensor repo) |
+| `photon_url` | `http://hcds-rescuemate:2322/api/` | `geolinker/config.yaml` (sensor repo) |
+| `nominatim_url` | `http://hcds-rescuemate:8080` | `geolinker/config.yaml` (sensor repo) |
+| `overpass_url` | `http://hcds-rescuemate:12346/api/interpreter` | `geolinker/config.yaml` (sensor repo) |
+| `MASTODON_SERVER` | `https://mastodon.nliwod.org/` (Python default: `https://mastodon.social/`) | `sensor.env` |
+| `BLUESKY_SERVER` | `wss://jetstream2.us-west.bsky.network/subscribe` | Python default (unset everywhere) |
+| `SPARQL_ENDPOINTS` | the two nodes above, each with `/sparql` | `map.env` |
+| `SPARQL_KEYCLOAK_URLS` | node-1 twice (the list must match `SPARQL_ENDPOINTS` in length; the duplicate is deduped at runtime) | `map.env` |
+
+> **Note on precedence.** `quick_setup`'s `sensor.env` sets `LLM_ADDRESS`
+> explicitly, and environment variables outrank both YAML files — so that
+> value wins over `config.yaml` (sensor repo) no matter what the image was built with.
+> Both now point at `llm.api.hcds.uni-hamburg.de`; if you repoint one,
+> repoint the other too or the two ways of running the sensor will disagree.
+
+### Shared credential
+
+The Keycloak account is the **same** for both systems — the sensor calls it
+`TARGET_SERVER_USERNAME`/`PASSWORD`, the map calls it `USERNAME`/`PASSWORD`.
+Only node-1's Keycloak authenticates the `uhh` client today, which is why
+both systems' node lists point their auth at node-1.
+
+Configuration precedence, highest first (sensor repo `src/manager/settings.py`):
+environment variables → `.env` → `config.local.yaml` (gitignored, personal
+overrides) → `config.yaml` (sensor repo). `GeoLinkerSettings` is independent, reading
+`geolinker/config.yaml` (sensor repo) and `GEO_LINKER__*` env vars.
+
 ## Where to actually run it
 
 Everything above is what you need *before* running

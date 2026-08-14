@@ -34,13 +34,22 @@ def _origin(url: str) -> str:
     return urlunsplit((p.scheme, p.netloc, '', '', ''))
 
 
-# Per-node keycloak base URLs, parallel to SPARQL_ENDPOINTS -- each node MAY
-# authenticate via a different keycloak. get_keycloak_token tries them in order and
-# fails over, so a node's keycloak being down doesn't stop reads. Unset entries
-# default to the node's own origin (scheme://host of its /sparql URL). Today only
-# node-1's keycloak authenticates the client, so it's first and used unless it's down;
-# a token from any keycloak is accepted by every node's /sparql, so one token serves
-# all reads. Override via SPARQL_KEYCLOAK_URLS (comma-separated, parallel list).
+# Candidate keycloak base URLs, in the order get_keycloak_token tries them.
+#
+# Despite being built index-parallel to SPARQL_ENDPOINTS, this is NOT consulted
+# per-node at query time: get_keycloak_token takes no endpoint and simply
+# returns the first URL here that issues a token, whichever node's /sparql is
+# about to be queried. A token from any keycloak is accepted by every node's
+# /sparql, so one token serves all reads. The parallel construction only decides
+# the DEFAULT for an index left unset -- that node's own origin (scheme://host
+# of its /sparql URL).
+#
+# Consequence: entries after the first are reached only when the earlier ones
+# fail to issue a token -- not when a node's triplestore is down, which is an
+# independent failure. Today only node-1's keycloak knows the "uhh" client
+# (node-2's answers invalid_client), so node-1 short-circuits every lookup and
+# the rest of the list is dead weight unless node-1's keycloak itself is
+# unreachable. Override via SPARQL_KEYCLOAK_URLS (comma-separated).
 _keycloak_raw = os.getenv('SPARQL_KEYCLOAK_URLS', '')
 _keycloak_list = [k.strip() for k in _keycloak_raw.split(',') if k.strip()]
 KEYCLOAK_URLS = [
@@ -109,13 +118,18 @@ def _client(endpoint: str) -> SPARQLWrapper:
 
 
 def get_keycloak_token():
-    """Fetch a keycloak token, failing over across the nodes' keycloak URLs.
+    """Fetch a keycloak token, failing over across KEYCLOAK_URLS in order.
+
+    Endpoint-agnostic on purpose: the caller's node does NOT select a keycloak
+    here. The first URL that issues a token wins and that token is used for
+    whichever node's /sparql is being queried -- every node accepts a token from
+    any keycloak, so one token serves all reads.
 
     Auth is effectively central today (only node-1's keycloak authenticates the
-    client), but trying each node's keycloak in order means a promoted/decentralized
-    secondary can issue tokens if the primary's keycloak is down. The resulting token
-    is accepted by every node's /sparql, so one token is reused for all reads. Fails
-    fast per keycloak (short connect timeout) so failover is quick."""
+    client), so the first entry answers every call; the remaining entries exist so
+    a promoted/decentralized secondary could issue tokens if the primary's keycloak
+    goes down. Duplicates are skipped, since the list usually repeats one central
+    keycloak. Fails fast per keycloak (short connect timeout) so failover is quick."""
     REALM = "master"
     CLIENT_ID = "uhh"
     USERNAME = os.getenv('USERNAME', '')
